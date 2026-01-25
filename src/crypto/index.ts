@@ -1,0 +1,364 @@
+/**
+ * Starknet Crypto
+ *
+ * Cryptographic operations for Starknet.
+ * Priority: Native FFI (Bun) → WASM → throw
+ */
+
+import type { Felt252Type } from '../primitives/index.js';
+
+// ============ Backend Detection ============
+
+// Native FFI (Bun only)
+let native: typeof import('../native/index.js') | null = null;
+let nativeChecked = false;
+
+// WASM loader
+let wasm: typeof import('../wasm-loader/index.js') | null = null;
+let wasmChecked = false;
+let wasmLoaded = false;
+
+/**
+ * Check and load native FFI if available (Bun only)
+ */
+function getNative(): typeof native {
+  if (!nativeChecked) {
+    nativeChecked = true;
+    try {
+      if (typeof Bun !== 'undefined') {
+        native = require('../native/index.js');
+        if (!native?.isNativeAvailable()) {
+          native = null;
+        }
+      }
+    } catch {
+      native = null;
+    }
+  }
+  return native;
+}
+
+/**
+ * Get WASM module (must be loaded first via loadWasmCrypto)
+ */
+function getWasm(): typeof wasm {
+  if (!wasmChecked) {
+    wasmChecked = true;
+    try {
+      wasm = require('../wasm-loader/index.js');
+    } catch {
+      wasm = null;
+    }
+  }
+  return wasmLoaded ? wasm : null;
+}
+
+/**
+ * Check if native crypto is available
+ */
+export function isNativeAvailable(): boolean {
+  return getNative() !== null;
+}
+
+/**
+ * Check if WASM crypto is available (file exists)
+ */
+export function isWasmAvailable(): boolean {
+  const w = getWasm();
+  return w?.isWasmAvailable() ?? false;
+}
+
+/**
+ * Check if WASM crypto is loaded
+ */
+export function isWasmLoaded(): boolean {
+  return wasmLoaded;
+}
+
+/**
+ * Load WASM crypto module
+ * Call this before using crypto functions if native is not available.
+ */
+export async function loadWasmCrypto(): Promise<void> {
+  if (wasmLoaded) return;
+
+  const w = getWasm();
+  if (!w) {
+    throw new Error('WASM loader not available');
+  }
+
+  await w.loadWasmCrypto();
+  wasmLoaded = true;
+}
+
+// ============ Hashing ============
+
+/**
+ * Pedersen hash of two felts
+ */
+export function pedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.pedersenHash(a, b);
+
+  const w = getWasm();
+  if (w) return w.wasmPedersenHash(a, b);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Poseidon hash of two felts
+ */
+export function poseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.poseidonHash(a, b);
+
+  const w = getWasm();
+  if (w) return w.wasmPoseidonHash(a, b);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Poseidon hash of multiple felts
+ */
+export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
+  const n = getNative();
+  if (n) return n.poseidonHashMany(inputs);
+
+  const w = getWasm();
+  if (w) return w.wasmPoseidonHashMany(inputs);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * sn_keccak - Truncated Keccak256 (first 250 bits)
+ *
+ * Computes keccak256(data) and masks to 250 bits for use as Starknet selector.
+ */
+export function snKeccak(data: Uint8Array | string): Felt252Type {
+  // Convert string to bytes if needed
+  const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
+
+  const n = getNative();
+  if (n) return n.snKeccak(bytes);
+
+  const w = getWasm();
+  if (w) return w.wasmKeccak256(bytes);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+// ============ Felt Arithmetic ============
+
+/**
+ * Add two felts (a + b mod P)
+ */
+export function feltAdd(a: Felt252Type, b: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.feltAdd(a, b);
+
+  const w = getWasm();
+  if (w) return w.wasmFeltAdd(a, b);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Subtract two felts (a - b mod P)
+ */
+export function feltSub(a: Felt252Type, b: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.feltSub(a, b);
+
+  const w = getWasm();
+  if (w) return w.wasmFeltSub(a, b);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Multiply two felts (a * b mod P)
+ */
+export function feltMul(a: Felt252Type, b: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.feltMul(a, b);
+
+  const w = getWasm();
+  if (w) return w.wasmFeltMul(a, b);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Divide two felts (a / b mod P)
+ */
+export function feltDiv(a: Felt252Type, b: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.feltDiv(a, b);
+
+  const w = getWasm();
+  if (w) return w.wasmFeltDiv(a, b);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Negate a felt (-a mod P)
+ */
+export function feltNeg(a: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.feltNeg(a);
+
+  const w = getWasm();
+  if (w) return w.wasmFeltNeg(a);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Multiplicative inverse (1/a mod P)
+ */
+export function feltInverse(a: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.feltInverse(a);
+
+  const w = getWasm();
+  if (w) return w.wasmFeltInverse(a);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Power (base^exp mod P)
+ */
+export function feltPow(base: Felt252Type, exp: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.feltPow(base, exp);
+
+  const w = getWasm();
+  if (w) return w.wasmFeltPow(base, exp);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Square root (returns sqrt if exists)
+ */
+export function feltSqrt(a: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.feltSqrt(a);
+
+  const w = getWasm();
+  if (w) return w.wasmFeltSqrt(a);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+// ============ ECDSA ============
+
+/**
+ * STARK curve signature
+ */
+export interface Signature {
+  r: Felt252Type;
+  s: Felt252Type;
+}
+
+/**
+ * Sign a message with STARK curve ECDSA
+ */
+export function sign(
+  privateKey: Felt252Type,
+  messageHash: Felt252Type
+): Signature {
+  const n = getNative();
+  if (n) return n.sign(privateKey, messageHash);
+
+  const w = getWasm();
+  if (w) return w.wasmSign(privateKey, messageHash);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Verify a STARK curve ECDSA signature
+ */
+export function verify(
+  publicKey: Felt252Type,
+  messageHash: Felt252Type,
+  signature: Signature
+): boolean {
+  const n = getNative();
+  if (n) return n.verify(publicKey, messageHash, signature);
+
+  const w = getWasm();
+  if (w) return w.wasmVerify(publicKey, messageHash, signature.r, signature.s);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Get public key from private key
+ */
+export function getPublicKey(privateKey: Felt252Type): Felt252Type {
+  const n = getNative();
+  if (n) return n.getPublicKey(privateKey);
+
+  const w = getWasm();
+  if (w) return w.wasmGetPublicKey(privateKey);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+/**
+ * Recover public key from signature
+ */
+export function recover(
+  messageHash: Felt252Type,
+  r: Felt252Type,
+  s: Felt252Type,
+  v: Felt252Type
+): Felt252Type {
+  const n = getNative();
+  if (n) return n.recover(messageHash, r, s, v);
+
+  const w = getWasm();
+  if (w) return w.wasmRecover(messageHash, r, s, v);
+
+  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+}
+
+// ============ Namespace exports ============
+
+export const Pedersen = {
+  hash: pedersenHash,
+} as const;
+
+export const Poseidon = {
+  hash: poseidonHash,
+  hashMany: poseidonHashMany,
+} as const;
+
+// Merge primitive Felt namespace with arithmetic ops
+import { Felt as FeltPrimitives } from '../primitives/index.js';
+
+export const Felt = {
+  ...FeltPrimitives,
+  add: feltAdd,
+  sub: feltSub,
+  mul: feltMul,
+  div: feltDiv,
+  neg: feltNeg,
+  inverse: feltInverse,
+  pow: feltPow,
+  sqrt: feltSqrt,
+} as const;
+
+export const StarkCurve = {
+  sign,
+  verify,
+  getPublicKey,
+  recover,
+} as const;

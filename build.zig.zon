@@ -1,0 +1,12 @@
+.{
+    .name = .kundera,
+    .version = "0.1.0",
+    .fingerprint = 0xb4d4b11ab1bf9513,
+    .minimum_zig_version = "0.14.0",
+    .dependencies = .{},
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}

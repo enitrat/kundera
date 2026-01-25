@@ -1,0 +1,37 @@
+# Kundera - Starknet Primitives Library
+# This Cargo.toml is used for internal Rust crypto dependencies (FFI to Zig)
+[package]
+name = "kundera"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "starknet_crypto_ffi"
+crate-type = ["staticlib", "cdylib"]
+path = "lib/starknet-crypto-ffi/src/lib.rs"
+
+[dependencies]
+# Starknet crypto (Pedersen, Poseidon, STARK ECDSA)
+# Uses starknet-types-core internally for Felt
+starknet-crypto = "0.8"
+# Keccak256 for selector computation
+sha3 = "0.10"
+
+[features]
+default = ["std"]
+std = []
+portable = []  # For WASM (no asm optimizations)
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+opt-level = "z"
+lto = true
+panic = "abort"
+
+[profile.release-fast]
+inherits = "release"
+opt-level = 3
+lto = true
+panic = "abort"
