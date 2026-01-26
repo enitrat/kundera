@@ -1,22 +1,77 @@
 ---
-title: Introduction
-description: What Kundera is and why it exists.
+title: What is Kundera?
+description: Modern TypeScript library for Starknet development.
 ---
 
-# Introduction
+Kundera is a modern, type-safe TypeScript library for interacting with Starknet. It provides a clean, functional API for accounts, contracts, transactions, and more—designed to work seamlessly in both browser and Node.js environments.
 
-## Summary
-- TODO: one-paragraph overview
+<Tip>
+Want to get started quickly? Check out [Getting Started](/getting-started) to make your first Starknet call in under 5 minutes.
+</Tip>
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+## Simple, Intuitive API
 
-## Examples
-```ts
-// TODO: add example
+```typescript
+import { createHttpProvider } from 'kundera/provider';
+import { createAccount } from 'kundera/account';
+import { Felt } from 'kundera/primitives';
+
+// Create a provider
+const provider = createHttpProvider({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+});
+
+// Create an account
+const account = createAccount({
+  address: Felt.from('0x123...'),
+  privateKey: Felt.from('0xabc...'),
+  provider,
+});
+
+// Read from a contract
+const balance = await provider.callContract({
+  contractAddress: Felt.from(
+    '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+  ),
+  entrypoint: 'balanceOf',
+  calldata: [account.address],
+});
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## What's Included
+
+<CardGroup cols={2}>
+  <Card title="Provider" icon="plug" href="/api/provider">
+    JSON-RPC client for reading from Starknet with HTTP/WebSocket support.
+  </Card>
+  <Card title="Account" icon="user" href="/api/account">
+    Sign and send transactions with full account abstraction support.
+  </Card>
+  <Card title="Contract" icon="file-contract" href="/api/contract">
+    Type-safe contract interactions with ABI encoding/decoding.
+  </Card>
+  <Card title="Primitives" icon="cube" href="/api/primitives">
+    Branded types for Felt252, addresses, and Cairo types.
+  </Card>
+</CardGroup>
+
+## Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **Type Safety** | Branded types prevent mixing felts, addresses, and class hashes |
+| **Tree-Shakeable** | Import only what you need for minimal bundle sizes |
+| **Data-First API** | Functions take data first for easy composition and piping |
+| **Error Handling** | Explicit `{result, error}` pattern—no surprise exceptions |
+| **WASM Ready** | Works in browsers, Node.js, and WASM environments |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/getting-started/installation">
+    Install Kundera in your project.
+  </Card>
+  <Card title="Core Concepts" icon="book" href="/concepts/branded-types">
+    Learn about branded types and the data-first API.
+  </Card>
+</CardGroup>

@@ -118,8 +118,7 @@
             "group": "Comparisons",
             "icon": "scale-balanced",
             "pages": [
-              "comparisons/starknetjs",
-              "comparisons/voltaire"
+              "comparisons/starknetjs"
             ]
           }
         ]

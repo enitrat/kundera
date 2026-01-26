@@ -1,22 +1,70 @@
 ---
 title: Branded Types
-description: Why Kundera uses branded types for felts/addresses.
+description: Why Kundera uses branded types for felts, addresses, and hashes.
 ---
 
-# Branded Types
+Kundera uses **branded types** to distinguish between values that share the same underlying representation but have different semantic meanings. A `ContractAddress` and a `ClassHash` are both 252-bit field elements, but they serve different purposes—branded types make these distinctions visible at compile time.
 
-## Summary
-- TODO: one-paragraph overview
+## The Pattern
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+```typescript
+import { Felt, ContractAddress, ClassHash } from 'kundera';
 
-## Examples
-```ts
-// TODO: add example
+// Create branded values
+const felt = Felt.from('0x123');
+const address = ContractAddress.from('0x456');
+const classHash = ClassHash.from('0x789');
+
+// TypeScript prevents mixing them
+function deployContract(address: ContractAddress, classHash: ClassHash) { ... }
+
+deployContract(address, classHash);  // OK
+deployContract(classHash, address);  // Type error!
+deployContract(felt, felt);          // Type error!
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Why Branded Types?
+
+| Benefit | Description |
+|---------|-------------|
+| **Compile-Time Safety** | Catch address/hash mixups before runtime |
+| **Self-Documenting** | Function signatures clearly show what's expected |
+| **IDE Support** | Autocomplete and hover docs work correctly |
+| **Zero Runtime Cost** | Brands exist only at compile time |
+
+<Warning>
+## Conversion Required for External Data
+
+When receiving data from external sources (RPC responses, user input), you must explicitly convert to branded types:
+
+```typescript
+// RPC returns raw hex strings
+const rawAddress = '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7';
+
+// Explicit conversion required
+const address = ContractAddress.from(rawAddress);
+```
+
+Never assume external data is already branded—always use the `.from()` constructor.
+</Warning>
+
+## Available Branded Types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `Felt` | Raw 252-bit field element | `Felt.from('0x123')` |
+| `ContractAddress` | Contract address | `ContractAddress.from('0x456')` |
+| `ClassHash` | Contract class hash | `ClassHash.from('0x789')` |
+| `EntryPointSelector` | Function selector | `EntryPointSelector.from('transfer')` |
+| `TransactionHash` | Transaction hash | `TransactionHash.from('0xabc')` |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Cairo Types" icon="code" href="/concepts/cairo-types">
+    Learn about Cairo type encoding and decoding.
+  </Card>
+  <Card title="Primitives API" icon="cube" href="/api/primitives">
+    Full API reference for all primitive types.
+  </Card>
+</CardGroup>

@@ -1,22 +1,86 @@
 ---
 title: Tree-Shakeable API
-description: Small bundles via one-function-per-file.
+description: How Kundera's design enables minimal bundle sizes.
 ---
 
-# Tree-Shakeable API
+Kundera is designed from the ground up for **tree-shaking**. Every function is independently importable, so bundlers can eliminate unused code and keep your app's bundle size minimal.
 
-## Summary
-- TODO: one-paragraph overview
+## The Pattern
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+```typescript
+// Import only what you need
+import { createHttpProvider } from 'kundera/provider';
+import { Felt } from 'kundera/primitives';
 
-## Examples
-```ts
-// TODO: add example
+// Not this: imports everything
+import * as kundera from 'kundera';
+
+// Providers are lightweight and tree-shakeable
+const provider = createHttpProvider({ url: 'https://...' });
+const result = await provider.callContract({ ... });
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Why Tree-Shaking Matters
+
+| Scenario | Bundle Size |
+|----------|-------------|
+| Full library import | ~150KB |
+| Provider + callContract | ~15KB |
+| Just primitives | ~5KB |
+
+<Tip>
+Use a bundle analyzer like `@next/bundle-analyzer` or `rollup-plugin-visualizer` to see exactly what's included in your build.
+</Tip>
+
+## Design Principles
+
+Kundera follows these principles to stay tree-shakeable:
+
+| Principle | Implementation |
+|-----------|----------------|
+| **Small Modules** | Subpath exports keep bundles minimal |
+| **No Singletons** | No global state or configuration |
+| **Explicit Imports** | Named exports, no default exports |
+| **Optional Classes** | Provider classes are thin adapters |
+
+<Warning>
+## Avoid Star Imports
+
+Star imports (`import * as kundera`) defeat tree-shaking by importing everything:
+
+```typescript
+// BAD: imports entire library
+import * as kundera from 'kundera';
+const provider = kundera.createHttpProvider({ url: 'https://...' });
+await provider.callContract({ ... });
+
+// GOOD: imports only callContract
+import { createHttpProvider } from 'kundera/provider';
+const provider = createHttpProvider({ url: 'https://...' });
+await provider.callContract({ ... });
+```
+
+Even if you only use one function, the star import includes everything.
+</Warning>
+
+## Subpath Exports
+
+For maximum control, import from specific subpaths:
+
+```typescript
+// Import from subpaths for fine-grained control
+import { Felt, ContractAddress } from 'kundera/primitives';
+import { createHttpProvider } from 'kundera/provider';
+import { encodeCalldata } from 'kundera/abi';
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Data-First API" icon="arrow-right" href="/concepts/data-first-api">
+    How data-first design enables tree-shaking.
+  </Card>
+  <Card title="Installation" icon="download" href="/getting-started/installation">
+    Set up bundler configuration.
+  </Card>
+</CardGroup>

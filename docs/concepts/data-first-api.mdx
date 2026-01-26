@@ -1,22 +1,69 @@
 ---
 title: Data-First API
-description: Encode/decode and data shapes before actions.
+description: How Kundera's data-first design enables composition and tree-shaking.
 ---
 
-# Data-First API
+Kundera follows a **data-first** API design where functions take the data they operate on as the first parameter. This enables function composition, piping, and optimal tree-shaking.
 
-## Summary
-- TODO: one-paragraph overview
+## The Pattern
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+```typescript
+import { encodeCalldata, decodeCalldata, Felt } from 'kundera';
 
-## Examples
-```ts
-// TODO: add example
+// Data-first: the calldata comes first
+const encoded = encodeCalldata(calldata, abi);
+const decoded = decodeCalldata(encoded, abi);
+
+// Enables composition
+const result = pipe(
+  rawInput,
+  (input) => parseInput(input),
+  (calldata) => encodeCalldata(calldata, abi),
+  (encoded) => sendTransaction(encoded),
+);
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Why Data-First?
+
+| Benefit | Description |
+|---------|-------------|
+| **Tree-Shaking** | Import only the functions you use |
+| **Composition** | Easily pipe and compose operations |
+| **Testability** | Pure functions are easy to test |
+| **No Hidden State** | No global configuration or singletons |
+
+<Warning>
+## Avoid Method Chaining
+
+Kundera intentionally avoids method chaining patterns like `account.send().wait()`. While convenient, chaining couples functionality and prevents tree-shaking.
+
+```typescript
+// Prefer this (tree-shakeable)
+import { sendTransaction, waitForTransaction } from 'kundera';
+const hash = await sendTransaction(account, tx);
+const receipt = await waitForTransaction(provider, hash);
+
+// Over this (not tree-shakeable)
+const receipt = await account.send(tx).wait();
+```
+</Warning>
+
+## Comparison with Other Patterns
+
+| Pattern | Example | Tree-Shakeable |
+|---------|---------|----------------|
+| **Data-First** (Kundera) | `encodeCalldata(data, abi)` | Yes |
+| **Options-Last** | `encode(abi, data)` | Yes |
+| **Method Chaining** | `abi.encode(data)` | No |
+| **Class Methods** | `new Encoder(abi).encode(data)` | No |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Tree-Shakeable API" icon="tree" href="/concepts/tree-shakeable-api">
+    Learn how data-first enables tree-shaking.
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/concepts/error-handling">
+    Understand the result/error pattern.
+  </Card>
+</CardGroup>

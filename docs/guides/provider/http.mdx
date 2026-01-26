@@ -1,22 +1,107 @@
 ---
 title: HTTP Provider
-description: Make JSON-RPC calls over HTTP.
+description: Make JSON-RPC calls to Starknet nodes over HTTP.
 ---
 
-# HTTP Provider
+The HTTP provider is the most common way to connect to Starknet. It sends JSON-RPC requests to a node endpoint and returns typed responses.
 
-## Summary
-- TODO: one-paragraph overview
+## Basic Setup
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+```typescript
+import { createHttpProvider } from 'kundera/provider';
 
-## Examples
-```ts
-// TODO: add example
+const provider = createHttpProvider({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+});
+
+// Make a call
+const { result, error } = await provider.getBlockNumber();
+if (!error) {
+  console.log('Current block:', result);
+}
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Configuration Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `url` | `string` | The JSON-RPC endpoint URL |
+| `timeout` | `number` | Request timeout in ms (default: 30000) |
+| `headers` | `Record<string, string>` | Custom headers for requests |
+| `retry` | `number` | Number of retry attempts (default: 3) |
+| `retryDelay` | `number` | Delay between retries in ms (default: 1000) |
+| `batch` | `boolean \| { batchWait?: number; batchSize?: number }` | Enable request batching |
+
+<Tip>
+Most Starknet RPC providers have rate limits. For production use, consider a dedicated endpoint from Infura, Alchemy, or Blast.
+</Tip>
+
+## With Custom Headers
+
+```typescript
+const provider = createHttpProvider({
+  url: 'https://starknet-mainnet.infura.io/v3/YOUR_KEY',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN',
+  },
+});
+```
+
+## With Timeout and Retries
+
+```typescript
+const provider = createHttpProvider({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+  timeout: 10000, // 10 seconds
+  retry: 5,       // retry up to 5 times
+  retryDelay: 1500,
+});
+```
+
+<Warning>
+## HTTP vs WebSocket
+
+HTTP providers create a new connection for each request. For applications that need real-time updates or make many rapid requests, consider using the [WebSocket Provider](/guides/provider/websocket) instead.
+
+```typescript
+// HTTP: one request, one response
+const { result } = await provider.getBlockNumber();
+
+// WebSocket: persistent connection, can subscribe to events
+import { WebSocketProvider } from 'kundera/provider';
+const ws = new WebSocketProvider({ url: 'wss://...' });
+for await (const block of ws.events.newHeads()) {
+  console.log('New block:', block.block_number);
+}
+```
+</Warning>
+
+## Error Handling
+
+All provider methods return `{ result, error }`:
+
+```typescript
+const { result, error } = await provider.getBlockNumber();
+
+if (error) {
+  if (error.code === 'NETWORK_ERROR') {
+    console.log('Could not connect to RPC');
+  } else if (error.code === 'TIMEOUT') {
+    console.log('Request timed out');
+  }
+  return;
+}
+
+console.log('Block:', result);
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="WebSocket Provider" icon="bolt" href="/guides/provider/websocket">
+    Real-time updates and subscriptions.
+  </Card>
+  <Card title="Fallback Provider" icon="shield" href="/guides/provider/fallback">
+    Automatic failover between providers.
+  </Card>
+</CardGroup>

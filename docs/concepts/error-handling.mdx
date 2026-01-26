@@ -1,22 +1,99 @@
 ---
 title: Error Handling
-description: Result-returning APIs and errors as data.
+description: How Kundera uses explicit result/error patterns instead of exceptions.
 ---
 
-# Error Handling
+Kundera uses an explicit **result/error pattern** instead of throwing exceptions. Every operation that can fail returns `{ result, error }`, making error handling visible and predictable.
 
-## Summary
-- TODO: one-paragraph overview
+## The Pattern
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+```typescript
+import { sendTransaction } from 'kundera';
 
-## Examples
-```ts
-// TODO: add example
+const { result, error } = await sendTransaction(account, tx);
+
+if (error) {
+  // Handle specific error types
+  if (error.code === 'INSUFFICIENT_FUNDS') {
+    console.log('Not enough balance');
+  } else if (error.code === 'NONCE_MISMATCH') {
+    console.log('Nonce out of sync');
+  } else {
+    console.log('Transaction failed:', error.message);
+  }
+  return;
+}
+
+// result is guaranteed to exist here
+console.log('Transaction hash:', result.transactionHash);
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Why Result/Error?
+
+| Benefit | Description |
+|---------|-------------|
+| **Explicit Errors** | No hidden exceptions that can crash your app |
+| **Type Safety** | TypeScript knows when result is valid |
+| **Composable** | Chain operations with early-return on error |
+| **Testable** | Easy to test both success and error paths |
+
+<Warning>
+## Always Check for Errors
+
+The `error` field is always present in the return type. You must check it before using `result`:
+
+```typescript
+// WRONG: result might be undefined
+const { result } = await sendTransaction(account, tx);
+console.log(result.transactionHash); // Runtime error if failed!
+
+// RIGHT: check error first
+const { result, error } = await sendTransaction(account, tx);
+if (error) return handleError(error);
+console.log(result.transactionHash); // Safe!
+```
+
+TypeScript will warn you if you access `result` without checking `error` first.
+</Warning>
+
+## Helper Functions
+
+Kundera provides `ok()` and `err()` helpers for creating result objects:
+
+```typescript
+import { ok, err } from 'kundera';
+
+function divide(a: number, b: number) {
+  if (b === 0) {
+    return err({ code: 'DIVISION_BY_ZERO', message: 'Cannot divide by zero' });
+  }
+  return ok(a / b);
+}
+
+const { result, error } = divide(10, 2);
+// result: 5, error: undefined
+```
+
+## Error Types
+
+All errors include a `code` and `message`:
+
+| Code | Description |
+|------|-------------|
+| `NETWORK_ERROR` | RPC connection failed |
+| `INVALID_RESPONSE` | Malformed RPC response |
+| `INSUFFICIENT_FUNDS` | Account balance too low |
+| `NONCE_MISMATCH` | Account nonce out of sync |
+| `SIGNATURE_ERROR` | Signature verification failed |
+| `CONTRACT_ERROR` | Contract execution reverted |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider API" icon="plug" href="/api/provider">
+    See error handling in provider methods.
+  </Card>
+  <Card title="Account API" icon="user" href="/api/account">
+    See error handling in account methods.
+  </Card>
+</CardGroup>
