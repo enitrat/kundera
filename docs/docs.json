@@ -1,0 +1,135 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Kundera",
+  "colors": {
+    "primary": "#EC796B",
+    "light": "#F8AFA6",
+    "dark": "#EC796B"
+  },
+  "navigation": {
+    "anchors": [
+      {
+        "anchor": "Documentation",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "Overview",
+            "icon": "lightbulb",
+            "pages": [
+              "introduction"
+            ]
+          },
+          {
+            "group": "Getting Started",
+            "icon": "rocket",
+            "pages": [
+              "getting-started/index",
+              "getting-started/installation",
+              "getting-started/quickstart",
+              "getting-started/wasm",
+              "getting-started/native",
+              "getting-started/errors",
+              "getting-started/compatibility"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "icon": "book",
+            "pages": [
+              "concepts/branded-types",
+              "concepts/data-first-api",
+              "concepts/tree-shakeable-api",
+              "concepts/error-handling",
+              "concepts/transport-layer",
+              "concepts/account-abstraction",
+              "concepts/cairo-types",
+              "concepts/abi-contracts",
+              "concepts/event-filtering",
+              "concepts/security"
+            ]
+          },
+          {
+            "group": "Guides",
+            "icon": "compass",
+            "pages": [
+              {
+                "group": "Provider",
+                "pages": [
+                  "guides/provider/http",
+                  "guides/provider/websocket",
+                  "guides/provider/transport",
+                  "guides/provider/fallback"
+                ]
+              },
+              {
+                "group": "Account",
+                "pages": [
+                  "guides/account/create-account",
+                  "guides/account/wallet-connect",
+                  "guides/account/deploy",
+                  "guides/account/sign-typed-data"
+                ]
+              },
+              {
+                "group": "Contract",
+                "pages": [
+                  "guides/contract/read-write",
+                  "guides/contract/class-hash"
+                ]
+              },
+              {
+                "group": "ABI",
+                "pages": [
+                  "guides/abi/encode-decode",
+                  "guides/abi/events"
+                ]
+              },
+              "guides/serialization"
+            ]
+          },
+          {
+            "group": "Recipes",
+            "icon": "wand-magic-sparkles",
+            "pages": [
+              "recipes/transfer",
+              "recipes/estimate-fee",
+              "recipes/event-listening",
+              "recipes/call-contract"
+            ]
+          },
+          {
+            "group": "API Reference",
+            "icon": "code",
+            "pages": [
+              "api/primitives",
+              "api/crypto",
+              "api/serde",
+              "api/provider",
+              "api/transport",
+              "api/rpc",
+              "api/account",
+              "api/wallet",
+              "api/abi",
+              "api/contract"
+            ]
+          },
+          {
+            "group": "Comparisons",
+            "icon": "scale-balanced",
+            "pages": [
+              "comparisons/starknetjs",
+              "comparisons/voltaire"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/starknet/kundera"
+    }
+  ]
+}
