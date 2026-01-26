@@ -13,6 +13,8 @@ export default defineConfig({
     'src/provider/index.ts',
     'src/abi/index.ts',
     'src/contract/index.ts',
+    'src/account/index.ts',
+    'src/wallet/index.ts',
   ],
   format: ['esm', 'cjs'],
   dts: true,

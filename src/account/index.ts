@@ -84,3 +84,23 @@ export {
   WalletRequestType,
   createWalletAccount,
 } from './WalletAccount.js';
+
+// ============ Discovery Helpers ============
+export {
+  isAccountDeployed,
+  getAccountNonce,
+  getAccountClassHash,
+} from './discovery.js';
+
+// ============ Deployment Helpers ============
+export type { DeployIfNeededResult } from './deploy.js';
+export {
+  estimateDeployAccount,
+  deployAccountIfNeeded,
+} from './deploy.js';
+
+// ============ Factory Helpers ============
+export {
+  connectAccountFromWallet,
+  createAccountFromSigner,
+} from './factory.js';

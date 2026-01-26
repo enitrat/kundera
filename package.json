@@ -77,6 +77,16 @@
       "types": "./types/contract/index.d.ts",
       "import": "./dist/contract/index.js",
       "require": "./dist/contract/index.cjs"
+    },
+    "./account": {
+      "types": "./types/account/index.d.ts",
+      "import": "./dist/account/index.js",
+      "require": "./dist/account/index.cjs"
+    },
+    "./wallet": {
+      "types": "./types/wallet/index.d.ts",
+      "import": "./dist/wallet/index.js",
+      "require": "./dist/wallet/index.cjs"
     }
   },
   "main": "./dist/index.cjs",

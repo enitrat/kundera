@@ -480,12 +480,9 @@ describe('WebSocketProvider behavioral tests', () => {
       params: [],
     });
 
-    // Set up callback tracking
+    // Set up callback tracking via transport's subscribe method
     const received: unknown[] = [];
-    const subscriptions = (
-      provider as unknown as { subscriptions: Map<string, Set<(data: unknown) => void>> }
-    ).subscriptions;
-    subscriptions.set(subscriptionId as string, new Set([(data) => received.push(data)]));
+    provider.getTransport().subscribe(subscriptionId as string, (data) => received.push(data));
 
     // Simulate notification with subscription_id (spec-compliant)
     const blockData = { block_number: 12345, block_hash: '0xabc' };
@@ -504,11 +501,9 @@ describe('WebSocketProvider behavioral tests', () => {
       params: [],
     });
 
+    // Set up callback tracking via transport's subscribe method
     const received: unknown[] = [];
-    const subscriptions = (
-      provider as unknown as { subscriptions: Map<string, Set<(data: unknown) => void>> }
-    ).subscriptions;
-    subscriptions.set(subscriptionId as string, new Set([(data) => received.push(data)]));
+    provider.getTransport().subscribe(subscriptionId as string, (data) => received.push(data));
 
     // Simulate notification with legacy 'subscription' field (not subscription_id)
     const blockData = { block_number: 99999, block_hash: '0xdef' };

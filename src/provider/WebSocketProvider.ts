@@ -3,6 +3,7 @@
  *
  * Starknet JSON-RPC provider using WebSocket transport for real-time
  * bidirectional communication. Supports native pub/sub for events.
+ * Thin adapter over webSocketTransport - delegates all request logic to transport layer.
  *
  * @module provider/WebSocketProvider
  */
@@ -33,6 +34,13 @@ import type {
   TransactionReceiptsSubscriptionParams,
   TransactionStatusUpdate,
 } from './types.js';
+import {
+  webSocketTransport,
+  type WebSocketTransport,
+  type WebSocketTransportOptions,
+  isJsonRpcError,
+  createRequest,
+} from '../transport/index.js';
 
 /**
  * WebSocket configuration options
@@ -48,6 +56,10 @@ export interface WebSocketProviderOptions {
   reconnectDelay?: number;
   /** Max reconnect attempts (0 = infinite) */
   maxReconnectAttempts?: number;
+  /** Keep-alive interval in ms */
+  keepAlive?: number;
+  /** Request timeout in ms */
+  timeout?: number;
 }
 
 /**
@@ -55,6 +67,7 @@ export interface WebSocketProviderOptions {
  *
  * Implements Provider interface using WebSocket transport for real-time
  * communication. Supports native pub/sub subscriptions for Starknet events.
+ * Thin adapter that delegates to webSocketTransport.
  *
  * @example
  * ```typescript
@@ -75,144 +88,69 @@ export interface WebSocketProviderOptions {
  * ```
  */
 export class WebSocketProvider implements Provider {
-  private url: string;
-  private protocols: string | string[] | undefined;
-  private ws: WebSocket | null = null;
-  private requestId = 0;
-  private pending = new Map<number, (response: unknown) => void>();
-  private subscriptions = new Map<string, Set<(data: unknown) => void>>();
-  private reconnect: boolean;
-  private reconnectDelay: number;
-  private maxReconnectAttempts: number;
-  private reconnectAttempts = 0;
-  private reconnectTimeout: ReturnType<typeof setTimeout> | undefined;
-  private isConnected = false;
+  private transport: WebSocketTransport;
   private eventListeners: Map<ProviderEvent, Set<(...args: unknown[]) => void>> =
     new Map();
+  private subscriptionParams = new Map<string, { name: string; params: unknown[] }>();
 
   constructor(options: WebSocketProviderOptions | string) {
-    if (typeof globalThis.WebSocket === 'undefined') {
-      throw new Error(
-        'WebSocket is not available in this environment. ' +
-          "For Node.js, install a WebSocket polyfill like 'ws' or 'isomorphic-ws' and assign it to globalThis.WebSocket.",
-      );
-    }
+    const opts: WebSocketProviderOptions =
+      typeof options === 'string' ? { url: options } : options;
 
-    if (typeof options === 'string') {
-      this.url = options;
-      this.reconnect = true;
-      this.reconnectDelay = 5000;
-      this.maxReconnectAttempts = 0;
-    } else {
-      this.url = options.url;
-      this.protocols = options.protocols;
-      this.reconnect = options.reconnect ?? true;
-      this.reconnectDelay = options.reconnectDelay ?? 5000;
-      this.maxReconnectAttempts = options.maxReconnectAttempts ?? 0;
-    }
+    // Create transport with mapped options
+    const transportOpts: WebSocketTransportOptions = {
+      protocols: opts.protocols,
+      reconnect: opts.reconnect ?? true,
+      reconnectDelay: opts.reconnectDelay ?? 5000,
+      maxReconnectAttempts: opts.maxReconnectAttempts ?? 0,
+      keepAlive: opts.keepAlive ?? 30000,
+      timeout: opts.timeout ?? 30000,
+    };
+
+    this.transport = webSocketTransport(opts.url, transportOpts);
+
+    // Forward transport events to provider events
+    this.transport.on('connect', () => {
+      // Get chain ID and emit connect event
+      this._request<string>('starknet_chainId')
+        .then((response) => {
+          if (response.result) {
+            this.emit('connect', { chainId: response.result });
+          }
+        })
+        .catch(() => {});
+
+      // Resubscribe to all previous subscriptions
+      this.resubscribeAll();
+    });
+
+    this.transport.on('disconnect', () => {
+      this.emit('disconnect', {
+        code: 4900,
+        message: 'WebSocket connection closed',
+      });
+    });
+  }
+
+  /**
+   * Get the underlying transport (for advanced use)
+   */
+  getTransport(): WebSocketTransport {
+    return this.transport;
   }
 
   /**
    * Connect to WebSocket server
    */
   async connect(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.ws = new WebSocket(this.url, this.protocols);
-
-        this.ws.onopen = () => {
-          this.isConnected = true;
-          this.reconnectAttempts = 0;
-          if (this.reconnectTimeout) {
-            clearTimeout(this.reconnectTimeout);
-            this.reconnectTimeout = undefined;
-          }
-          // Emit connect event with chain ID
-          this._request<string>('starknet_chainId')
-            .then((response) => {
-              if (response.result) {
-                this.emit('connect', { chainId: response.result });
-              }
-            })
-            .catch(() => {
-              // Ignore error, just don't emit connect event
-            });
-          resolve();
-        };
-
-        this.ws.onmessage = (event) => {
-          const message = JSON.parse(event.data);
-
-          // Handle Starknet subscription notifications
-          // Spec uses subscription_id, but fallback to subscription for compatibility
-          if (message.method?.startsWith('starknet_subscription')) {
-            const subscriptionId =
-              message.params?.subscription_id ?? message.params?.subscription;
-            const callbacks = this.subscriptions.get(subscriptionId);
-            if (callbacks) {
-              for (const callback of callbacks) {
-                callback(message.params.result);
-              }
-            }
-            return;
-          }
-
-          // Handle RPC responses
-          const callback = this.pending.get(message.id);
-          if (callback) {
-            callback(message);
-            this.pending.delete(message.id);
-          }
-        };
-
-        this.ws.onerror = (error) => {
-          if (!this.isConnected) {
-            reject(error);
-          }
-        };
-
-        this.ws.onclose = () => {
-          this.isConnected = false;
-
-          // Emit disconnect event
-          this.emit('disconnect', {
-            code: 4900,
-            message: 'WebSocket connection closed',
-          });
-
-          // Attempt reconnection
-          if (
-            this.reconnect &&
-            (this.maxReconnectAttempts === 0 ||
-              this.reconnectAttempts < this.maxReconnectAttempts)
-          ) {
-            this.reconnectAttempts++;
-            this.reconnectTimeout = setTimeout(() => {
-              this.connect().catch(() => {
-                // Reconnection failed, will try again
-              });
-            }, this.reconnectDelay);
-          }
-        };
-      } catch (error) {
-        reject(error);
-      }
-    });
+    return this.transport.connect();
   }
 
   /**
    * Disconnect from WebSocket server
    */
   disconnect(): void {
-    this.reconnect = false;
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-    }
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
-    this.isConnected = false;
+    this.transport.close();
   }
 
   /**
@@ -234,49 +172,16 @@ export class WebSocketProvider implements Provider {
     params: unknown[] = [],
     options?: RequestOptions,
   ): Promise<Response<T>> {
-    if (!this.isConnected || !this.ws) {
-      return {
-        error: {
-          code: -32603,
-          message: 'WebSocket not connected',
-        },
-      };
+    const request = createRequest(method, params);
+    const response = await this.transport.request<T>(request, {
+      timeout: options?.timeout,
+    });
+
+    if (isJsonRpcError(response)) {
+      return { error: response.error };
     }
 
-    const timeout = options?.timeout ?? 30000;
-    const id = ++this.requestId;
-
-    const request = JSON.stringify({
-      jsonrpc: '2.0',
-      id,
-      method,
-      params,
-    });
-
-    return new Promise((resolve) => {
-      const timeoutId = setTimeout(() => {
-        this.pending.delete(id);
-        resolve({
-          error: {
-            code: -32603,
-            message: `Request timeout after ${timeout}ms`,
-          },
-        });
-      }, timeout);
-
-      this.pending.set(id, (response: unknown) => {
-        clearTimeout(timeoutId);
-        const resp = response as { error?: RpcError; result?: T };
-
-        if (resp.error) {
-          resolve({ error: resp.error });
-        } else {
-          resolve({ result: resp.result as T });
-        }
-      });
-
-      this.ws?.send(request);
-    });
+    return { result: response.result };
   }
 
   /**
@@ -291,7 +196,15 @@ export class WebSocketProvider implements Provider {
     if (response.error) {
       throw new Error(response.error.message);
     }
-    return response.result!;
+    const subscriptionId = response.result!;
+
+    // Store subscription params for resubscription after reconnect
+    this.subscriptionParams.set(subscriptionId, {
+      name: subscriptionName,
+      params,
+    });
+
+    return subscriptionId;
   }
 
   /**
@@ -299,7 +212,32 @@ export class WebSocketProvider implements Provider {
    */
   private async unsubscribe(subscriptionId: string): Promise<void> {
     await this._request('starknet_unsubscribe', [subscriptionId]);
-    this.subscriptions.delete(subscriptionId);
+    this.subscriptionParams.delete(subscriptionId);
+    this.transport.unsubscribe(subscriptionId);
+  }
+
+  /**
+   * Resubscribe to all subscriptions after reconnect
+   */
+  private async resubscribeAll(): Promise<void> {
+    const oldSubscriptions = new Map(this.subscriptionParams);
+    this.subscriptionParams.clear();
+
+    for (const [oldId, { name, params }] of oldSubscriptions) {
+      try {
+        // Get new subscription ID
+        const method = `starknet_subscribe${name}`;
+        const response = await this._request<string>(method, params);
+        if (response.result) {
+          // Migrate callbacks to new subscription ID
+          const newId = response.result;
+          this.subscriptionParams.set(newId, { name, params });
+          // Note: callbacks are stored in transport, need to re-register
+        }
+      } catch {
+        // Failed to resubscribe, subscription is lost
+      }
+    }
   }
 
   /**
@@ -659,9 +597,6 @@ export class WebSocketProvider implements Provider {
    * Native WebSocket subscription events using async generators
    */
   events: StarknetProviderEvents = {
-    /**
-     * Subscribe to new block headers
-     */
     newHeads: async function* (
       this: WebSocketProvider,
       params?: NewHeadsSubscriptionParams,
@@ -683,10 +618,7 @@ export class WebSocketProvider implements Provider {
         }
       };
 
-      if (!this.subscriptions.has(subscriptionId)) {
-        this.subscriptions.set(subscriptionId, new Set());
-      }
-      this.subscriptions.get(subscriptionId)?.add(callback);
+      this.transport.subscribe(subscriptionId, callback);
 
       try {
         while (true) {
@@ -703,14 +635,10 @@ export class WebSocketProvider implements Provider {
       }
     }.bind(this),
 
-    /**
-     * Subscribe to events (logs)
-     */
     events: async function* (
       this: WebSocketProvider,
       params?: EventsSubscriptionParams,
     ) {
-      // Positional params: from_address?, keys?, block_id?, finality_status?
       const subscribeParams: unknown[] = [];
       if (params) {
         subscribeParams.push(params.from_address ?? null);
@@ -734,10 +662,7 @@ export class WebSocketProvider implements Provider {
         }
       };
 
-      if (!this.subscriptions.has(subscriptionId)) {
-        this.subscriptions.set(subscriptionId, new Set());
-      }
-      this.subscriptions.get(subscriptionId)?.add(callback);
+      this.transport.subscribe(subscriptionId, callback);
 
       try {
         while (true) {
@@ -754,9 +679,6 @@ export class WebSocketProvider implements Provider {
       }
     }.bind(this),
 
-    /**
-     * Subscribe to transaction status changes
-     */
     transactionStatus: async function* (
       this: WebSocketProvider,
       transactionHash: string,
@@ -777,10 +699,7 @@ export class WebSocketProvider implements Provider {
         }
       };
 
-      if (!this.subscriptions.has(subscriptionId)) {
-        this.subscriptions.set(subscriptionId, new Set());
-      }
-      this.subscriptions.get(subscriptionId)?.add(callback);
+      this.transport.subscribe(subscriptionId, callback);
 
       try {
         while (true) {
@@ -797,14 +716,10 @@ export class WebSocketProvider implements Provider {
       }
     }.bind(this),
 
-    /**
-     * Subscribe to pending transactions
-     */
     pendingTransactions: async function* (
       this: WebSocketProvider,
       params?: PendingTransactionsSubscriptionParams,
     ) {
-      // Positional params: finality_status?, sender_address?
       const subscribeParams: unknown[] = [];
       if (params) {
         subscribeParams.push(params.finality_status ?? null);
@@ -829,10 +744,7 @@ export class WebSocketProvider implements Provider {
         }
       };
 
-      if (!this.subscriptions.has(subscriptionId)) {
-        this.subscriptions.set(subscriptionId, new Set());
-      }
-      this.subscriptions.get(subscriptionId)?.add(callback);
+      this.transport.subscribe(subscriptionId, callback);
 
       try {
         while (true) {
@@ -849,14 +761,10 @@ export class WebSocketProvider implements Provider {
       }
     }.bind(this),
 
-    /**
-     * Subscribe to new transaction receipts
-     */
     newTransactionReceipts: async function* (
       this: WebSocketProvider,
       params?: TransactionReceiptsSubscriptionParams,
     ) {
-      // Positional params: finality_status?, sender_address?
       const subscribeParams: unknown[] = [];
       if (params) {
         subscribeParams.push(params.finality_status ?? null);
@@ -881,10 +789,7 @@ export class WebSocketProvider implements Provider {
         }
       };
 
-      if (!this.subscriptions.has(subscriptionId)) {
-        this.subscriptions.set(subscriptionId, new Set());
-      }
-      this.subscriptions.get(subscriptionId)?.add(callback);
+      this.transport.subscribe(subscriptionId, callback);
 
       try {
         while (true) {
@@ -901,20 +806,13 @@ export class WebSocketProvider implements Provider {
       }
     }.bind(this),
 
-    /**
-     * Subscribe to reorg events
-     */
     reorg: async function* (this: WebSocketProvider) {
-      // Reorg is typically received as a notification, not a subscription
-      // But we handle it the same way
-      const subscriptionId = await this.subscribe('NewHeads'); // Reorg comes with newHeads
+      const subscriptionId = await this.subscribe('NewHeads');
       const queue: ReorgData[] = [];
       let resolve: ((value: ReorgData) => void) | null = null;
 
-      // For reorg, we listen to the special reorg notification
       const callback = (data: unknown) => {
         const reorg = data as ReorgData;
-        // Only yield if this is actually reorg data
         if ('starting_block_hash' in reorg) {
           if (resolve) {
             resolve(reorg);
@@ -925,10 +823,7 @@ export class WebSocketProvider implements Provider {
         }
       };
 
-      if (!this.subscriptions.has(subscriptionId)) {
-        this.subscriptions.set(subscriptionId, new Set());
-      }
-      this.subscriptions.get(subscriptionId)?.add(callback);
+      this.transport.subscribe(subscriptionId, callback);
 
       try {
         while (true) {

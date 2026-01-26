@@ -1,8 +1,8 @@
 /**
  * HTTP Provider
  *
- * Starknet JSON-RPC provider using HTTP transport with fetch API.
- * Supports configurable timeout and retries.
+ * Starknet JSON-RPC provider using HTTP transport.
+ * Thin adapter over httpTransport - delegates all request logic to transport layer.
  *
  * @module provider/HttpProvider
  */
@@ -19,20 +19,16 @@ import type {
   RequestArguments,
   RequestOptions,
   Response,
-  RpcError,
   SimulationFlag,
   SyncingStatus,
 } from './types.js';
-
-/**
- * JSON-RPC response structure
- */
-interface JsonRpcResponse {
-  jsonrpc: string;
-  id: number;
-  result?: unknown;
-  error?: RpcError;
-}
+import {
+  httpTransport,
+  type Transport,
+  type HttpTransportOptions,
+  isJsonRpcError,
+  createRequest,
+} from '../transport/index.js';
 
 /**
  * HTTP configuration options
@@ -48,13 +44,15 @@ export interface HttpProviderOptions {
   retry?: number;
   /** Default retry delay in ms */
   retryDelay?: number;
+  /** Enable request batching */
+  batch?: boolean | { batchWait?: number; batchSize?: number };
 }
 
 /**
  * HTTP Provider implementation
  *
- * Starknet JSON-RPC provider using HTTP transport via fetch API.
- * Throws RpcError on failures.
+ * Starknet JSON-RPC provider using HTTP transport.
+ * Thin adapter that delegates to httpTransport.
  *
  * @example
  * ```typescript
@@ -70,124 +68,50 @@ export interface HttpProviderOptions {
  * ```
  */
 export class HttpProvider implements Provider {
-  private url: string;
-  private headers: Record<string, string>;
-  private defaultTimeout: number;
-  private defaultRetry: number;
-  private defaultRetryDelay: number;
-  private requestIdCounter = 0;
+  private transport: Transport;
   private eventListeners: Map<ProviderEvent, Set<ProviderEventListener>> =
     new Map();
 
   constructor(options: HttpProviderOptions | string) {
-    if (typeof options === 'string') {
-      this.url = options;
-      this.headers = { 'Content-Type': 'application/json' };
-      this.defaultTimeout = 30000;
-      this.defaultRetry = 3;
-      this.defaultRetryDelay = 1000;
-    } else {
-      this.url = options.url;
-      this.headers = {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      };
-      this.defaultTimeout = options.timeout ?? 30000;
-      this.defaultRetry = options.retry ?? 3;
-      this.defaultRetryDelay = options.retryDelay ?? 1000;
-    }
+    const opts: HttpProviderOptions =
+      typeof options === 'string' ? { url: options } : options;
+
+    // Create transport with mapped options
+    const transportOpts: HttpTransportOptions = {
+      timeout: opts.timeout ?? 30000,
+      retries: opts.retry ?? 3,
+      retryDelay: opts.retryDelay ?? 1000,
+      batch: opts.batch,
+      fetchOptions: opts.headers
+        ? { headers: opts.headers }
+        : undefined,
+    };
+
+    this.transport = httpTransport(opts.url, transportOpts);
   }
 
   /**
-   * Execute single fetch attempt with timeout
+   * Get the underlying transport (for advanced use)
    */
-  private async executeRequest(
-    body: string,
-    timeout: number,
-  ): Promise<unknown> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-    try {
-      const response = await fetch(this.url, {
-        method: 'POST',
-        headers: this.headers,
-        body,
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        const error: RpcError = {
-          code: -32603,
-          message: `HTTP ${response.status}: ${response.statusText}`,
-        };
-        throw error;
-      }
-
-      const json = (await response.json()) as JsonRpcResponse;
-      if (json.error) {
-        throw json.error;
-      }
-      return json.result;
-    } finally {
-      clearTimeout(timeoutId);
-    }
-  }
-
-  /**
-   * Handle request error and determine if retry is needed
-   */
-  private handleRequestError(error: Error, timeout: number): boolean {
-    if (error.name === 'AbortError') {
-      const timeoutError: RpcError = {
-        code: -32603,
-        message: `Request timeout after ${timeout}ms`,
-      };
-      throw timeoutError;
-    }
-    if ('code' in error && 'message' in error) {
-      throw error;
-    }
-    return true;
+  getTransport(): Transport {
+    return this.transport;
   }
 
   /**
    * EIP-1193-like request method (throws on error)
    */
   async request(args: RequestArguments): Promise<unknown> {
-    const { method, params } = args;
-    const paramsValue = params ?? [];
-    const body = JSON.stringify({
-      jsonrpc: '2.0',
-      id: ++this.requestIdCounter,
-      method,
-      params: paramsValue,
-    });
+    const request = createRequest(
+      args.method,
+      args.params as unknown[] | undefined,
+    );
+    const response = await this.transport.request(request);
 
-    let lastError: Error | null = null;
-
-    for (let attempt = 0; attempt <= this.defaultRetry; attempt++) {
-      try {
-        return await this.executeRequest(body, this.defaultTimeout);
-      } catch (error) {
-        lastError = error as Error;
-        const shouldRetry = this.handleRequestError(
-          lastError,
-          this.defaultTimeout,
-        );
-        if (shouldRetry && attempt < this.defaultRetry) {
-          await new Promise((resolve) =>
-            setTimeout(resolve, this.defaultRetryDelay),
-          );
-        }
-      }
+    if (isJsonRpcError(response)) {
+      throw response.error;
     }
 
-    const networkError: RpcError = {
-      code: -32603,
-      message: lastError?.message ?? 'Request failed',
-    };
-    throw networkError;
+    return response.result;
   }
 
   /**
@@ -198,40 +122,18 @@ export class HttpProvider implements Provider {
     params: unknown[] = [],
     options?: RequestOptions,
   ): Promise<Response<T>> {
-    const timeout = options?.timeout ?? this.defaultTimeout;
-    const retry = options?.retry ?? this.defaultRetry;
-    const retryDelay = options?.retryDelay ?? this.defaultRetryDelay;
-
-    const body = JSON.stringify({
-      jsonrpc: '2.0',
-      id: ++this.requestIdCounter,
-      method,
-      params,
+    const request = createRequest(method, params);
+    const response = await this.transport.request<T>(request, {
+      timeout: options?.timeout,
+      retries: options?.retry,
+      retryDelay: options?.retryDelay,
     });
 
-    let lastError: RpcError | null = null;
-
-    for (let attempt = 0; attempt <= retry; attempt++) {
-      try {
-        const result = await this.executeRequest(body, timeout);
-        return { result: result as T };
-      } catch (error) {
-        if ('code' in (error as RpcError)) {
-          lastError = error as RpcError;
-          // Don't retry RPC errors
-          break;
-        }
-        lastError = {
-          code: -32603,
-          message: (error as Error).message ?? 'Request failed',
-        };
-        if (attempt < retry) {
-          await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        }
-      }
+    if (isJsonRpcError(response)) {
+      return { error: response.error };
     }
 
-    return { error: lastError! };
+    return { result: response.result };
   }
 
   /**
@@ -278,16 +180,10 @@ export class HttpProvider implements Provider {
   // Read Methods (starknet_api_openrpc.json)
   // ============================================================================
 
-  /**
-   * Returns the version of the Starknet JSON-RPC specification
-   */
   starknet_specVersion(options?: RequestOptions) {
     return this._request<string>('starknet_specVersion', [], options);
   }
 
-  /**
-   * Get block with transaction hashes
-   */
   starknet_getBlockWithTxHashes(blockId: BlockId, options?: RequestOptions) {
     return this._request<unknown>(
       'starknet_getBlockWithTxHashes',
@@ -296,9 +192,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get block with full transactions
-   */
   starknet_getBlockWithTxs(blockId: BlockId, options?: RequestOptions) {
     return this._request<unknown>(
       'starknet_getBlockWithTxs',
@@ -307,9 +200,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get block with transaction receipts
-   */
   starknet_getBlockWithReceipts(blockId: BlockId, options?: RequestOptions) {
     return this._request<unknown>(
       'starknet_getBlockWithReceipts',
@@ -318,9 +208,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get state update for a block
-   */
   starknet_getStateUpdate(blockId: BlockId, options?: RequestOptions) {
     return this._request<unknown>(
       'starknet_getStateUpdate',
@@ -329,9 +216,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get storage value at a given key
-   */
   starknet_getStorageAt(
     contractAddress: string,
     key: string,
@@ -345,9 +229,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get the status of a transaction
-   */
   starknet_getTransactionStatus(txHash: string, options?: RequestOptions) {
     return this._request<unknown>(
       'starknet_getTransactionStatus',
@@ -356,9 +237,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get the status of L1 to L2 messages
-   */
   starknet_getMessagesStatus(l1TxHash: string, options?: RequestOptions) {
     return this._request<unknown>(
       'starknet_getMessagesStatus',
@@ -367,9 +245,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get transaction by hash
-   */
   starknet_getTransactionByHash(txHash: string, options?: RequestOptions) {
     return this._request<unknown>(
       'starknet_getTransactionByHash',
@@ -378,9 +253,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get transaction by block ID and index
-   */
   starknet_getTransactionByBlockIdAndIndex(
     blockId: BlockId,
     index: number,
@@ -393,9 +265,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get transaction receipt
-   */
   starknet_getTransactionReceipt(txHash: string, options?: RequestOptions) {
     return this._request<unknown>(
       'starknet_getTransactionReceipt',
@@ -404,9 +273,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get contract class
-   */
   starknet_getClass(blockId: BlockId, classHash: string, options?: RequestOptions) {
     return this._request<unknown>(
       'starknet_getClass',
@@ -415,9 +281,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get class hash at contract address
-   */
   starknet_getClassHashAt(
     blockId: BlockId,
     contractAddress: string,
@@ -430,9 +293,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get class at contract address
-   */
   starknet_getClassAt(
     blockId: BlockId,
     contractAddress: string,
@@ -445,9 +305,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get block transaction count
-   */
   starknet_getBlockTransactionCount(blockId: BlockId, options?: RequestOptions) {
     return this._request<number>(
       'starknet_getBlockTransactionCount',
@@ -456,9 +313,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Call a contract (read-only)
-   */
   starknet_call(
     request: FunctionCall,
     blockId: BlockId,
@@ -467,9 +321,6 @@ export class HttpProvider implements Provider {
     return this._request<string[]>('starknet_call', [request, blockId], options);
   }
 
-  /**
-   * Estimate fee for transactions
-   */
   starknet_estimateFee(
     request: unknown[],
     simulationFlags: SimulationFlag[],
@@ -483,9 +334,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Estimate fee for L1 to L2 message
-   */
   starknet_estimateMessageFee(
     message: unknown,
     blockId: BlockId,
@@ -498,16 +346,10 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get current block number
-   */
   starknet_blockNumber(options?: RequestOptions) {
     return this._request<number>('starknet_blockNumber', [], options);
   }
 
-  /**
-   * Get block hash and number
-   */
   starknet_blockHashAndNumber(options?: RequestOptions) {
     return this._request<{ block_hash: string; block_number: number }>(
       'starknet_blockHashAndNumber',
@@ -516,23 +358,14 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get chain ID
-   */
   starknet_chainId(options?: RequestOptions) {
     return this._request<string>('starknet_chainId', [], options);
   }
 
-  /**
-   * Get syncing status
-   */
   starknet_syncing(options?: RequestOptions) {
     return this._request<SyncingStatus>('starknet_syncing', [], options);
   }
 
-  /**
-   * Get events matching filter
-   */
   starknet_getEvents(
     filter: {
       from_block?: BlockId;
@@ -550,9 +383,6 @@ export class HttpProvider implements Provider {
     }>('starknet_getEvents', [filter], options);
   }
 
-  /**
-   * Get nonce at address
-   */
   starknet_getNonce(
     blockId: BlockId,
     contractAddress: string,
@@ -565,9 +395,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Get storage proof
-   */
   starknet_getStorageProof(
     blockId: BlockId,
     classHashes: string[],
@@ -586,9 +413,6 @@ export class HttpProvider implements Provider {
   // Write Methods (starknet_write_api.json)
   // ============================================================================
 
-  /**
-   * Add invoke transaction
-   */
   starknet_addInvokeTransaction(
     invokeTransaction: unknown,
     options?: RequestOptions,
@@ -600,9 +424,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Add declare transaction
-   */
   starknet_addDeclareTransaction(
     declareTransaction: unknown,
     options?: RequestOptions,
@@ -614,9 +435,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Add deploy account transaction
-   */
   starknet_addDeployAccountTransaction(
     deployAccountTransaction: unknown,
     options?: RequestOptions,
@@ -632,9 +450,6 @@ export class HttpProvider implements Provider {
   // Trace Methods (starknet_trace_api_openrpc.json)
   // ============================================================================
 
-  /**
-   * Trace a transaction
-   */
   starknet_traceTransaction(txHash: string, options?: RequestOptions) {
     return this._request<unknown>(
       'starknet_traceTransaction',
@@ -643,9 +458,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Simulate transactions
-   */
   starknet_simulateTransactions(
     blockId: BlockId,
     transactions: unknown[],
@@ -659,9 +471,6 @@ export class HttpProvider implements Provider {
     );
   }
 
-  /**
-   * Trace all transactions in a block
-   */
   starknet_traceBlockTransactions(blockId: BlockId, options?: RequestOptions) {
     return this._request<unknown[]>(
       'starknet_traceBlockTransactions',

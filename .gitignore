@@ -1,36 +1,7 @@
-# Dependencies
-node_modules/
-
-# Build outputs
-dist/
-types/
-zig-out/
-zig-cache/
-.zig-cache/
-target/
-wasm/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-.DS_Store
-
-# Test coverage
-coverage/
-
-# Environment
-.env
-.env.local
-
-# Logs
-*.log
-npm-debug.log*
-
-# Lock files (using pnpm)
-package-lock.json
-yarn.lock
-
-# TLDR cache
-.tldr/
+.claude/tsc-cache/
+/node_modules/
+/dist/
+/types/
+/target/
+/wasm/
+/.zig-cache/
