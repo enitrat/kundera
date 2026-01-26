@@ -1,22 +1,350 @@
 ---
 title: Crypto API
-description: Hashing, signatures, and curve ops.
+description: Hashing, signatures, and field arithmetic for Starknet.
 ---
 
-# Crypto API
+Cryptographic primitives for Starknet including hash functions, ECDSA signatures, and field operations.
 
-## Summary
-- TODO: one-paragraph overview
+## Imports
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
-
-## Examples
-```ts
-// TODO: add example
+```typescript
+import {
+  // Backend detection
+  isNativeAvailable,
+  isWasmAvailable,
+  isWasmLoaded,
+  loadWasmCrypto,
+  // Hash functions
+  pedersenHash,
+  poseidonHash,
+  poseidonHashMany,
+  snKeccak,
+  // ECDSA
+  sign,
+  verify,
+  getPublicKey,
+  recover,
+  // Field arithmetic
+  feltAdd,
+  feltSub,
+  feltMul,
+  feltDiv,
+  feltNeg,
+  feltInverse,
+  feltPow,
+  feltSqrt,
+  // Types
+  type Signature,
+} from 'kundera/crypto';
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Backend Selection
+
+Kundera supports both native (FFI) and WASM crypto backends.
+
+### isNativeAvailable
+
+Check if native crypto is available (Bun FFI or Node ffi-napi).
+
+```typescript
+function isNativeAvailable(): boolean
+```
+
+### isWasmAvailable
+
+Check if WASM crypto can be loaded.
+
+```typescript
+function isWasmAvailable(): boolean
+```
+
+### isWasmLoaded
+
+Check if WASM crypto is currently loaded.
+
+```typescript
+function isWasmLoaded(): boolean
+```
+
+### loadWasmCrypto
+
+Load the WASM crypto backend (required for browsers).
+
+```typescript
+async function loadWasmCrypto(): Promise<void>
+```
+
+```typescript
+// Browser initialization
+if (!isNativeAvailable()) {
+  await loadWasmCrypto();
+}
+
+// Now crypto functions work
+const hash = pedersenHash(a, b);
+```
+
+<Tip>
+Native crypto is preferred for performance. WASM is automatically used in browsers or when native bindings aren't available.
+</Tip>
+
+## Hash Functions
+
+### pedersenHash
+
+Pedersen hash of two field elements.
+
+```typescript
+function pedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type
+```
+
+```typescript
+const hash = pedersenHash(
+  Felt252(123n),
+  Felt252(456n)
+);
+```
+
+Used for: Transaction hashes, contract addresses, Merkle trees.
+
+### poseidonHash
+
+Poseidon hash of two field elements.
+
+```typescript
+function poseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type
+```
+
+```typescript
+const hash = poseidonHash(
+  Felt252(123n),
+  Felt252(456n)
+);
+```
+
+Used for: Newer contracts, more efficient than Pedersen.
+
+### poseidonHashMany
+
+Poseidon hash of multiple field elements.
+
+```typescript
+function poseidonHashMany(inputs: Felt252Type[]): Felt252Type
+```
+
+```typescript
+const hash = poseidonHashMany([
+  Felt252(1n),
+  Felt252(2n),
+  Felt252(3n),
+]);
+```
+
+### snKeccak
+
+Starknet Keccak-256 (truncated to 250 bits).
+
+```typescript
+function snKeccak(data: Uint8Array | string): Felt252Type
+```
+
+```typescript
+const selector = snKeccak('transfer');
+```
+
+Used for: Function and event selectors.
+
+## ECDSA Signatures
+
+Starknet uses ECDSA over the STARK curve (not secp256k1).
+
+### sign
+
+Sign a message hash with a private key.
+
+```typescript
+function sign(
+  privateKey: Felt252Type,
+  messageHash: Felt252Type
+): Signature
+```
+
+```typescript
+const signature = sign(privateKey, messageHash);
+// { r: Felt252Type, s: Felt252Type }
+```
+
+### verify
+
+Verify a signature.
+
+```typescript
+function verify(
+  publicKey: Felt252Type,
+  messageHash: Felt252Type,
+  signature: Signature
+): boolean
+```
+
+```typescript
+const isValid = verify(publicKey, messageHash, signature);
+```
+
+### getPublicKey
+
+Derive public key from private key.
+
+```typescript
+function getPublicKey(privateKey: Felt252Type): Felt252Type
+```
+
+```typescript
+const publicKey = getPublicKey(privateKey);
+```
+
+### recover
+
+Recover public key from signature.
+
+```typescript
+function recover(
+  messageHash: Felt252Type,
+  r: Felt252Type,
+  s: Felt252Type,
+  v: number
+): Felt252Type
+```
+
+## Field Arithmetic
+
+Operations over the Stark field.
+
+### feltAdd
+
+Field addition.
+
+```typescript
+function feltAdd(a: Felt252Type, b: Felt252Type): Felt252Type
+```
+
+### feltSub
+
+Field subtraction.
+
+```typescript
+function feltSub(a: Felt252Type, b: Felt252Type): Felt252Type
+```
+
+### feltMul
+
+Field multiplication.
+
+```typescript
+function feltMul(a: Felt252Type, b: Felt252Type): Felt252Type
+```
+
+### feltDiv
+
+Field division.
+
+```typescript
+function feltDiv(a: Felt252Type, b: Felt252Type): Felt252Type
+```
+
+### feltNeg
+
+Field negation.
+
+```typescript
+function feltNeg(a: Felt252Type): Felt252Type
+```
+
+### feltInverse
+
+Multiplicative inverse.
+
+```typescript
+function feltInverse(a: Felt252Type): Felt252Type
+```
+
+### feltPow
+
+Field exponentiation.
+
+```typescript
+function feltPow(base: Felt252Type, exp: Felt252Type): Felt252Type
+```
+
+### feltSqrt
+
+Square root (if exists).
+
+```typescript
+function feltSqrt(a: Felt252Type): Felt252Type | null
+```
+
+## Types
+
+### Signature
+
+ECDSA signature pair.
+
+```typescript
+interface Signature {
+  r: Felt252Type;
+  s: Felt252Type;
+}
+```
+
+## Example: Sign and Verify
+
+```typescript
+import {
+  loadWasmCrypto,
+  isNativeAvailable,
+  sign,
+  verify,
+  getPublicKey,
+  pedersenHash,
+} from 'kundera/crypto';
+import { Felt252 } from 'kundera/primitives';
+
+// Initialize crypto
+if (!isNativeAvailable()) {
+  await loadWasmCrypto();
+}
+
+// Create keys
+const privateKey = Felt252('0x_YOUR_PRIVATE_KEY');
+const publicKey = getPublicKey(privateKey);
+
+// Hash a message
+const messageHash = pedersenHash(
+  Felt252(123n),
+  Felt252(456n)
+);
+
+// Sign
+const signature = sign(privateKey, messageHash);
+
+// Verify
+const isValid = verify(publicKey, messageHash, signature);
+console.log('Valid:', isValid); // true
+```
+
+<Warning>
+## Private Key Security
+
+Never expose private keys in client-side code. Use wallet extensions for user-facing applications.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Security" icon="shield" href="/concepts/security">
+    Cryptographic best practices.
+  </Card>
+  <Card title="Sign Typed Data" icon="signature" href="/guides/account/sign-typed-data">
+    SNIP-12 message signing.
+  </Card>
+</CardGroup>

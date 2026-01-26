@@ -1,22 +1,245 @@
 ---
 title: ABI & Contracts
-description: ABI encoding and contract helpers.
+description: How Starknet ABIs work and how Kundera encodes Cairo types.
 ---
 
-# ABI & Contracts
+Understanding Starknet's ABI format and Cairo type encoding is essential for building dApps. This guide covers the core concepts behind contract interaction.
 
-## Summary
-- TODO: one-paragraph overview
+## What is an ABI?
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+An **Application Binary Interface (ABI)** describes how to interact with a smart contract. It defines:
 
-## Examples
-```ts
-// TODO: add example
+- **Functions**: Names, inputs, outputs, and mutability
+- **Events**: Emitted logs with indexed and non-indexed fields
+- **Types**: Structs, enums, and custom types
+
+Kundera uses the ABI to automatically encode function arguments and decode return values.
+
+## ABI Structure
+
+A Starknet ABI is a JSON array of entries:
+
+```typescript
+const abi = [
+  // Struct definition
+  {
+    type: 'struct',
+    name: 'core::integer::u256',
+    members: [
+      { name: 'low', type: 'core::integer::u128' },
+      { name: 'high', type: 'core::integer::u128' },
+    ],
+  },
+  // Function definition
+  {
+    type: 'function',
+    name: 'transfer',
+    inputs: [
+      { name: 'recipient', type: 'core::starknet::contract_address::ContractAddress' },
+      { name: 'amount', type: 'core::integer::u256' },
+    ],
+    outputs: [{ name: 'success', type: 'core::bool' }],
+    state_mutability: 'external',
+  },
+  // Event definition
+  {
+    type: 'event',
+    name: 'Transfer',
+    kind: 'struct',
+    members: [
+      { name: 'from', type: 'ContractAddress', kind: 'key' },
+      { name: 'to', type: 'ContractAddress', kind: 'key' },
+      { name: 'value', type: 'u256', kind: 'data' },
+    ],
+  },
+];
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Entry Types
+
+| Type | Description |
+|------|-------------|
+| `struct` | Custom data structure |
+| `enum` | Sum type with variants |
+| `function` | Callable contract method |
+| `event` | Emitted log entry |
+| `l1_handler` | Function callable from L1 |
+| `constructor` | Deploy-time initialization |
+| `interface` | Trait/interface definition |
+| `impl` | Interface implementation |
+
+## State Mutability
+
+Functions declare their state interaction:
+
+| Mutability | Description | Gas Cost |
+|------------|-------------|----------|
+| `view` | Read-only, no state changes | Free |
+| `external` | Can modify state | Requires gas |
+
+## Cairo Type Encoding
+
+### Primitive Types
+
+Cairo primitives map to felt252 values:
+
+| Cairo Type | Encoding | Notes |
+|------------|----------|-------|
+| `felt252` | Single value | Max ~2^251 |
+| `bool` | `0n` or `1n` | |
+| `u8` - `u128` | Single value | Within type bounds |
+| `i8` - `i128` | Single value | Two's complement |
+| `ContractAddress` | Single felt | |
+| `ClassHash` | Single felt | |
+| `shortstring` | Single felt | Max 31 ASCII chars |
+
+### u256 Encoding
+
+`u256` is the most common multi-felt type. It encodes as two `u128` values:
+
+```
+u256 value: 0x1_00000000_00000000_00000000_0000002A
+Encoded:    [low=0x2A, high=0x1]
+```
+
+```typescript
+// Encoding
+const amount = (1n << 128n) + 42n; // high=1, low=42
+const encoded = [42n, 1n];
+
+// Decoding
+const low = encoded[0];
+const high = encoded[1];
+const value = (high << 128n) + low;
+```
+
+### Array Encoding
+
+Arrays are length-prefixed:
+
+```
+Array<felt252>: [1, 2, 3]
+Encoded:        [3, 1, 2, 3]
+                 ^ length prefix
+```
+
+### Struct Encoding
+
+Struct fields are encoded in declaration order:
+
+```typescript
+// ABI
+{ type: 'struct', name: 'Point', members: [
+  { name: 'x', type: 'felt252' },
+  { name: 'y', type: 'felt252' },
+]}
+
+// Value
+{ x: 10n, y: 20n }
+
+// Encoded
+[10n, 20n]
+```
+
+### Enum Encoding
+
+Enums encode the variant index followed by variant data:
+
+```typescript
+// ABI
+{ type: 'enum', name: 'Option', variants: [
+  { name: 'Some', type: 'felt252' },
+  { name: 'None', type: '()' },
+]}
+
+// Option::Some(42)
+[0n, 42n]  // variant 0 + data
+
+// Option::None
+[1n]       // variant 1, no data (unit type)
+```
+
+<Tip>
+The standard `Option` type uses `Some=0` and `None=1`. This matches Cairo's convention.
+</Tip>
+
+## Event Structure
+
+Events split their data between **keys** (indexed) and **data** (non-indexed):
+
+```
+Event: Transfer(from, to, value)
+
+keys:  [selector, from, to]   ← Searchable
+data:  [value_low, value_high] ← Not searchable
+```
+
+The first key is always the event selector (starknet_keccak of the event name).
+
+### Why Keys Matter
+
+- **Keys** are indexed and searchable via `starknet_getEvents`
+- **Data** is not indexed but has no size limit
+- Use keys for fields you need to filter by
+
+## Function Selectors
+
+Function selectors identify which function to call:
+
+```typescript
+selector = starknet_keccak("function_name") mod 2^250
+```
+
+Kundera computes these automatically from function names.
+
+## Contract Interaction Flow
+
+1. **Parse ABI**: Index functions, events, and types
+2. **Encode Calldata**: Convert JS values to felt array
+3. **Send Transaction**: Call RPC with encoded data
+4. **Decode Response**: Convert felt array back to JS values
+
+```typescript
+import { getContract } from 'kundera/contract';
+
+const contract = getContract({ abi, address, client });
+
+// Kundera handles encoding/decoding internally
+const { result } = await contract.read('balance_of', [address]);
+```
+
+## Type Safety
+
+Kundera validates:
+
+- Argument count matches function signature
+- Values fit within type bounds (felt252 < 2^251, u128 < 2^128)
+- Struct fields match ABI definition
+- Enum variants exist in definition
+
+Errors return structured `{ code, message }` instead of throwing.
+
+## Cairo Type Names
+
+Full Cairo type names include the module path:
+
+| Short Name | Full Name |
+|------------|-----------|
+| `felt252` | `core::felt252` |
+| `u256` | `core::integer::u256` |
+| `ContractAddress` | `core::starknet::contract_address::ContractAddress` |
+| `Array<T>` | `core::array::Array<T>` |
+| `Option<T>` | `core::option::Option<T>` |
+
+Kundera handles both short and full names.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Encode/Decode Guide" icon="code" href="/guides/abi/encode-decode">
+    Practical encoding examples.
+  </Card>
+  <Card title="Cairo Types" icon="cube" href="/concepts/cairo-types">
+    Deep dive into Cairo type system.
+  </Card>
+</CardGroup>

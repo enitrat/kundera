@@ -1,22 +1,264 @@
 ---
 title: Primitives API
-description: Felt/address/class hash APIs.
+description: Felt252, addresses, class hashes, and branded types.
 ---
 
-# Primitives API
+Core primitive types for Starknet values with validation and conversion utilities.
 
-## Summary
-- TODO: one-paragraph overview
+## Imports
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
-
-## Examples
-```ts
-// TODO: add example
+```typescript
+import {
+  // Felt252
+  Felt252,
+  fromHex,
+  fromBigInt,
+  fromBytes,
+  toHex,
+  toBigInt,
+  isValid,
+  isZero,
+  equals,
+  // Branded types
+  ContractAddress,
+  ContractAddressUnchecked,
+  ClassHash,
+  ClassHashUnchecked,
+  StorageKey,
+  StorageKeyUnchecked,
+  isValidContractAddress,
+  // Short strings
+  encodeShortString,
+  encodeShortStringHex,
+  decodeShortString,
+  isASCII,
+  MAX_SHORT_STRING_LENGTH,
+  // Types
+  type Felt252Type,
+  type Felt252Input,
+  type ContractAddressType,
+  type ClassHashType,
+  type StorageKeyType,
+} from 'kundera/primitives';
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Felt252
+
+The fundamental field element type in Cairo.
+
+### Felt252
+
+Create a felt from various input types.
+
+```typescript
+function Felt252(value: Felt252Input): Felt252Type
+```
+
+```typescript
+const felt1 = Felt252(123n);
+const felt2 = Felt252('0x7b');
+const felt3 = Felt252(123);
+```
+
+### fromHex / fromBigInt / fromBytes
+
+Convert from specific types.
+
+```typescript
+const a = fromHex('0x123abc');
+const b = fromBigInt(12345n);
+const c = fromBytes(new Uint8Array([1, 2, 3]));
+```
+
+### toHex / toBigInt
+
+Convert to other types.
+
+```typescript
+const hex = toHex(felt);   // '0x...'
+const num = toBigInt(felt); // bigint
+```
+
+### Validation
+
+```typescript
+function isValid(felt: Felt252Type): boolean
+function isZero(felt: Felt252Type): boolean
+function equals(a: Felt252Type, b: Felt252Type): boolean
+```
+
+```typescript
+isValid(felt);       // true if < FIELD_PRIME
+isZero(felt);        // true if value is 0
+equals(felt1, felt2); // true if same value
+```
+
+## Branded Address Types
+
+Kundera uses branded types to distinguish different address kinds at the type level.
+
+### ContractAddress
+
+Create a validated contract address.
+
+```typescript
+function ContractAddress(felt: Felt252Input): ContractAddressType
+```
+
+```typescript
+const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+```
+
+Validates that the value is a valid contract address.
+
+### ContractAddressUnchecked
+
+Create without validation (for performance when you trust the input).
+
+```typescript
+const address = ContractAddressUnchecked(trustedValue);
+```
+
+### ClassHash
+
+Create a validated class hash.
+
+```typescript
+const classHash = ClassHash('0x...');
+```
+
+### ClassHashUnchecked
+
+Create without validation.
+
+```typescript
+const classHash = ClassHashUnchecked(trustedValue);
+```
+
+### StorageKey
+
+Create a validated storage key.
+
+```typescript
+const key = StorageKey('0x...');
+```
+
+### StorageKeyUnchecked
+
+Create without validation.
+
+```typescript
+const key = StorageKeyUnchecked(trustedValue);
+```
+
+### isValidContractAddress
+
+Check if a felt is a valid contract address.
+
+```typescript
+function isValidContractAddress(felt: Felt252Type): boolean
+```
+
+## Short Strings
+
+Cairo short strings (≤31 ASCII characters) encoded as felts.
+
+### encodeShortString
+
+Encode a string to a felt.
+
+```typescript
+function encodeShortString(str: string): bigint
+```
+
+```typescript
+const encoded = encodeShortString('hello');
+// 0x68656c6c6fn
+```
+
+### encodeShortStringHex
+
+Encode to hex string.
+
+```typescript
+function encodeShortStringHex(str: string): string
+```
+
+```typescript
+const hex = encodeShortStringHex('hello');
+// '0x68656c6c6f'
+```
+
+### decodeShortString
+
+Decode a felt to a string.
+
+```typescript
+function decodeShortString(felt: bigint | string | Felt252Type): string
+```
+
+```typescript
+const str = decodeShortString(0x68656c6c6fn);
+// 'hello'
+```
+
+### isASCII
+
+Check if a string is valid ASCII.
+
+```typescript
+function isASCII(str: string): boolean
+```
+
+### MAX_SHORT_STRING_LENGTH
+
+Constant: `31`
+
+## Types
+
+### Felt252Type
+
+Branded type representing a validated felt252.
+
+```typescript
+type Felt252Type = Uint8Array & { readonly __brand: 'Felt252' };
+```
+
+### Felt252Input
+
+Accepted input types for felt conversion.
+
+```typescript
+type Felt252Input = bigint | number | string | Uint8Array | Felt252Type;
+```
+
+### ContractAddressType / ClassHashType / StorageKeyType
+
+Branded types for type-safe address handling.
+
+```typescript
+type ContractAddressType = Felt252Type & { readonly __addressBrand: 'ContractAddress' };
+type ClassHashType = Felt252Type & { readonly __classHashBrand: 'ClassHash' };
+type StorageKeyType = Felt252Type & { readonly __storageKeyBrand: 'StorageKey' };
+```
+
+## Constants
+
+### FIELD_PRIME
+
+The Stark field prime: `2^251 + 17 * 2^192 + 1`
+
+```typescript
+import { FIELD_PRIME } from 'kundera/primitives';
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Cairo Types" icon="cube" href="/concepts/cairo-types">
+    Understanding Cairo's type system.
+  </Card>
+  <Card title="ABI Encoding" icon="code" href="/guides/abi/encode-decode">
+    How primitives are encoded in calldata.
+  </Card>
+</CardGroup>

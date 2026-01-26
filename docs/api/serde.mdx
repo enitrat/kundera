@@ -1,22 +1,173 @@
 ---
 title: Serde API
-description: Cairo serialization helpers.
+description: Cairo serialization and deserialization utilities.
 ---
 
-# Serde API
+Low-level serialization utilities for Cairo types. Most users should use the higher-level ABI encoding functions instead.
 
-## Summary
-- TODO: one-paragraph overview
+## Imports
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
-
-## Examples
-```ts
-// TODO: add example
+```typescript
+import {
+  // Individual functions
+  serializeU256,
+  deserializeU256,
+  serializeArray,
+  deserializeArray,
+  serializeByteArray,
+  // Namespace
+  CairoSerde,
+} from 'kundera/serde';
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## u256 Serialization
+
+### serializeU256
+
+Serialize a u256 as two felts [low, high].
+
+```typescript
+function serializeU256(value: bigint): [Felt252Type, Felt252Type]
+```
+
+```typescript
+const amount = 1000000000000000000n; // 1e18
+const [low, high] = serializeU256(amount);
+// low = 1000000000000000000n, high = 0n
+
+const large = (1n << 200n) + 42n;
+const [low2, high2] = serializeU256(large);
+// low2 = 42n, high2 = 2^72
+```
+
+### deserializeU256
+
+Deserialize two felts [low, high] to u256.
+
+```typescript
+function deserializeU256(felts: [Felt252Type, Felt252Type]): bigint
+```
+
+```typescript
+const value = deserializeU256([low, high]);
+// Reconstructs the original bigint
+```
+
+## Array Serialization
+
+### serializeArray
+
+Serialize an array of felts with length prefix.
+
+```typescript
+function serializeArray(felts: Felt252Type[]): Felt252Type[]
+```
+
+```typescript
+const values = [Felt252(1n), Felt252(2n), Felt252(3n)];
+const serialized = serializeArray(values);
+// [3n, 1n, 2n, 3n] - length prefix + elements
+```
+
+### deserializeArray
+
+Deserialize an array starting at offset.
+
+```typescript
+function deserializeArray(
+  felts: Felt252Type[],
+  offset?: number
+): { array: Felt252Type[]; nextOffset: number }
+```
+
+```typescript
+const data = [3n, 1n, 2n, 3n, 4n]; // Array [1,2,3] then extra value
+const { array, nextOffset } = deserializeArray(data, 0);
+// array = [1n, 2n, 3n]
+// nextOffset = 4 (points to the 4n)
+```
+
+## ByteArray Serialization
+
+### serializeByteArray
+
+Serialize arbitrary bytes to Cairo ByteArray format.
+
+```typescript
+function serializeByteArray(data: Uint8Array): Felt252Type[]
+```
+
+Cairo ByteArray format:
+- `num_full_words`: Count of 31-byte chunks
+- `...chunks`: Full 31-byte words as felts
+- `pending_word`: Remaining bytes (< 31)
+- `pending_word_len`: Length of pending word
+
+```typescript
+const text = new TextEncoder().encode('Hello, Starknet!');
+const serialized = serializeByteArray(text);
+```
+
+## CairoSerde Namespace
+
+All functions are also available under a namespace:
+
+```typescript
+import { CairoSerde } from 'kundera/serde';
+
+const [low, high] = CairoSerde.serializeU256(1000n);
+const value = CairoSerde.deserializeU256([low, high]);
+```
+
+## When to Use
+
+| Scenario | Recommended API |
+|----------|-----------------|
+| Contract calls | `encodeCalldata` from `kundera/abi` |
+| Manual calldata building | `serializeU256`, `serializeArray` |
+| Custom serialization | Serde functions directly |
+
+<Tip>
+For most use cases, the ABI module handles serialization automatically. Use the Serde API when building custom encoding logic or working with raw calldata.
+</Tip>
+
+## Example: Manual Calldata
+
+```typescript
+import { serializeU256, serializeArray } from 'kundera/serde';
+import { Felt252 } from 'kundera/primitives';
+
+// Build transfer calldata manually
+const recipient = Felt252('0x123...');
+const [amountLow, amountHigh] = serializeU256(1000000000000000000n);
+
+const calldata = [recipient, amountLow, amountHigh];
+```
+
+## Example: Batch Serialization
+
+```typescript
+import { serializeArray, serializeU256 } from 'kundera/serde';
+import { Felt252 } from 'kundera/primitives';
+
+// Serialize array of u256 values
+const amounts = [100n, 200n, 300n];
+const serializedAmounts = amounts.flatMap(a => serializeU256(a));
+
+// Wrap in array format
+const calldata = [
+  Felt252(amounts.length), // Array length
+  ...serializedAmounts,     // [low, high, low, high, ...]
+];
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="ABI Encoding" icon="code" href="/guides/abi/encode-decode">
+    High-level calldata encoding.
+  </Card>
+  <Card title="Cairo Types" icon="cube" href="/concepts/cairo-types">
+    Understanding Cairo type encoding.
+  </Card>
+</CardGroup>

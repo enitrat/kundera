@@ -3,20 +3,163 @@ title: Error Handling
 description: Result/error patterns for predictable control flow.
 ---
 
-# Error Handling
+Kundera uses explicit `{ result, error }` returns instead of throwing exceptions. This makes error handling visible and composable.
 
-## Summary
-- TODO: one-paragraph overview
+## The Pattern
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+Every fallible operation returns an object with `result` and `error`:
 
-## Examples
-```ts
-// TODO: add example
+```typescript
+import { getContract } from 'kundera/contract';
+
+const contract = getContract({ abi, address, client });
+
+const { result, error } = await contract.read('balance_of', [address]);
+
+if (error) {
+  console.error('Failed:', error.code, error.message);
+  return;
+}
+
+// TypeScript knows result is defined here
+console.log('Balance:', result[0]);
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+<Tip>
+Check `error` first, then use `result`. TypeScript will narrow the type correctly.
+</Tip>
+
+## Error Structure
+
+All errors follow this shape:
+
+```typescript
+interface AbiError {
+  code: string;      // Machine-readable error code
+  message: string;   // Human-readable description
+}
+```
+
+## Common Error Codes
+
+### ABI Errors
+
+| Code | Description |
+|------|-------------|
+| `FUNCTION_NOT_FOUND` | Function name not in ABI |
+| `EVENT_NOT_FOUND` | Event name not in ABI |
+| `STRUCT_NOT_FOUND` | Struct type not in ABI |
+| `ENCODE_ERROR` | Failed to encode calldata |
+| `DECODE_ERROR` | Failed to decode response |
+| `ACCOUNT_REQUIRED` | Write operation needs an account |
+
+### Provider Errors
+
+| Code | Description |
+|------|-------------|
+| `NETWORK_ERROR` | Connection failed |
+| `TIMEOUT` | Request timed out |
+| `INVALID_RESPONSE` | Malformed RPC response |
+
+### RPC Errors
+
+| Code | Description |
+|------|-------------|
+| `-32600` | Invalid request |
+| `-32601` | Method not found |
+| `-32602` | Invalid params |
+| `20` | Contract not found |
+| `27` | Invalid transaction nonce |
+| `40` | Contract error (reverted) |
+
+## Creating Results
+
+Use `ok()` and `err()` helpers to create result objects:
+
+```typescript
+import { ok, err } from 'kundera/abi';
+
+function divide(a: number, b: number) {
+  if (b === 0) {
+    return err({ code: 'DIVISION_BY_ZERO', message: 'Cannot divide by zero' });
+  }
+  return ok(a / b);
+}
+
+const { result, error } = divide(10, 2);
+// result: 5, error: undefined
+```
+
+## Composing Results
+
+Chain operations with early-return:
+
+```typescript
+async function transfer(contract, to, amount) {
+  // 1. Estimate fee
+  const feeResult = await contract.estimateFee('transfer', [to, amount]);
+  if (feeResult.error) return feeResult;
+
+  // 2. Execute
+  const txResult = await contract.write('transfer', [to, amount]);
+  if (txResult.error) return txResult;
+
+  return ok({
+    transactionHash: txResult.result.transactionHash,
+    fee: feeResult.result,
+  });
+}
+```
+
+<Warning>
+## Always Check Errors
+
+Never destructure only `result`:
+
+```typescript
+// WRONG: result might be undefined
+const { result } = await contract.read('balance');
+console.log(result[0]); // Runtime error if failed!
+
+// RIGHT: check error first
+const { result, error } = await contract.read('balance');
+if (error) return handleError(error);
+console.log(result[0]); // Safe
+```
+</Warning>
+
+## Provider vs Contract Errors
+
+Provider methods throw RPC errors directly (for low-level control):
+
+```typescript
+const provider = createHttpProvider({ url: '...' });
+
+try {
+  const block = await provider.request({
+    method: 'starknet_blockNumber',
+    params: [],
+  });
+} catch (e) {
+  // RPC error thrown
+  console.error(e.code, e.message);
+}
+```
+
+Contract methods wrap errors in `{ result, error }`:
+
+```typescript
+const { result, error } = await contract.read('balance_of', [addr]);
+// error is the wrapped RPC or ABI error
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Error Handling Concept" icon="triangle-exclamation" href="/concepts/error-handling">
+    Deep dive into the result/error pattern.
+  </Card>
+  <Card title="Contract API" icon="file-contract" href="/api/contract">
+    Contract method error handling.
+  </Card>
+</CardGroup>

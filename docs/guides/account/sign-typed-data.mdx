@@ -1,22 +1,122 @@
 ---
 title: Sign Typed Data
-description: SNIP-12 signing flow.
+description: Sign structured messages using SNIP-12.
 ---
 
-# Sign Typed Data
+Sign structured data following the SNIP-12 standard (Starknet's equivalent of EIP-712). This enables off-chain signatures for permits, orders, and authentication.
 
-## Summary
-- TODO: one-paragraph overview
+## Basic Signing
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+```typescript
+import { createAccount, createSigner } from 'kundera/account';
 
-## Examples
-```ts
-// TODO: add example
+const signer = createSigner('0x_PRIVATE_KEY');
+const account = createAccount(provider, '0x_ADDRESS', signer);
+
+// Define typed data
+const typedData = {
+  types: {
+    StarkNetDomain: [
+      { name: 'name', type: 'felt' },
+      { name: 'version', type: 'felt' },
+      { name: 'chainId', type: 'felt' },
+    ],
+    Order: [
+      { name: 'maker', type: 'ContractAddress' },
+      { name: 'amount', type: 'u256' },
+      { name: 'nonce', type: 'felt' },
+    ],
+  },
+  primaryType: 'Order',
+  domain: {
+    name: 'MyDApp',
+    version: '1',
+    chainId: '0x534e5f4d41494e', // SN_MAIN
+  },
+  message: {
+    maker: account.address,
+    amount: { low: '1000000000000000000', high: '0' },
+    nonce: '1',
+  },
+};
+
+// Sign the message
+const signature = await account.signMessage(typedData);
+console.log('Signature:', signature);
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## TypedData Structure
+
+| Field | Description |
+|-------|-------------|
+| `types` | Type definitions for domain and message |
+| `primaryType` | The main message type name |
+| `domain` | Application identifier (name, version, chainId) |
+| `message` | The actual data to sign |
+
+## With Wallet
+
+For browser wallets, use `WalletAccount`:
+
+```typescript
+import { connectWallet } from 'kundera/wallet';
+import { connectAccountFromWallet } from 'kundera/account';
+
+const { result: connection } = await connectWallet();
+const account = await connectAccountFromWallet(connection.provider, provider);
+
+// Wallet prompts user to sign
+const signature = await account.signMessage(typedData);
+```
+
+<Tip>
+Browser wallets display the typed data to users for review before signing.
+</Tip>
+
+## Verify Signature
+
+Verify a signature on-chain or off-chain:
+
+```typescript
+import { verify, getPublicKey } from 'kundera/crypto';
+
+// Off-chain verification
+const publicKey = getPublicKey(privateKey);
+const messageHash = computeTypedDataHash(typedData); // Hash the typed data
+const isValid = verify(publicKey, messageHash, signature);
+```
+
+## Common Use Cases
+
+| Use Case | Description |
+|----------|-------------|
+| **Permits** | Approve token spending without on-chain tx |
+| **Orders** | Sign exchange orders off-chain |
+| **Auth** | Prove account ownership |
+| **Votes** | Sign governance proposals |
+
+<Warning>
+## Domain Separation
+
+Always include a unique domain (name + version + chainId) to prevent signature replay across apps or networks.
+</Warning>
+
+## SNIP-12 Types
+
+| Cairo Type | SNIP-12 Encoding |
+|------------|------------------|
+| `felt252` | `felt` |
+| `ContractAddress` | `ContractAddress` |
+| `u256` | `{ low: felt, high: felt }` |
+| `bool` | `felt` (0 or 1) |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Create Account" icon="user-plus" href="/guides/account/create-account">
+    Create accounts with signing capability.
+  </Card>
+  <Card title="Security" icon="shield" href="/concepts/security">
+    Key management best practices.
+  </Card>
+</CardGroup>

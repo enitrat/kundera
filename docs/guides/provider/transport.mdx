@@ -1,22 +1,157 @@
 ---
-title: Transport
-description: Use custom transports and batching.
+title: Transport Layer
+description: Low-level transports for HTTP, WebSocket, and custom protocols.
 ---
 
-# Transport
+Transports handle the raw JSON-RPC communication layer. Providers wrap transports with higher-level APIs.
 
-## Summary
-- TODO: one-paragraph overview
+## Architecture
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
-
-## Examples
-```ts
-// TODO: add example
+```
+┌─────────────────┐
+│    Provider     │  High-level API (methods, types)
+├─────────────────┤
+│    Transport    │  Raw JSON-RPC over HTTP/WS
+└─────────────────┘
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## HTTP Transport
+
+The default transport for request/response patterns:
+
+```typescript
+import { httpTransport } from 'kundera/transport';
+
+const transport = httpTransport({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+  timeout: 30000,
+  retry: 3,
+  retryDelay: 1000,
+});
+
+// Make a raw JSON-RPC request
+const result = await transport.request({
+  method: 'starknet_blockNumber',
+  params: [],
+});
+```
+
+## Request Batching
+
+Combine multiple requests into a single HTTP call:
+
+```typescript
+const transport = httpTransport({
+  url: 'https://...',
+  batch: {
+    batchWait: 10,    // Wait 10ms to collect requests
+    batchSize: 100,   // Max requests per batch
+  },
+});
+
+// These requests are automatically batched
+const [block, chain] = await Promise.all([
+  transport.request({ method: 'starknet_blockNumber', params: [] }),
+  transport.request({ method: 'starknet_chainId', params: [] }),
+]);
+```
+
+<Tip>
+Batching reduces HTTP overhead when making many concurrent requests. Enable it for high-throughput scenarios.
+</Tip>
+
+## WebSocket Transport
+
+For real-time subscriptions:
+
+```typescript
+import { webSocketTransport } from 'kundera/transport';
+
+const transport = webSocketTransport({
+  url: 'wss://starknet-mainnet.public.blastapi.io',
+});
+
+await transport.connect();
+
+// Subscribe to notifications
+transport.subscribe('sub_123', (data) => {
+  console.log('Received:', data);
+});
+```
+
+## Fallback Transport
+
+Chain multiple transports with automatic failover:
+
+```typescript
+import { fallbackTransport, httpTransport } from 'kundera/transport';
+
+const transport = fallbackTransport({
+  transports: [
+    httpTransport({ url: 'https://primary-rpc.example.com' }),
+    httpTransport({ url: 'https://backup-rpc.example.com' }),
+    httpTransport({ url: 'https://starknet-mainnet.public.blastapi.io' }),
+  ],
+});
+
+// Automatically tries next transport on failure
+const result = await transport.request({
+  method: 'starknet_blockNumber',
+  params: [],
+});
+```
+
+## Custom Transport
+
+Implement the `Transport` interface for custom protocols:
+
+```typescript
+import type { Transport, JsonRpcRequest, JsonRpcResponse } from 'kundera/transport';
+
+const customTransport: Transport = {
+  async request<T>(request: JsonRpcRequest): Promise<T> {
+    // Your custom implementation
+    const response = await myCustomFetch(request);
+    return response.result;
+  },
+};
+```
+
+## Transport Configuration
+
+### HTTP Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | RPC endpoint URL |
+| `headers` | `Record<string,string>` | `{}` | Custom HTTP headers |
+| `timeout` | `number` | `30000` | Request timeout (ms) |
+| `retry` | `number` | `3` | Retry attempts |
+| `retryDelay` | `number` | `1000` | Delay between retries (ms) |
+| `batch` | `boolean \| object` | `false` | Enable request batching |
+
+### WebSocket Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | WebSocket endpoint URL |
+| `reconnect` | `boolean` | `true` | Auto-reconnect |
+| `reconnectDelay` | `number` | `1000` | Reconnect delay (ms) |
+
+### Fallback Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `transports` | `Transport[]` | required | Ordered list of transports |
+| `retryAll` | `boolean` | `true` | Retry all transports on failure |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="HTTP Provider" icon="plug" href="/guides/provider/http">
+    High-level HTTP provider API.
+  </Card>
+  <Card title="Fallback Provider" icon="shield" href="/guides/provider/fallback">
+    Multi-endpoint failover patterns.
+  </Card>
+</CardGroup>

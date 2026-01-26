@@ -1,22 +1,228 @@
 ---
-title: Events
-description: Decode events and filter by keys.
+title: Decode Events
+description: Decode contract events from transaction receipts with type-safe filtering.
 ---
 
-# Events
+Kundera provides powerful event decoding with ABI-typed filtering. Decode individual events or batch process entire transaction receipts.
 
-## Summary
-- TODO: one-paragraph overview
+## Decode Single Event
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+Decode an event by name using its keys and data:
 
-## Examples
-```ts
-// TODO: add example
+```typescript
+import { decodeEvent, getEventSelector } from 'kundera/abi';
+
+const abi = [...]; // Contract ABI with Transfer event
+
+const { result, error } = decodeEvent(abi, 'Transfer', {
+  keys: [getEventSelector('Transfer'), 0x111n, 0x222n],
+  data: [1000n, 0n], // u256 amount
+});
+
+if (!error) {
+  console.log('Event:', result.name);        // 'Transfer'
+  console.log('From:', result.args.from);    // 0x111n
+  console.log('To:', result.args.to);        // 0x222n
+  console.log('Amount:', result.args.amount); // 1000n
+}
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Decode All Events from Receipt
+
+Process all events in a transaction receipt:
+
+```typescript
+import { decodeEvents } from 'kundera/abi';
+
+const receipt = await provider.getTransactionReceipt(txHash);
+
+const { result: events } = decodeEvents(receipt, abi);
+
+for (const event of events) {
+  console.log(`${event.name} at index ${event.index}`);
+  console.log('From contract:', event.fromAddress);
+  console.log('Args:', event.args);
+}
+```
+
+## Filter Events
+
+### By Contract Address
+
+Filter to events from a specific contract:
+
+```typescript
+const { result } = decodeEvents(receipt, abi, {
+  contractAddress: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+});
+
+// Shorthand: pass address string directly
+const { result: same } = decodeEvents(receipt, abi, '0x049d...');
+```
+
+### By Event Name
+
+Filter to specific event types:
+
+```typescript
+const { result } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+});
+
+// All returned events are Transfer events
+```
+
+### By Indexed Arguments
+
+Filter by indexed event parameters (keys):
+
+```typescript
+// Find transfers FROM a specific address
+const { result } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { from: 0x123n },
+});
+
+// Find transfers TO a specific address
+const { result: toMe } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { to: myAddress },
+});
+
+// Combine multiple filters
+const { result: exact } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { from: 0x123n, to: 0x456n },
+});
+```
+
+### OR Matching
+
+Match any of multiple values for an indexed argument:
+
+```typescript
+// Transfers FROM address A OR address B
+const { result } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { from: [0x111n, 0x333n] },
+});
+```
+
+<Tip>
+Only single-felt types (felt252, ContractAddress, u128, etc.) support OR arrays. Multi-felt types like u256 require exact matches.
+</Tip>
+
+### Combined Filters
+
+Combine address, event, and argument filters:
+
+```typescript
+const { result } = decodeEvents(receipt, abi, {
+  address: '0x049d...', // Contract address
+  event: 'Transfer',    // Event name
+  args: { to: myWallet }, // Indexed argument
+});
+```
+
+## Strict Mode
+
+Use `decodeEventsStrict` to error on unknown events:
+
+```typescript
+import { decodeEventsStrict } from 'kundera/abi';
+
+// Throws error if any event can't be decoded
+const { result, error } = decodeEventsStrict(receipt, abi);
+
+if (error) {
+  console.error('Unknown event at index:', error.message);
+}
+```
+
+<Warning>
+## Strict vs Non-Strict
+
+- `decodeEvents`: Silently skips unknown events
+- `decodeEventsStrict`: Errors on first unknown event
+
+Use strict mode when you expect all events to match your ABI.
+</Warning>
+
+## Compile Event Filters
+
+Pre-compile filters for reuse:
+
+```typescript
+import { compileEventFilter } from 'kundera/abi';
+
+const { result: filter } = compileEventFilter(abi, 'Transfer', {
+  from: 0x123n,
+});
+
+console.log('Selector:', filter.selector);
+console.log('Arg keys:', filter.argKeys);
+```
+
+## Event Structure
+
+Starknet events have two parts:
+
+| Part | Description |
+|------|-------------|
+| **Keys** | Indexed fields (searchable). First key is always the event selector. |
+| **Data** | Non-indexed fields (not searchable). |
+
+In the ABI, members specify their location:
+
+```typescript
+{
+  type: 'event',
+  name: 'Transfer',
+  kind: 'struct',
+  members: [
+    { name: 'from', type: 'ContractAddress', kind: 'key' },  // Indexed
+    { name: 'to', type: 'ContractAddress', kind: 'key' },    // Indexed
+    { name: 'value', type: 'u256', kind: 'data' },           // Not indexed
+  ],
+}
+```
+
+## Raw Keys Escape Hatch
+
+For advanced filtering, use `rawKeys` to specify exact key positions:
+
+```typescript
+import { computeSelector } from 'kundera/abi';
+
+const { result } = decodeEvents(receipt, abi, {
+  rawKeys: [
+    [computeSelector('Transfer')], // Position 0: selector
+    [0x111n, 0x333n],              // Position 1: from (OR)
+    [],                             // Position 2: to (wildcard)
+  ],
+});
+```
+
+## Decoded Event Structure
+
+Each decoded event contains:
+
+```typescript
+interface DecodedReceiptEvent {
+  name: string;           // Event name from ABI
+  args: Record<string, any>; // Decoded arguments
+  index: number;          // Position in receipt.events
+  fromAddress: string;    // Emitting contract address
+}
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="ABI API" icon="code" href="/api/abi">
+    Full event decoding API reference.
+  </Card>
+  <Card title="Event Listening" icon="bell" href="/recipes/event-listening">
+    Subscribe to real-time events.
+  </Card>
+</CardGroup>

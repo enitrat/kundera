@@ -1,22 +1,220 @@
 ---
 title: Transport Layer
-description: Unified HTTP/WS transport and batching.
+description: Unified HTTP/WebSocket transport with batching and fallbacks.
 ---
 
-# Transport Layer
+Kundera separates transport concerns from provider logic. This enables flexible configurations like request batching, multi-endpoint fallbacks, and protocol switching.
 
-## Summary
-- TODO: one-paragraph overview
+## Architecture
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
-
-## Examples
-```ts
-// TODO: add example
+```
+┌─────────────────────────────────────────────┐
+│               Application                    │
+├─────────────────────────────────────────────┤
+│               Provider                       │
+│   (HttpProvider / WebSocketProvider)         │
+├─────────────────────────────────────────────┤
+│               Transport                      │
+│   (httpTransport / webSocketTransport)       │
+├─────────────────────────────────────────────┤
+│           Network (HTTP/WS)                  │
+└─────────────────────────────────────────────┘
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Transport Interface
+
+All transports implement a common interface:
+
+```typescript
+interface Transport {
+  request<T>(method: string, params: unknown[]): Promise<T>;
+  batch?<T>(requests: RpcRequest[]): Promise<T[]>;
+  subscribe?(method: string, params: unknown[]): AsyncIterable<unknown>;
+  close?(): Promise<void>;
+}
+```
+
+## HTTP Transport
+
+The default transport for most use cases:
+
+```typescript
+import { httpTransport } from 'kundera/transport';
+
+const transport = httpTransport({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+  headers: { 'x-api-key': 'your-key' },
+  timeout: 30000,
+});
+```
+
+### Configuration
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | RPC endpoint URL |
+| `headers` | `object` | `{}` | Custom HTTP headers |
+| `timeout` | `number` | `30000` | Request timeout (ms) |
+| `fetch` | `function` | global | Custom fetch implementation |
+
+## WebSocket Transport
+
+For subscriptions and real-time updates:
+
+```typescript
+import { webSocketTransport } from 'kundera/transport';
+
+const transport = webSocketTransport({
+  url: 'wss://starknet-mainnet.ws.blastapi.io',
+  reconnect: true,
+  reconnectDelay: 1000,
+});
+```
+
+### Configuration
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | WebSocket endpoint URL |
+| `reconnect` | `boolean` | `true` | Auto-reconnect on disconnect |
+| `reconnectDelay` | `number` | `1000` | Delay between reconnects (ms) |
+| `maxReconnectAttempts` | `number` | `5` | Max reconnection attempts |
+
+## Request Batching
+
+HTTP transport supports JSON-RPC batching to reduce round trips:
+
+```typescript
+const transport = httpTransport({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+  batch: {
+    enabled: true,
+    maxSize: 100,    // Max requests per batch
+    delay: 10,       // Wait time to collect requests (ms)
+  },
+});
+```
+
+Batching is transparent—individual requests are automatically grouped:
+
+```typescript
+// These run as a single HTTP request
+const [block, nonce, balance] = await Promise.all([
+  provider.getBlockNumber(),
+  provider.getNonce(address),
+  provider.call({ to: token, selector: 'balance_of', calldata: [address] }),
+]);
+```
+
+## Fallback Transport
+
+Use multiple endpoints with automatic failover:
+
+```typescript
+import { fallbackTransport, httpTransport } from 'kundera/transport';
+
+const transport = fallbackTransport([
+  httpTransport({ url: 'https://primary.rpc.io' }),
+  httpTransport({ url: 'https://secondary.rpc.io' }),
+  httpTransport({ url: 'https://backup.rpc.io' }),
+]);
+```
+
+### Failover Behavior
+
+1. Try primary endpoint
+2. On failure, try next endpoint
+3. Continue until success or all fail
+4. Reset to primary on next request
+
+### Configuration
+
+```typescript
+fallbackTransport(transports, {
+  retryCount: 3,       // Retries per transport before failover
+  retryDelay: 100,     // Delay between retries (ms)
+});
+```
+
+## Provider Integration
+
+Transports integrate with providers:
+
+```typescript
+import { HttpProvider } from 'kundera/provider';
+import { httpTransport } from 'kundera/transport';
+
+// Custom transport with provider
+const provider = new HttpProvider({
+  transport: httpTransport({
+    url: 'https://custom.rpc.io',
+    headers: { Authorization: 'Bearer token' },
+    batch: { enabled: true, maxSize: 50 },
+  }),
+});
+
+// Or use the factory (auto-creates transport)
+const provider = createHttpProvider({
+  url: 'https://custom.rpc.io',
+});
+```
+
+## Custom Transports
+
+Implement the transport interface for custom needs:
+
+```typescript
+const loggingTransport = (inner: Transport): Transport => ({
+  async request(method, params) {
+    console.log(`→ ${method}`, params);
+    const result = await inner.request(method, params);
+    console.log(`← ${method}`, result);
+    return result;
+  },
+  batch: inner.batch,
+  subscribe: inner.subscribe,
+  close: inner.close,
+});
+
+const transport = loggingTransport(
+  httpTransport({ url: 'https://rpc.io' })
+);
+```
+
+## WebSocket Subscriptions
+
+WebSocket transport enables subscriptions:
+
+```typescript
+import { WebSocketProvider } from 'kundera/provider';
+import { webSocketTransport } from 'kundera/transport';
+
+const provider = new WebSocketProvider({
+  transport: webSocketTransport({
+    url: 'wss://starknet.ws.io',
+  }),
+});
+
+// Subscribe to new blocks
+for await (const block of provider.subscribeNewHeads()) {
+  console.log('New block:', block.block_number);
+}
+```
+
+## Performance Tips
+
+1. **Enable batching** for concurrent requests to reduce latency
+2. **Use fallbacks** for production reliability
+3. **Tune timeouts** based on your RPC provider's characteristics
+4. **Use WebSocket** for subscriptions instead of polling
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Transport API" icon="code" href="/api/transport">
+    Full transport API reference.
+  </Card>
+  <Card title="Fallback Guide" icon="shield" href="/guides/provider/fallback">
+    Multi-endpoint configuration.
+  </Card>
+</CardGroup>

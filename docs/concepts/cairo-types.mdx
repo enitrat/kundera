@@ -1,22 +1,253 @@
 ---
 title: Cairo Types
-description: Felt, u256, structs, enums, byte arrays.
+description: Understanding Cairo's type system and how it maps to JavaScript.
 ---
 
-# Cairo Types
+Cairo has a rich type system designed for provable computation. Understanding how these types map to JavaScript is essential for working with Starknet contracts.
 
-## Summary
-- TODO: one-paragraph overview
+## The Field Element (felt252)
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+Everything in Cairo is built on `felt252`—a 252-bit field element:
 
-## Examples
-```ts
-// TODO: add example
+```
+Range: 0 to P - 1
+P = 2^251 + 17 * 2^192 + 1 (Stark prime)
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+In JavaScript, use `bigint` for all felt values:
+
+```typescript
+const felt = 0x123456789abcdefn;
+const max = 2n ** 251n - 1n; // Approximately
+```
+
+<Warning>
+Values ≥ P will cause encoding errors. Always validate inputs.
+</Warning>
+
+## Integer Types
+
+Cairo provides bounded integers:
+
+| Type | Range | JS Representation |
+|------|-------|-------------------|
+| `u8` | 0 to 2^8 - 1 | `bigint` |
+| `u16` | 0 to 2^16 - 1 | `bigint` |
+| `u32` | 0 to 2^32 - 1 | `bigint` |
+| `u64` | 0 to 2^64 - 1 | `bigint` |
+| `u128` | 0 to 2^128 - 1 | `bigint` |
+| `u256` | 0 to 2^256 - 1 | `bigint` (encoded as 2 felts) |
+
+### u256 Special Handling
+
+`u256` is the most common multi-felt type, used for token amounts:
+
+```typescript
+// JS value
+const amount = 1000000000000000000n; // 1 token (18 decimals)
+
+// Encoding: [low, high] as two u128 values
+// For small values, high = 0
+const encoded = [1000000000000000000n, 0n];
+
+// Large values span both limbs
+const large = (1n << 200n) + 42n;
+const low = large & ((1n << 128n) - 1n);  // Lower 128 bits
+const high = large >> 128n;                // Upper 128 bits
+```
+
+Kundera handles this automatically in `encodeCalldata`/`decodeOutput`.
+
+## Boolean
+
+Cairo booleans map to `0n` (false) or `1n` (true):
+
+```typescript
+// Encoding
+const success = true;  // → 1n
+const failure = false; // → 0n
+
+// Decoding
+const decoded = result[0] === 1n; // true
+```
+
+## Address Types
+
+Starknet has distinct address types, all encoded as single felts:
+
+| Type | Description |
+|------|-------------|
+| `ContractAddress` | Deployed contract address |
+| `ClassHash` | Contract class identifier |
+| `StorageKey` | Storage slot key |
+| `EthAddress` | Ethereum L1 address (160-bit) |
+
+```typescript
+// All represented as bigint or hex string
+const address = '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7';
+const addressBigint = 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7n;
+```
+
+## Short Strings
+
+Strings ≤31 ASCII characters encode as a single felt:
+
+```typescript
+import { encodeShortString, decodeShortString } from 'kundera/contract';
+
+const encoded = encodeShortString('hello');
+// 0x68656c6c6fn
+
+const decoded = decodeShortString(0x68656c6c6fn);
+// 'hello'
+```
+
+<Warning>
+## 31-Character Limit
+
+Short strings must be:
+- Maximum 31 characters
+- ASCII only (0x00-0x7F)
+
+For longer strings, use `ByteArray`.
+</Warning>
+
+## ByteArray
+
+`ByteArray` handles strings of any length:
+
+```typescript
+// Cairo ByteArray structure
+{
+  data: Array<felt252>,  // 31-byte chunks
+  pending_word: felt252, // Remaining bytes
+  pending_word_len: u32, // Length of pending
+}
+```
+
+Kundera encodes this automatically when the ABI specifies `ByteArray`.
+
+## Arrays
+
+Arrays are length-prefixed in calldata:
+
+```typescript
+// JS array
+const values = [1n, 2n, 3n];
+
+// Encoded calldata
+[3n, 1n, 2n, 3n]
+//^-- length prefix
+```
+
+Nested arrays are supported:
+
+```typescript
+// Array<Array<felt252>>
+const matrix = [[1n, 2n], [3n, 4n, 5n]];
+// Encoded: [2, 2, 1, 2, 3, 3, 4, 5]
+//          outer outer[0]  outer[1]
+```
+
+## Structs
+
+Structs encode fields in declaration order:
+
+```typescript
+// ABI struct
+{
+  type: 'struct',
+  name: 'Point',
+  members: [
+    { name: 'x', type: 'felt252' },
+    { name: 'y', type: 'felt252' },
+  ]
+}
+
+// JS object
+{ x: 10n, y: 20n }
+
+// Encoded
+[10n, 20n]
+```
+
+Kundera accepts both array and object syntax:
+
+```typescript
+// Object style (recommended)
+contract.read('get_point', [{ x: 10n, y: 20n }]);
+
+// Array style (positional)
+contract.read('get_point', [[10n, 20n]]);
+```
+
+## Enums
+
+Enums encode as variant index + data:
+
+```typescript
+// ABI enum
+{
+  type: 'enum',
+  name: 'Option',
+  variants: [
+    { name: 'Some', type: 'felt252' },
+    { name: 'None', type: '()' },
+  ]
+}
+
+// JS representation
+{ variant: 'Some', value: 42n }  // → [0n, 42n]
+{ variant: 'None', value: null } // → [1n]
+```
+
+### Common Enums
+
+| Enum | Variants | Use Case |
+|------|----------|----------|
+| `Option<T>` | `Some(T)`, `None` | Optional values |
+| `Result<T,E>` | `Ok(T)`, `Err(E)` | Success/failure |
+| `bool` | `false`, `true` | Actually an enum! |
+
+## Tuples
+
+Tuples encode as consecutive values:
+
+```typescript
+// (felt252, u128, bool)
+[100n, 200n, 1n]
+```
+
+## Spans and Snapshots
+
+| Type | Description | Encoding |
+|------|-------------|----------|
+| `Span<T>` | Read-only array view | Same as `Array<T>` |
+| `@T` | Snapshot (immutable ref) | Same as `T` |
+
+From the caller's perspective, these encode identically to their base types.
+
+## Type Mapping Summary
+
+| Cairo Type | JS Type | Calldata Size |
+|------------|---------|---------------|
+| `felt252` | `bigint` | 1 |
+| `u8`-`u128` | `bigint` | 1 |
+| `u256` | `bigint` | 2 |
+| `bool` | `boolean` | 1 |
+| `ContractAddress` | `bigint`/`string` | 1 |
+| `Array<T>` | `T[]` | 1 + elements |
+| `Struct` | `object` | sum of fields |
+| `Enum` | `{ variant, value }` | 1 + variant data |
+| `ByteArray` | `string` | variable |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="ABI & Contracts" icon="file-contract" href="/concepts/abi-contracts">
+    How ABIs define types.
+  </Card>
+  <Card title="Encode/Decode" icon="code" href="/guides/abi/encode-decode">
+    Practical encoding examples.
+  </Card>
+</CardGroup>

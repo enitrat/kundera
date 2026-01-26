@@ -1,22 +1,310 @@
 ---
 title: Contract API
-description: getContract and contract helpers.
+description: Contract wrapper, class hash utilities, and short strings.
 ---
 
-# Contract API
+Create typed contract wrappers and compute class hashes from compiled artifacts.
 
-## Summary
-- TODO: one-paragraph overview
+## Imports
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
-
-## Examples
-```ts
-// TODO: add example
+```typescript
+import {
+  // Contract wrapper
+  getContract,
+  // Class hash utilities
+  classHashFromSierra,
+  compiledClassHashFromCasm,
+  extractAbi,
+  // Short string utilities
+  encodeShortString,
+  decodeShortString,
+  // Types
+  type ContractInstance,
+  type ContractOptions,
+  type Account,
+  type Abi,
+  type Call,
+  type FeeEstimate,
+} from 'kundera/contract';
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## getContract
+
+Create a typed wrapper around a Starknet contract.
+
+```typescript
+function getContract(options: ContractOptions): ContractInstance
+```
+
+```typescript
+import { createClient } from 'kundera/rpc';
+
+const client = createClient({ url: 'https://starknet-mainnet.public.blastapi.io' });
+
+const contract = getContract({
+  abi: ERC20_ABI,
+  address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+  client,
+  account, // Optional: required for write operations
+});
+```
+
+### ContractOptions
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `abi` | `Abi` | Contract ABI array |
+| `address` | `string` | Contract address |
+| `client` | `StarknetRpcClient` | RPC client from `createClient()` |
+| `account` | `Account` | Optional account for writes |
+
+## ContractInstance
+
+### read
+
+Call a view function (free, no gas).
+
+```typescript
+const { result, error } = await contract.read('balance_of', [accountAddress]);
+
+if (!error) {
+  console.log('Balance:', result[0]); // bigint
+}
+```
+
+**Arguments:** Array or object style.
+
+```typescript
+// Array
+await contract.read('balance_of', [address]);
+
+// Object
+await contract.read('balance_of', { account: address });
+```
+
+**Returns:** `{ result: bigint[], error: AbiError | null }`
+
+### write
+
+Execute a state-changing function. Requires an account.
+
+```typescript
+const { result, error } = await contract.write('transfer', [
+  recipientAddress,
+  1000000000000000000n,
+]);
+
+if (!error) {
+  console.log('TX:', result.transactionHash);
+}
+```
+
+**Returns:** `{ result: { transactionHash: string }, error }`
+
+<Warning>
+Calling `write` without an account in the contract options returns an error with code `ACCOUNT_REQUIRED`.
+</Warning>
+
+### estimateFee
+
+Get fee estimate before executing.
+
+```typescript
+const { result, error } = await contract.estimateFee('transfer', [
+  recipient,
+  amount,
+]);
+
+if (!error) {
+  console.log('Gas consumed:', result.gasConsumed);
+  console.log('Gas price:', result.gasPrice);
+  console.log('Overall fee:', result.overallFee);
+}
+```
+
+**Returns:** `{ result: FeeEstimate, error }`
+
+### populate
+
+Create a `Call` object without executing.
+
+```typescript
+const { result: call } = contract.populate('transfer', [recipient, amount]);
+
+// Use with multicall
+await account.execute([call, anotherCall]);
+```
+
+**Returns:** `{ result: Call, error }`
+
+### getSelector
+
+Get the function selector hash.
+
+```typescript
+const { result } = contract.getSelector('transfer');
+console.log('Selector:', result.selectorHex);
+```
+
+## Class Hash Utilities
+
+### classHashFromSierra
+
+Compute class hash from a compiled Sierra contract.
+
+```typescript
+function classHashFromSierra(sierra: CompiledSierra): string
+```
+
+```typescript
+import fs from 'fs';
+
+const sierra = JSON.parse(
+  fs.readFileSync('target/dev/MyContract.contract_class.json', 'utf8')
+);
+
+const classHash = classHashFromSierra(sierra);
+console.log('Class hash:', classHash);
+```
+
+### compiledClassHashFromCasm
+
+Compute compiled class hash from CASM.
+
+```typescript
+function compiledClassHashFromCasm(casm: CompiledSierraCasm): string
+```
+
+```typescript
+const casm = JSON.parse(
+  fs.readFileSync('target/dev/MyContract.compiled_contract_class.json', 'utf8')
+);
+
+const compiledClassHash = compiledClassHashFromCasm(casm);
+console.log('Compiled class hash:', compiledClassHash);
+```
+
+<Tip>
+You need both hashes for `declare` transactions: the Sierra class hash identifies the contract, and the compiled class hash verifies the CASM.
+</Tip>
+
+### extractAbi
+
+Extract the ABI from a Sierra contract artifact.
+
+```typescript
+function extractAbi(sierra: CompiledSierra): Abi
+```
+
+```typescript
+const abi = extractAbi(sierra);
+const contract = getContract({ abi, address, client });
+```
+
+## Short String Utilities
+
+### encodeShortString
+
+Encode a string (≤31 ASCII characters) to a felt.
+
+```typescript
+function encodeShortString(str: string): bigint
+```
+
+```typescript
+const felt = encodeShortString('hello');
+// 0x68656c6c6fn
+```
+
+### decodeShortString
+
+Decode a felt to a string.
+
+```typescript
+function decodeShortString(felt: bigint): string
+```
+
+```typescript
+const str = decodeShortString(0x68656c6c6fn);
+// 'hello'
+```
+
+<Warning>
+## 31-Byte Limit
+
+Short strings are limited to 31 ASCII characters. For longer strings, use `ByteArray` serialization.
+</Warning>
+
+## Types
+
+### Call
+
+```typescript
+interface Call {
+  contractAddress: string;
+  entrypoint: string;
+  calldata: (string | bigint)[];
+}
+```
+
+### FeeEstimate
+
+```typescript
+interface FeeEstimate {
+  gasConsumed: bigint;
+  gasPrice: bigint;
+  overallFee: bigint;
+}
+```
+
+### CompiledSierra
+
+```typescript
+interface CompiledSierra {
+  sierra_program: string[];
+  contract_class_version: string;
+  entry_points_by_type: SierraEntryPoints;
+  abi: Abi;
+}
+```
+
+### CompiledSierraCasm
+
+```typescript
+interface CompiledSierraCasm {
+  bytecode: string[];
+  entry_points_by_type: CasmEntryPoints;
+  // ... other fields
+}
+```
+
+## Full Declaration Example
+
+```typescript
+import { classHashFromSierra, compiledClassHashFromCasm } from 'kundera/contract';
+
+const sierra = JSON.parse(fs.readFileSync('MyContract.sierra.json', 'utf8'));
+const casm = JSON.parse(fs.readFileSync('MyContract.casm.json', 'utf8'));
+
+const classHash = classHashFromSierra(sierra);
+const compiledClassHash = compiledClassHashFromCasm(casm);
+
+const result = await account.declare({
+  contract: sierra,
+  classHash,
+  compiledClassHash,
+});
+
+console.log('Declared:', result.class_hash);
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Read & Write Contracts" icon="file-contract" href="/guides/contract/read-write">
+    Contract interaction guide.
+  </Card>
+  <Card title="ABI API" icon="code" href="/api/abi">
+    ABI encoding/decoding reference.
+  </Card>
+</CardGroup>

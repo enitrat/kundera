@@ -1,22 +1,138 @@
 ---
 title: WebSocket Provider
-description: Subscribe to Starknet events over WS.
+description: Subscribe to Starknet events in real-time over WebSocket.
 ---
 
-# WebSocket Provider
+The WebSocket provider enables real-time event subscriptions for new blocks, transactions, and contract events without polling.
 
-## Summary
-- TODO: one-paragraph overview
+## Basic Setup
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+```typescript
+import { WebSocketProvider } from 'kundera/provider';
 
-## Examples
-```ts
-// TODO: add example
+const ws = new WebSocketProvider({
+  url: 'wss://starknet-mainnet.public.blastapi.io',
+});
+
+// Connect to the WebSocket
+await ws.connect();
+
+// Check connection
+console.log('Connected:', ws.isConnected());
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Subscribe to New Blocks
+
+```typescript
+// Subscribe to new block headers
+for await (const block of ws.subscribeNewHeads()) {
+  console.log('New block:', block.block_number);
+  console.log('  Hash:', block.block_hash);
+  console.log('  Timestamp:', block.timestamp);
+}
+```
+
+## Subscribe to Events
+
+Filter and receive contract events in real-time:
+
+```typescript
+// Subscribe to Transfer events from a specific contract
+const subscription = ws.subscribeEvents({
+  from_address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+  keys: [
+    ['0x99cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9'], // Transfer selector
+  ],
+});
+
+for await (const event of subscription) {
+  console.log('Event:', event.keys);
+  console.log('Data:', event.data);
+}
+```
+
+## Subscribe to Pending Transactions
+
+```typescript
+// Watch pending transactions from specific senders
+for await (const tx of ws.subscribeNewTransactions({
+  sender_address: ['0x123...', '0x456...'],
+})) {
+  console.log('Pending TX:', tx.transaction_hash);
+}
+```
+
+## Subscribe to Transaction Receipts
+
+```typescript
+// Watch for transaction confirmations
+for await (const receipt of ws.subscribeNewTransactionReceipts()) {
+  console.log('Confirmed:', receipt.transaction_hash);
+  console.log('Status:', receipt.finality_status);
+}
+```
+
+## Unsubscribe
+
+Subscriptions are automatically cleaned up when you break from the loop. For manual control:
+
+```typescript
+const subscriptionId = await ws.request({
+  method: 'starknet_subscribeNewHeads',
+  params: [],
+});
+
+// Later: unsubscribe
+await ws.request({
+  method: 'starknet_unsubscribe',
+  params: [subscriptionId],
+});
+```
+
+<Warning>
+## Connection Lifecycle
+
+WebSocket connections can drop. Handle reconnection in production:
+
+```typescript
+ws.on('close', async () => {
+  console.log('Connection lost, reconnecting...');
+  await ws.connect();
+  // Re-establish subscriptions
+});
+```
+</Warning>
+
+## Configuration Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `url` | `string` | WebSocket endpoint URL |
+| `reconnect` | `boolean` | Auto-reconnect on disconnect (default: true) |
+| `reconnectDelay` | `number` | Delay between reconnect attempts in ms |
+| `maxReconnectAttempts` | `number` | Max reconnection attempts |
+
+## Event Listeners
+
+```typescript
+ws.on('connect', () => console.log('Connected'));
+ws.on('close', () => console.log('Disconnected'));
+ws.on('error', (err) => console.error('Error:', err));
+```
+
+## Disconnect
+
+```typescript
+ws.disconnect();
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="HTTP Provider" icon="plug" href="/guides/provider/http">
+    Use HTTP for simple request/response patterns.
+  </Card>
+  <Card title="Event Listening Recipe" icon="bell" href="/recipes/event-listening">
+    Full example with event decoding.
+  </Card>
+</CardGroup>

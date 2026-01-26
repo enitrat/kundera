@@ -1,22 +1,182 @@
 ---
 title: Quickstart
-description: Make a call, sign a tx, and decode events.
+description: Make a call, sign a transaction, and decode events.
 ---
 
-# Quickstart
+This guide walks through a complete Starknet interaction: creating a provider, setting up an account, reading from a contract, and sending a transaction.
 
-## Summary
-- TODO: one-paragraph overview
+## 1. Create an RPC Client
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+Connect to a Starknet RPC endpoint:
 
-## Examples
-```ts
-// TODO: add example
+```typescript
+import { createClient } from 'kundera/rpc';
+
+const client = createClient({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+});
+
+// Check connection
+const { result, error } = await client.starknet_blockNumber();
+if (error) {
+  console.error('Connection failed:', error.message);
+} else {
+  console.log('Current block:', result);
+}
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+<Tip>
+Use `mainnetClient()` or `sepoliaClient()` for quick setup with public endpoints.
+</Tip>
+
+## 2. Create an Account
+
+Set up an account for signing transactions:
+
+```typescript
+import { createAccount, createSigner } from 'kundera/account';
+
+const signer = createSigner('0x_YOUR_PRIVATE_KEY');
+
+const account = createAccount(
+  client,
+  '0x_YOUR_ACCOUNT_ADDRESS',
+  signer,
+);
+```
+
+<Warning>
+## Never Hardcode Private Keys
+
+Use environment variables or secure vaults for private keys:
+
+```typescript
+const signer = createSigner(process.env.STARKNET_PRIVATE_KEY!);
+```
+</Warning>
+
+## 3. Read from a Contract
+
+Use `getContract` to interact with deployed contracts:
+
+```typescript
+import { getContract } from 'kundera/contract';
+
+// ETH token on mainnet
+const ETH_ADDRESS = '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7';
+
+const eth = getContract({
+  address: ETH_ADDRESS,
+  abi: ERC20_ABI, // Your ABI here
+  client,
+});
+
+// Read balance (view function)
+const { result, error } = await eth.read('balance_of', [account.address]);
+
+if (error) {
+  console.error('Read failed:', error.message);
+} else {
+  console.log('Balance:', result[0]); // u256 as bigint
+}
+```
+
+## 4. Send a Transaction
+
+Write functions require an account:
+
+```typescript
+const ethWithAccount = getContract({
+  address: ETH_ADDRESS,
+  abi: ERC20_ABI,
+  client,
+  account, // Attach account for writes
+});
+
+// Transfer tokens
+const { result, error } = await ethWithAccount.write('transfer', [
+  '0x_RECIPIENT_ADDRESS',
+  1000000000000000000n, // 1 ETH in wei
+]);
+
+if (error) {
+  console.error('Transfer failed:', error.message);
+} else {
+  console.log('Transaction hash:', result.transactionHash);
+}
+```
+
+## 5. Wait for Confirmation
+
+Poll for transaction receipt:
+
+```typescript
+const { result: receipt } = await client.starknet_getTransactionReceipt(
+  result.transactionHash,
+);
+
+console.log('Status:', receipt.finality_status);
+// 'ACCEPTED_ON_L2' or 'ACCEPTED_ON_L1'
+```
+
+## 6. Decode Events
+
+Extract and decode events from the receipt:
+
+```typescript
+import { decodeEvents } from 'kundera/abi';
+
+const { result: decoded } = decodeEvents(ERC20_ABI, receipt.events);
+
+for (const event of decoded) {
+  if (event.name === 'Transfer') {
+    console.log('Transfer event:');
+    console.log('  From:', event.args.from);
+    console.log('  To:', event.args.to);
+    console.log('  Amount:', event.args.value);
+  }
+}
+```
+
+## Complete Example
+
+```typescript
+import { createClient, mainnetClient } from 'kundera/rpc';
+import { createAccount, createSigner } from 'kundera/account';
+import { getContract } from 'kundera/contract';
+import { decodeEvents } from 'kundera/abi';
+
+// 1. Client
+const client = mainnetClient();
+
+// 2. Account
+const signer = createSigner(process.env.STARKNET_PRIVATE_KEY!);
+const account = createAccount(client, process.env.STARKNET_ADDRESS!, signer);
+
+// 3. Contract
+const eth = getContract({
+  address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+  abi: ERC20_ABI,
+  client,
+  account,
+});
+
+// 4. Read
+const { result: balance } = await eth.read('balance_of', [account.address]);
+console.log('Balance:', balance[0]);
+
+// 5. Write (if you want to transfer)
+// const { result: tx } = await eth.write('transfer', [recipient, amount]);
+// console.log('TX:', tx.transactionHash);
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Native Crypto" icon="bolt" href="/getting-started/native">
+    Enable native crypto for better performance.
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/getting-started/errors">
+    Learn the result/error pattern.
+  </Card>
+</CardGroup>

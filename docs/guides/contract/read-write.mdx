@@ -1,22 +1,146 @@
 ---
-title: Read & Write
-description: Read-only calls and write transactions.
+title: Read & Write Contracts
+description: Type-safe contract reads and writes with getContract.
 ---
 
-# Read & Write
+Use `getContract` to create a typed wrapper around any Starknet contract. It handles ABI encoding/decoding and returns structured results.
 
-## Summary
-- TODO: one-paragraph overview
+## Create Contract Instance
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+```typescript
+import { getContract } from 'kundera/contract';
+import { createClient } from 'kundera/rpc';
 
-## Examples
-```ts
-// TODO: add example
+const client = createClient({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+});
+
+const contract = getContract({
+  abi: ERC20_ABI,
+  address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+  client,
+});
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Read (View Functions)
+
+Call view functions without gas costs:
+
+```typescript
+// Array arguments
+const { result, error } = await contract.read('balance_of', [accountAddress]);
+
+if (error) {
+  console.error('Read failed:', error.message);
+} else {
+  console.log('Balance:', result[0]); // u256 as bigint
+}
+
+// Object arguments (named)
+const { result } = await contract.read('balance_of', {
+  account: accountAddress,
+});
+```
+
+<Tip>
+Read operations are free—they don't require gas or an account.
+</Tip>
+
+## Write (State Changes)
+
+Attach an account for write operations:
+
+```typescript
+import { createAccount, createSigner } from 'kundera/account';
+
+const signer = createSigner(process.env.PRIVATE_KEY!);
+const account = createAccount(client, address, signer);
+
+const contract = getContract({
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  client,
+  account, // Required for writes
+});
+
+const { result, error } = await contract.write('transfer', [
+  recipientAddress,
+  1000000000000000000n, // 1 token (18 decimals)
+]);
+
+if (error) {
+  console.error('Write failed:', error.message);
+} else {
+  console.log('TX hash:', result.transactionHash);
+}
+```
+
+<Warning>
+## Account Required for Writes
+
+Calling `write` without an account returns an error:
+
+```typescript
+// Error: { code: 'ACCOUNT_REQUIRED', message: '...' }
+```
+</Warning>
+
+## Estimate Fee
+
+Get fee estimate before executing:
+
+```typescript
+const { result, error } = await contract.estimateFee('transfer', [
+  recipient,
+  amount,
+]);
+
+if (!error) {
+  console.log('Gas consumed:', result.gasConsumed);
+  console.log('Gas price:', result.gasPrice);
+  console.log('Overall fee:', result.overallFee);
+}
+```
+
+## Populate Call
+
+Create a `Call` object without executing:
+
+```typescript
+const { result: call } = contract.populate('transfer', [recipient, amount]);
+
+// Use with account.execute for multicall
+await account.execute([
+  call,
+  // ... other calls
+]);
+```
+
+## Get Selector
+
+Get function selector hash:
+
+```typescript
+const { result } = contract.getSelector('transfer');
+console.log('Selector:', result.selectorHex);
+```
+
+## Return Values
+
+| Method | Returns |
+|--------|---------|
+| `read()` | `{ result: bigint[], error }` |
+| `write()` | `{ result: { transactionHash }, error }` |
+| `estimateFee()` | `{ result: { gasConsumed, gasPrice, overallFee }, error }` |
+| `populate()` | `{ result: Call, error }` |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Contract API" icon="file-contract" href="/api/contract">
+    Full contract API reference.
+  </Card>
+  <Card title="ABI Encoding" icon="code" href="/guides/abi/encode-decode">
+    Manual ABI encoding.
+  </Card>
+</CardGroup>

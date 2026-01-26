@@ -1,22 +1,104 @@
 ---
 title: Create Account
-description: Instantiate accounts and signers.
+description: Instantiate accounts and signers from private keys.
 ---
 
-# Create Account
+Accounts in Starknet are smart contracts with signing capabilities. Kundera provides factories to create accounts from private keys or wallet connections.
 
-## Summary
-- TODO: one-paragraph overview
+## From Private Key
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+The most common way to create an account for backend applications:
 
-## Examples
-```ts
-// TODO: add example
+```typescript
+import { createHttpProvider } from 'kundera/provider';
+import { createAccount, createSigner } from 'kundera/account';
+
+const provider = createHttpProvider({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+});
+
+// Create a signer from private key
+const signer = createSigner('0x_YOUR_PRIVATE_KEY');
+
+// Create account instance
+const account = createAccount(
+  provider,
+  '0x_YOUR_ACCOUNT_ADDRESS',
+  signer,
+);
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+<Warning>
+## Private Key Security
+
+Never hardcode private keys in source code. Use environment variables:
+
+```typescript
+const signer = createSigner(process.env.STARKNET_PRIVATE_KEY!);
+const account = createAccount(
+  provider,
+  process.env.STARKNET_ADDRESS!,
+  signer,
+);
+```
+</Warning>
+
+## With Account Discovery
+
+Check if an account is deployed and get its class hash:
+
+```typescript
+import { isAccountDeployed, getAccountClassHash } from 'kundera/account';
+
+// Check deployment status
+const isDeployed = await isAccountDeployed(provider, accountAddress);
+
+if (isDeployed) {
+  // Get class hash to identify account type (ArgentX, Braavos, etc.)
+  const classHash = await getAccountClassHash(provider, accountAddress);
+  console.log('Account class:', classHash);
+}
+```
+
+## Execute Transactions
+
+Once created, use the account to execute transactions:
+
+```typescript
+// Single call
+const result = await account.execute([{
+  contractAddress: '0x...',
+  entrypoint: 'transfer',
+  calldata: [recipient, amountLow, amountHigh],
+}]);
+
+console.log('TX hash:', result.transaction_hash);
+
+// Multiple calls (multicall)
+const result = await account.execute([
+  { contractAddress: tokenA, entrypoint: 'approve', calldata: [...] },
+  { contractAddress: router, entrypoint: 'swap', calldata: [...] },
+]);
+```
+
+## Account Types
+
+| Type | Use Case |
+|------|----------|
+| `Account` | Backend/CLI with private key access |
+| `WalletAccount` | Browser with wallet connection |
+
+<Tip>
+For browser applications, use `WalletAccount` with wallet connect. See [Wallet Connect](/guides/account/wallet-connect).
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Deploy Account" icon="rocket" href="/guides/account/deploy">
+    Deploy new account contracts.
+  </Card>
+  <Card title="Wallet Connect" icon="wallet" href="/guides/account/wallet-connect">
+    Connect browser wallets.
+  </Card>
+</CardGroup>

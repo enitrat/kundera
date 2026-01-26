@@ -1,22 +1,203 @@
 ---
 title: Transport API
-description: Transport interface and factories.
+description: Low-level transport interfaces and factories.
 ---
 
-# Transport API
+Transports handle raw JSON-RPC communication. Providers use transports internally.
 
-## Summary
-- TODO: one-paragraph overview
+## Imports
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
-
-## Examples
-```ts
-// TODO: add example
+```typescript
+import {
+  // Factories
+  httpTransport,
+  webSocketTransport,
+  fallbackTransport,
+  // Types
+  type Transport,
+  type EventTransport,
+  type HttpTransportOptions,
+  type WebSocketTransportOptions,
+  type FallbackTransportOptions,
+  type JsonRpcRequest,
+  type JsonRpcResponse,
+} from 'kundera/transport';
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Factories
+
+### httpTransport
+
+Creates an HTTP transport.
+
+```typescript
+function httpTransport(options: HttpTransportOptions): Transport
+```
+
+```typescript
+const transport = httpTransport({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+  timeout: 30000,
+  retry: 3,
+  retryDelay: 1000,
+  batch: { batchWait: 10, batchSize: 100 },
+});
+
+const result = await transport.request({
+  method: 'starknet_blockNumber',
+  params: [],
+});
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | RPC endpoint URL |
+| `headers` | `Record<string, string>` | `{}` | Custom HTTP headers |
+| `timeout` | `number` | `30000` | Request timeout (ms) |
+| `retry` | `number` | `3` | Retry attempts |
+| `retryDelay` | `number` | `1000` | Delay between retries (ms) |
+| `batch` | `boolean \| BatchOptions` | `false` | Enable batching |
+
+### webSocketTransport
+
+Creates a WebSocket transport with subscription support.
+
+```typescript
+function webSocketTransport(options: WebSocketTransportOptions): WebSocketTransport
+```
+
+```typescript
+const transport = webSocketTransport({
+  url: 'wss://starknet-mainnet.public.blastapi.io',
+});
+
+await transport.connect();
+
+// Subscribe to notifications
+transport.subscribe('sub_id', (data) => {
+  console.log('Received:', data);
+});
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | WebSocket URL |
+| `reconnect` | `boolean` | `true` | Auto-reconnect |
+| `reconnectDelay` | `number` | `1000` | Reconnect delay (ms) |
+
+### fallbackTransport
+
+Chains transports with automatic failover.
+
+```typescript
+function fallbackTransport(options: FallbackTransportOptions): Transport
+```
+
+```typescript
+const transport = fallbackTransport({
+  transports: [
+    httpTransport({ url: 'https://primary.example.com' }),
+    httpTransport({ url: 'https://backup.example.com' }),
+  ],
+});
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `transports` | `Transport[]` | required | Ordered fallback list |
+| `retryAll` | `boolean` | `true` | Retry all on failure |
+
+## Interfaces
+
+### Transport
+
+```typescript
+interface Transport {
+  request<T>(request: JsonRpcRequest): Promise<T>;
+}
+```
+
+### EventTransport
+
+Extends `Transport` with subscription support.
+
+```typescript
+interface EventTransport extends Transport {
+  connect(): Promise<void>;
+  disconnect(): void;
+  isConnected(): boolean;
+  subscribe(id: string, callback: (data: unknown) => void): void;
+  unsubscribe(id: string): void;
+}
+```
+
+## Types
+
+### JsonRpcRequest
+
+```typescript
+interface JsonRpcRequest {
+  jsonrpc?: '2.0';
+  id?: number | string;
+  method: string;
+  params: unknown[];
+}
+```
+
+### JsonRpcResponse
+
+```typescript
+interface JsonRpcSuccessResponse<T> {
+  jsonrpc: '2.0';
+  id: number | string;
+  result: T;
+}
+
+interface JsonRpcErrorResponse {
+  jsonrpc: '2.0';
+  id: number | string;
+  error: JsonRpcError;
+}
+
+interface JsonRpcError {
+  code: number;
+  message: string;
+  data?: unknown;
+}
+```
+
+## Utilities
+
+### createRequest
+
+Create a JSON-RPC request object.
+
+```typescript
+import { createRequest } from 'kundera/transport';
+
+const request = createRequest('starknet_blockNumber', []);
+// { jsonrpc: '2.0', id: 1, method: 'starknet_blockNumber', params: [] }
+```
+
+### isJsonRpcError
+
+Type guard for error responses.
+
+```typescript
+import { isJsonRpcError } from 'kundera/transport';
+
+if (isJsonRpcError(response)) {
+  console.error(response.error.message);
+}
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Transport Guide" icon="layer-group" href="/guides/provider/transport">
+    Transport concepts and patterns.
+  </Card>
+  <Card title="Fallback Guide" icon="shield" href="/guides/provider/fallback">
+    Multi-endpoint failover.
+  </Card>
+</CardGroup>

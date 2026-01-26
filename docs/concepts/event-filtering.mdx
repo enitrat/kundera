@@ -1,22 +1,215 @@
 ---
 title: Event Filtering
-description: Typed event filters and keys[][].
+description: How Starknet event keys work and how to filter events efficiently.
 ---
 
-# Event Filtering
+Starknet events use a key-based system for efficient filtering. Understanding this system helps you build efficient event listeners and decoders.
 
-## Summary
-- TODO: one-paragraph overview
+## Event Structure
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+Every Starknet event has two parts:
 
-## Examples
-```ts
-// TODO: add example
+```
+┌─────────────────────────────────────┐
+│              Event                   │
+├─────────────┬───────────────────────┤
+│    Keys     │         Data          │
+│  (indexed)  │     (non-indexed)     │
+├─────────────┼───────────────────────┤
+│ keys[0]     │ data[0]               │
+│ keys[1]     │ data[1]               │
+│ keys[2]     │ ...                   │
+│ ...         │                       │
+└─────────────┴───────────────────────┘
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+### Keys (Indexed)
+
+- First key is always the **event selector** (hash of event name)
+- Subsequent keys are **indexed event parameters**
+- Searchable via RPC filter API
+- Limited to single-felt values per key position
+
+### Data (Non-Indexed)
+
+- Not searchable
+- Can contain multi-felt types (u256, arrays, structs)
+- No size limit
+
+## Event Definition
+
+In the ABI, `kind` specifies where each parameter goes:
+
+```typescript
+{
+  type: 'event',
+  name: 'Transfer',
+  kind: 'struct',
+  members: [
+    { name: 'from', type: 'ContractAddress', kind: 'key' },   // keys[1]
+    { name: 'to', type: 'ContractAddress', kind: 'key' },     // keys[2]
+    { name: 'value', type: 'u256', kind: 'data' },            // data[0..1]
+  ]
+}
+```
+
+## The Keys Array
+
+For a Transfer event:
+
+```
+keys[0] = starknet_keccak("Transfer") mod 2^250  (selector)
+keys[1] = from_address
+keys[2] = to_address
+```
+
+## Filtering by Keys
+
+### RPC Filter Format
+
+Starknet RPC uses a `keys` parameter with OR semantics per position:
+
+```typescript
+{
+  from_block: { block_number: 100000 },
+  to_block: { block_number: 100100 },
+  keys: [
+    ['0x99cd8bde55...'],     // Position 0: event selector
+    ['0x123...', '0x456...'], // Position 1: from (OR)
+    [],                        // Position 2: to (wildcard)
+  ]
+}
+```
+
+### Rules
+
+| Filter | Meaning |
+|--------|---------|
+| `['0x123']` | Exact match |
+| `['0x123', '0x456']` | Match either (OR) |
+| `[]` | Match any (wildcard) |
+
+## Kundera's Typed Filtering
+
+Kundera provides ABI-aware filtering:
+
+```typescript
+import { decodeEvents } from 'kundera/abi';
+
+// Filter by event name
+const { result } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+});
+
+// Filter by indexed argument
+const { result } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { from: myAddress },
+});
+
+// OR filter on indexed argument
+const { result } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { from: [address1, address2] },
+});
+```
+
+Kundera automatically:
+1. Computes the event selector
+2. Encodes argument values to the correct key positions
+3. Handles multi-felt types (u256 as indexed key uses 2 positions)
+
+## Multi-Felt Keys
+
+When a multi-felt type (like u256) is indexed, it occupies multiple key positions:
+
+```typescript
+// Event with u256 as key
+{
+  type: 'event',
+  name: 'AmountEvent',
+  members: [
+    { name: 'amount', type: 'u256', kind: 'key' }, // keys[1] and keys[2]
+    { name: 'sender', type: 'ContractAddress', kind: 'data' },
+  ]
+}
+
+// keys[0] = selector
+// keys[1] = amount_low
+// keys[2] = amount_high
+```
+
+<Warning>
+OR arrays are not supported for multi-felt indexed types. Use exact match only.
+</Warning>
+
+## Compiling Filters
+
+Pre-compile filters for repeated use:
+
+```typescript
+import { compileEventFilter } from 'kundera/abi';
+
+const { result: filter } = compileEventFilter(abi, 'Transfer', {
+  from: myAddress,
+});
+
+// filter.selector = event selector bigint
+// filter.argKeys = [[myAddress], []] (from exact, to wildcard)
+```
+
+## Raw Keys Escape Hatch
+
+For complex filters, use `rawKeys` directly:
+
+```typescript
+const { result } = decodeEvents(receipt, abi, {
+  rawKeys: [
+    [computeSelector('Transfer')],  // Exact selector
+    [address1, address2],           // from: OR
+    [],                              // to: wildcard
+  ],
+});
+```
+
+## Filtering on Receipt vs RPC
+
+| Approach | Use Case |
+|----------|----------|
+| `decodeEvents(receipt, abi, filter)` | Filter events you already have |
+| RPC `starknet_getEvents` | Query events from blockchain |
+
+For RPC queries, compile your filter and pass to the RPC call:
+
+```typescript
+const filter = compileEventFilter(abi, 'Transfer', { from: myAddress });
+
+// Use with RPC (convert to hex strings for API)
+const events = await provider.getEvents({
+  from_block: { block_number: startBlock },
+  to_block: { block_number: endBlock },
+  address: contractAddress,
+  keys: [
+    [filter.selector.toString(16)],
+    ...filter.argKeys.map(k => k.map(v => '0x' + v.toString(16))),
+  ],
+});
+```
+
+## Best Practices
+
+1. **Index searchable fields**: Put fields you'll filter by as `kind: 'key'`
+2. **Use specific filters**: Narrow filters = faster queries
+3. **Paginate large ranges**: Use continuation tokens for many events
+4. **Cache selectors**: Compute once, reuse for multiple queries
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Events Guide" icon="bell" href="/guides/abi/events">
+    Practical event decoding.
+  </Card>
+  <Card title="Event Listening" icon="rss" href="/recipes/event-listening">
+    Subscribe to real-time events.
+  </Card>
+</CardGroup>

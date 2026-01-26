@@ -1,22 +1,216 @@
 ---
 title: Account API
-description: Account & signer APIs.
+description: Account, signer, and wallet account APIs.
 ---
 
-# Account API
+Manage Starknet accounts for signing and executing transactions.
 
-## Summary
-- TODO: one-paragraph overview
+## Imports
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
-
-## Examples
-```ts
-// TODO: add example
+```typescript
+import {
+  // Classes
+  Account,
+  WalletAccount,
+  PrivateKeySigner,
+  // Factories
+  createAccount,
+  createSigner,
+  createWalletAccount,
+  // Discovery
+  isAccountDeployed,
+  getAccountNonce,
+  getAccountClassHash,
+  // Deployment
+  estimateDeployAccount,
+  deployAccountIfNeeded,
+  // Factory helpers
+  connectAccountFromWallet,
+  createAccountFromSigner,
+  // Hash utilities
+  computeContractAddress,
+  computeInvokeV3Hash,
+  // Types
+  type SignerInterface,
+  type Call,
+  type TypedData,
+} from 'kundera/account';
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Factories
+
+### createAccount
+
+Create an account from provider, address, and signer.
+
+```typescript
+function createAccount(
+  provider: Provider,
+  address: string,
+  signer: SignerInterface,
+): Account
+```
+
+```typescript
+const signer = createSigner('0x_PRIVATE_KEY');
+const account = createAccount(provider, '0x_ADDRESS', signer);
+```
+
+### createSigner
+
+Create a signer from a private key.
+
+```typescript
+function createSigner(privateKey: string): PrivateKeySigner
+```
+
+### createWalletAccount
+
+Create account from a wallet provider.
+
+```typescript
+const walletAccount = createWalletAccount(walletProvider, provider);
+```
+
+## Account
+
+### execute
+
+Execute one or more calls.
+
+```typescript
+await account.execute([
+  {
+    contractAddress: '0x...',
+    entrypoint: 'transfer',
+    calldata: [recipient, amountLow, amountHigh],
+  },
+]);
+// Returns { transaction_hash: string }
+```
+
+### signMessage
+
+Sign typed data (SNIP-12).
+
+```typescript
+const signature = await account.signMessage(typedData);
+```
+
+### Properties
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `address` | `string` | Account contract address |
+| `signer` | `SignerInterface` | Signing implementation |
+
+## Discovery Helpers
+
+### isAccountDeployed
+
+Check if an account contract exists.
+
+```typescript
+const deployed = await isAccountDeployed(provider, address);
+```
+
+### getAccountNonce
+
+Get current account nonce.
+
+```typescript
+const nonce = await getAccountNonce(provider, address);
+```
+
+### getAccountClassHash
+
+Get the class hash of a deployed account.
+
+```typescript
+const classHash = await getAccountClassHash(provider, address);
+```
+
+## Deployment Helpers
+
+### estimateDeployAccount
+
+Estimate deployment fee.
+
+```typescript
+const { result, error } = await estimateDeployAccount(provider, {
+  classHash: '0x...',
+  constructorCalldata: [...],
+  salt: '0x...',
+});
+```
+
+### deployAccountIfNeeded
+
+Deploy if not already deployed.
+
+```typescript
+const { result, error } = await deployAccountIfNeeded(provider, signer, {
+  classHash: '0x...',
+  constructorCalldata: [...],
+  salt: '0x...',
+  address: '0x...',
+});
+
+if (result.deployed) {
+  console.log('TX:', result.transactionHash);
+}
+```
+
+## Hash Utilities
+
+### computeContractAddress
+
+Compute deterministic address.
+
+```typescript
+const address = computeContractAddress({
+  classHash: '0x...',
+  constructorCalldata: [...],
+  salt: '0x...',
+});
+```
+
+### computeInvokeV3Hash
+
+Compute transaction hash for signing.
+
+```typescript
+const hash = computeInvokeV3Hash(transaction);
+```
+
+## Types
+
+### Call
+
+```typescript
+interface Call {
+  contractAddress: string;
+  entrypoint: string;
+  calldata: (string | bigint)[];
+}
+```
+
+### SignerInterface
+
+```typescript
+interface SignerInterface {
+  sign(messageHash: string): Promise<[string, string]>;
+  getPublicKey(): Promise<string>;
+}
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Create Account" icon="user-plus" href="/guides/account/create-account">
+    Account creation guide.
+  </Card>
+  <Card title="Wallet API" icon="wallet" href="/api/wallet">
+    Browser wallet connection.
+  </Card>
+</CardGroup>

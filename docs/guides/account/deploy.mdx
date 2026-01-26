@@ -1,22 +1,116 @@
 ---
-title: Deploy Accounts
-description: Deploy account contracts safely.
+title: Deploy Account
+description: Deploy new account contracts to Starknet.
 ---
 
-# Deploy Accounts
+Starknet accounts are smart contracts that must be deployed before use. Kundera provides helpers to estimate fees and deploy accounts safely.
 
-## Summary
-- TODO: one-paragraph overview
+## Check Deployment Status
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+Before deploying, check if the account already exists:
 
-## Examples
-```ts
-// TODO: add example
+```typescript
+import { isAccountDeployed } from 'kundera/account';
+
+const deployed = await isAccountDeployed(provider, accountAddress);
+
+if (deployed) {
+  console.log('Account already deployed');
+} else {
+  console.log('Account needs deployment');
+}
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Estimate Deployment Fee
+
+Get the fee estimate before deploying:
+
+```typescript
+import { estimateDeployAccount } from 'kundera/account';
+
+const { result, error } = await estimateDeployAccount(provider, {
+  classHash: '0x_ACCOUNT_CLASS_HASH', // ArgentX, Braavos, etc.
+  constructorCalldata: [...],
+  salt: '0x_RANDOM_SALT',
+});
+
+if (error) {
+  console.error('Estimate failed:', error.message);
+} else {
+  console.log('Estimated fee:', result.overall_fee);
+}
+```
+
+## Deploy If Needed
+
+The `deployAccountIfNeeded` helper handles the full flow:
+
+```typescript
+import { deployAccountIfNeeded } from 'kundera/account';
+
+const { result, error } = await deployAccountIfNeeded(
+  provider,
+  signer,
+  {
+    classHash: '0x_ACCOUNT_CLASS_HASH',
+    constructorCalldata: [...],
+    salt: '0x_RANDOM_SALT',
+    address: '0x_EXPECTED_ADDRESS',
+  },
+);
+
+if (error) {
+  console.error('Deploy failed:', error.message);
+} else if (result.deployed) {
+  console.log('Account deployed:', result.transactionHash);
+} else {
+  console.log('Account was already deployed');
+}
+```
+
+<Tip>
+`deployAccountIfNeeded` is idempotent—it's safe to call even if the account is already deployed.
+</Tip>
+
+## Compute Account Address
+
+Account addresses are deterministic based on class hash, salt, and constructor args:
+
+```typescript
+import { computeContractAddress } from 'kundera/account';
+
+const address = computeContractAddress({
+  classHash: '0x_ACCOUNT_CLASS_HASH',
+  constructorCalldata: [...],
+  salt: '0x_YOUR_SALT',
+});
+
+console.log('Computed address:', address);
+```
+
+## Deployment Flow
+
+```
+1. Compute expected address from class hash + salt + constructor args
+2. Fund the address with ETH/STRK for gas
+3. Call deployAccountIfNeeded
+4. Wait for transaction confirmation
+5. Account is ready to use
+```
+
+<Warning>
+## Fund Before Deploy
+
+The computed address must have funds to pay for deployment gas. Send ETH or STRK to the address before calling deploy.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Create Account" icon="user-plus" href="/guides/account/create-account">
+    Create account instances.
+  </Card>
+  <Card title="Account Abstraction" icon="shield" href="/concepts/account-abstraction">
+    Understand Starknet accounts.
+  </Card>
+</CardGroup>

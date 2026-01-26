@@ -12,30 +12,30 @@ Want to get started quickly? Check out [Getting Started](/getting-started) to ma
 ## Simple, Intuitive API
 
 ```typescript
-import { createHttpProvider } from 'kundera/provider';
-import { createAccount } from 'kundera/account';
-import { Felt } from 'kundera/primitives';
+import { createClient } from 'kundera/rpc';
+import { createAccount, createSigner } from 'kundera/account';
+import { getContract } from 'kundera/contract';
 
-// Create a provider
-const provider = createHttpProvider({
+// Create an RPC client
+const client = createClient({
   url: 'https://starknet-mainnet.public.blastapi.io',
 });
 
 // Create an account
-const account = createAccount({
-  address: Felt.from('0x123...'),
-  privateKey: Felt.from('0xabc...'),
-  provider,
-});
+const signer = createSigner('0x_YOUR_PRIVATE_KEY');
+const account = createAccount(client, '0x_YOUR_ADDRESS', signer);
 
 // Read from a contract
-const balance = await provider.callContract({
-  contractAddress: Felt.from(
-    '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
-  ),
-  entrypoint: 'balanceOf',
-  calldata: [account.address],
+const contract = getContract({
+  abi: ERC20_ABI,
+  address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+  client,
 });
+
+const { result, error } = await contract.read('balance_of', [account.address]);
+if (!error) {
+  console.log('Balance:', result[0]);
+}
 ```
 
 ## What's Included

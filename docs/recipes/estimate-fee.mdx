@@ -1,22 +1,193 @@
 ---
 title: Estimate Fee
-description: Estimate fees for transactions.
+description: Estimate transaction fees before execution.
 ---
 
-# Estimate Fee
+Estimate fees before sending transactions to avoid surprises and ensure sufficient balance.
 
-## Summary
-- TODO: one-paragraph overview
+## Estimate Contract Call Fee
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+Use `estimateFee` on a contract instance:
 
-## Examples
-```ts
-// TODO: add example
+```typescript
+import { createClient } from 'kundera/rpc';
+import { createAccount, createSigner } from 'kundera/account';
+import { getContract } from 'kundera/contract';
+
+const client = createClient({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+});
+
+const signer = createSigner(process.env.PRIVATE_KEY!);
+const account = createAccount(client, accountAddress, signer);
+
+const contract = getContract({
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  client,
+  account,
+});
+
+const { result, error } = await contract.estimateFee('transfer', [
+  recipientAddress,
+  1000000000000000000n,
+]);
+
+if (!error) {
+  console.log('Gas consumed:', result.gasConsumed);
+  console.log('Gas price:', result.gasPrice);
+  console.log('Overall fee:', result.overallFee);
+}
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Fee Estimate Fields
+
+| Field | Description |
+|-------|-------------|
+| `gasConsumed` | Computational gas units used |
+| `gasPrice` | Current gas price |
+| `overallFee` | Total fee in fee token (ETH or STRK) |
+
+## Check Balance Before Transfer
+
+Ensure account has enough for amount + fee:
+
+```typescript
+// Get fee estimate
+const { result: fee } = await contract.estimateFee('transfer', [
+  recipient,
+  amount,
+]);
+
+// Get current balance
+const { result: balance } = await contract.read('balance_of', [account.address]);
+
+// Check if sufficient
+const totalNeeded = amount + fee.overallFee;
+if (balance[0] < totalNeeded) {
+  console.error(`Need ${totalNeeded}, have ${balance[0]}`);
+  return;
+}
+
+// Safe to execute
+await contract.write('transfer', [recipient, amount]);
+```
+
+## Estimate Multicall Fee
+
+For batched operations:
+
+```typescript
+// Prepare calls
+const call1 = contract.populate('approve', [spender, amount]);
+const call2 = otherContract.populate('stake', [amount]);
+
+// Estimate the batch
+const fee = await account.estimateFee([call1.result!, call2.result!]);
+console.log('Batch fee:', fee.overallFee);
+```
+
+## Fee Token Selection
+
+Starknet V3 supports paying fees in different tokens:
+
+| Version | Fee Token | Notes |
+|---------|-----------|-------|
+| V1 | ETH | Legacy transactions |
+| V3 | STRK | Recommended |
+
+Kundera uses V3 by default.
+
+## Add Fee Buffer
+
+Add a buffer for gas price fluctuations:
+
+```typescript
+const { result: estimate } = await contract.estimateFee('transfer', [to, amount]);
+
+// Add 10% buffer
+const feeWithBuffer = estimate.overallFee + (estimate.overallFee / 10n);
+
+console.log('Estimated:', estimate.overallFee);
+console.log('With buffer:', feeWithBuffer);
+```
+
+## Estimate Deploy Account Fee
+
+Estimate account deployment cost:
+
+```typescript
+import { estimateDeployAccount } from 'kundera/account';
+
+const { result, error } = await estimateDeployAccount(provider, {
+  classHash: ACCOUNT_CLASS_HASH,
+  constructorCalldata: [publicKey],
+  salt: publicKey,
+});
+
+if (!error) {
+  console.log('Deploy fee:', result.overallFee);
+}
+```
+
+## Handle Estimation Errors
+
+Estimation can fail if the transaction would revert:
+
+```typescript
+const { result, error } = await contract.estimateFee('transfer', [to, amount]);
+
+if (error) {
+  // Transaction would fail
+  console.error('Cannot estimate:', error.message);
+  // Common reasons:
+  // - Insufficient balance
+  // - Invalid recipient
+  // - Contract reverted
+  return;
+}
+```
+
+## Display Fee to User
+
+Format fees for display:
+
+```typescript
+const { result: fee } = await contract.estimateFee('transfer', [to, amount]);
+
+// Convert to human-readable (18 decimals for STRK/ETH)
+const feeInToken = Number(fee.overallFee) / 1e18;
+console.log(`Estimated fee: ${feeInToken.toFixed(6)} STRK`);
+```
+
+## Compare Fee Across Providers
+
+Check fees on different RPC providers:
+
+```typescript
+const clients = [
+  createClient({ url: 'https://provider1.io' }),
+  createClient({ url: 'https://provider2.io' }),
+];
+
+for (const c of clients) {
+  const contract = getContract({ abi, address, client: c, account });
+  const { result } = await contract.estimateFee('transfer', [to, amount]);
+  console.log('Fee:', result?.overallFee);
+}
+```
+
+<Tip>
+Estimation simulates the transaction without actually executing it. The actual fee may differ slightly due to gas price changes between estimation and execution.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Transfer Tokens" icon="paper-plane" href="/recipes/transfer">
+    Token transfer recipe.
+  </Card>
+  <Card title="Contract API" icon="file-contract" href="/api/contract">
+    Full contract API reference.
+  </Card>
+</CardGroup>

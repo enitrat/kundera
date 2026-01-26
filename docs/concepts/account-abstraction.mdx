@@ -1,22 +1,175 @@
 ---
 title: Account Abstraction
-description: Starknet V3 account model.
+description: Starknet's native account abstraction and how Kundera supports it.
 ---
 
-# Account Abstraction
+Starknet has native account abstraction—every account is a smart contract. This enables powerful features like multi-sig, social recovery, and custom validation logic.
 
-## Summary
-- TODO: one-paragraph overview
+## What is Account Abstraction?
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+On Starknet, there are no externally-owned accounts (EOAs) like Ethereum. Every account is a deployed smart contract that:
 
-## Examples
-```ts
-// TODO: add example
+- **Validates transactions** using custom logic
+- **Executes calls** via `__execute__` entrypoint
+- **Pays fees** from its own balance
+
+This means accounts can implement any signature scheme, multi-party signing, spending limits, or session keys.
+
+## Account Contract Model
+
+```
+┌──────────────────────────────────────────┐
+│              Account Contract             │
+├──────────────────────────────────────────┤
+│  __validate__        Verify signature     │
+│  __execute__         Execute transaction  │
+│  __validate_declare__ Validate declare    │
+│  __validate_deploy__  Validate deployment │
+└──────────────────────────────────────────┘
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+### Validation
+
+The `__validate__` function checks if a transaction should proceed:
+
+- Verify the signature matches the expected signer
+- Check any custom rules (spending limits, time locks)
+- Return `VALID` or revert
+
+### Execution
+
+If validation passes, `__execute__` runs the actual transaction calls.
+
+## Standard Account Types
+
+| Account | Features |
+|---------|----------|
+| **OpenZeppelin** | Simple single-signer account |
+| **ArgentX** | Guardian recovery, multi-sig support |
+| **Braavos** | Hardware signer support, multi-sig |
+
+Kundera works with all standard account implementations.
+
+## Creating Accounts with Kundera
+
+### From Private Key
+
+```typescript
+import { createAccount, createSigner } from 'kundera/account';
+
+const signer = createSigner(privateKey);
+const account = createAccount(provider, accountAddress, signer);
+```
+
+### From Browser Wallet
+
+```typescript
+import { connectWallet } from 'kundera/wallet';
+import { connectAccountFromWallet } from 'kundera/account';
+
+const { result: connection } = await connectWallet();
+const account = await connectAccountFromWallet(connection.provider, provider);
+```
+
+## Transaction Flow
+
+1. **Build Transaction**: Create calls with encoded calldata
+2. **Sign**: Account's signer signs the transaction hash
+3. **Submit**: Send to sequencer via `invoke` RPC
+4. **Validate**: Sequencer runs `__validate__` on-chain
+5. **Execute**: If valid, runs `__execute__` with the calls
+
+```typescript
+// Single call
+await account.execute([{
+  contractAddress: tokenAddress,
+  entrypoint: 'transfer',
+  calldata: [recipient, amountLow, amountHigh],
+}]);
+
+// Multicall (atomic batch)
+await account.execute([
+  { contractAddress: token1, entrypoint: 'transfer', calldata: [...] },
+  { contractAddress: token2, entrypoint: 'transfer', calldata: [...] },
+]);
+```
+
+## Account Discovery
+
+Check if an account is deployed:
+
+```typescript
+import { isAccountDeployed, getAccountNonce } from 'kundera/account';
+
+const deployed = await isAccountDeployed(provider, address);
+const nonce = await getAccountNonce(provider, address);
+```
+
+## Account Deployment
+
+New accounts must be deployed before use:
+
+```typescript
+import { deployAccountIfNeeded, computeContractAddress } from 'kundera/account';
+
+// Compute address from class hash + salt + constructor args
+const address = computeContractAddress({
+  classHash: ACCOUNT_CLASS_HASH,
+  constructorCalldata: [publicKey],
+  salt: publicKey,
+});
+
+// Deploy if not already deployed
+const { result } = await deployAccountIfNeeded(provider, signer, {
+  classHash: ACCOUNT_CLASS_HASH,
+  constructorCalldata: [publicKey],
+  salt: publicKey,
+  address,
+});
+
+if (result.deployed) {
+  console.log('Deployed:', result.transactionHash);
+}
+```
+
+<Tip>
+Most users get accounts from wallets (ArgentX, Braavos) which handle deployment automatically.
+</Tip>
+
+## Signing Messages
+
+Sign typed data for off-chain verification:
+
+```typescript
+const signature = await account.signMessage(typedData);
+```
+
+Typed data follows SNIP-12 (Starknet's equivalent of EIP-712).
+
+## Fee Mechanisms
+
+Starknet V3 supports multiple fee payment options:
+
+| Fee Type | Token | Description |
+|----------|-------|-------------|
+| V1 | ETH | Pay with wrapped ETH |
+| V3 | STRK | Pay with native STRK token |
+
+Kundera uses V3 transactions by default.
+
+## Security Considerations
+
+- **Private keys**: Never expose in client-side code
+- **Deployment**: Verify class hash matches expected account implementation
+- **Signatures**: Use domain separation in typed data to prevent replay attacks
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Create Account" icon="user-plus" href="/guides/account/create-account">
+    Account creation guide.
+  </Card>
+  <Card title="Account API" icon="code" href="/api/account">
+    Full account API reference.
+  </Card>
+</CardGroup>

@@ -8,19 +8,14 @@ Kundera follows a **data-first** API design where functions take the data they o
 ## The Pattern
 
 ```typescript
-import { encodeCalldata, decodeCalldata, Felt } from 'kundera';
+import { encodeCalldata, decodeCalldata } from 'kundera/abi';
 
-// Data-first: the calldata comes first
-const encoded = encodeCalldata(calldata, abi);
-const decoded = decodeCalldata(encoded, abi);
+// Data-first: the ABI comes first, then the function name, then args
+const { result: encoded } = encodeCalldata(abi, 'transfer', [recipient, amount]);
+const { result: decoded } = decodeCalldata(abi, 'transfer', rawCalldata);
 
-// Enables composition
-const result = pipe(
-  rawInput,
-  (input) => parseInput(input),
-  (calldata) => encodeCalldata(calldata, abi),
-  (encoded) => sendTransaction(encoded),
-);
+// Functions take data as input, return structured results
+const { result, error } = await contract.read('balance_of', [address]);
 ```
 
 ## Why Data-First?
@@ -33,18 +28,24 @@ const result = pipe(
 | **No Hidden State** | No global configuration or singletons |
 
 <Warning>
-## Avoid Method Chaining
+## Prefer Explicit Imports
 
-Kundera intentionally avoids method chaining patterns like `account.send().wait()`. While convenient, chaining couples functionality and prevents tree-shaking.
+Kundera uses explicit module imports instead of method chaining. This enables better tree-shaking and makes dependencies clear.
 
 ```typescript
-// Prefer this (tree-shakeable)
-import { sendTransaction, waitForTransaction } from 'kundera';
-const hash = await sendTransaction(account, tx);
-const receipt = await waitForTransaction(provider, hash);
+// Explicit imports (tree-shakeable)
+import { getContract } from 'kundera/contract';
+import { createClient } from 'kundera/rpc';
 
-// Over this (not tree-shakeable)
-const receipt = await account.send(tx).wait();
+const client = createClient({ url: '...' });
+const contract = getContract({ abi, address, client, account });
+
+const { result } = await contract.write('transfer', [to, amount]);
+
+// Poll for confirmation
+const { result: receipt } = await client.starknet_getTransactionReceipt(
+  result.transactionHash
+);
 ```
 </Warning>
 

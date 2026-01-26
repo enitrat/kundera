@@ -1,22 +1,231 @@
 ---
 title: Security
-description: Crypto assumptions and best practices.
+description: Cryptographic assumptions, key management, and best practices.
 ---
 
-# Security
+Kundera handles sensitive cryptographic operations. Understanding the security model helps you build safe applications.
 
-## Summary
-- TODO: one-paragraph overview
+## Cryptographic Primitives
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
+### ECDSA (STARK Curve)
 
-## Examples
-```ts
-// TODO: add example
+Starknet uses ECDSA over the STARK curve for signatures:
+
+- **Curve**: STARK curve (not secp256k1)
+- **Hash**: Pedersen hash for message hashing
+- **Signature**: (r, s) pair
+
+```typescript
+import { sign, verify, getPublicKey } from 'kundera/crypto';
+
+const publicKey = getPublicKey(privateKey);
+const signature = sign(privateKey, messageHash);
+const valid = verify(publicKey, messageHash, signature);
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+### Hash Functions
+
+| Function | Use Case |
+|----------|----------|
+| **Pedersen** | Transaction hashes, contract addresses |
+| **Poseidon** | Newer contracts, more efficient |
+| **Starknet Keccak** | Function/event selectors |
+
+```typescript
+import { pedersenHash, poseidonHash, computeSelector } from 'kundera/crypto';
+
+const hash1 = pedersenHash([a, b]);
+const hash2 = poseidonHash([a, b, c]);
+const selector = computeSelector('transfer');
+```
+
+## Key Management
+
+### Private Key Security
+
+<Warning>
+## Never Expose Private Keys
+
+Private keys should NEVER appear in:
+- Client-side JavaScript
+- Source code (even in tests)
+- Logs or error messages
+- Version control
+</Warning>
+
+### Recommended Approaches
+
+| Environment | Approach |
+|-------------|----------|
+| **Browser** | Use wallet extensions (ArgentX, Braavos) |
+| **Server** | Environment variables or secret managers |
+| **Testing** | Devnet accounts (funded test accounts) |
+
+```typescript
+// ✅ Good: Environment variable
+const signer = createSigner(process.env.PRIVATE_KEY!);
+
+// ❌ Bad: Hardcoded
+const signer = createSigner('0x123...');
+
+// ✅ Good: Browser wallet
+const { result } = await connectWallet();
+const account = await connectAccountFromWallet(result.provider, provider);
+```
+
+## Signature Verification
+
+### On-Chain
+
+Contracts verify signatures in `__validate__`:
+
+```cairo
+fn is_valid_signature(hash: felt252, sig: Array<felt252>) -> felt252
+```
+
+### Off-Chain
+
+Verify signatures without sending a transaction:
+
+```typescript
+import { verify, getPublicKey } from 'kundera/crypto';
+
+const publicKey = getPublicKey(privateKey);
+const isValid = verify(publicKey, messageHash, signature);
+```
+
+## Typed Data (SNIP-12)
+
+Use typed data to prevent signature replay attacks:
+
+```typescript
+const typedData = {
+  types: {
+    StarkNetDomain: [...],
+    Message: [...],
+  },
+  primaryType: 'Message',
+  domain: {
+    name: 'MyApp',           // Unique app name
+    version: '1',            // App version
+    chainId: '0x534e5f4d41494e', // SN_MAIN or SN_SEPOLIA
+  },
+  message: { ... },
+};
+
+const signature = await account.signMessage(typedData);
+```
+
+### Domain Separation
+
+Always include a unique domain to prevent:
+- **Cross-app replay**: Signature from App A used in App B
+- **Cross-chain replay**: Mainnet signature used on Sepolia
+
+## Transaction Security
+
+### Validate Before Signing
+
+Always verify transaction details before signing:
+
+```typescript
+// Estimate fee first
+const { result: fee } = await contract.estimateFee('transfer', [to, amount]);
+console.log('Fee:', fee.overallFee);
+
+// Check calldata
+const { result: call } = contract.populate('transfer', [to, amount]);
+console.log('Calldata:', call.calldata);
+
+// Execute only after verification
+await account.execute([call]);
+```
+
+### Multicall Atomicity
+
+Batch operations execute atomically—all succeed or all revert:
+
+```typescript
+// Atomic: both transfers happen or neither does
+await account.execute([
+  tokenA.populate('transfer', [recipient, amountA]),
+  tokenB.populate('transfer', [recipient, amountB]),
+]);
+```
+
+## RPC Security
+
+### HTTPS Only
+
+Always use HTTPS for RPC endpoints:
+
+```typescript
+// ✅ Good
+createHttpProvider({ url: 'https://secure.rpc.io' });
+
+// ❌ Bad
+createHttpProvider({ url: 'http://insecure.rpc.io' });
+```
+
+### API Key Protection
+
+Protect RPC API keys:
+
+```typescript
+// Server-side: Use environment variables
+const provider = createHttpProvider({
+  url: process.env.RPC_URL!,
+  headers: { 'x-api-key': process.env.RPC_KEY! },
+});
+
+// Client-side: Use a proxy
+const provider = createHttpProvider({
+  url: '/api/rpc-proxy', // Your backend proxies to RPC
+});
+```
+
+## Common Vulnerabilities
+
+| Vulnerability | Prevention |
+|---------------|------------|
+| **Key exposure** | Use wallets, env vars, never hardcode |
+| **Replay attacks** | Use typed data with domain separation |
+| **Phishing** | Verify contract addresses, use checksums |
+| **Front-running** | Use commit-reveal patterns when needed |
+| **Integer overflow** | Cairo handles this, but validate inputs |
+
+## Crypto Backend Selection
+
+Kundera supports native and WASM crypto:
+
+```typescript
+// Native (Bun/Node with FFI) - preferred for production
+import { isNativeAvailable } from 'kundera/crypto';
+
+if (!isNativeAvailable()) {
+  // Fallback to WASM
+  await loadWasmCrypto();
+}
+```
+
+Native crypto is faster and uses audited libraries. WASM is browser-compatible.
+
+## Security Checklist
+
+- [ ] Private keys stored securely (env vars, secrets manager)
+- [ ] Using HTTPS for all RPC connections
+- [ ] Typed data includes unique domain
+- [ ] Transaction details verified before signing
+- [ ] API keys not exposed in client code
+- [ ] Using wallet extensions for user-facing apps
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Crypto API" icon="lock" href="/api/crypto">
+    Cryptographic function reference.
+  </Card>
+  <Card title="Sign Typed Data" icon="signature" href="/guides/account/sign-typed-data">
+    SNIP-12 signing guide.
+  </Card>
+</CardGroup>

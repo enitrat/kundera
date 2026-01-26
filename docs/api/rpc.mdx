@@ -1,22 +1,201 @@
 ---
 title: RPC Client API
-description: StarknetRpcClient methods.
+description: Low-level Starknet RPC client.
 ---
 
-# RPC Client API
+The RPC client provides a thin wrapper over JSON-RPC for direct Starknet node communication.
 
-## Summary
-- TODO: one-paragraph overview
+## Imports
 
-## Key Points
-- TODO: key concept 1
-- TODO: key concept 2
-- TODO: key concept 3
-
-## Examples
-```ts
-// TODO: add example
+```typescript
+import {
+  StarknetRpcClient,
+  createClient,
+  mainnet,
+  sepolia,
+  type RpcClientConfig,
+  type BlockId,
+  type BlockTag,
+  type FunctionCall,
+} from 'kundera/rpc';
 ```
 
-## Notes
-- TODO: constraints, caveats, or links
+## Factories
+
+### createClient
+
+Creates an RPC client instance.
+
+```typescript
+function createClient(config: RpcClientConfig): StarknetRpcClient
+```
+
+```typescript
+const client = createClient({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+});
+
+const block = await client.getBlockNumber();
+```
+
+### mainnet / sepolia
+
+Convenience factories for public endpoints.
+
+```typescript
+const mainnetClient = mainnet();
+const sepoliaClient = sepolia();
+```
+
+## StarknetRpcClient
+
+### Block Methods
+
+```typescript
+// Get current block number
+await client.getBlockNumber();
+
+// Get block with transactions
+await client.getBlockWithTxs(blockId);
+
+// Get block with transaction hashes
+await client.getBlockWithTxHashes(blockId);
+
+// Get state update
+await client.getStateUpdate(blockId);
+```
+
+### Transaction Methods
+
+```typescript
+// Get transaction by hash
+await client.getTransactionByHash(txHash);
+
+// Get transaction receipt
+await client.getTransactionReceipt(txHash);
+
+// Get transaction status
+await client.getTransactionStatus(txHash);
+```
+
+### Contract Methods
+
+```typescript
+// Call a contract (view function)
+await client.callContract({
+  contract_address: '0x...',
+  entry_point_selector: '0x...',
+  calldata: ['0x...'],
+}, blockId);
+
+// Get storage value
+await client.getStorageAt(contractAddress, key, blockId);
+
+// Get class hash at address
+await client.getClassHashAt(contractAddress, blockId);
+
+// Get class definition
+await client.getClass(classHash, blockId);
+```
+
+### Account Methods
+
+```typescript
+// Get nonce
+await client.getNonce(accountAddress, blockId);
+
+// Estimate fee
+await client.estimateFee(transaction, simulationFlags, blockId);
+
+// Send transaction
+await client.addInvokeTransaction(invokeTransaction);
+await client.addDeclareTransaction(declareTransaction);
+await client.addDeployAccountTransaction(deployAccountTransaction);
+```
+
+### Chain Methods
+
+```typescript
+// Get chain ID
+await client.getChainId();
+
+// Get syncing status
+await client.syncing();
+
+// Get spec version
+await client.specVersion();
+```
+
+## Types
+
+### BlockId
+
+```typescript
+type BlockId =
+  | { block_number: number }
+  | { block_hash: string }
+  | BlockTag;
+
+type BlockTag = 'latest' | 'pending';
+```
+
+### FunctionCall
+
+```typescript
+interface FunctionCall {
+  contract_address: string;
+  entry_point_selector: string;
+  calldata: string[];
+}
+```
+
+### RpcError
+
+```typescript
+interface RpcError {
+  code: number;
+  message: string;
+  data?: unknown;
+}
+```
+
+## Error Codes
+
+| Code | Name | Description |
+|------|------|-------------|
+| `20` | CONTRACT_NOT_FOUND | Contract not deployed |
+| `24` | BLOCK_NOT_FOUND | Block doesn't exist |
+| `25` | TRANSACTION_HASH_NOT_FOUND | Transaction not found |
+| `27` | INVALID_TXN_NONCE | Nonce mismatch |
+| `40` | CONTRACT_ERROR | Execution reverted |
+
+## Example
+
+```typescript
+import { createClient } from 'kundera/rpc';
+import { Felt252 } from 'kundera/primitives';
+
+const client = createClient({
+  url: 'https://starknet-mainnet.public.blastapi.io',
+});
+
+// Get ETH balance
+const balance = await client.callContract({
+  contract_address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+  entry_point_selector: '0x2e4263afad30923c891518314c3c95dbe830a16874e8abc5777a9a20b54c76e', // balanceOf
+  calldata: ['0x_YOUR_ADDRESS'],
+}, 'latest');
+
+console.log('Balance:', balance);
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider API" icon="plug" href="/api/provider">
+    Higher-level provider abstraction.
+  </Card>
+  <Card title="Contract API" icon="file-contract" href="/api/contract">
+    Type-safe contract interactions.
+  </Card>
+</CardGroup>

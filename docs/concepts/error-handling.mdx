@@ -8,16 +8,16 @@ Kundera uses an explicit **result/error pattern** instead of throwing exceptions
 ## The Pattern
 
 ```typescript
-import { sendTransaction } from 'kundera';
+import { getContract } from 'kundera/contract';
 
-const { result, error } = await sendTransaction(account, tx);
+const { result, error } = await contract.write('transfer', [recipient, amount]);
 
 if (error) {
   // Handle specific error types
-  if (error.code === 'INSUFFICIENT_FUNDS') {
-    console.log('Not enough balance');
-  } else if (error.code === 'NONCE_MISMATCH') {
-    console.log('Nonce out of sync');
+  if (error.code === 'ACCOUNT_REQUIRED') {
+    console.log('Need an account for writes');
+  } else if (error.code === 'ENCODE_ERROR') {
+    console.log('Invalid arguments');
   } else {
     console.log('Transaction failed:', error.message);
   }
@@ -44,11 +44,11 @@ The `error` field is always present in the return type. You must check it before
 
 ```typescript
 // WRONG: result might be undefined
-const { result } = await sendTransaction(account, tx);
+const { result } = await contract.write('transfer', [to, amount]);
 console.log(result.transactionHash); // Runtime error if failed!
 
 // RIGHT: check error first
-const { result, error } = await sendTransaction(account, tx);
+const { result, error } = await contract.write('transfer', [to, amount]);
 if (error) return handleError(error);
 console.log(result.transactionHash); // Safe!
 ```
