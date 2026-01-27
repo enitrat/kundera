@@ -99,6 +99,15 @@
             ]
           },
           {
+            "group": "Skills",
+            "icon": "puzzle-piece",
+            "pages": [
+              "skills/index",
+              "skills/wallet-modal",
+              "skills/contract-viem"
+            ]
+          },
+          {
             "group": "API Reference",
             "icon": "code",
             "pages": [
