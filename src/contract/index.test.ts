@@ -3,6 +3,7 @@
  */
 
 import { describe, expect, it, mock } from 'bun:test';
+import '../test-utils/setupCrypto';
 import { getContract, type Account } from './index.js';
 import type { Abi } from '../abi/index.js';
 import type { StarknetRpcClient } from '../rpc/client.js';

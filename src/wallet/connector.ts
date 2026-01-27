@@ -193,7 +193,13 @@ export async function connectWallet(
     }) as string;
 
     // Return single or multiple accounts based on option
-    const resultAccounts = allowMultiple ? accounts : [accounts[0]];
+    const first = accounts[0];
+    if (!first) {
+      return err(walletError('NO_ACCOUNTS', 'No accounts available from wallet.'));
+    }
+    const resultAccounts = allowMultiple
+      ? accounts.filter((a): a is string => typeof a === 'string')
+      : [first];
 
     return ok({
       provider,

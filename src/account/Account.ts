@@ -72,10 +72,14 @@ export class Account {
    */
   async getChainId(): Promise<string> {
     if (!this.chainId) {
-      this.chainId = await this.provider.request({
+      const chainId = (await this.provider.request({
         method: 'starknet_chainId',
         params: [],
-      });
+      })) as string;
+      this.chainId = chainId;
+    }
+    if (!this.chainId) {
+      throw new Error('Failed to resolve chain id');
     }
     return this.chainId;
   }
@@ -90,7 +94,7 @@ export class Account {
       method: 'starknet_getNonce',
       params: ['pending', this.address],
     });
-    return BigInt(result);
+    return BigInt(result as string);
   }
 
   // ============ Execute (INVOKE) ============
@@ -299,7 +303,11 @@ export class Account {
       ],
     });
 
-    return (result as FeeEstimate[])[0];
+    const estimate = (result as FeeEstimate[])[0];
+    if (!estimate) {
+      throw new Error('Fee estimate missing for invoke');
+    }
+    return estimate;
   }
 
   /**
@@ -343,7 +351,11 @@ export class Account {
       ],
     });
 
-    return (result as FeeEstimate[])[0];
+    const estimate = (result as FeeEstimate[])[0];
+    if (!estimate) {
+      throw new Error('Fee estimate missing for declare');
+    }
+    return estimate;
   }
 
   /**
@@ -383,7 +395,11 @@ export class Account {
       ],
     });
 
-    return (result as FeeEstimate[])[0];
+    const estimate = (result as FeeEstimate[])[0];
+    if (!estimate) {
+      throw new Error('Fee estimate missing for deploy account');
+    }
+    return estimate;
   }
 
   // ============ Message Signing ============

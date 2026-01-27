@@ -47,7 +47,14 @@ describe('Native FFI', () => {
       if (!isNativeAvailable()) return;
       const path = getNativeLibraryPath();
       expect(path).not.toBeNull();
-      expect(path).toContain('libstarknet_crypto_ffi');
+      if (path) {
+        const lower = path.toLowerCase();
+        if (lower.endsWith('.dll')) {
+          expect(lower).toContain('starknet_crypto_ffi.dll');
+        } else {
+          expect(path).toContain('libstarknet_crypto_ffi');
+        }
+      }
     });
   });
 

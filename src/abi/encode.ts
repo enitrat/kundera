@@ -248,7 +248,12 @@ function encodeTuple(
 
   const result: bigint[] = [];
   for (let i = 0; i < values.length; i++) {
-    const encoded = encodeByType(values[i], memberTypes[i], abi);
+    const value = values[i];
+    const memberType = memberTypes[i];
+    if (value === undefined || !memberType) {
+      throw new Error('Tuple encoding failed: missing value or type');
+    }
+    const encoded = encodeByType(value, memberType, abi);
     result.push(...encoded);
   }
 
@@ -323,6 +328,9 @@ function encodeEnum(
   }
 
   const variant = enumDef.entry.variants[variantIndex];
+  if (!variant) {
+    throw new Error(`Unknown variant index: ${variantIndex}`);
+  }
   const result: bigint[] = [BigInt(variantIndex)];
 
   // Encode variant data if not unit type
@@ -359,6 +367,9 @@ export function encodeArgs(
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
       const arg = args[i];
+      if (!input || arg === undefined) {
+        throw new Error('Argument encoding failed: missing input or argument');
+      }
       const encoded = encodeByType(arg, parseType(input.type), abi);
       result.push(...encoded);
     }

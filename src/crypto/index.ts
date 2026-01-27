@@ -18,6 +18,12 @@ let wasm: typeof import('../wasm-loader/index.js') | null = null;
 let wasmChecked = false;
 let wasmLoaded = false;
 
+function tryRequire(path: string): any | null {
+  const req = (globalThis as { require?: (id: string) => any }).require;
+  if (typeof req !== 'function') return null;
+  return req(path);
+}
+
 /**
  * Check and load native FFI if available (Bun only)
  */
@@ -25,8 +31,9 @@ function getNative(): typeof native {
   if (!nativeChecked) {
     nativeChecked = true;
     try {
-      if (typeof Bun !== 'undefined') {
-        native = require('../native/index.js');
+      const hasBun = typeof (globalThis as { Bun?: unknown }).Bun !== 'undefined';
+      if (hasBun) {
+        native = tryRequire('../native/index.js');
         if (!native?.isNativeAvailable()) {
           native = null;
         }
@@ -41,16 +48,21 @@ function getNative(): typeof native {
 /**
  * Get WASM module (must be loaded first via loadWasmCrypto)
  */
-function getWasm(): typeof wasm {
+function getWasmModule(): typeof wasm {
   if (!wasmChecked) {
     wasmChecked = true;
     try {
-      wasm = require('../wasm-loader/index.js');
+      wasm = tryRequire('../wasm-loader/index.js');
     } catch {
       wasm = null;
     }
   }
-  return wasmLoaded ? wasm : null;
+  return wasm;
+}
+
+function getWasm(): typeof wasm | null {
+  const w = getWasmModule();
+  return wasmLoaded ? w : null;
 }
 
 /**
@@ -64,7 +76,7 @@ export function isNativeAvailable(): boolean {
  * Check if WASM crypto is available (file exists)
  */
 export function isWasmAvailable(): boolean {
-  const w = getWasm();
+  const w = getWasmModule();
   return w?.isWasmAvailable() ?? false;
 }
 
@@ -82,9 +94,15 @@ export function isWasmLoaded(): boolean {
 export async function loadWasmCrypto(): Promise<void> {
   if (wasmLoaded) return;
 
-  const w = getWasm();
+  let w = getWasmModule();
   if (!w) {
-    throw new Error('WASM loader not available');
+    try {
+      w = await import('../wasm-loader/index.js');
+      wasm = w;
+      wasmChecked = true;
+    } catch {
+      throw new Error('WASM loader not available');
+    }
   }
 
   await w.loadWasmCrypto();

@@ -295,6 +295,7 @@ export type CairoValue =
   | string
   | boolean
   | Uint8Array
+  | null
   | CairoValue[]
   | { [key: string]: CairoValue }
   | CairoEnumValue;

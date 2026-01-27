@@ -72,7 +72,12 @@ function readNext(ctx: DecodeContext): bigint {
   if (ctx.offset >= ctx.values.length) {
     throw new Error(`Unexpected end of event data at offset ${ctx.offset}`);
   }
-  return ctx.values[ctx.offset++];
+  const value = ctx.values[ctx.offset];
+  if (value === undefined) {
+    throw new Error(`Unexpected end of event data at offset ${ctx.offset}`);
+  }
+  ctx.offset++;
+  return value;
 }
 
 // ============ Type Decoding ============
@@ -342,7 +347,7 @@ export function decodeEventBySelector(
     return err(abiError('DECODE_ERROR', 'Event has no keys (missing selector)'));
   }
 
-  const selector = eventData.keys[0];
+  const selector = eventData.keys[0]!;
   const selectorHex =
     typeof selector === 'string'
       ? selector.toLowerCase()
@@ -552,12 +557,12 @@ export function compileEventFilter(
             )
           );
         }
-        orValues.push(encoded.result[0]);
+        orValues.push(encoded.result[0]!);
       }
       argKeys.push(orValues);
     } else {
       // Single value
-      const encoded = encodeValue(argValue, member.type, parsed);
+      const encoded = encodeValue(argValue as CairoValue, member.type, parsed);
       if (encoded.error) {
         return err(
           abiError(
@@ -619,7 +624,7 @@ function matchesFilter(
 
   // Check arg keys (keys[1..])
   for (let i = 0; i < filter.argKeys.length; i++) {
-    const filterValues = filter.argKeys[i];
+    const filterValues = filter.argKeys[i] ?? [];
 
     // Empty array = wildcard (match any)
     if (filterValues.length === 0) {
@@ -721,14 +726,15 @@ export function decodeEvents(
 
   if (opts.rawKeys && opts.rawKeys.length > 0) {
     // Raw keys escape hatch - convert to compiled filter format
-    const selector =
-      opts.rawKeys[0] && opts.rawKeys[0].length > 0
-        ? BigInt(opts.rawKeys[0][0])
-        : undefined;
+    const first = opts.rawKeys[0]?.[0];
+    const selector = first !== undefined ? BigInt(first) : undefined;
     const argKeys = opts.rawKeys.slice(1).map((pos) =>
       pos.map((v) => BigInt(v))
     );
-    filter = { selector, argKeys };
+    filter = { argKeys };
+    if (selector !== undefined) {
+      filter.selector = selector;
+    }
   } else if (opts.event) {
     // Typed event + args filter
     const filterResult = compileEventFilter(abi, opts.event, opts.args);
@@ -741,16 +747,17 @@ export function decodeEvents(
     const selector = opts.selector.startsWith('0x')
       ? BigInt(opts.selector)
       : computeSelector(opts.selector);
-    filter = { selector, argKeys: [] };
+    filter = { argKeys: [] };
+    filter.selector = selector;
   } else {
     // No filter - match all
-    filter = { selector: undefined, argKeys: [] };
+    filter = { argKeys: [] };
   }
 
   const decoded: DecodedReceiptEvent[] = [];
 
   for (let index = 0; index < events.length; index++) {
-    const event = events[index];
+    const event = events[index]!;
 
     // Skip events with no keys (can't decode without selector)
     if (!event.keys || event.keys.length === 0) {
@@ -824,14 +831,15 @@ export function decodeEventsStrict(
   let filter: CompiledEventFilter;
 
   if (opts.rawKeys && opts.rawKeys.length > 0) {
-    const selector =
-      opts.rawKeys[0] && opts.rawKeys[0].length > 0
-        ? BigInt(opts.rawKeys[0][0])
-        : undefined;
+    const first = opts.rawKeys[0]?.[0];
+    const selector = first !== undefined ? BigInt(first) : undefined;
     const argKeys = opts.rawKeys.slice(1).map((pos) =>
       pos.map((v) => BigInt(v))
     );
-    filter = { selector, argKeys };
+    filter = { argKeys };
+    if (selector !== undefined) {
+      filter.selector = selector;
+    }
   } else if (opts.event) {
     const filterResult = compileEventFilter(abi, opts.event, opts.args);
     if (filterResult.error) {
@@ -842,15 +850,16 @@ export function decodeEventsStrict(
     const selector = opts.selector.startsWith('0x')
       ? BigInt(opts.selector)
       : computeSelector(opts.selector);
-    filter = { selector, argKeys: [] };
+    filter = { argKeys: [] };
+    filter.selector = selector;
   } else {
-    filter = { selector: undefined, argKeys: [] };
+    filter = { argKeys: [] };
   }
 
   const decoded: DecodedReceiptEvent[] = [];
 
   for (let index = 0; index < events.length; index++) {
-    const event = events[index];
+    const event = events[index]!;
 
     if (!event.keys || event.keys.length === 0) {
       continue;

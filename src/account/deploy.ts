@@ -94,7 +94,11 @@ export async function estimateDeployAccount(
     });
 
     const fees = result as FeeEstimate[];
-    return ok(fees[0]);
+    const fee = fees[0];
+    if (!fee) {
+      return err(abiError('RPC_ERROR', 'Fee estimate missing for deploy account'));
+    }
+    return ok(fee);
   } catch (e: unknown) {
     return err(abiError(
       'RPC_ERROR',

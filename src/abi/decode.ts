@@ -36,7 +36,12 @@ function readNext(ctx: DecodeContext): bigint {
   if (ctx.offset >= ctx.data.length) {
     throw new Error(`Unexpected end of calldata at offset ${ctx.offset}`);
   }
-  return ctx.data[ctx.offset++];
+  const value = ctx.data[ctx.offset];
+  if (value === undefined) {
+    throw new Error(`Unexpected end of calldata at offset ${ctx.offset}`);
+  }
+  ctx.offset++;
+  return value;
 }
 
 /**
@@ -46,7 +51,11 @@ function peekNext(ctx: DecodeContext): bigint {
   if (ctx.offset >= ctx.data.length) {
     throw new Error(`Unexpected end of calldata at offset ${ctx.offset}`);
   }
-  return ctx.data[ctx.offset];
+  const value = ctx.data[ctx.offset];
+  if (value === undefined) {
+    throw new Error(`Unexpected end of calldata at offset ${ctx.offset}`);
+  }
+  return value;
 }
 
 // ============ Type Decoding ============
@@ -348,7 +357,9 @@ export function decodeOutputsObject(
 
   const result: DecodedStruct = {};
   for (let i = 0; i < outputs.length; i++) {
-    result[outputs[i].name] = decoded.result[i];
+    const output = outputs[i]!;
+    const value = decoded.result[i]!;
+    result[output.name] = value;
   }
 
   return ok(result);
@@ -400,7 +411,9 @@ export function decodeArgsObject(
 
   const result: DecodedStruct = {};
   for (let i = 0; i < inputs.length; i++) {
-    result[inputs[i].name] = decoded.result[i];
+    const input = inputs[i]!;
+    const value = decoded.result[i]!;
+    result[input.name] = value;
   }
 
   return ok(result);

@@ -200,7 +200,20 @@ export function httpTransport(
 
       // Resolve each pending request
       for (let i = 0; i < batch.length; i++) {
-        batch[i].resolve(matched[i]);
+        const pending = batch[i]!;
+        const response = matched[i];
+        if (response) {
+          pending.resolve(response);
+        } else {
+          const id = requests[i]?.id ?? null;
+          pending.resolve(
+            createErrorResponse(
+              id,
+              JsonRpcErrorCode.InternalError,
+              'Missing response for batched request',
+            ),
+          );
+        }
       }
     } catch (error) {
       // Reject all pending requests
@@ -223,7 +236,11 @@ export function httpTransport(
     options?: TransportRequestOptions,
   ): Promise<JsonRpcResponse> {
     return new Promise((resolve, reject) => {
-      pendingBatch.push({ request, resolve, reject, options });
+      const pending: PendingRequest = { request, resolve, reject };
+      if (options) {
+        pending.options = options;
+      }
+      pendingBatch.push(pending);
 
       // Flush if batch size reached
       if (pendingBatch.length >= batchSize) {

@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect, beforeAll, mock } from 'bun:test';
+import '../test-utils/setupCrypto';
 import {
   // Types
   type ResourceBoundsMapping,

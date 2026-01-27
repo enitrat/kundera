@@ -26,6 +26,7 @@ import {
   httpTransport,
   type Transport,
   type HttpTransportOptions,
+  type TransportRequestOptions,
   isJsonRpcError,
   createRequest,
 } from '../transport/index.js';
@@ -81,11 +82,13 @@ export class HttpProvider implements Provider {
       timeout: opts.timeout ?? 30000,
       retries: opts.retry ?? 3,
       retryDelay: opts.retryDelay ?? 1000,
-      batch: opts.batch,
-      fetchOptions: opts.headers
-        ? { headers: opts.headers }
-        : undefined,
     };
+    if (opts.batch !== undefined) {
+      transportOpts.batch = opts.batch;
+    }
+    if (opts.headers) {
+      transportOpts.fetchOptions = { headers: opts.headers };
+    }
 
     this.transport = httpTransport(opts.url, transportOpts);
   }
@@ -123,11 +126,11 @@ export class HttpProvider implements Provider {
     options?: RequestOptions,
   ): Promise<Response<T>> {
     const request = createRequest(method, params);
-    const response = await this.transport.request<T>(request, {
-      timeout: options?.timeout,
-      retries: options?.retry,
-      retryDelay: options?.retryDelay,
-    });
+    const reqOpts: TransportRequestOptions = {};
+    if (options?.timeout !== undefined) reqOpts.timeout = options.timeout;
+    if (options?.retry !== undefined) reqOpts.retries = options.retry;
+    if (options?.retryDelay !== undefined) reqOpts.retryDelay = options.retryDelay;
+    const response = await this.transport.request<T>(request, reqOpts);
 
     if (isJsonRpcError(response)) {
       return { error: response.error };

@@ -62,7 +62,7 @@ export function parseType(typeStr: string): ParsedType {
   const arrayMatch = typeStr.match(
     /^(?:core::array::)?(?:Array|Span)<(.+)>$/
   );
-  if (arrayMatch) {
+  if (arrayMatch?.[1]) {
     const isSpan = typeStr.includes('Span');
     return {
       kind: isSpan ? 'span' : 'array',
@@ -73,7 +73,7 @@ export function parseType(typeStr: string): ParsedType {
 
   // Option type: core::option::Option<T>
   const optionMatch = typeStr.match(/^(?:core::option::)?Option<(.+)>$/);
-  if (optionMatch) {
+  if (optionMatch?.[1]) {
     return {
       kind: 'option',
       name: 'Option',
@@ -106,7 +106,7 @@ export function parseType(typeStr: string): ParsedType {
 
   // Check for type aliases first
   if (typeStr in typeAliases) {
-    const canonicalType = typeAliases[typeStr];
+    const canonicalType = typeAliases[typeStr]!;
     return {
       kind: 'primitive',
       name: canonicalType,
@@ -200,7 +200,7 @@ function splitTupleTypes(inner: string): string[] {
  */
 function getShortName(path: string): string {
   const parts = path.split('::');
-  return parts[parts.length - 1];
+  return parts[parts.length - 1] ?? path;
 }
 
 // ============ ABI Parsing ============
@@ -313,7 +313,7 @@ export function parseAbi(abi: Abi): Result<ParsedAbi> {
       }
     }
 
-    return ok({
+    const parsed: ParsedAbi = {
       raw: abi,
       functions,
       functionsBySelector,
@@ -321,8 +321,9 @@ export function parseAbi(abi: Abi): Result<ParsedAbi> {
       eventsBySelector,
       structs,
       enums,
-      constructor,
-    });
+      ...(constructor ? { constructor } : {}),
+    };
+    return ok(parsed);
   } catch (error) {
     return err(
       abiError(

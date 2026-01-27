@@ -6,6 +6,7 @@
  */
 
 import { describe, expect, it } from 'bun:test';
+import '../test-utils/setupCrypto';
 import {
   classHashFromSierra,
   compiledClassHashFromCasm,

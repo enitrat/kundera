@@ -38,6 +38,7 @@ import {
   webSocketTransport,
   type WebSocketTransport,
   type WebSocketTransportOptions,
+  type TransportRequestOptions,
   isJsonRpcError,
   createRequest,
 } from '../transport/index.js';
@@ -99,13 +100,15 @@ export class WebSocketProvider implements Provider {
 
     // Create transport with mapped options
     const transportOpts: WebSocketTransportOptions = {
-      protocols: opts.protocols,
       reconnect: opts.reconnect ?? true,
       reconnectDelay: opts.reconnectDelay ?? 5000,
       maxReconnectAttempts: opts.maxReconnectAttempts ?? 0,
       keepAlive: opts.keepAlive ?? 30000,
       timeout: opts.timeout ?? 30000,
     };
+    if (opts.protocols !== undefined) {
+      transportOpts.protocols = opts.protocols;
+    }
 
     this.transport = webSocketTransport(opts.url, transportOpts);
 
@@ -173,9 +176,9 @@ export class WebSocketProvider implements Provider {
     options?: RequestOptions,
   ): Promise<Response<T>> {
     const request = createRequest(method, params);
-    const response = await this.transport.request<T>(request, {
-      timeout: options?.timeout,
-    });
+    const reqOpts: TransportRequestOptions = {};
+    if (options?.timeout !== undefined) reqOpts.timeout = options.timeout;
+    const response = await this.transport.request<T>(request, reqOpts);
 
     if (isJsonRpcError(response)) {
       return { error: response.error };

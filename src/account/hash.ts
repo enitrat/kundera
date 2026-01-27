@@ -136,7 +136,13 @@ export function hashResourceBounds(
   resourceBounds: ResourceBoundsMapping
 ): Felt252Type {
   const bounds = encodeResourceBoundsArray(resourceBounds);
-  return poseidonHashMany([Felt252(bounds[0]), Felt252(bounds[1]), Felt252(bounds[2])]);
+  const a = bounds[0];
+  const b = bounds[1];
+  const c = bounds[2];
+  if (a === undefined || b === undefined || c === undefined) {
+    throw new Error('Invalid resource bounds encoding');
+  }
+  return poseidonHashMany([Felt252(a), Felt252(b), Felt252(c)]);
 }
 
 // ============ DA Modes Encoding ============
@@ -437,4 +443,4 @@ export function computeSelector(name: string): Felt252Type {
 /**
  * Standard selectors (precomputed)
  */
-export const EXECUTE_SELECTOR = Felt252(KNOWN_SELECTORS['__execute__']);
+export const EXECUTE_SELECTOR = Felt252(KNOWN_SELECTORS['__execute__']!);

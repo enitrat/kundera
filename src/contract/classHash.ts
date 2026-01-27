@@ -150,8 +150,8 @@ function formatSpaces(json: string): string {
   const result: string[] = [];
 
   for (let i = 0; i < json.length; i++) {
-    const char = json[i];
-    const prevChar = i > 0 ? json[i - 1] : '';
+    const char = json[i] ?? '';
+    const prevChar = i > 0 ? json[i - 1] ?? '' : '';
 
     // Toggle quote state (but not for escaped quotes)
     if (char === '"' && prevChar !== '\\') {

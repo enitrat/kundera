@@ -59,7 +59,14 @@ export async function connectAccountFromWallet(
     }
 
     // Create WalletAccount with the first account
-    const walletAccount = new WalletAccount(provider, walletProvider, accounts[0]);
+    const address = accounts[0];
+    if (!address) {
+      return err(abiError(
+        'ACCOUNT_REQUIRED',
+        'No accounts available from wallet provider'
+      ));
+    }
+    const walletAccount = new WalletAccount(provider, walletProvider, address);
     return ok(walletAccount);
   } catch (e: unknown) {
     return err(abiError(
