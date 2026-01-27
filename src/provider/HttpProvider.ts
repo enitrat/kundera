@@ -10,17 +10,40 @@
 import type { Provider } from './Provider.js';
 import type {
   BlockId,
+  BlockTransactionTrace,
+  BlockWithReceipts,
+  BlockWithTxHashes,
+  BlockWithTxs,
+  BroadcastedDeclareTxn,
+  BroadcastedDeployAccountTxn,
+  BroadcastedInvokeTxn,
+  BroadcastedTxn,
+  ContractClassResponse,
+  EventsResponse,
   FeeEstimate,
   FunctionCall,
   MessageFeeEstimate,
+  MessagesStatusResponse,
+  MsgFromL1,
+  PreConfirmedBlockWithReceipts,
+  PreConfirmedBlockWithTxHashes,
+  PreConfirmedBlockWithTxs,
+  PreConfirmedStateUpdate,
   ProviderEvent,
   ProviderEventListener,
   ProviderEventMap,
   RequestArguments,
   RequestOptions,
   Response,
+  SimulatedTransaction,
   SimulationFlag,
+  StateUpdate,
+  StorageProof,
   SyncingStatus,
+  TransactionStatus,
+  TransactionTrace,
+  TxnReceiptWithBlockInfo,
+  TxnWithHash,
 } from './types.js';
 import {
   httpTransport,
@@ -188,7 +211,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_getBlockWithTxHashes(blockId: BlockId, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<BlockWithTxHashes | PreConfirmedBlockWithTxHashes>(
       'starknet_getBlockWithTxHashes',
       [blockId],
       options,
@@ -196,7 +219,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_getBlockWithTxs(blockId: BlockId, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<BlockWithTxs | PreConfirmedBlockWithTxs>(
       'starknet_getBlockWithTxs',
       [blockId],
       options,
@@ -204,7 +227,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_getBlockWithReceipts(blockId: BlockId, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<BlockWithReceipts | PreConfirmedBlockWithReceipts>(
       'starknet_getBlockWithReceipts',
       [blockId],
       options,
@@ -212,7 +235,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_getStateUpdate(blockId: BlockId, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<StateUpdate | PreConfirmedStateUpdate>(
       'starknet_getStateUpdate',
       [blockId],
       options,
@@ -233,7 +256,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_getTransactionStatus(txHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<TransactionStatus>(
       'starknet_getTransactionStatus',
       [txHash],
       options,
@@ -241,7 +264,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_getMessagesStatus(l1TxHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<MessagesStatusResponse>(
       'starknet_getMessagesStatus',
       [l1TxHash],
       options,
@@ -249,7 +272,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_getTransactionByHash(txHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<TxnWithHash>(
       'starknet_getTransactionByHash',
       [txHash],
       options,
@@ -261,7 +284,7 @@ export class HttpProvider implements Provider {
     index: number,
     options?: RequestOptions,
   ) {
-    return this._request<unknown>(
+    return this._request<TxnWithHash>(
       'starknet_getTransactionByBlockIdAndIndex',
       [blockId, index],
       options,
@@ -269,7 +292,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_getTransactionReceipt(txHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<TxnReceiptWithBlockInfo>(
       'starknet_getTransactionReceipt',
       [txHash],
       options,
@@ -277,7 +300,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_getClass(blockId: BlockId, classHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<ContractClassResponse>(
       'starknet_getClass',
       [blockId, classHash],
       options,
@@ -301,7 +324,7 @@ export class HttpProvider implements Provider {
     contractAddress: string,
     options?: RequestOptions,
   ) {
-    return this._request<unknown>(
+    return this._request<ContractClassResponse>(
       'starknet_getClassAt',
       [blockId, contractAddress],
       options,
@@ -325,7 +348,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_estimateFee(
-    request: unknown[],
+    request: BroadcastedTxn[],
     simulationFlags: SimulationFlag[],
     blockId: BlockId,
     options?: RequestOptions,
@@ -338,7 +361,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_estimateMessageFee(
-    message: unknown,
+    message: MsgFromL1,
     blockId: BlockId,
     options?: RequestOptions,
   ) {
@@ -380,10 +403,7 @@ export class HttpProvider implements Provider {
     },
     options?: RequestOptions,
   ) {
-    return this._request<{
-      events: unknown[];
-      continuation_token?: string;
-    }>('starknet_getEvents', [filter], options);
+    return this._request<EventsResponse>('starknet_getEvents', [filter], options);
   }
 
   starknet_getNonce(
@@ -405,7 +425,7 @@ export class HttpProvider implements Provider {
     contractStorageKeys: { contract_address: string; storage_keys: string[] }[],
     options?: RequestOptions,
   ) {
-    return this._request<unknown>(
+    return this._request<StorageProof>(
       'starknet_getStorageProof',
       [blockId, classHashes, contractAddresses, contractStorageKeys],
       options,
@@ -417,7 +437,7 @@ export class HttpProvider implements Provider {
   // ============================================================================
 
   starknet_addInvokeTransaction(
-    invokeTransaction: unknown,
+    invokeTransaction: BroadcastedInvokeTxn,
     options?: RequestOptions,
   ) {
     return this._request<{ transaction_hash: string }>(
@@ -428,7 +448,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_addDeclareTransaction(
-    declareTransaction: unknown,
+    declareTransaction: BroadcastedDeclareTxn,
     options?: RequestOptions,
   ) {
     return this._request<{ transaction_hash: string; class_hash: string }>(
@@ -439,7 +459,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_addDeployAccountTransaction(
-    deployAccountTransaction: unknown,
+    deployAccountTransaction: BroadcastedDeployAccountTxn,
     options?: RequestOptions,
   ) {
     return this._request<{ transaction_hash: string; contract_address: string }>(
@@ -454,7 +474,7 @@ export class HttpProvider implements Provider {
   // ============================================================================
 
   starknet_traceTransaction(txHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<TransactionTrace>(
       'starknet_traceTransaction',
       [txHash],
       options,
@@ -463,11 +483,11 @@ export class HttpProvider implements Provider {
 
   starknet_simulateTransactions(
     blockId: BlockId,
-    transactions: unknown[],
+    transactions: BroadcastedTxn[],
     simulationFlags: SimulationFlag[],
     options?: RequestOptions,
   ) {
-    return this._request<unknown[]>(
+    return this._request<SimulatedTransaction[]>(
       'starknet_simulateTransactions',
       [blockId, transactions, simulationFlags],
       options,
@@ -475,7 +495,7 @@ export class HttpProvider implements Provider {
   }
 
   starknet_traceBlockTransactions(blockId: BlockId, options?: RequestOptions) {
-    return this._request<unknown[]>(
+    return this._request<BlockTransactionTrace[]>(
       'starknet_traceBlockTransactions',
       [blockId],
       options,

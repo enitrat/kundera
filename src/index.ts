@@ -51,8 +51,14 @@ export {
 // Re-export serde
 export * from './serde/index.js';
 
-// Re-export JSON-RPC client
-export * from './rpc/index.js';
+// Re-export JSON-RPC client (class + factories only; types in 'kundera/rpc')
+export {
+  StarknetRpcClient,
+  createClient,
+  mainnet,
+  sepolia,
+  type RpcClientConfig,
+} from './rpc/index.js';
 
 // Re-export provider (HTTP + WebSocket providers, TypedProvider)
 export * from './provider/index.js';

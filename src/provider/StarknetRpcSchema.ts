@@ -10,11 +10,35 @@
 import type { RpcSchema } from './RpcSchema.js';
 import type {
   BlockId,
+  BlockTransactionTrace,
+  BlockWithReceipts,
+  BlockWithTxHashes,
+  BlockWithTxs,
+  BroadcastedDeclareTxn,
+  BroadcastedDeployAccountTxn,
+  BroadcastedInvokeTxn,
+  BroadcastedTxn,
+  ContractClassResponse,
+  EmittedEvent,
+  EventsResponse,
   FeeEstimate,
   FunctionCall,
   MessageFeeEstimate,
+  MessagesStatusResponse,
+  MsgFromL1,
+  PreConfirmedBlockWithReceipts,
+  PreConfirmedBlockWithTxHashes,
+  PreConfirmedBlockWithTxs,
+  PreConfirmedStateUpdate,
+  SimulatedTransaction,
   SimulationFlag,
+  StateUpdate,
+  StorageProof,
   SyncingStatus,
+  TransactionStatus,
+  TransactionTrace,
+  TxnReceiptWithBlockInfo,
+  TxnWithHash,
 } from './types.js';
 
 /**
@@ -36,22 +60,22 @@ export type StarknetRpcSchema = [
   {
     Method: 'starknet_getBlockWithTxHashes';
     Parameters: [blockId: BlockId];
-    ReturnType: unknown;
+    ReturnType: BlockWithTxHashes | PreConfirmedBlockWithTxHashes;
   },
   {
     Method: 'starknet_getBlockWithTxs';
     Parameters: [blockId: BlockId];
-    ReturnType: unknown;
+    ReturnType: BlockWithTxs | PreConfirmedBlockWithTxs;
   },
   {
     Method: 'starknet_getBlockWithReceipts';
     Parameters: [blockId: BlockId];
-    ReturnType: unknown;
+    ReturnType: BlockWithReceipts | PreConfirmedBlockWithReceipts;
   },
   {
     Method: 'starknet_getStateUpdate';
     Parameters: [blockId: BlockId];
-    ReturnType: unknown;
+    ReturnType: StateUpdate | PreConfirmedStateUpdate;
   },
   {
     Method: 'starknet_getStorageAt';
@@ -61,35 +85,32 @@ export type StarknetRpcSchema = [
   {
     Method: 'starknet_getTransactionStatus';
     Parameters: [transactionHash: string];
-    ReturnType: {
-      finality_status: 'RECEIVED' | 'ACCEPTED_ON_L2' | 'ACCEPTED_ON_L1';
-      execution_status?: 'SUCCEEDED' | 'REVERTED';
-    };
+    ReturnType: TransactionStatus;
   },
   {
     Method: 'starknet_getMessagesStatus';
     Parameters: [l1TransactionHash: string];
-    ReturnType: unknown;
+    ReturnType: MessagesStatusResponse;
   },
   {
     Method: 'starknet_getTransactionByHash';
     Parameters: [transactionHash: string];
-    ReturnType: unknown;
+    ReturnType: TxnWithHash;
   },
   {
     Method: 'starknet_getTransactionByBlockIdAndIndex';
     Parameters: [blockId: BlockId, index: number];
-    ReturnType: unknown;
+    ReturnType: TxnWithHash;
   },
   {
     Method: 'starknet_getTransactionReceipt';
     Parameters: [transactionHash: string];
-    ReturnType: unknown;
+    ReturnType: TxnReceiptWithBlockInfo;
   },
   {
     Method: 'starknet_getClass';
     Parameters: [blockId: BlockId, classHash: string];
-    ReturnType: unknown;
+    ReturnType: ContractClassResponse;
   },
   {
     Method: 'starknet_getClassHashAt';
@@ -99,7 +120,7 @@ export type StarknetRpcSchema = [
   {
     Method: 'starknet_getClassAt';
     Parameters: [blockId: BlockId, contractAddress: string];
-    ReturnType: unknown;
+    ReturnType: ContractClassResponse;
   },
   {
     Method: 'starknet_getBlockTransactionCount';
@@ -114,7 +135,7 @@ export type StarknetRpcSchema = [
   {
     Method: 'starknet_estimateFee';
     Parameters: [
-      request: unknown[],
+      request: BroadcastedTxn[],
       simulationFlags: SimulationFlag[],
       blockId: BlockId,
     ];
@@ -122,7 +143,7 @@ export type StarknetRpcSchema = [
   },
   {
     Method: 'starknet_estimateMessageFee';
-    Parameters: [message: unknown, blockId: BlockId];
+    Parameters: [message: MsgFromL1, blockId: BlockId];
     ReturnType: MessageFeeEstimate;
   },
   {
@@ -157,10 +178,7 @@ export type StarknetRpcSchema = [
         chunk_size: number;
       },
     ];
-    ReturnType: {
-      events: unknown[];
-      continuation_token?: string;
-    };
+    ReturnType: EventsResponse;
   },
   {
     Method: 'starknet_getNonce';
@@ -178,7 +196,7 @@ export type StarknetRpcSchema = [
         storage_keys: string[];
       }[],
     ];
-    ReturnType: unknown;
+    ReturnType: StorageProof;
   },
 
   // ============================================================================
@@ -187,17 +205,17 @@ export type StarknetRpcSchema = [
 
   {
     Method: 'starknet_addInvokeTransaction';
-    Parameters: [invokeTransaction: unknown];
+    Parameters: [invokeTransaction: BroadcastedInvokeTxn];
     ReturnType: { transaction_hash: string };
   },
   {
     Method: 'starknet_addDeclareTransaction';
-    Parameters: [declareTransaction: unknown];
+    Parameters: [declareTransaction: BroadcastedDeclareTxn];
     ReturnType: { transaction_hash: string; class_hash: string };
   },
   {
     Method: 'starknet_addDeployAccountTransaction';
-    Parameters: [deployAccountTransaction: unknown];
+    Parameters: [deployAccountTransaction: BroadcastedDeployAccountTxn];
     ReturnType: { transaction_hash: string; contract_address: string };
   },
 
@@ -208,21 +226,21 @@ export type StarknetRpcSchema = [
   {
     Method: 'starknet_traceTransaction';
     Parameters: [transactionHash: string];
-    ReturnType: unknown;
+    ReturnType: TransactionTrace;
   },
   {
     Method: 'starknet_simulateTransactions';
     Parameters: [
       blockId: BlockId,
-      transactions: unknown[],
+      transactions: BroadcastedTxn[],
       simulationFlags: SimulationFlag[],
     ];
-    ReturnType: unknown[];
+    ReturnType: SimulatedTransaction[];
   },
   {
     Method: 'starknet_traceBlockTransactions';
     Parameters: [blockId: BlockId];
-    ReturnType: unknown[];
+    ReturnType: BlockTransactionTrace[];
   },
 
   // ============================================================================

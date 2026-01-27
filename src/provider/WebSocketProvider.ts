@@ -30,7 +30,7 @@ import type {
   SimulationFlag,
   StarknetProviderEvents,
   SyncingStatus,
-  TransactionReceipt,
+  WsTransactionReceipt,
   TransactionReceiptsSubscriptionParams,
   TransactionStatusUpdate,
 } from './types.js';
@@ -779,11 +779,11 @@ export class WebSocketProvider implements Provider {
         'NewTransactionReceipts',
         subscribeParams,
       );
-      const queue: TransactionReceipt[] = [];
-      let resolve: ((value: TransactionReceipt) => void) | null = null;
+      const queue: WsTransactionReceipt[] = [];
+      let resolve: ((value: WsTransactionReceipt) => void) | null = null;
 
       const callback = (data: unknown) => {
-        const receipt = data as TransactionReceipt;
+        const receipt = data as WsTransactionReceipt;
         if (resolve) {
           resolve(receipt);
           resolve = null;
@@ -799,7 +799,7 @@ export class WebSocketProvider implements Provider {
           if (queue.length > 0) {
             yield queue.shift()!;
           } else {
-            yield await new Promise<TransactionReceipt>((r) => {
+            yield await new Promise<WsTransactionReceipt>((r) => {
               resolve = r;
             });
           }
