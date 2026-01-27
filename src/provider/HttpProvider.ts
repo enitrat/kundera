@@ -126,12 +126,12 @@ export class HttpProvider implements Provider {
   /**
    * EIP-1193-like request method (throws on error)
    */
-  async request(args: RequestArguments): Promise<unknown> {
+  async request<T>(args: RequestArguments): Promise<T> {
     const request = createRequest(
       args.method,
       args.params as unknown[] | undefined,
     );
-    const response = await this.transport.request(request);
+    const response = await this.transport.request<T>(request);
 
     if (isJsonRpcError(response)) {
       throw response.error;

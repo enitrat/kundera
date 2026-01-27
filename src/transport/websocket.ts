@@ -14,8 +14,8 @@ import {
   type TransportRequestOptions,
   JsonRpcErrorCode,
   createErrorResponse,
-  matchBatchResponses,
 } from './types.js';
+import type { WsNotificationPayload } from '../provider/types.js';
 
 // ============ WebSocket Transport Options ============
 
@@ -96,7 +96,7 @@ export function webSocketTransport(
   let shouldReconnect = reconnect;
 
   const pendingRequests = new Map<number | string, PendingRequest>();
-  const subscriptions = new Map<string, Set<(data: unknown) => void>>();
+  const subscriptions = new Map<string, Set<(data: WsNotificationPayload) => void>>();
   const eventListeners: Map<
     keyof TransportEvents,
     Set<EventListener<keyof TransportEvents>>
@@ -174,7 +174,7 @@ export function webSocketTransport(
       if (subscriptionId && subscriptions.has(subscriptionId)) {
         const callbacks = subscriptions.get(subscriptionId)!;
         for (const callback of callbacks) {
-          callback(params?.result);
+          callback(params?.result as WsNotificationPayload);
         }
       }
       emit('message', message);
@@ -368,14 +368,14 @@ export function webSocketTransport(
       return Promise.all(promises);
     },
 
-    subscribe(subscriptionId: string, callback: (data: unknown) => void): void {
+    subscribe(subscriptionId: string, callback: (data: WsNotificationPayload) => void): void {
       if (!subscriptions.has(subscriptionId)) {
         subscriptions.set(subscriptionId, new Set());
       }
       subscriptions.get(subscriptionId)!.add(callback);
     },
 
-    unsubscribe(subscriptionId: string, callback?: (data: unknown) => void): void {
+    unsubscribe(subscriptionId: string, callback?: (data: WsNotificationPayload) => void): void {
       if (callback) {
         subscriptions.get(subscriptionId)?.delete(callback);
       } else {
@@ -423,10 +423,10 @@ export interface WebSocketTransport extends EventTransport {
    * Register a subscription callback
    * Called when subscription notification is received
    */
-  subscribe(subscriptionId: string, callback: (data: unknown) => void): void;
+  subscribe(subscriptionId: string, callback: (data: WsNotificationPayload) => void): void;
 
   /**
    * Unregister a subscription callback
    */
-  unsubscribe(subscriptionId: string, callback?: (data: unknown) => void): void;
+  unsubscribe(subscriptionId: string, callback?: (data: WsNotificationPayload) => void): void;
 }

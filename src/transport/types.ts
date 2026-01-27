@@ -68,8 +68,8 @@ export type JsonRpcResponse<T = unknown> =
 /**
  * Check if response is an error response
  */
-export function isJsonRpcError(
-  response: JsonRpcResponse,
+export function isJsonRpcError<T>(
+  response: JsonRpcResponse<T>,
 ): response is JsonRpcErrorResponse {
   return 'error' in response;
 }
@@ -185,8 +185,10 @@ export interface Transport {
 
 /**
  * Transport event types
+ *
+ * @template TMessage - Type of message payload (default: unknown for raw transport)
  */
-export interface TransportEvents {
+export interface TransportEvents<TMessage = unknown> {
   /** Connection established */
   connect: [];
   /** Connection closed */
@@ -194,23 +196,25 @@ export interface TransportEvents {
   /** Error occurred */
   error: [error: Error];
   /** Message received (for subscriptions) */
-  message: [data: unknown];
+  message: [data: TMessage];
 }
 
 /**
  * Transport with event emitter capabilities
+ *
+ * @template TMessage - Type of message payload (default: unknown for raw transport)
  */
-export interface EventTransport extends Transport {
+export interface EventTransport<TMessage = unknown> extends Transport {
   /** Listen for transport events */
-  on<E extends keyof TransportEvents>(
+  on<E extends keyof TransportEvents<TMessage>>(
     event: E,
-    listener: (...args: TransportEvents[E]) => void,
+    listener: (...args: TransportEvents<TMessage>[E]) => void,
   ): this;
 
   /** Remove event listener */
-  off<E extends keyof TransportEvents>(
+  off<E extends keyof TransportEvents<TMessage>>(
     event: E,
-    listener: (...args: TransportEvents[E]) => void,
+    listener: (...args: TransportEvents<TMessage>[E]) => void,
   ): this;
 }
 
@@ -246,10 +250,14 @@ export function createErrorResponse(
   message: string,
   data?: unknown,
 ): JsonRpcErrorResponse {
+  const error: JsonRpcError = { code, message };
+  if (data !== undefined) {
+    error.data = data;
+  }
   return {
     jsonrpc: '2.0',
     id,
-    error: { code, message, data },
+    error,
   };
 }
 

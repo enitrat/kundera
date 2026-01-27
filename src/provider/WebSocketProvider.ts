@@ -11,25 +11,49 @@
 import type { Provider } from './Provider.js';
 import type {
   BlockId,
+  BlockTransactionTrace,
+  BlockWithReceipts,
+  BlockWithTxHashes,
+  BlockWithTxs,
+  BroadcastedDeclareTxn,
+  BroadcastedDeployAccountTxn,
+  BroadcastedInvokeTxn,
+  BroadcastedTxn,
+  ContractClassResponse,
   EmittedEvent,
+  EventsResponse,
   EventsSubscriptionParams,
   FeeEstimate,
   FunctionCall,
   MessageFeeEstimate,
+  MessagesStatusResponse,
+  MsgFromL1,
   NewHead,
   NewHeadsSubscriptionParams,
   PendingTransaction,
   PendingTransactionsSubscriptionParams,
+  PreConfirmedBlockWithReceipts,
+  PreConfirmedBlockWithTxHashes,
+  PreConfirmedBlockWithTxs,
+  PreConfirmedStateUpdate,
   ProviderEvent,
   ProviderEventMap,
+  ProviderEventListener,
   ReorgData,
   RequestArguments,
   RequestOptions,
   Response,
   RpcError,
+  SimulatedTransaction,
   SimulationFlag,
   StarknetProviderEvents,
+  StateUpdate,
+  StorageProof,
   SyncingStatus,
+  TransactionStatus,
+  TransactionTrace,
+  TxnReceiptWithBlockInfo,
+  TxnWithHash,
   WsTransactionReceipt,
   TransactionReceiptsSubscriptionParams,
   TransactionStatusUpdate,
@@ -42,6 +66,7 @@ import {
   isJsonRpcError,
   createRequest,
 } from '../transport/index.js';
+import type { WsNotificationPayload } from './types.js';
 
 /**
  * WebSocket configuration options
@@ -90,7 +115,7 @@ export interface WebSocketProviderOptions {
  */
 export class WebSocketProvider implements Provider {
   private transport: WebSocketTransport;
-  private eventListeners: Map<ProviderEvent, Set<(...args: unknown[]) => void>> =
+  private eventListeners: Map<ProviderEvent, Set<ProviderEventListener>> =
     new Map();
   private subscriptionParams = new Map<string, { name: string; params: unknown[] }>();
 
@@ -159,12 +184,12 @@ export class WebSocketProvider implements Provider {
   /**
    * EIP-1193-like request method (throws on error)
    */
-  async request(args: RequestArguments): Promise<unknown> {
-    const response = await this._request(args.method, args.params as unknown[]);
+  async request<T>(args: RequestArguments): Promise<T> {
+    const response = await this._request<T>(args.method, args.params as unknown[]);
     if (response.error) {
       throw response.error;
     }
-    return response.result;
+    return response.result as T;
   }
 
   /**
@@ -253,7 +278,7 @@ export class WebSocketProvider implements Provider {
     if (!this.eventListeners.has(event)) {
       this.eventListeners.set(event, new Set());
     }
-    this.eventListeners.get(event)?.add(listener as (...args: unknown[]) => void);
+    this.eventListeners.get(event)?.add(listener as ProviderEventListener);
     return this;
   }
 
@@ -266,7 +291,7 @@ export class WebSocketProvider implements Provider {
   ): this {
     this.eventListeners
       .get(event)
-      ?.delete(listener as (...args: unknown[]) => void);
+      ?.delete(listener as ProviderEventListener);
     return this;
   }
 
@@ -294,7 +319,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_getBlockWithTxHashes(blockId: BlockId, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<BlockWithTxHashes | PreConfirmedBlockWithTxHashes>(
       'starknet_getBlockWithTxHashes',
       [blockId],
       options,
@@ -302,7 +327,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_getBlockWithTxs(blockId: BlockId, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<BlockWithTxs | PreConfirmedBlockWithTxs>(
       'starknet_getBlockWithTxs',
       [blockId],
       options,
@@ -310,7 +335,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_getBlockWithReceipts(blockId: BlockId, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<BlockWithReceipts | PreConfirmedBlockWithReceipts>(
       'starknet_getBlockWithReceipts',
       [blockId],
       options,
@@ -318,7 +343,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_getStateUpdate(blockId: BlockId, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<StateUpdate | PreConfirmedStateUpdate>(
       'starknet_getStateUpdate',
       [blockId],
       options,
@@ -339,7 +364,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_getTransactionStatus(txHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<TransactionStatus>(
       'starknet_getTransactionStatus',
       [txHash],
       options,
@@ -347,7 +372,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_getMessagesStatus(l1TxHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<MessagesStatusResponse>(
       'starknet_getMessagesStatus',
       [l1TxHash],
       options,
@@ -355,7 +380,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_getTransactionByHash(txHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<TxnWithHash>(
       'starknet_getTransactionByHash',
       [txHash],
       options,
@@ -367,7 +392,7 @@ export class WebSocketProvider implements Provider {
     index: number,
     options?: RequestOptions,
   ) {
-    return this._request<unknown>(
+    return this._request<TxnWithHash>(
       'starknet_getTransactionByBlockIdAndIndex',
       [blockId, index],
       options,
@@ -375,7 +400,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_getTransactionReceipt(txHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<TxnReceiptWithBlockInfo>(
       'starknet_getTransactionReceipt',
       [txHash],
       options,
@@ -387,7 +412,7 @@ export class WebSocketProvider implements Provider {
     classHash: string,
     options?: RequestOptions,
   ) {
-    return this._request<unknown>(
+    return this._request<ContractClassResponse>(
       'starknet_getClass',
       [blockId, classHash],
       options,
@@ -411,7 +436,7 @@ export class WebSocketProvider implements Provider {
     contractAddress: string,
     options?: RequestOptions,
   ) {
-    return this._request<unknown>(
+    return this._request<ContractClassResponse>(
       'starknet_getClassAt',
       [blockId, contractAddress],
       options,
@@ -435,7 +460,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_estimateFee(
-    request: unknown[],
+    request: BroadcastedTxn[],
     simulationFlags: SimulationFlag[],
     blockId: BlockId,
     options?: RequestOptions,
@@ -448,7 +473,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_estimateMessageFee(
-    message: unknown,
+    message: MsgFromL1,
     blockId: BlockId,
     options?: RequestOptions,
   ) {
@@ -490,10 +515,7 @@ export class WebSocketProvider implements Provider {
     },
     options?: RequestOptions,
   ) {
-    return this._request<{
-      events: unknown[];
-      continuation_token?: string;
-    }>('starknet_getEvents', [filter], options);
+    return this._request<EventsResponse>('starknet_getEvents', [filter], options);
   }
 
   starknet_getNonce(
@@ -515,7 +537,7 @@ export class WebSocketProvider implements Provider {
     contractStorageKeys: { contract_address: string; storage_keys: string[] }[],
     options?: RequestOptions,
   ) {
-    return this._request<unknown>(
+    return this._request<StorageProof>(
       'starknet_getStorageProof',
       [blockId, classHashes, contractAddresses, contractStorageKeys],
       options,
@@ -527,7 +549,7 @@ export class WebSocketProvider implements Provider {
   // ============================================================================
 
   starknet_addInvokeTransaction(
-    invokeTransaction: unknown,
+    invokeTransaction: BroadcastedInvokeTxn,
     options?: RequestOptions,
   ) {
     return this._request<{ transaction_hash: string }>(
@@ -538,7 +560,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_addDeclareTransaction(
-    declareTransaction: unknown,
+    declareTransaction: BroadcastedDeclareTxn,
     options?: RequestOptions,
   ) {
     return this._request<{ transaction_hash: string; class_hash: string }>(
@@ -549,7 +571,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_addDeployAccountTransaction(
-    deployAccountTransaction: unknown,
+    deployAccountTransaction: BroadcastedDeployAccountTxn,
     options?: RequestOptions,
   ) {
     return this._request<{ transaction_hash: string; contract_address: string }>(
@@ -564,7 +586,7 @@ export class WebSocketProvider implements Provider {
   // ============================================================================
 
   starknet_traceTransaction(txHash: string, options?: RequestOptions) {
-    return this._request<unknown>(
+    return this._request<TransactionTrace>(
       'starknet_traceTransaction',
       [txHash],
       options,
@@ -573,11 +595,11 @@ export class WebSocketProvider implements Provider {
 
   starknet_simulateTransactions(
     blockId: BlockId,
-    transactions: unknown[],
+    transactions: BroadcastedTxn[],
     simulationFlags: SimulationFlag[],
     options?: RequestOptions,
   ) {
-    return this._request<unknown[]>(
+    return this._request<SimulatedTransaction[]>(
       'starknet_simulateTransactions',
       [blockId, transactions, simulationFlags],
       options,
@@ -585,7 +607,7 @@ export class WebSocketProvider implements Provider {
   }
 
   starknet_traceBlockTransactions(blockId: BlockId, options?: RequestOptions) {
-    return this._request<unknown[]>(
+    return this._request<BlockTransactionTrace[]>(
       'starknet_traceBlockTransactions',
       [blockId],
       options,
@@ -611,7 +633,7 @@ export class WebSocketProvider implements Provider {
       const queue: NewHead[] = [];
       let resolve: ((value: NewHead) => void) | null = null;
 
-      const callback = (data: unknown) => {
+      const callback = (data: WsNotificationPayload) => {
         const head = data as NewHead;
         if (resolve) {
           resolve(head);
@@ -655,7 +677,7 @@ export class WebSocketProvider implements Provider {
       const queue: EmittedEvent[] = [];
       let resolve: ((value: EmittedEvent) => void) | null = null;
 
-      const callback = (data: unknown) => {
+      const callback = (data: WsNotificationPayload) => {
         const event = data as EmittedEvent;
         if (resolve) {
           resolve(event);
@@ -692,7 +714,7 @@ export class WebSocketProvider implements Provider {
       const queue: TransactionStatusUpdate[] = [];
       let resolve: ((value: TransactionStatusUpdate) => void) | null = null;
 
-      const callback = (data: unknown) => {
+      const callback = (data: WsNotificationPayload) => {
         const update = data as TransactionStatusUpdate;
         if (resolve) {
           resolve(update);
@@ -737,7 +759,7 @@ export class WebSocketProvider implements Provider {
       const queue: PendingTransaction[] = [];
       let resolve: ((value: PendingTransaction) => void) | null = null;
 
-      const callback = (data: unknown) => {
+      const callback = (data: WsNotificationPayload) => {
         const tx = data as PendingTransaction;
         if (resolve) {
           resolve(tx);
@@ -782,7 +804,7 @@ export class WebSocketProvider implements Provider {
       const queue: WsTransactionReceipt[] = [];
       let resolve: ((value: WsTransactionReceipt) => void) | null = null;
 
-      const callback = (data: unknown) => {
+      const callback = (data: WsNotificationPayload) => {
         const receipt = data as WsTransactionReceipt;
         if (resolve) {
           resolve(receipt);
@@ -814,7 +836,7 @@ export class WebSocketProvider implements Provider {
       const queue: ReorgData[] = [];
       let resolve: ((value: ReorgData) => void) | null = null;
 
-      const callback = (data: unknown) => {
+      const callback = (data: WsNotificationPayload) => {
         const reorg = data as ReorgData;
         if ('starting_block_hash' in reorg) {
           if (resolve) {

@@ -13,10 +13,9 @@ import type {
   RpcMethodNames,
   RpcMethodParameters,
   RpcMethodReturnType,
-  EIP1193RequestFn,
 } from './RpcSchema.js';
 import type { StarknetRpcSchema } from './StarknetRpcSchema.js';
-import type { ProviderEvent, ProviderEventMap } from './types.js';
+import type { ProviderEvent, ProviderEventMap, RequestArguments } from './types.js';
 
 /**
  * Typed Provider wraps a base provider with compile-time type safety
@@ -53,19 +52,16 @@ export class TypedProvider<TSchema extends RpcSchema = StarknetRpcSchema>
    * Type-safe request method
    *
    * Infers parameter and return types from the schema based on method name.
+   * Also compatible with generic Provider.request<T> signature.
    */
-  request: EIP1193RequestFn<TSchema> = async <
-    TMethod extends RpcMethodNames<TSchema>,
-  >(args: {
+  request<TMethod extends RpcMethodNames<TSchema>>(args: {
     method: TMethod;
     params?: RpcMethodParameters<TSchema, TMethod>;
-  }): Promise<RpcMethodReturnType<TSchema, TMethod>> => {
-    const result = await this.provider.request({
-      method: args.method,
-      params: args.params as readonly unknown[],
-    });
-    return result as RpcMethodReturnType<TSchema, TMethod>;
-  };
+  }): Promise<RpcMethodReturnType<TSchema, TMethod>>;
+  request<T>(args: RequestArguments): Promise<T>;
+  async request<T>(args: RequestArguments): Promise<T> {
+    return this.provider.request<T>(args);
+  }
 
   /**
    * Register event listener

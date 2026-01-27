@@ -13,7 +13,7 @@ export interface RequestArguments {
   /** JSON-RPC method name */
   readonly method: string;
   /** Method parameters (array or object) */
-  readonly params?: readonly unknown[] | object;
+  readonly params?: readonly unknown[] | Record<string, unknown>;
 }
 
 /**
@@ -116,9 +116,11 @@ export type BlockId =
   | { block_hash: string };
 
 /**
- * Provider event listener
+ * Provider event listener (generic for any event type)
  */
-export type ProviderEventListener = (...args: unknown[]) => void;
+export type ProviderEventListener<E extends ProviderEvent = ProviderEvent> = (
+  ...args: ProviderEventMap[E]
+) => void;
 
 /**
  * Provider connect info
@@ -136,8 +138,8 @@ export interface ProviderEventMap {
   connect: [connectInfo: ProviderConnectInfo];
   /** Emitted when provider disconnects */
   disconnect: [error: RpcError];
-  /** Emitted for custom messages */
-  message: [message: { type: string; data: unknown }];
+  /** Emitted for subscription messages */
+  message: [message: { type: string; data: WsNotificationPayload }];
 }
 
 /**
@@ -162,25 +164,25 @@ export interface StarknetProviderEvents {
   /** Subscribe to new block headers (params: block_id?) */
   newHeads: (
     params?: NewHeadsSubscriptionParams,
-  ) => AsyncGenerator<NewHead, void, unknown>;
+  ) => AsyncGenerator<NewHead, void, void>;
   /** Subscribe to events (params: from_address?, keys?, block_id?) */
   events: (
     params?: EventsSubscriptionParams,
-  ) => AsyncGenerator<EmittedEvent, void, unknown>;
+  ) => AsyncGenerator<EmittedEvent, void, void>;
   /** Subscribe to transaction status changes */
   transactionStatus: (
     transactionHash: string,
-  ) => AsyncGenerator<TransactionStatusUpdate, void, unknown>;
+  ) => AsyncGenerator<TransactionStatusUpdate, void, void>;
   /** Subscribe to pending transactions (params: sender_address?, finality_status?) */
   pendingTransactions: (
     params?: PendingTransactionsSubscriptionParams,
-  ) => AsyncGenerator<PendingTransaction, void, unknown>;
+  ) => AsyncGenerator<PendingTransaction, void, void>;
   /** Subscribe to new transaction receipts (params: sender_address?, finality_status?) */
   newTransactionReceipts: (
     params?: TransactionReceiptsSubscriptionParams,
-  ) => AsyncGenerator<WsTransactionReceipt, void, unknown>;
+  ) => AsyncGenerator<WsTransactionReceipt, void, void>;
   /** Subscribe to reorg events */
-  reorg: () => AsyncGenerator<ReorgData, void, unknown>;
+  reorg: () => AsyncGenerator<ReorgData, void, void>;
 }
 
 // ============ Starknet-specific Types ============
@@ -1247,3 +1249,18 @@ export interface TransactionStatus {
   execution_status?: TxnExecutionStatus;
   failure_reason?: string;
 }
+
+// ============================================================================
+// WebSocket Notification Payload Types
+// ============================================================================
+
+/**
+ * Union of all possible WebSocket subscription notification payloads
+ */
+export type WsNotificationPayload =
+  | NewHead
+  | EmittedEvent
+  | TransactionStatusUpdate
+  | PendingTransaction
+  | WsTransactionReceipt
+  | ReorgData;

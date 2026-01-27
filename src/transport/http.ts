@@ -193,7 +193,7 @@ export function httpTransport(
 
     try {
       const result = await executeWithRetry(body);
-      const responses = result as JsonRpcResponse[];
+      const responses = result as unknown as JsonRpcResponse[];
 
       // Match responses to requests by id
       const matched = matchBatchResponses(requests, responses);
@@ -284,7 +284,7 @@ export function httpTransport(
       const body = JSON.stringify(requestWithId);
       try {
         const result = await executeWithRetry(body, options);
-        return result as JsonRpcResponse<T>;
+        return result as unknown as JsonRpcResponse<T>;
       } catch (error) {
         return createErrorResponse(
           requestWithId.id ?? null,
@@ -310,7 +310,7 @@ export function httpTransport(
 
       try {
         const result = await executeWithRetry(body, options);
-        const responses = result as JsonRpcResponse<T>[];
+        const responses = result as unknown as JsonRpcResponse<T>[];
         return matchBatchResponses(requestsWithIds, responses);
       } catch (error) {
         // Return error for all requests

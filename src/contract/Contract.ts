@@ -325,8 +325,8 @@ export function getContract(options: ContractOptions): ContractInstance {
 
       // Build invoke transaction for estimation
       const tx = {
-        type: 'INVOKE',
-        version: '0x1',
+        type: 'INVOKE' as const,
+        version: '0x1' as const,
         sender_address: account?.address ?? address,
         calldata: [
           '0x1', // call array length
@@ -338,7 +338,7 @@ export function getContract(options: ContractOptions): ContractInstance {
           ...callResult.result.calldata.map((v) => '0x' + v.toString(16)),
         ],
         max_fee: '0x0',
-        signature: [],
+        signature: [] as string[],
         nonce: '0x0',
       };
 

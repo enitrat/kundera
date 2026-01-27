@@ -10,6 +10,13 @@ import type {
   ClassHashType,
 } from '../primitives/index.js';
 import { toHex } from '../primitives/index.js';
+import type {
+  TxnWithHash,
+  TxnReceiptWithBlockInfo,
+  BroadcastedTxn,
+  FeeEstimate,
+  EmittedEvent,
+} from '../provider/types.js';
 
 // ============ Types ============
 
@@ -312,10 +319,10 @@ export class StarknetRpcClient {
    * Estimate fee for a transaction
    */
   async estimateFee(
-    transaction: unknown,
+    transaction: BroadcastedTxn,
     blockId: BlockId = 'latest'
-  ): Promise<{ gas_consumed: string; gas_price: string; overall_fee: string }> {
-    return this.call('starknet_estimateFee', [
+  ): Promise<FeeEstimate> {
+    return this.call<FeeEstimate>('starknet_estimateFee', [
       [transaction],
       [],
       this.formatBlockId(blockId),
@@ -325,15 +332,15 @@ export class StarknetRpcClient {
   /**
    * Get transaction by hash
    */
-  async getTransactionByHash(txHash: string): Promise<unknown> {
-    return this.call('starknet_getTransactionByHash', [txHash]);
+  async getTransactionByHash(txHash: string): Promise<TxnWithHash> {
+    return this.call<TxnWithHash>('starknet_getTransactionByHash', [txHash]);
   }
 
   /**
    * Get transaction receipt
    */
-  async getTransactionReceipt(txHash: string): Promise<unknown> {
-    return this.call('starknet_getTransactionReceipt', [txHash]);
+  async getTransactionReceipt(txHash: string): Promise<TxnReceiptWithBlockInfo> {
+    return this.call<TxnReceiptWithBlockInfo>('starknet_getTransactionReceipt', [txHash]);
   }
 
   /**
@@ -347,7 +354,7 @@ export class StarknetRpcClient {
     continuation_token?: string;
     chunk_size: number;
   }): Promise<{
-    events: unknown[];
+    events: EmittedEvent[];
     continuation_token?: string;
   }> {
     const formatted = {

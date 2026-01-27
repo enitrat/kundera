@@ -45,7 +45,7 @@ export interface Provider {
    * @returns Promise resolving to the result
    * @throws RpcError on failure
    */
-  request(args: RequestArguments): Promise<unknown>;
+  request<T>(args: RequestArguments): Promise<T>;
 
   /**
    * Register event listener

@@ -13,10 +13,10 @@
 export type RpcSchemaEntry = {
   /** Method name */
   Method: string;
-  /** Parameter types (tuple) */
-  Parameters: readonly unknown[];
-  /** Return type */
-  ReturnType: unknown;
+  /** Parameter types (tuple) - accepts any serializable values */
+  Parameters: readonly (string | number | boolean | null | object)[];
+  /** Return type - any JSON-serializable type */
+  ReturnType: string | number | boolean | null | object;
 };
 
 /**
