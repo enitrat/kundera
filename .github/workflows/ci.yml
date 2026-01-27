@@ -57,6 +57,9 @@ jobs:
     defaults:
       run:
         shell: bash
+    env:
+      ZIG_GLOBAL_CACHE_DIR: ${{ runner.temp }}/zig-cache
+      ZIG_LOCAL_CACHE_DIR: ${{ runner.temp }}/zig-cache/local
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -79,6 +82,10 @@ jobs:
 
       - name: Build native (Rust)
         run: cargo build --release
+
+      - name: Prepare Zig cache dirs
+        run: |
+          mkdir -p "${ZIG_GLOBAL_CACHE_DIR}" "${ZIG_LOCAL_CACHE_DIR}"
 
       - name: Zig tests
         run: zig build test
