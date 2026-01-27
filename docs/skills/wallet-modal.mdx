@@ -1,0 +1,203 @@
+---
+title: Wallet Modal
+description: Connect to Starknet wallets using modal UIs like StarknetKit or get-starknet.
+---
+
+A minimal adapter skill for integrating wallet modal libraries with Kundera. Uses peer dependencies and dynamic imports to keep wallet SDKs out of your main bundle.
+
+## Quick Start
+
+### 1. Copy the Skill
+
+```bash
+cp -r examples/skills/wallet-modal src/skills/
+```
+
+### 2. Install a Modal Provider
+
+Choose one (peer dependency):
+
+```bash
+# StarknetKit (recommended)
+npm install @starknet-io/starknet-kit
+
+# or get-starknet
+npm install get-starknet
+```
+
+### 3. Use It
+
+```typescript
+import { connectWalletWithModal } from './skills/wallet-modal';
+import { getContract } from 'kundera/contract';
+
+// Connect with modal
+const { result, error } = await connectWalletWithModal();
+
+if (error) {
+  console.error('Connection failed:', error.message);
+  return;
+}
+
+const { account, client, address } = result;
+
+// Use with Kundera APIs
+const contract = getContract({
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  client,
+  account,
+});
+
+await contract.write('transfer', [recipient, amount]);
+```
+
+## API
+
+### connectWalletWithModal
+
+Connect to a wallet using a modal UI.
+
+```typescript
+function connectWalletWithModal(
+  options?: WalletModalOptions
+): Promise<WalletModalResult>
+```
+
+#### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `modalProvider` | `'starknetkit'` \| `'get-starknet'` | `'starknetkit'` | Which modal library to use |
+| `walletIds` | `string[]` | all | Filter to specific wallets |
+| `rpcUrl` | `string` | public endpoint | Custom RPC URL |
+| `chainId` | `'SN_MAIN'` \| `'SN_SEPOLIA'` | `'SN_MAIN'` | Network to connect to |
+
+#### Returns
+
+```typescript
+interface WalletModalResult {
+  result: WalletModalConnection | null;
+  error: WalletModalError | null;
+}
+
+interface WalletModalConnection {
+  account: Account;        // Ready for signing
+  client: StarknetRpcClient; // Ready for reads
+  walletId: string;        // e.g., 'argentX'
+  address: string;         // Connected address
+  chainId: string;         // e.g., 'SN_MAIN'
+}
+```
+
+### disconnectWalletModal
+
+Disconnect from the current wallet.
+
+```typescript
+function disconnectWalletModal(
+  modalProvider?: 'starknetkit' | 'get-starknet'
+): Promise<void>
+```
+
+## Examples
+
+### Filter to Specific Wallets
+
+```typescript
+const { result } = await connectWalletWithModal({
+  walletIds: ['argentX', 'braavos'],
+});
+```
+
+### Use get-starknet Instead
+
+```typescript
+const { result } = await connectWalletWithModal({
+  modalProvider: 'get-starknet',
+});
+```
+
+### Connect to Sepolia
+
+```typescript
+const { result } = await connectWalletWithModal({
+  chainId: 'SN_SEPOLIA',
+});
+```
+
+### With Error Handling
+
+```typescript
+const { result, error } = await connectWalletWithModal();
+
+if (error) {
+  switch (error.code) {
+    case 'MODAL_NOT_AVAILABLE':
+      console.error('Install the modal provider first');
+      break;
+    case 'USER_REJECTED':
+      console.log('User cancelled');
+      break;
+    case 'NO_WALLET_FOUND':
+      console.error('No wallet extension detected');
+      break;
+    default:
+      console.error('Connection failed:', error.message);
+  }
+  return;
+}
+
+// Use result.account and result.client
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| `MODAL_NOT_AVAILABLE` | Modal provider (StarknetKit/get-starknet) not installed |
+| `USER_REJECTED` | User closed the modal or rejected connection |
+| `NO_WALLET_FOUND` | No wallet extension detected in browser |
+| `CONNECTION_FAILED` | Generic connection error |
+| `UNSUPPORTED_PROVIDER` | Unknown modal provider specified |
+
+## Notes / Limitations
+
+<Warning>
+## Browser Only
+
+This skill only works in browser environments. It requires `window` to be available.
+</Warning>
+
+<Tip>
+## No Hard Dependencies
+
+The skill uses dynamic imports for modal providers. If the provider isn't installed, you'll get a clear `MODAL_NOT_AVAILABLE` error instead of a bundler failure.
+</Tip>
+
+- **Peer dependencies only**: Install your chosen modal provider separately
+- **Dynamic imports**: Wallet SDKs are loaded at runtime, not bundled
+- **Copy-paste pattern**: This is example code, not a published package
+- **No React hooks**: Use with any framework or vanilla JS
+
+## Source & Tests
+
+<CardGroup cols={2}>
+  <Card title="Source" icon="code" href="https://github.com/your-org/kundera/tree/main/examples/skills/wallet-modal/index.ts">
+    View the implementation.
+  </Card>
+  <Card title="Tests" icon="flask" href="https://github.com/your-org/kundera/tree/main/examples/skills/wallet-modal/wallet-modal.test.ts">
+    View the test suite.
+  </Card>
+</CardGroup>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Wallet API" icon="wallet" href="/api/wallet">
+    Low-level wallet connection without modals.
+  </Card>
+  <Card title="Account API" icon="user" href="/api/account">
+    Account creation and signing.
+  </Card>
+</CardGroup>

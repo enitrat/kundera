@@ -11,15 +11,20 @@
     "declaration": true,
     "declarationMap": true,
     "outDir": "./types",
-    "rootDir": "./src",
+    "rootDir": ".",
     "noEmit": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "baseUrl": ".",
+    "paths": {
+      "kundera": ["./src/index.ts"],
+      "kundera/*": ["./src/*/index.ts"]
+    }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "examples/**/*.ts"],
   "exclude": ["node_modules", "dist", "types"]
 }

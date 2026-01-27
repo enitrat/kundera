@@ -1,0 +1,92 @@
+---
+title: Skills
+description: Copy-paste examples for common Starknet patterns.
+---
+
+Skills are self-contained code examples that you copy into your project. They're not published packages—just well-tested patterns you can adapt to your needs.
+
+## Why Skills?
+
+| Benefit | Description |
+|---------|-------------|
+| **No dependencies** | Skills use only Kundera core APIs |
+| **Copy-paste** | Take what you need, modify as required |
+| **Well-tested** | Each skill includes a test suite |
+| **Tree-shakeable** | Import only what you use |
+
+## Available Skills
+
+<CardGroup cols={2}>
+  <Card title="Wallet Modal" icon="wallet" href="/skills/wallet-modal">
+    Connect to wallets using StarknetKit or get-starknet modals.
+  </Card>
+  <Card title="Viem-Style Contract" icon="file-contract" href="/skills/contract-viem">
+    Tree-shakeable contract functions inspired by viem.
+  </Card>
+</CardGroup>
+
+## Using Skills
+
+### 1. Copy the Code
+
+```bash
+# Copy a skill to your project
+cp -r examples/skills/wallet-modal src/skills/
+```
+
+### 2. Install Peer Dependencies (if any)
+
+Some skills have optional peer dependencies:
+
+```bash
+# Wallet Modal requires one of:
+npm install @starknet-io/starknet-kit
+# or
+npm install get-starknet
+```
+
+### 3. Import and Use
+
+```typescript
+import { connectWalletWithModal } from './skills/wallet-modal';
+
+const { result, error } = await connectWalletWithModal();
+```
+
+## Skill Structure
+
+Each skill follows this structure:
+
+```
+examples/skills/<skill-name>/
+├── index.ts              # Main implementation
+├── README.md             # Usage documentation
+└── <skill-name>.test.ts  # Test suite
+```
+
+<Tip>
+## Adapt as Needed
+
+Skills are starting points, not rigid frameworks. Feel free to modify the code to fit your project's patterns and requirements.
+</Tip>
+
+## Contributing Skills
+
+Want to contribute a skill? Follow these guidelines:
+
+1. **Self-contained**: No external dependencies beyond Kundera core
+2. **Tested**: Include a test file with type and behavior tests
+3. **Documented**: Include a README and JSDoc comments
+4. **Result pattern**: Use `{ result, error }` returns
+5. **Tree-shakeable**: Export individual functions, not objects
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="API Reference" icon="code" href="/api/contract">
+    Core Kundera APIs that skills build on.
+  </Card>
+  <Card title="Recipes" icon="book" href="/recipes/transfer">
+    Quick code snippets for common tasks.
+  </Card>
+</CardGroup>
