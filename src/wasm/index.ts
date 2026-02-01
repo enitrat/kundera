@@ -11,7 +11,7 @@
  */
 
 import type { KunderaAPI, Signature } from '../api-interface.js';
-import type { Felt252Type } from '../primitives/index.js';
+import { Felt252, type Felt252Type } from '../primitives/index.js';
 
 // ============ Re-export Primitives (unchanged) ============
 
@@ -23,19 +23,10 @@ export {
   Felt252,
   type Felt252Type,
   type Felt252Input,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  toHex,
-  toBigInt,
-  isValid,
-  isZero,
-  equals,
   // ContractAddress
   ContractAddress,
   ContractAddressUnchecked,
   type ContractAddressType,
-  isValidContractAddress,
   // ClassHash
   ClassHash,
   ClassHashUnchecked,
@@ -61,27 +52,6 @@ export {
   CairoSerde,
 } from '../serde/index.js';
 
-// ============ Re-export RPC (unchanged) ============
-
-export {
-  StarknetRpcClient,
-  createClient,
-  mainnet,
-  sepolia,
-  type RpcClientConfig,
-  type BlockId,
-  type BlockTag,
-  type BlockNumber,
-  type BlockHash,
-  type RpcError,
-  type FunctionCall,
-  type TransactionStatus,
-  type BlockHeader,
-  type ChainId,
-  type Nonce,
-  type StorageValue,
-  type ContractClass,
-} from '../rpc/index.js';
 
 // ============ WASM Loader ============
 
@@ -139,17 +109,17 @@ export function isNativeAvailable(): boolean {
 
 export function pedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmPedersenHash(a, b);
+  return Felt252(wasmPedersenHash(a, b));
 }
 
 export function poseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmPoseidonHash(a, b);
+  return Felt252(wasmPoseidonHash(a, b));
 }
 
 export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
   ensureWasmLoaded();
-  return wasmPoseidonHashMany(inputs);
+  return Felt252(wasmPoseidonHashMany(inputs));
 }
 
 export function snKeccak(_data: Uint8Array): Felt252Type {
@@ -160,42 +130,42 @@ export function snKeccak(_data: Uint8Array): Felt252Type {
 
 export function feltAdd(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmFeltAdd(a, b);
+  return Felt252(wasmFeltAdd(a, b));
 }
 
 export function feltSub(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmFeltSub(a, b);
+  return Felt252(wasmFeltSub(a, b));
 }
 
 export function feltMul(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmFeltMul(a, b);
+  return Felt252(wasmFeltMul(a, b));
 }
 
 export function feltDiv(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmFeltDiv(a, b);
+  return Felt252(wasmFeltDiv(a, b));
 }
 
 export function feltNeg(a: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmFeltNeg(a);
+  return Felt252(wasmFeltNeg(a));
 }
 
 export function feltInverse(a: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmFeltInverse(a);
+  return Felt252(wasmFeltInverse(a));
 }
 
 export function feltPow(base: Felt252Type, exp: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmFeltPow(base, exp);
+  return Felt252(wasmFeltPow(base, exp));
 }
 
 export function feltSqrt(a: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmFeltSqrt(a);
+  return Felt252(wasmFeltSqrt(a));
 }
 
 // ============ ECDSA ============
@@ -204,7 +174,8 @@ export type { Signature } from '../api-interface.js';
 
 export function sign(privateKey: Felt252Type, messageHash: Felt252Type): Signature {
   ensureWasmLoaded();
-  return wasmSign(privateKey, messageHash);
+  const signature = wasmSign(privateKey, messageHash);
+  return { r: Felt252(signature.r), s: Felt252(signature.s) };
 }
 
 export function verify(
@@ -218,7 +189,7 @@ export function verify(
 
 export function getPublicKey(privateKey: Felt252Type): Felt252Type {
   ensureWasmLoaded();
-  return wasmGetPublicKey(privateKey);
+  return Felt252(wasmGetPublicKey(privateKey));
 }
 
 export function recover(
@@ -228,7 +199,7 @@ export function recover(
   v: Felt252Type
 ): Felt252Type {
   ensureWasmLoaded();
-  return wasmRecover(messageHash, r, s, v);
+  return Felt252(wasmRecover(messageHash, r, s, v));
 }
 
 // ============ Crypto Namespaces ============
@@ -242,11 +213,14 @@ export const Poseidon = {
   hashMany: poseidonHashMany,
 } as const;
 
-// Note: This shadows the Felt from primitives, so we need to merge
+// Merge Felt primitives with crypto ops (preserve call signature)
 import { Felt as FeltPrimitives } from '../primitives/index.js';
 
-export const Felt = {
-  ...FeltPrimitives,
+const FeltBase = ((
+  value: Parameters<typeof FeltPrimitives>[0],
+) => FeltPrimitives(value)) as typeof FeltPrimitives;
+
+export const Felt = Object.assign(FeltBase, FeltPrimitives, {
   add: feltAdd,
   sub: feltSub,
   mul: feltMul,
@@ -255,7 +229,16 @@ export const Felt = {
   inverse: feltInverse,
   pow: feltPow,
   sqrt: feltSqrt,
-} as const;
+}) as typeof FeltPrimitives & {
+  add: typeof feltAdd;
+  sub: typeof feltSub;
+  mul: typeof feltMul;
+  div: typeof feltDiv;
+  neg: typeof feltNeg;
+  inverse: typeof feltInverse;
+  pow: typeof feltPow;
+  sqrt: typeof feltSqrt;
+};
 
 export const StarkCurve = {
   sign,
@@ -270,18 +253,8 @@ import type { KunderaAPI as _KunderaAPI } from '../api-interface.js';
 import {
   FIELD_PRIME,
   MAX_CONTRACT_ADDRESS,
-  Felt252,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  toHex,
-  toBigInt,
-  isValid,
-  isZero,
-  equals,
   ContractAddress,
   ContractAddressUnchecked,
-  isValidContractAddress,
   ClassHash,
   ClassHashUnchecked,
   StorageKey,
@@ -300,29 +273,13 @@ import {
   CairoSerde,
 } from '../serde/index.js';
 
-import {
-  StarknetRpcClient,
-  createClient,
-  mainnet,
-  sepolia,
-} from '../rpc/index.js';
-
 const _wasmAPI = {
   // Primitives
   FIELD_PRIME,
   MAX_CONTRACT_ADDRESS,
   Felt252,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  toHex,
-  toBigInt,
-  isValid,
-  isZero,
-  equals,
   ContractAddress,
   ContractAddressUnchecked,
-  isValidContractAddress,
   ClassHash,
   ClassHashUnchecked,
   StorageKey,
@@ -362,9 +319,4 @@ const _wasmAPI = {
   deserializeArray,
   serializeByteArray,
   CairoSerde,
-  // RPC
-  StarknetRpcClient,
-  createClient,
-  mainnet,
-  sepolia,
 } satisfies _KunderaAPI;

@@ -15,7 +15,7 @@ import {
   JsonRpcErrorCode,
   createErrorResponse,
 } from './types.js';
-import type { WsNotificationPayload } from '../provider/types.js';
+import type { WsNotificationPayload } from '../rpc/types.js';
 
 // ============ WebSocket Transport Options ============
 

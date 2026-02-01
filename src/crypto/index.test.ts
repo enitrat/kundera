@@ -32,7 +32,7 @@ import {
   StarkCurve,
   Felt,
 } from './index';
-import { Felt252, toBigInt, equals, FIELD_PRIME } from '../primitives/index';
+import { Felt252, FIELD_PRIME } from '../primitives/index';
 
 // Detect native availability once
 const nativeAvailable = isNativeAvailable();
@@ -93,7 +93,7 @@ describe('Crypto module', () => {
       expect(result).toBeInstanceOf(Uint8Array);
       expect(result.length).toBe(32);
       // Result should be < 2^250 (masked)
-      const value = toBigInt(result);
+      const value = result.toBigInt();
       expect(value).toBeLessThan(1n << 250n);
     });
 
@@ -137,7 +137,7 @@ describe('Crypto module', () => {
             return;
           }
           const result = snKeccak(input);
-          const value = toBigInt(result);
+          const value = result.toBigInt();
           expect(value).toBe(expected);
         });
       }
@@ -150,7 +150,7 @@ describe('Crypto module', () => {
         const bytes = new TextEncoder().encode('transfer');
         const fromBytes = snKeccak(bytes);
         const fromString = snKeccak('transfer');
-        expect(equals(fromBytes, fromString)).toBe(true);
+        expect(fromBytes.equals(fromString)).toBe(true);
       });
 
       test('snKeccak result is always < 2^250', () => {
@@ -162,7 +162,7 @@ describe('Crypto module', () => {
         const testInputs = ['a', 'test', 'longerinput', '\x00\x01\x02'];
         for (const input of testInputs) {
           const result = snKeccak(input);
-          const value = toBigInt(result);
+          const value = result.toBigInt();
           expect(value).toBeLessThan(1n << 250n);
         }
       });
@@ -176,7 +176,7 @@ describe('Crypto module', () => {
         return;
       }
       const result = feltAdd(Felt252(2), Felt252(3));
-      expect(toBigInt(result)).toBe(5n);
+      expect(result.toBigInt()).toBe(5n);
     });
 
     test('feltSub: 10 - 3 = 7 (or throws without crypto)', () => {
@@ -185,7 +185,7 @@ describe('Crypto module', () => {
         return;
       }
       const result = feltSub(Felt252(10), Felt252(3));
-      expect(toBigInt(result)).toBe(7n);
+      expect(result.toBigInt()).toBe(7n);
     });
 
     test('feltMul: 6 * 7 = 42 (or throws without crypto)', () => {
@@ -194,7 +194,7 @@ describe('Crypto module', () => {
         return;
       }
       const result = feltMul(Felt252(6), Felt252(7));
-      expect(toBigInt(result)).toBe(42n);
+      expect(result.toBigInt()).toBe(42n);
     });
 
     test('feltDiv: 42 / 7 = 6 (or throws without crypto)', () => {
@@ -203,7 +203,7 @@ describe('Crypto module', () => {
         return;
       }
       const result = feltDiv(Felt252(42), Felt252(7));
-      expect(toBigInt(result)).toBe(6n);
+      expect(result.toBigInt()).toBe(6n);
     });
 
     test('feltNeg: -5 mod P (or throws without crypto)', () => {
@@ -212,7 +212,7 @@ describe('Crypto module', () => {
         return;
       }
       const result = feltNeg(Felt252(5));
-      expect(toBigInt(result)).toBe(FIELD_PRIME - 5n);
+      expect(result.toBigInt()).toBe(FIELD_PRIME - 5n);
     });
 
     test('feltInverse: 1/2 * 2 = 1 (or throws without crypto)', () => {
@@ -223,7 +223,7 @@ describe('Crypto module', () => {
       const two = Felt252(2);
       const inv = feltInverse(two);
       const product = feltMul(inv, two);
-      expect(toBigInt(product)).toBe(1n);
+      expect(product.toBigInt()).toBe(1n);
     });
 
     test('feltPow: 2^10 = 1024 (or throws without crypto)', () => {
@@ -232,7 +232,7 @@ describe('Crypto module', () => {
         return;
       }
       const result = feltPow(Felt252(2), Felt252(10));
-      expect(toBigInt(result)).toBe(1024n);
+      expect(result.toBigInt()).toBe(1024n);
     });
 
     test('feltSqrt: sqrt(4) = 2 or P-2 (or throws without crypto)', () => {
@@ -241,7 +241,7 @@ describe('Crypto module', () => {
         return;
       }
       const result = feltSqrt(Felt252(4));
-      const value = toBigInt(result);
+      const value = result.toBigInt();
       expect(value === 2n || value === FIELD_PRIME - 2n).toBe(true);
     });
   });
@@ -309,7 +309,7 @@ describe('Crypto module', () => {
       for (const v of [Felt252(0), Felt252(1)]) {
         try {
           const candidate = recover(messageHash, sig.r, sig.s, v);
-          if (equals(candidate, pubKey)) {
+          if (candidate.equals(pubKey)) {
             recovered = candidate;
             break;
           }

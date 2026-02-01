@@ -7,8 +7,6 @@
 import {
   type Felt252Type,
   Felt252,
-  toBigInt,
-  fromBigInt,
   FIELD_PRIME,
   encodeShortString,
 } from '../primitives/index.js';
@@ -43,7 +41,7 @@ function toBigIntValue(value: CairoValue): bigint {
     return BigInt(value);
   }
   if (value instanceof Uint8Array) {
-    return toBigInt(value as Felt252Type);
+    return Felt252(value as Felt252Type).toBigInt();
   }
   throw new Error(`Cannot convert ${typeof value} to bigint`);
 }

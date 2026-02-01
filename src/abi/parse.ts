@@ -5,7 +5,6 @@
  */
 
 import { snKeccak } from '../crypto/index.js';
-import { toBigInt, toHex } from '../primitives/index.js';
 import {
   type Abi,
   type AbiEntry,
@@ -35,7 +34,7 @@ import {
  */
 export function computeSelector(name: string): bigint {
   const hash = snKeccak(name);
-  const value = toBigInt(hash);
+  const value = hash.toBigInt();
   // Mask to 250 bits
   const mask = (1n << 250n) - 1n;
   return value & mask;

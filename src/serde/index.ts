@@ -4,12 +4,7 @@
  * Cairo-compatible serialization for Starknet types.
  */
 
-import {
-  type Felt252Type,
-  Felt252,
-  toBigInt,
-  fromBigInt,
-} from '../primitives/index.js';
+import { type Felt252Type, Felt252 } from '../primitives/index.js';
 
 /**
  * Serialize a u256 as two felts [low, high]
@@ -21,15 +16,15 @@ export function serializeU256(value: bigint): [Felt252Type, Felt252Type] {
   const low = value & mask;
   const high = value >> 128n;
 
-  return [fromBigInt(low), fromBigInt(high)];
+  return [Felt252.fromBigInt(low), Felt252.fromBigInt(high)];
 }
 
 /**
  * Deserialize two felts [low, high] to u256
  */
 export function deserializeU256(felts: [Felt252Type, Felt252Type]): bigint {
-  const low = toBigInt(felts[0]);
-  const high = toBigInt(felts[1]);
+  const low = felts[0].toBigInt();
+  const high = felts[1].toBigInt();
   return (high << 128n) | low;
 }
 
@@ -51,7 +46,7 @@ export function deserializeArray(
   if (!lengthFelt) {
     throw new Error(`Invalid offset ${offset}: array is empty or too short`);
   }
-  const length = Number(toBigInt(lengthFelt));
+  const length = Number(lengthFelt.toBigInt());
   const array = felts.slice(offset + 1, offset + 1 + length);
   return { array, nextOffset: offset + 1 + length };
 }
@@ -74,7 +69,7 @@ export function serializeByteArray(data: Uint8Array): Felt252Type[] {
     const chunk = data.slice(i * 31, (i + 1) * 31);
     const padded = new Uint8Array(32);
     padded.set(chunk, 32 - chunk.length);
-    result.push(padded as Felt252Type);
+    result.push(Felt252.fromBytes(padded));
   }
 
   // Pending word (remaining bytes)
@@ -83,7 +78,7 @@ export function serializeByteArray(data: Uint8Array): Felt252Type[] {
     const chunk = data.slice(numFullWords * 31);
     const padded = new Uint8Array(32);
     padded.set(chunk, 32 - chunk.length);
-    result.push(padded as Felt252Type);
+    result.push(Felt252.fromBytes(padded));
   } else {
     result.push(Felt252(0n));
   }

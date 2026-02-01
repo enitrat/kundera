@@ -51,17 +51,6 @@ export {
 // Re-export serde
 export * from './serde/index.js';
 
-// Re-export JSON-RPC client (class + factories only; types in 'kundera/rpc')
-export {
-  StarknetRpcClient,
-  createClient,
-  mainnet,
-  sepolia,
-  type RpcClientConfig,
-} from './rpc/index.js';
-
-// Re-export provider (HTTP + WebSocket providers, TypedProvider)
-export * from './provider/index.js';
 
 // ============ API Parity Check ============
 
@@ -69,17 +58,8 @@ import {
   FIELD_PRIME,
   MAX_CONTRACT_ADDRESS,
   Felt252,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  toHex,
-  toBigInt,
-  isValid,
-  isZero,
-  equals,
   ContractAddress,
   ContractAddressUnchecked,
-  isValidContractAddress,
   ClassHash,
   ClassHashUnchecked,
   StorageKey,
@@ -125,29 +105,14 @@ import {
   CairoSerde,
 } from './serde/index.js';
 
-import {
-  StarknetRpcClient,
-  createClient,
-  mainnet,
-  sepolia,
-} from './rpc/index.js';
 
 const _api = {
   // Primitives
   FIELD_PRIME,
   MAX_CONTRACT_ADDRESS,
   Felt252,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  toHex,
-  toBigInt,
-  isValid,
-  isZero,
-  equals,
   ContractAddress,
   ContractAddressUnchecked,
-  isValidContractAddress,
   ClassHash,
   ClassHashUnchecked,
   StorageKey,
@@ -187,9 +152,4 @@ const _api = {
   deserializeArray,
   serializeByteArray,
   CairoSerde,
-  // RPC
-  StarknetRpcClient,
-  createClient,
-  mainnet,
-  sepolia,
 } satisfies KunderaAPI;

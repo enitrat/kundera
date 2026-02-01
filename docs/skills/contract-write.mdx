@@ -1,0 +1,29 @@
+---
+title: "Contract Write"
+description: "State-changing calls using an account executor."
+---
+
+This skill expects an `account.execute()` function (for example from `account-invoke`).
+
+## Quick Start
+
+```bash
+cp -r examples/skills/contract-write src/skills/
+```
+
+## Usage
+
+```ts
+import { createAccountInvoker } from './skills/account-invoke';
+import { writeContract } from './skills/contract-write';
+
+const account = createAccountInvoker({ transport, address, signer });
+
+const { result, error } = await writeContract({
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  functionName: 'transfer',
+  args: [recipient, amount],
+  account,
+});
+```

@@ -6,7 +6,7 @@ Tree-shakeable contract interaction functions inspired by viem's API design.
 
 - Viem-like API surface (`readContract`, `writeContract`, etc.)
 - Tree-shakeable imports
-- Follows `{ result, error }` pattern
+- `{ result, error }` return pattern
 - Works with any Starknet contract ABI
 
 ## Installation
@@ -20,15 +20,16 @@ No additional dependencies required - uses only Kundera core APIs.
 
 ## Usage
 
-```typescript
+```ts
+import { httpTransport } from 'kundera/transport';
+import { PrivateKeySigner } from 'kundera/crypto';
+import { createAccountInvoker } from './skills/account-invoke';
 import { readContract, writeContract, watchContractEvent } from './skills/contract-viem';
-import { createClient } from 'kundera/rpc';
-import { createAccount, createSigner } from 'kundera/account';
 
-const client = createClient({ url: 'https://starknet-mainnet.public.blastapi.io' });
+const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
 
 // Read
-const { result } = await readContract(client, {
+const { result } = await readContract(transport, {
   abi: ERC20_ABI,
   address: tokenAddress,
   functionName: 'balance_of',
@@ -36,10 +37,10 @@ const { result } = await readContract(client, {
 });
 
 // Write
-const signer = createSigner(privateKey);
-const account = createAccount(client, address, signer);
+const signer = new PrivateKeySigner(privateKey);
+const account = createAccountInvoker({ transport, address, signer });
 
-const { result: tx } = await writeContract(client, {
+const { result: tx } = await writeContract(transport, {
   abi: ERC20_ABI,
   address: tokenAddress,
   functionName: 'transfer',
@@ -48,7 +49,7 @@ const { result: tx } = await writeContract(client, {
 });
 
 // Watch events
-const unwatch = watchContractEvent(client, {
+const unwatch = watchContractEvent(transport, {
   abi: ERC20_ABI,
   address: tokenAddress,
   eventName: 'Transfer',
@@ -58,27 +59,27 @@ const unwatch = watchContractEvent(client, {
 
 ## API
 
-### `readContract(client, params)`
+### `readContract(transport, params)`
 
 Read from a contract (view function).
 
-### `writeContract(client, params)`
+### `writeContract(transport, params)`
 
 Execute a state-changing function. Requires `account` in params.
 
-### `simulateContract(client, params)`
+### `simulateContract(transport, params)`
 
 Simulate a transaction without executing.
 
-### `estimateContractFee(client, params)`
+### `estimateContractFee(transport, params)`
 
 Get fee estimate for a transaction.
 
-### `watchContractEvent(client, params)`
+### `watchContractEvent(transport, params)`
 
 Watch for contract events (polling-based). Returns unsubscribe function.
 
-### `multicallRead(client, calls)`
+### `multicallRead(transport, calls)`
 
 Read from multiple contracts in parallel.
 

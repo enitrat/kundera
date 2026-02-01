@@ -1,0 +1,37 @@
+---
+title: "WebSocket Provider"
+description: "Real-time subscriptions using WebSocket transport + RPC methods."
+---
+
+This skill wraps `webSocketTransport` and the `starknet_subscribe*` RPC methods.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/websocket-provider src/skills/
+```
+
+## Usage
+
+```ts
+import { createWebSocketProvider } from './skills/websocket-provider';
+
+const ws = createWebSocketProvider({
+  url: 'wss://starknet-mainnet.public.blastapi.io',
+  transport: { reconnect: true },
+});
+
+await ws.connect();
+
+const unsubscribe = await ws.subscribeNewHeads(undefined, (head) => {
+  console.log('New head:', head.block_number);
+});
+
+await unsubscribe();
+ws.close();
+```
+
+## Notes
+
+- You must `connect()` before subscribing.
+- Subscriptions return an async `unsubscribe` function.

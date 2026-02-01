@@ -1,0 +1,31 @@
+---
+title: "Account Invoke"
+description: "Execute invoke transactions with a signer."
+---
+
+This skill provides `execute` + `estimateFee` helpers for invoke transactions.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/account-invoke src/skills/
+```
+
+## Usage
+
+```ts
+import { httpTransport } from 'kundera/transport';
+import { PrivateKeySigner } from 'kundera/crypto';
+import { createAccountInvoker } from './skills/account-invoke';
+
+const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
+const signer = new PrivateKeySigner(PRIVATE_KEY);
+
+const account = createAccountInvoker({ transport, address, signer });
+
+const { transaction_hash } = await account.execute({
+  contractAddress: CONTRACT_ADDRESS,
+  entrypoint: 'transfer',
+  calldata: [RECIPIENT, AMOUNT],
+});
+```

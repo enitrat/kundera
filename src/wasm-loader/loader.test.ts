@@ -19,7 +19,7 @@ import {
   wasmSign,
   wasmVerify,
 } from './index';
-import { Felt252, toBigInt, equals, FIELD_PRIME } from '../primitives/index';
+import { Felt252 } from '../primitives/index';
 
 // Check if WASM is available
 const wasmAvailable = isWasmAvailable();
@@ -58,13 +58,13 @@ describe('WASM Loader', () => {
     test('wasmFeltAdd: 2 + 3 = 5', () => {
       if (!wasmAvailable) return;
       const result = wasmFeltAdd(Felt252(2), Felt252(3));
-      expect(toBigInt(result)).toBe(5n);
+      expect(result.toBigInt()).toBe(5n);
     });
 
     test('wasmFeltMul: 6 * 7 = 42', () => {
       if (!wasmAvailable) return;
       const result = wasmFeltMul(Felt252(6), Felt252(7));
-      expect(toBigInt(result)).toBe(42n);
+      expect(result.toBigInt()).toBe(42n);
     });
   });
 
@@ -81,7 +81,7 @@ describe('WASM Loader', () => {
       const b = Felt252(456);
       const r1 = wasmPedersenHash(a, b);
       const r2 = wasmPedersenHash(a, b);
-      expect(equals(r1, r2)).toBe(true);
+      expect(r1.equals(r2)).toBe(true);
     });
 
     test('wasmPoseidonHash produces 32-byte result', () => {
@@ -120,7 +120,7 @@ describe('WASM Loader', () => {
       if (!wasmAvailable) return;
       const pubKey = wasmGetPublicKey(privateKey);
       const sig = wasmSign(privateKey, messageHash);
-      const badR = Felt252(toBigInt(sig.r) + 1n);
+      const badR = Felt252(sig.r.toBigInt() + 1n);
       const isValid = wasmVerify(pubKey, messageHash, badR, sig.s);
       expect(isValid).toBe(false);
     });
@@ -145,7 +145,7 @@ describe('WASM Loader', () => {
       const nativeResult = native.pedersenHash(a, b);
       const wasmResult = wasmPedersenHash(a, b);
 
-      expect(equals(nativeResult, wasmResult)).toBe(true);
+      expect(nativeResult.equals(wasmResult)).toBe(true);
     });
 
     test('poseidon hash matches between native and wasm', async () => {
@@ -165,7 +165,7 @@ describe('WASM Loader', () => {
       const nativeResult = native.poseidonHash(a, b);
       const wasmResult = wasmPoseidonHash(a, b);
 
-      expect(equals(nativeResult, wasmResult)).toBe(true);
+      expect(nativeResult.equals(wasmResult)).toBe(true);
     });
 
     test('sign produces same signature in native and wasm', async () => {
@@ -185,8 +185,8 @@ describe('WASM Loader', () => {
       const nativeSig = native.sign(privateKey, messageHash);
       const wasmSig = wasmSign(privateKey, messageHash);
 
-      expect(equals(nativeSig.r, wasmSig.r)).toBe(true);
-      expect(equals(nativeSig.s, wasmSig.s)).toBe(true);
+      expect(nativeSig.r.equals(wasmSig.r)).toBe(true);
+      expect(nativeSig.s.equals(wasmSig.s)).toBe(true);
     });
   });
 });

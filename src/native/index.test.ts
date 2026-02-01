@@ -26,7 +26,7 @@ import {
   verify,
   StarkResult,
 } from './index';
-import { Felt252, toBigInt, toHex, equals, FIELD_PRIME } from '../primitives/index';
+import { Felt252, FIELD_PRIME } from '../primitives/index';
 
 describe('Native FFI', () => {
   // Skip all tests if native library isn't available
@@ -64,7 +64,7 @@ describe('Native FFI', () => {
       const a = Felt252(2);
       const b = Felt252(3);
       const result = feltAdd(a, b);
-      expect(toBigInt(result)).toBe(5n);
+      expect(result.toBigInt()).toBe(5n);
     });
 
     test('feltSub: 10 - 3 = 7', () => {
@@ -72,7 +72,7 @@ describe('Native FFI', () => {
       const a = Felt252(10);
       const b = Felt252(3);
       const result = feltSub(a, b);
-      expect(toBigInt(result)).toBe(7n);
+      expect(result.toBigInt()).toBe(7n);
     });
 
     test('feltSub: wraps around field', () => {
@@ -81,7 +81,7 @@ describe('Native FFI', () => {
       const b = Felt252(10);
       const result = feltSub(a, b);
       // 3 - 10 = -7 mod P = P - 7
-      expect(toBigInt(result)).toBe(FIELD_PRIME - 7n);
+      expect(result.toBigInt()).toBe(FIELD_PRIME - 7n);
     });
 
     test('feltMul: 6 * 7 = 42', () => {
@@ -89,7 +89,7 @@ describe('Native FFI', () => {
       const a = Felt252(6);
       const b = Felt252(7);
       const result = feltMul(a, b);
-      expect(toBigInt(result)).toBe(42n);
+      expect(result.toBigInt()).toBe(42n);
     });
 
     test('feltDiv: 42 / 7 = 6', () => {
@@ -97,14 +97,14 @@ describe('Native FFI', () => {
       const a = Felt252(42);
       const b = Felt252(7);
       const result = feltDiv(a, b);
-      expect(toBigInt(result)).toBe(6n);
+      expect(result.toBigInt()).toBe(6n);
     });
 
     test('feltNeg: -5 mod P', () => {
       if (!isNativeAvailable()) return;
       const a = Felt252(5);
       const result = feltNeg(a);
-      expect(toBigInt(result)).toBe(FIELD_PRIME - 5n);
+      expect(result.toBigInt()).toBe(FIELD_PRIME - 5n);
     });
 
     test('feltInverse: 1/2 mod P', () => {
@@ -113,7 +113,7 @@ describe('Native FFI', () => {
       const inv = feltInverse(a);
       // inv * 2 should equal 1
       const product = feltMul(inv, a);
-      expect(toBigInt(product)).toBe(1n);
+      expect(product.toBigInt()).toBe(1n);
     });
 
     test('feltPow: 2^10 = 1024', () => {
@@ -121,14 +121,14 @@ describe('Native FFI', () => {
       const base = Felt252(2);
       const exp = Felt252(10);
       const result = feltPow(base, exp);
-      expect(toBigInt(result)).toBe(1024n);
+      expect(result.toBigInt()).toBe(1024n);
     });
 
     test('feltSqrt: sqrt(4) = 2 or P-2', () => {
       if (!isNativeAvailable()) return;
       const a = Felt252(4);
       const result = feltSqrt(a);
-      const value = toBigInt(result);
+      const value = result.toBigInt();
       // sqrt can return either root
       expect(value === 2n || value === FIELD_PRIME - 2n).toBe(true);
     });
@@ -149,7 +149,7 @@ describe('Native FFI', () => {
       const b = Felt252(456);
       const r1 = pedersenHash(a, b);
       const r2 = pedersenHash(a, b);
-      expect(equals(r1, r2)).toBe(true);
+      expect(r1.equals(r2)).toBe(true);
     });
 
     test('poseidonHash produces 32-byte result', () => {
@@ -166,7 +166,7 @@ describe('Native FFI', () => {
       const b = Felt252(2);
       const ped = pedersenHash(a, b);
       const pos = poseidonHash(a, b);
-      expect(equals(ped, pos)).toBe(false);
+      expect(ped.equals(pos)).toBe(false);
     });
 
     test('poseidonHashMany with multiple inputs', () => {
@@ -203,7 +203,7 @@ describe('Native FFI', () => {
       if (!isNativeAvailable()) return;
       const pk1 = getPublicKey(TEST_PRIVATE_KEY);
       const pk2 = getPublicKey(TEST_PRIVATE_KEY);
-      expect(equals(pk1, pk2)).toBe(true);
+      expect(pk1.equals(pk2)).toBe(true);
     });
 
     test('sign produces r and s', () => {
@@ -217,8 +217,8 @@ describe('Native FFI', () => {
       if (!isNativeAvailable()) return;
       const sig1 = sign(TEST_PRIVATE_KEY, TEST_MESSAGE);
       const sig2 = sign(TEST_PRIVATE_KEY, TEST_MESSAGE);
-      expect(equals(sig1.r, sig2.r)).toBe(true);
-      expect(equals(sig1.s, sig2.s)).toBe(true);
+      expect(sig1.r.equals(sig2.r)).toBe(true);
+      expect(sig1.s.equals(sig2.s)).toBe(true);
     });
 
     test('verify accepts valid signature', () => {
@@ -234,7 +234,7 @@ describe('Native FFI', () => {
       const pubKey = getPublicKey(TEST_PRIVATE_KEY);
       const sig = sign(TEST_PRIVATE_KEY, TEST_MESSAGE);
       // Corrupt the signature
-      const badR = Felt252(toBigInt(sig.r) + 1n);
+      const badR = Felt252(sig.r.toBigInt() + 1n);
       const isValid = verify(pubKey, TEST_MESSAGE, { r: badR, s: sig.s });
       expect(isValid).toBe(false);
     });

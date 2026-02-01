@@ -17,11 +17,35 @@ Skills are self-contained code examples that you copy into your project. They're
 ## Available Skills
 
 <CardGroup cols={2}>
+  <Card title="HTTP Provider" icon="server" href="/skills/http-provider">
+    Lightweight JSON-RPC provider built on transports + rpc methods.
+  </Card>
+  <Card title="WebSocket Provider" icon="satellite" href="/skills/websocket-provider">
+    Real-time subscriptions with WebSocket transport.
+  </Card>
+  <Card title="Account Invoke" icon="bolt" href="/skills/account-invoke">
+    Execute invoke transactions with a signer.
+  </Card>
+  <Card title="Account Declare" icon="file-signature" href="/skills/account-declare">
+    Declare contract classes with a signer.
+  </Card>
+  <Card title="Account Deploy" icon="rocket" href="/skills/account-deploy">
+    Deploy account contracts with a signer.
+  </Card>
+  <Card title="Contract Read" icon="eye" href="/skills/contract-read">
+    Read-only contract calls with ABI decoding.
+  </Card>
+  <Card title="Contract Write" icon="pen" href="/skills/contract-write">
+    State-changing calls using an account executor.
+  </Card>
+  <Card title="Contract Multicall" icon="layer-group" href="/skills/contract-multicall">
+    Batch multiple read calls with requestBatch.
+  </Card>
   <Card title="Wallet Modal" icon="wallet" href="/skills/wallet-modal">
     Connect to wallets using StarknetKit or get-starknet modals.
   </Card>
   <Card title="Viem-Style Contract" icon="file-contract" href="/skills/contract-viem">
-    Tree-shakeable contract functions inspired by viem.
+    Viem-style contract helpers built on transports + rpc.
   </Card>
 </CardGroup>
 
@@ -31,7 +55,7 @@ Skills are self-contained code examples that you copy into your project. They're
 
 ```bash
 # Copy a skill to your project
-cp -r examples/skills/wallet-modal src/skills/
+cp -r examples/skills/http-provider src/skills/
 ```
 
 ### 2. Install Peer Dependencies (if any)
@@ -47,10 +71,10 @@ npm install get-starknet
 
 ### 3. Import and Use
 
-```typescript
-import { connectWalletWithModal } from './skills/wallet-modal';
+```ts
+import { createHttpProvider } from './skills/http-provider';
 
-const { result, error } = await connectWalletWithModal();
+const provider = createHttpProvider({ url: 'https://starknet-mainnet.public.blastapi.io' });
 ```
 
 ## Skill Structure
@@ -70,23 +94,13 @@ examples/skills/<skill-name>/
 Skills are starting points, not rigid frameworks. Feel free to modify the code to fit your project's patterns and requirements.
 </Tip>
 
-## Contributing Skills
-
-Want to contribute a skill? Follow these guidelines:
-
-1. **Self-contained**: No external dependencies beyond Kundera core
-2. **Tested**: Include a test file with type and behavior tests
-3. **Documented**: Include a README and JSDoc comments
-4. **Result pattern**: Use `{ result, error }` returns
-5. **Tree-shakeable**: Export individual functions, not objects
-
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="API Reference" icon="code" href="/api/contract">
-    Core Kundera APIs that skills build on.
+  <Card title="RPC Methods" icon="code" href="/api/rpc">
+    Tree-shakeable RPC functions for Starknet.
   </Card>
-  <Card title="Recipes" icon="book" href="/recipes/transfer">
-    Quick code snippets for common tasks.
+  <Card title="Transport Layer" icon="network-wired" href="/concepts/transport-layer">
+    Learn how transports fit into the architecture.
   </Card>
 </CardGroup>

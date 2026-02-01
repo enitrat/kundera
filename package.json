@@ -63,30 +63,15 @@
       "import": "./dist/rpc/index.js",
       "require": "./dist/rpc/index.cjs"
     },
-    "./provider": {
-      "types": "./types/provider/index.d.ts",
-      "import": "./dist/provider/index.js",
-      "require": "./dist/provider/index.cjs"
-    },
     "./abi": {
       "types": "./types/abi/index.d.ts",
       "import": "./dist/abi/index.js",
       "require": "./dist/abi/index.cjs"
     },
-    "./contract": {
-      "types": "./types/contract/index.d.ts",
-      "import": "./dist/contract/index.js",
-      "require": "./dist/contract/index.cjs"
-    },
-    "./account": {
-      "types": "./types/account/index.d.ts",
-      "import": "./dist/account/index.js",
-      "require": "./dist/account/index.cjs"
-    },
-    "./wallet": {
-      "types": "./types/wallet/index.d.ts",
-      "import": "./dist/wallet/index.js",
-      "require": "./dist/wallet/index.cjs"
+    "./transport": {
+      "types": "./types/transport/index.d.ts",
+      "import": "./dist/transport/index.js",
+      "require": "./dist/transport/index.cjs"
     }
   },
   "main": "./dist/index.cjs",

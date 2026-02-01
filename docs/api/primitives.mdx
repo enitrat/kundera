@@ -11,14 +11,6 @@ Core primitive types for Starknet values with validation and conversion utilitie
 import {
   // Felt252
   Felt252,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  toHex,
-  toBigInt,
-  isValid,
-  isZero,
-  equals,
   // Branded types
   ContractAddress,
   ContractAddressUnchecked,
@@ -26,12 +18,11 @@ import {
   ClassHashUnchecked,
   StorageKey,
   StorageKeyUnchecked,
-  isValidContractAddress,
+  Address,
   // Short strings
   encodeShortString,
   encodeShortStringHex,
   decodeShortString,
-  isASCII,
   MAX_SHORT_STRING_LENGTH,
   // Types
   type Felt252Type,
@@ -60,14 +51,14 @@ const felt2 = Felt252('0x7b');
 const felt3 = Felt252(123);
 ```
 
-### fromHex / fromBigInt / fromBytes
+### Felt252.fromHex / Felt252.fromBigInt / Felt252.fromBytes
 
 Convert from specific types.
 
 ```typescript
-const a = fromHex('0x123abc');
-const b = fromBigInt(12345n);
-const c = fromBytes(new Uint8Array([1, 2, 3]));
+const a = Felt252.fromHex('0x123abc');
+const b = Felt252.fromBigInt(12345n);
+const c = Felt252.fromBytes(new Uint8Array(32));
 ```
 
 ### toHex / toBigInt
@@ -75,22 +66,22 @@ const c = fromBytes(new Uint8Array([1, 2, 3]));
 Convert to other types.
 
 ```typescript
-const hex = toHex(felt);   // '0x...'
-const num = toBigInt(felt); // bigint
+const hex = felt.toHex();   // '0x...'
+const num = felt.toBigInt(); // bigint
 ```
 
 ### Validation
 
 ```typescript
-function isValid(felt: Felt252Type): boolean
-function isZero(felt: Felt252Type): boolean
-function equals(a: Felt252Type, b: Felt252Type): boolean
+felt.isValid(): boolean
+felt.isZero(): boolean
+felt.equals(other: Felt252Type): boolean
 ```
 
 ```typescript
-isValid(felt);       // true if < FIELD_PRIME
-isZero(felt);        // true if value is 0
-equals(felt1, felt2); // true if same value
+felt.isValid();        // true if < FIELD_PRIME
+felt.isZero();         // true if value is 0
+felt.equals(otherFelt); // true if same value
 ```
 
 ## Branded Address Types
@@ -151,12 +142,12 @@ Create without validation.
 const key = StorageKeyUnchecked(trustedValue);
 ```
 
-### isValidContractAddress
+### Address.isValid
 
 Check if a felt is a valid contract address.
 
 ```typescript
-function isValidContractAddress(felt: Felt252Type): boolean
+Address.isValid(felt);
 ```
 
 ## Short Strings
@@ -202,14 +193,6 @@ const str = decodeShortString(0x68656c6c6fn);
 // 'hello'
 ```
 
-### isASCII
-
-Check if a string is valid ASCII.
-
-```typescript
-function isASCII(str: string): boolean
-```
-
 ### MAX_SHORT_STRING_LENGTH
 
 Constant: `31`
@@ -221,7 +204,7 @@ Constant: `31`
 Branded type representing a validated felt252.
 
 ```typescript
-type Felt252Type = Uint8Array & { readonly __brand: 'Felt252' };
+type Felt252Type = Uint8Array & { readonly [__brand]: 'Felt252' };
 ```
 
 ### Felt252Input
@@ -237,9 +220,9 @@ type Felt252Input = bigint | number | string | Uint8Array | Felt252Type;
 Branded types for type-safe address handling.
 
 ```typescript
-type ContractAddressType = Felt252Type & { readonly __addressBrand: 'ContractAddress' };
-type ClassHashType = Felt252Type & { readonly __classHashBrand: 'ClassHash' };
-type StorageKeyType = Felt252Type & { readonly __storageKeyBrand: 'StorageKey' };
+type ContractAddressType = Felt252Type & { readonly [__brand]: 'ContractAddress' };
+type ClassHashType = Felt252Type & { readonly [__brand]: 'ClassHash' };
+type StorageKeyType = Felt252Type & { readonly [__brand]: 'StorageKey' };
 ```
 
 ## Constants
@@ -255,8 +238,8 @@ import { FIELD_PRIME } from 'kundera/primitives';
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Cairo Types" icon="cube" href="/concepts/cairo-types">
-    Understanding Cairo's type system.
+  <Card title="Branded Types" icon="tag" href="/concepts/branded-types">
+    Why Kundera uses branded types for safety.
   </Card>
   <Card title="ABI Encoding" icon="code" href="/guides/abi/encode-decode">
     How primitives are encoded in calldata.

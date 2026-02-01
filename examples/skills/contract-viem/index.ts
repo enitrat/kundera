@@ -1,74 +1,77 @@
 /**
  * Viem-Style Contract Skill
  *
- * Provides viem-style contract interaction wrappers using Kundera core APIs.
- * Functions are tree-shakeable and follow the { result, error } pattern.
- *
- * @example
- * ```typescript
- * import { readContract, writeContract } from './contract-viem';
- *
- * const { result } = await readContract(client, {
- *   abi: ERC20_ABI,
- *   address: tokenAddress,
- *   functionName: 'balance_of',
- *   args: [accountAddress],
- * });
- * ```
+ * Tree-shakeable contract helpers using Kundera transport + rpc primitives.
  */
 
-import { getContract } from 'kundera/contract';
-import { encodeCalldata, decodeEvents, compileEventFilter } from 'kundera/abi';
-import type { StarknetRpcClient } from 'kundera/rpc';
-import type { Account } from 'kundera/account';
-import type { Abi } from 'kundera/abi';
+import type { Transport } from 'kundera/transport';
+import {
+  starknet_call,
+  starknet_estimateFee,
+  starknet_getEvents,
+  starknet_blockNumber,
+  starknet_getNonce,
+} from 'kundera/rpc';
+import type { BlockId, EventsFilter, FeeEstimate as RpcFeeEstimate } from 'kundera/rpc';
+import {
+  encodeCalldata,
+  decodeOutput,
+  decodeEvents,
+  getFunctionSelectorHex,
+  type Abi,
+} from 'kundera/abi';
+import { Felt252 } from 'kundera/primitives';
+import {
+  DEFAULT_RESOURCE_BOUNDS,
+  TRANSACTION_VERSION,
+  computeSelector,
+  type Call,
+  type InvokeTransactionV3,
+  type ResourceBoundsMapping,
+  type UniversalDetails,
+} from 'kundera/crypto';
 
 // ============================================================================
 // Types
 // ============================================================================
 
 export interface ContractCallParams {
-  /** Contract ABI */
   abi: Abi;
-  /** Contract address */
   address: string;
-  /** Function name to call */
   functionName: string;
-  /** Function arguments */
   args?: unknown[];
+  blockId?: BlockId;
 }
 
 export interface ReadContractParams extends ContractCallParams {}
 
+export interface AccountLike {
+  address: string;
+  execute?: (calls: Call | Call[], details?: UniversalDetails) => Promise<{ transaction_hash: string }>;
+}
+
 export interface WriteContractParams extends ContractCallParams {
-  /** Account for signing (required) */
-  account: Account;
+  account: AccountLike;
+  details?: UniversalDetails;
 }
 
 export interface SimulateContractParams extends ContractCallParams {
-  /** Account for simulation */
-  account: Account;
+  account: AccountLike;
+  details?: UniversalDetails;
 }
 
 export interface EstimateFeeParams extends ContractCallParams {
-  /** Account for fee estimation */
-  account: Account;
+  account: AccountLike;
+  details?: UniversalDetails;
 }
 
 export interface WatchContractEventParams {
-  /** Contract ABI */
   abi: Abi;
-  /** Contract address */
   address: string;
-  /** Event name to watch */
   eventName: string;
-  /** Callback for each event */
   onEvent: (event: DecodedEvent) => void;
-  /** Callback for errors */
   onError?: (error: Error) => void;
-  /** Polling interval in ms (default: 5000) */
   pollingInterval?: number;
-  /** Starting block number (default: latest) */
   fromBlock?: number;
 }
 
@@ -113,7 +116,7 @@ export interface SimulateResult {
 }
 
 // ============================================================================
-// Internal Helpers
+// Helpers
 // ============================================================================
 
 function err<T>(code: ContractErrorCode, message: string): ContractResult<T> {
@@ -124,46 +127,49 @@ function ok<T>(result: T): ContractResult<T> {
   return { result, error: null };
 }
 
+function toRpcFee(fee: RpcFeeEstimate): FeeEstimate {
+  return {
+    gasConsumed: BigInt(fee.gas_consumed),
+    gasPrice: BigInt(fee.gas_price),
+    overallFee: BigInt(fee.overall_fee),
+  };
+}
+
 // ============================================================================
 // Read Operations
 // ============================================================================
 
-/**
- * Read from a contract (view function).
- *
- * @param client - Starknet RPC client
- * @param params - Contract call parameters
- * @returns Decoded return values or error
- *
- * @example
- * ```typescript
- * const { result, error } = await readContract(client, {
- *   abi: ERC20_ABI,
- *   address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
- *   functionName: 'balance_of',
- *   args: [accountAddress],
- * });
- *
- * if (!error) {
- *   console.log('Balance:', result[0]);
- * }
- * ```
- */
 export async function readContract(
-  client: StarknetRpcClient,
-  params: ReadContractParams
+  transport: Transport,
+  params: ReadContractParams,
 ): Promise<ContractResult<unknown[]>> {
-  const { abi, address, functionName, args = [] } = params;
+  const { abi, address, functionName, args = [], blockId } = params;
+
+  const calldataResult = encodeCalldata(abi, functionName, args);
+  if (calldataResult.error) {
+    return err('ENCODE_ERROR', calldataResult.error.message);
+  }
 
   try {
-    const contract = getContract({ abi, address, client });
-    const { result, error } = await contract.read(functionName, args);
+    const selector = getFunctionSelectorHex(functionName);
+    const calldata = calldataResult.result.map((value) => Felt252(value).toHex());
+    const response = await starknet_call(
+      transport,
+      {
+        contract_address: address,
+        entry_point_selector: selector,
+        calldata,
+      },
+      blockId,
+    );
 
-    if (error) {
-      return err(error.code as ContractErrorCode, error.message);
+    const outputFelts = response.map((value) => BigInt(value));
+    const decoded = decodeOutput(abi, functionName, outputFelts);
+    if (decoded.error) {
+      return err('DECODE_ERROR', decoded.error.message);
     }
 
-    return ok(result);
+    return ok(decoded.result);
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Unknown error';
     return err('NETWORK_ERROR', message);
@@ -174,43 +180,30 @@ export async function readContract(
 // Write Operations
 // ============================================================================
 
-/**
- * Write to a contract (state-changing function).
- *
- * @param client - Starknet RPC client
- * @param params - Contract call parameters with account
- * @returns Transaction hash or error
- *
- * @example
- * ```typescript
- * const { result, error } = await writeContract(client, {
- *   abi: ERC20_ABI,
- *   address: tokenAddress,
- *   functionName: 'transfer',
- *   args: [recipientAddress, 1000000000000000000n],
- *   account,
- * });
- *
- * if (!error) {
- *   console.log('TX:', result.transactionHash);
- * }
- * ```
- */
 export async function writeContract(
-  client: StarknetRpcClient,
-  params: WriteContractParams
+  transport: Transport,
+  params: WriteContractParams,
 ): Promise<ContractResult<WriteResult>> {
-  const { abi, address, functionName, args = [], account } = params;
+  const { abi, address, functionName, args = [], account, details } = params;
+
+  if (!account.execute) {
+    return err('ACCOUNT_REQUIRED', 'Account executor is required');
+  }
+
+  const calldataResult = encodeCalldata(abi, functionName, args);
+  if (calldataResult.error) {
+    return err('ENCODE_ERROR', calldataResult.error.message);
+  }
 
   try {
-    const contract = getContract({ abi, address, client, account });
-    const { result, error } = await contract.write(functionName, args);
+    const call: Call = {
+      contractAddress: address,
+      entrypoint: functionName,
+      calldata: calldataResult.result,
+    };
 
-    if (error) {
-      return err(error.code as ContractErrorCode, error.message);
-    }
-
-    return ok(result);
+    const result = await account.execute(call, details);
+    return ok({ transactionHash: result.transaction_hash });
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Unknown error';
     return err('NETWORK_ERROR', message);
@@ -221,91 +214,67 @@ export async function writeContract(
 // Simulation
 // ============================================================================
 
-/**
- * Simulate a contract call without executing.
- *
- * @param client - Starknet RPC client
- * @param params - Contract call parameters with account
- * @returns Simulation result or error
- *
- * @example
- * ```typescript
- * const { result, error } = await simulateContract(client, {
- *   abi: ERC20_ABI,
- *   address: tokenAddress,
- *   functionName: 'transfer',
- *   args: [recipient, amount],
- *   account,
- * });
- *
- * if (!error && result.success) {
- *   console.log('Simulation passed');
- * }
- * ```
- */
 export async function simulateContract(
-  client: StarknetRpcClient,
-  params: SimulateContractParams
+  transport: Transport,
+  params: SimulateContractParams,
 ): Promise<ContractResult<SimulateResult>> {
-  const { abi, address, functionName, args = [], account } = params;
-
-  try {
-    // Use estimateFee as a simulation proxy (will fail if tx would revert)
-    const contract = getContract({ abi, address, client, account });
-    const { result, error } = await contract.estimateFee(functionName, args);
-
-    if (error) {
-      return ok({ success: false, returnData: [] });
-    }
-
-    return ok({ success: true, returnData: [] });
-  } catch (e) {
-    const message = e instanceof Error ? e.message : 'Unknown error';
-    return err('EXECUTION_REVERTED', message);
+  const estimate = await estimateContractFee(transport, params);
+  if (estimate.error) {
+    return err('EXECUTION_REVERTED', estimate.error.message);
   }
+  return ok({ success: true, returnData: [] });
 }
 
 // ============================================================================
 // Fee Estimation
 // ============================================================================
 
-/**
- * Estimate fee for a contract call.
- *
- * @param client - Starknet RPC client
- * @param params - Contract call parameters with account
- * @returns Fee estimate or error
- *
- * @example
- * ```typescript
- * const { result, error } = await estimateContractFee(client, {
- *   abi: ERC20_ABI,
- *   address: tokenAddress,
- *   functionName: 'transfer',
- *   args: [recipient, amount],
- *   account,
- * });
- *
- * if (!error) {
- *   console.log('Fee:', result.overallFee);
- * }
- * ```
- */
 export async function estimateContractFee(
-  client: StarknetRpcClient,
-  params: EstimateFeeParams
+  transport: Transport,
+  params: EstimateFeeParams,
 ): Promise<ContractResult<FeeEstimate>> {
-  const { abi, address, functionName, args = [], account } = params;
+  const { abi, address, functionName, args = [], account, details } = params;
+
+  const calldataResult = encodeCalldata(abi, functionName, args);
+  if (calldataResult.error) {
+    return err('ENCODE_ERROR', calldataResult.error.message);
+  }
 
   try {
-    const contract = getContract({ abi, address, client, account });
-    const { result, error } = await contract.estimateFee(functionName, args);
+    const nonce = details?.nonce ?? BigInt(await starknet_getNonce(transport, account.address));
+    const call: Call = {
+      contractAddress: address,
+      entrypoint: functionName,
+      calldata: calldataResult.result,
+    };
 
-    if (error) {
-      return err(error.code as ContractErrorCode, error.message);
+    const tx: InvokeTransactionV3 = {
+      version: 3,
+      sender_address: account.address,
+      calldata: encodeExecuteCalldata([call]),
+      nonce,
+      resource_bounds: mergeResourceBounds(details?.resourceBounds),
+      tip: details?.tip ?? 0n,
+      paymaster_data: details?.paymasterData ?? [],
+      nonce_data_availability_mode: 0,
+      fee_data_availability_mode: 0,
+      account_deployment_data: [],
+    };
+
+    const simulationFlags = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
+    const estimates = await starknet_estimateFee(
+      transport,
+      [{ type: 'INVOKE', ...formatInvokeForRpc(tx), signature: [] }],
+      simulationFlags,
+      'pending',
+    );
+
+    const estimate = estimates[0];
+    if (!estimate) {
+      return err('NETWORK_ERROR', 'Fee estimate missing');
     }
 
-    return ok(result);
+    return ok(toRpcFee(estimate));
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Unknown error';
     return err('NETWORK_ERROR', message);
@@ -316,34 +285,9 @@ export async function estimateContractFee(
 // Event Watching
 // ============================================================================
 
-/**
- * Watch for contract events (polling-based).
- *
- * @param client - Starknet RPC client
- * @param params - Watch parameters
- * @returns Unsubscribe function
- *
- * @example
- * ```typescript
- * const unwatch = watchContractEvent(client, {
- *   abi: ERC20_ABI,
- *   address: tokenAddress,
- *   eventName: 'Transfer',
- *   onEvent: (event) => {
- *     console.log('Transfer:', event.args.from, '->', event.args.to);
- *   },
- *   onError: (error) => {
- *     console.error('Watch error:', error);
- *   },
- * });
- *
- * // Later: stop watching
- * unwatch();
- * ```
- */
 export function watchContractEvent(
-  client: StarknetRpcClient,
-  params: WatchContractEventParams
+  transport: Transport,
+  params: WatchContractEventParams,
 ): () => void {
   const {
     abi,
@@ -362,38 +306,32 @@ export function watchContractEvent(
     if (stopped) return;
 
     try {
-      // Get current block if we don't have a starting point
       if (lastBlock === 0) {
-        const { result } = await client.starknet_blockNumber();
-        if (result) {
-          lastBlock = result;
-        }
+        lastBlock = await starknet_blockNumber(transport);
       }
 
-      // Get current block number
-      const { result: currentBlock } = await client.starknet_blockNumber();
-      if (!currentBlock || currentBlock <= lastBlock) {
+      const currentBlock = await starknet_blockNumber(transport);
+      if (currentBlock <= lastBlock) {
         return;
       }
 
-      // Fetch events
-      const { result: eventsResult } = await client.starknet_getEvents({
+      const filter: EventsFilter = {
         from_block: { block_number: lastBlock + 1 },
         to_block: { block_number: currentBlock },
         address,
         chunk_size: 100,
-      });
+      };
 
-      if (eventsResult?.events) {
-        // Decode events
-        const { result: decoded } = decodeEvents(
+      const eventsResult = await starknet_getEvents(transport, filter);
+      if (eventsResult.events) {
+        const decoded = decodeEvents(
           { events: eventsResult.events },
           abi,
-          { event: eventName }
+          { event: eventName },
         );
 
-        if (decoded) {
-          for (const event of decoded) {
+        if (decoded.result) {
+          for (const event of decoded.result) {
             onEvent({
               name: event.name,
               args: event.args as Record<string, unknown>,
@@ -412,11 +350,9 @@ export function watchContractEvent(
     }
   };
 
-  // Start polling
   const interval = setInterval(poll, pollingInterval);
-  poll(); // Initial poll
+  poll();
 
-  // Return unsubscribe function
   return () => {
     stopped = true;
     clearInterval(interval);
@@ -427,24 +363,90 @@ export function watchContractEvent(
 // Batch Operations
 // ============================================================================
 
-/**
- * Read from multiple contracts in parallel.
- *
- * @param client - Starknet RPC client
- * @param calls - Array of read parameters
- * @returns Array of results
- *
- * @example
- * ```typescript
- * const results = await multicallRead(client, [
- *   { abi, address: token1, functionName: 'balance_of', args: [account] },
- *   { abi, address: token2, functionName: 'balance_of', args: [account] },
- * ]);
- * ```
- */
 export async function multicallRead(
-  client: StarknetRpcClient,
-  calls: ReadContractParams[]
+  transport: Transport,
+  calls: ReadContractParams[],
 ): Promise<ContractResult<unknown[]>[]> {
-  return Promise.all(calls.map((params) => readContract(client, params)));
+  return Promise.all(calls.map((params) => readContract(transport, params)));
+}
+
+// ============================================================================
+// Internal helpers for fee estimation
+// ============================================================================
+
+function mergeResourceBounds(
+  partial?: Partial<ResourceBoundsMapping>,
+): ResourceBoundsMapping {
+  if (!partial) return DEFAULT_RESOURCE_BOUNDS;
+
+  return {
+    l1_gas: { ...DEFAULT_RESOURCE_BOUNDS.l1_gas, ...partial.l1_gas },
+    l2_gas: { ...DEFAULT_RESOURCE_BOUNDS.l2_gas, ...partial.l2_gas },
+    l1_data_gas: {
+      ...DEFAULT_RESOURCE_BOUNDS.l1_data_gas,
+      ...partial.l1_data_gas,
+    },
+  };
+}
+
+function encodeExecuteCalldata(calls: Call[]): bigint[] {
+  const callArray: bigint[] = [];
+  const calldataFlat: bigint[] = [];
+
+  let offset = 0;
+  for (const call of calls) {
+    const selector = computeSelector(call.entrypoint);
+    const calldata = call.calldata.map((c) => Felt252(c).toBigInt());
+
+    callArray.push(
+      Felt252(call.contractAddress).toBigInt(),
+      selector.toBigInt(),
+      BigInt(offset),
+      BigInt(calldata.length),
+    );
+
+    calldataFlat.push(...calldata);
+    offset += calldata.length;
+  }
+
+  return [
+    BigInt(calls.length),
+    ...callArray,
+    BigInt(calldataFlat.length),
+    ...calldataFlat,
+  ];
+}
+
+function formatInvokeForRpc(tx: InvokeTransactionV3): Record<string, unknown> {
+  return {
+    version: Felt252(TRANSACTION_VERSION.V3).toHex(),
+    sender_address: tx.sender_address,
+    calldata: tx.calldata.map((c) => Felt252(c).toHex()),
+    nonce: Felt252(tx.nonce).toHex(),
+    resource_bounds: formatResourceBoundsForRpc(tx.resource_bounds),
+    tip: Felt252(tx.tip).toHex(),
+    paymaster_data: tx.paymaster_data.map((p) => Felt252(p).toHex()),
+    nonce_data_availability_mode: 'L1',
+    fee_data_availability_mode: 'L1',
+    account_deployment_data: tx.account_deployment_data.map((a) => Felt252(a).toHex()),
+  };
+}
+
+function formatResourceBoundsForRpc(
+  rb: ResourceBoundsMapping,
+): Record<string, Record<string, string>> {
+  return {
+    l1_gas: {
+      max_amount: Felt252(rb.l1_gas.max_amount).toHex(),
+      max_price_per_unit: Felt252(rb.l1_gas.max_price_per_unit).toHex(),
+    },
+    l2_gas: {
+      max_amount: Felt252(rb.l2_gas.max_amount).toHex(),
+      max_price_per_unit: Felt252(rb.l2_gas.max_price_per_unit).toHex(),
+    },
+    l1_data: {
+      max_amount: Felt252(rb.l1_data_gas.max_amount).toHex(),
+      max_price_per_unit: Felt252(rb.l1_data_gas.max_price_per_unit).toHex(),
+    },
+  };
 }

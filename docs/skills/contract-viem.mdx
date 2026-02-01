@@ -1,9 +1,10 @@
 ---
 title: Viem-Style Contract
-description: Tree-shakeable contract interaction functions inspired by viem's API design.
+description: Tree-shakeable contract helpers inspired by viem's API design.
 ---
 
-A skill providing viem-style contract interaction wrappers using Kundera core APIs. Functions are tree-shakeable, follow the `{ result, error }` pattern, and work with any Starknet contract.
+A skill providing viem-style contract interaction wrappers using Kundera transport + RPC primitives.
+Functions follow the `{ result, error }` pattern and work with any Starknet ABI.
 
 ## Quick Start
 
@@ -15,15 +16,16 @@ cp -r examples/skills/contract-viem src/skills/
 
 ### 2. Use It
 
-```typescript
+```ts
+import { httpTransport } from 'kundera/transport';
+import { PrivateKeySigner } from 'kundera/crypto';
+import { createAccountInvoker } from './skills/account-invoke';
 import { readContract, writeContract } from './skills/contract-viem';
-import { createClient } from 'kundera/rpc';
-import { createAccount, createSigner } from 'kundera/account';
 
-const client = createClient({ url: 'https://starknet-mainnet.public.blastapi.io' });
+const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
 
 // Read (no account needed)
-const { result, error } = await readContract(client, {
+const { result } = await readContract(transport, {
   abi: ERC20_ABI,
   address: tokenAddress,
   functionName: 'balance_of',
@@ -31,10 +33,10 @@ const { result, error } = await readContract(client, {
 });
 
 // Write (requires account)
-const signer = createSigner(privateKey);
-const account = createAccount(client, address, signer);
+const signer = new PrivateKeySigner(privateKey);
+const account = createAccountInvoker({ transport, address, signer });
 
-const { result: tx } = await writeContract(client, {
+const { result: tx } = await writeContract(transport, {
   abi: ERC20_ABI,
   address: tokenAddress,
   functionName: 'transfer',
@@ -47,259 +49,77 @@ const { result: tx } = await writeContract(client, {
 
 ### readContract
 
-Read from a contract (view function, no gas).
-
-```typescript
+```ts
 function readContract(
-  client: StarknetRpcClient,
+  transport: Transport,
   params: ReadContractParams
 ): Promise<ContractResult<unknown[]>>
 ```
 
-```typescript
-const { result, error } = await readContract(client, {
-  abi: ERC20_ABI,
-  address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
-  functionName: 'balance_of',
-  args: [accountAddress],
-});
-
-if (!error) {
-  console.log('Balance:', result[0]);
-}
-```
-
 ### writeContract
 
-Execute a state-changing function.
-
-```typescript
+```ts
 function writeContract(
-  client: StarknetRpcClient,
+  transport: Transport,
   params: WriteContractParams
 ): Promise<ContractResult<WriteResult>>
 ```
 
-```typescript
-const { result, error } = await writeContract(client, {
-  abi: ERC20_ABI,
-  address: tokenAddress,
-  functionName: 'transfer',
-  args: [recipientAddress, 1000000000000000000n],
-  account, // Required
-});
-
-if (!error) {
-  console.log('TX:', result.transactionHash);
-}
-```
-
 ### simulateContract
 
-Simulate a transaction without executing.
-
-```typescript
+```ts
 function simulateContract(
-  client: StarknetRpcClient,
+  transport: Transport,
   params: SimulateContractParams
 ): Promise<ContractResult<SimulateResult>>
 ```
 
-```typescript
-const { result, error } = await simulateContract(client, {
-  abi: ERC20_ABI,
-  address: tokenAddress,
-  functionName: 'transfer',
-  args: [recipient, amount],
-  account,
-});
-
-if (!error && result.success) {
-  console.log('Transaction would succeed');
-}
-```
-
 ### estimateContractFee
 
-Get fee estimate for a transaction.
-
-```typescript
+```ts
 function estimateContractFee(
-  client: StarknetRpcClient,
+  transport: Transport,
   params: EstimateFeeParams
 ): Promise<ContractResult<FeeEstimate>>
 ```
 
-```typescript
-const { result, error } = await estimateContractFee(client, {
-  abi: ERC20_ABI,
-  address: tokenAddress,
-  functionName: 'transfer',
-  args: [recipient, amount],
-  account,
-});
-
-if (!error) {
-  console.log('Gas:', result.gasConsumed);
-  console.log('Fee:', result.overallFee);
-}
-```
-
 ### watchContractEvent
 
-Watch for contract events (polling-based).
-
-```typescript
+```ts
 function watchContractEvent(
-  client: StarknetRpcClient,
+  transport: Transport,
   params: WatchContractEventParams
-): () => void // Returns unsubscribe function
-```
-
-```typescript
-const unwatch = watchContractEvent(client, {
-  abi: ERC20_ABI,
-  address: tokenAddress,
-  eventName: 'Transfer',
-  onEvent: (event) => {
-    console.log('Transfer:', event.args.from, '->', event.args.to);
-  },
-  onError: (error) => {
-    console.error('Watch error:', error);
-  },
-  pollingInterval: 5000, // 5 seconds
-});
-
-// Later: stop watching
-unwatch();
+): () => void
 ```
 
 ### multicallRead
 
-Read from multiple contracts in parallel.
-
-```typescript
+```ts
 function multicallRead(
-  client: StarknetRpcClient,
+  transport: Transport,
   calls: ReadContractParams[]
 ): Promise<ContractResult<unknown[]>[]>
 ```
 
-```typescript
-const results = await multicallRead(client, [
-  { abi, address: token1, functionName: 'balance_of', args: [account] },
-  { abi, address: token2, functionName: 'balance_of', args: [account] },
-  { abi, address: token3, functionName: 'balance_of', args: [account] },
-]);
-
-results.forEach(({ result, error }, i) => {
-  if (!error) {
-    console.log(`Token ${i} balance:`, result[0]);
-  }
-});
-```
-
-## Types
-
-### ContractResult
-
-All functions return this structure:
-
-```typescript
-interface ContractResult<T> {
-  result: T | null;
-  error: ContractError | null;
-}
-
-interface ContractError {
-  code: ContractErrorCode;
-  message: string;
-}
-```
-
-### FeeEstimate
-
-```typescript
-interface FeeEstimate {
-  gasConsumed: bigint;
-  gasPrice: bigint;
-  overallFee: bigint;
-}
-```
-
-### WriteResult
-
-```typescript
-interface WriteResult {
-  transactionHash: string;
-}
-```
-
-### DecodedEvent
-
-```typescript
-interface DecodedEvent {
-  name: string;
-  args: Record<string, unknown>;
-  blockNumber: number;
-  transactionHash: string;
-}
-```
-
-## Error Codes
-
-| Code | Description |
-|------|-------------|
-| `FUNCTION_NOT_FOUND` | Function name not in ABI |
-| `ENCODE_ERROR` | Failed to encode calldata |
-| `DECODE_ERROR` | Failed to decode response |
-| `ACCOUNT_REQUIRED` | Write operation needs an account |
-| `EXECUTION_REVERTED` | Contract execution failed |
-| `NETWORK_ERROR` | RPC connection error |
-
-## Notes / Limitations
+## Notes
 
 <Tip>
 ## Tree-Shakeable
 
 Import only the functions you need. Unused functions won't be included in your bundle.
-
-```typescript
-// Good: only readContract is bundled
-import { readContract } from './skills/contract-viem';
-
-// Avoid: imports everything
-import * as contract from './skills/contract-viem';
-```
 </Tip>
 
 <Warning>
 ## Polling for Events
 
-`watchContractEvent` uses polling, not WebSockets. For real-time events with lower latency, use WebSocket provider with `subscribeNewHeads` directly.
+`watchContractEvent` uses polling, not WebSockets. For real-time events, pair with the WebSocket provider skill.
 </Warning>
-
-- **No new dependencies**: Uses only Kundera core APIs
-- **Copy-paste pattern**: This is example code, adapt as needed
-- **viem-inspired**: Similar API surface, Starknet semantics
-- **Type-safe**: Full TypeScript support with generics
-
-## Source & Tests
-
-<CardGroup cols={2}>
-  <Card title="Source" icon="code" href="https://github.com/your-org/kundera/tree/main/examples/skills/contract-viem/index.ts">
-    View the implementation.
-  </Card>
-  <Card title="Tests" icon="flask" href="https://github.com/your-org/kundera/tree/main/examples/skills/contract-viem/contract-viem.test.ts">
-    View the test suite.
-  </Card>
-</CardGroup>
 
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Contract API" icon="file-contract" href="/api/contract">
-    Core contract wrapper API.
+  <Card title="Account Invoke" icon="bolt" href="/skills/account-invoke">
+    Account executor used by write flows.
   </Card>
   <Card title="ABI API" icon="code" href="/api/abi">
     ABI encoding/decoding reference.

@@ -8,39 +8,31 @@ Cryptographic primitives for Starknet including hash functions, ECDSA signatures
 ## Imports
 
 ```typescript
-import {
-  // Backend detection
-  isNativeAvailable,
-  isWasmAvailable,
-  isWasmLoaded,
-  loadWasmCrypto,
-  // Hash functions
-  pedersenHash,
-  poseidonHash,
-  poseidonHashMany,
-  snKeccak,
-  // ECDSA
-  sign,
-  verify,
-  getPublicKey,
-  recover,
-  // Field arithmetic
-  feltAdd,
-  feltSub,
-  feltMul,
-  feltDiv,
-  feltNeg,
-  feltInverse,
-  feltPow,
-  feltSqrt,
-  // Types
-  type Signature,
-} from 'kundera/crypto';
+// Native (FFI-backed, preferred for servers)
+import * as crypto from 'kundera/native';
+```
+
+```typescript
+// WASM (browser/portable)
+import * as crypto from 'kundera/wasm';
+await crypto.loadWasmCrypto();
+```
+
+You can also import named helpers from any entrypoint:
+
+```typescript
+import { pedersenHash, sign, type Signature } from 'kundera/native';
 ```
 
 ## Backend Selection
 
-Kundera supports both native (FFI) and WASM crypto backends.
+Kundera exposes explicit crypto entrypoints:
+
+- `kundera/native` for FFI-backed crypto
+- `kundera/wasm` for portable/browser crypto (call `loadWasmCrypto` once)
+- `kundera/crypto` for auto-selection if you want a single import
+
+All entrypoints share the same API surface.
 
 ### isNativeAvailable
 
@@ -76,16 +68,18 @@ async function loadWasmCrypto(): Promise<void>
 
 ```typescript
 // Browser initialization
-if (!isNativeAvailable()) {
-  await loadWasmCrypto();
+import * as crypto from 'kundera/crypto';
+
+if (!crypto.isNativeAvailable()) {
+  await crypto.loadWasmCrypto();
 }
 
 // Now crypto functions work
-const hash = pedersenHash(a, b);
+const hash = crypto.pedersenHash(a, b);
 ```
 
 <Tip>
-Native crypto is preferred for performance. WASM is automatically used in browsers or when native bindings aren't available.
+Native crypto is preferred for performance. For browsers, use the `kundera/wasm` entrypoint (or `kundera/crypto` if you want auto-selection).
 </Tip>
 
 ## Hash Functions
@@ -340,11 +334,8 @@ Never expose private keys in client-side code. Use wallet extensions for user-fa
 
 ## Related
 
-<CardGroup cols={2}>
+<CardGroup cols={1}>
   <Card title="Security" icon="shield" href="/concepts/security">
     Cryptographic best practices.
-  </Card>
-  <Card title="Sign Typed Data" icon="signature" href="/guides/account/sign-typed-data">
-    SNIP-12 message signing.
   </Card>
 </CardGroup>

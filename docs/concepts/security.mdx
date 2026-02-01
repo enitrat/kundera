@@ -62,6 +62,9 @@ Private keys should NEVER appear in:
 | **Testing** | Devnet accounts (funded test accounts) |
 
 ```typescript
+import { createSigner } from 'kundera/crypto';
+import { connectWalletWithModal } from './skills/wallet-modal';
+
 // ✅ Good: Environment variable
 const signer = createSigner(process.env.PRIVATE_KEY!);
 
@@ -69,8 +72,11 @@ const signer = createSigner(process.env.PRIVATE_KEY!);
 const signer = createSigner('0x123...');
 
 // ✅ Good: Browser wallet
-const { result } = await connectWallet();
-const account = await connectAccountFromWallet(result.provider, provider);
+const { result } = await connectWalletWithModal();
+if (result) {
+  const { walletProvider, transport, address } = result;
+  // Use the walletProvider with a custom signer or account skill.
+}
 ```
 
 ## Signature Verification
@@ -113,7 +119,8 @@ const typedData = {
   message: { ... },
 };
 
-const signature = await account.signMessage(typedData);
+const signer = createSigner(privateKey);
+const signature = await signer.signMessage(typedData, accountAddress);
 ```
 
 ### Domain Separation
@@ -129,16 +136,25 @@ Always include a unique domain to prevent:
 Always verify transaction details before signing:
 
 ```typescript
-// Estimate fee first
-const { result: fee } = await contract.estimateFee('transfer', [to, amount]);
-console.log('Fee:', fee.overallFee);
+import { encodeCalldata } from 'kundera/abi';
+import { createAccountInvoker } from './skills/account-invoke';
 
-// Check calldata
-const { result: call } = contract.populate('transfer', [to, amount]);
-console.log('Calldata:', call.calldata);
+const account = createAccountInvoker({ transport, address, signer });
+const calldata = encodeCalldata(abi, 'transfer', [to, amount]);
+if (calldata.error) throw new Error(calldata.error.message);
+
+const call = {
+  contractAddress: tokenAddress,
+  entrypoint: 'transfer',
+  calldata: calldata.result,
+};
+
+// Estimate fee first
+const fee = await account.estimateFee(call);
+console.log('Fee:', fee.overall_fee);
 
 // Execute only after verification
-await account.execute([call]);
+await account.execute(call);
 ```
 
 ### Multicall Atomicity
@@ -146,10 +162,26 @@ await account.execute([call]);
 Batch operations execute atomically—all succeed or all revert:
 
 ```typescript
+import { encodeCalldata } from 'kundera/abi';
+
+const transferA = encodeCalldata(ERC20_ABI, 'transfer', [recipient, amountA]);
+const transferB = encodeCalldata(ERC20_ABI, 'transfer', [recipient, amountB]);
+if (transferA.error || transferB.error) {
+  throw new Error('Failed to encode calldata');
+}
+
 // Atomic: both transfers happen or neither does
 await account.execute([
-  tokenA.populate('transfer', [recipient, amountA]),
-  tokenB.populate('transfer', [recipient, amountB]),
+  {
+    contractAddress: tokenA,
+    entrypoint: 'transfer',
+    calldata: transferA.result,
+  },
+  {
+    contractAddress: tokenB,
+    entrypoint: 'transfer',
+    calldata: transferB.result,
+  },
 ]);
 ```
 
@@ -160,6 +192,8 @@ await account.execute([
 Always use HTTPS for RPC endpoints:
 
 ```typescript
+import { createHttpProvider } from './skills/http-provider';
+
 // ✅ Good
 createHttpProvider({ url: 'https://secure.rpc.io' });
 
@@ -172,6 +206,8 @@ createHttpProvider({ url: 'http://insecure.rpc.io' });
 Protect RPC API keys:
 
 ```typescript
+import { createHttpProvider } from './skills/http-provider';
+
 // Server-side: Use environment variables
 const provider = createHttpProvider({
   url: process.env.RPC_URL!,
@@ -196,16 +232,21 @@ const provider = createHttpProvider({
 
 ## Crypto Backend Selection
 
-Kundera supports native and WASM crypto:
+Kundera exposes explicit crypto entrypoints:
 
 ```typescript
 // Native (Bun/Node with FFI) - preferred for production
-import { isNativeAvailable } from 'kundera/crypto';
+import * as crypto from 'kundera/native';
 
-if (!isNativeAvailable()) {
-  // Fallback to WASM
-  await loadWasmCrypto();
-}
+const hash = crypto.pedersenHash(a, b);
+```
+
+```typescript
+// WASM (browser/portable environments)
+import * as crypto from 'kundera/wasm';
+
+await crypto.loadWasmCrypto();
+const hash = crypto.pedersenHash(a, b);
 ```
 
 Native crypto is faster and uses audited libraries. WASM is browser-compatible.
@@ -221,11 +262,8 @@ Native crypto is faster and uses audited libraries. WASM is browser-compatible.
 
 ## Related
 
-<CardGroup cols={2}>
+<CardGroup cols={1}>
   <Card title="Crypto API" icon="lock" href="/api/crypto">
     Cryptographic function reference.
-  </Card>
-  <Card title="Sign Typed Data" icon="signature" href="/guides/account/sign-typed-data">
-    SNIP-12 signing guide.
   </Card>
 </CardGroup>

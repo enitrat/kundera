@@ -12,7 +12,27 @@ import type {
   ClassHashType,
   StorageKeyType,
 } from './primitives/index.js';
-import type { RpcClientConfig, StarknetRpcClient } from './rpc/index.js';
+
+export interface FeltConstructor {
+  (value: Felt252Input): Felt252Type;
+  from: (value: Felt252Input) => Felt252Type;
+  fromHex: (hex: string) => Felt252Type;
+  fromBigInt: (value: bigint) => Felt252Type;
+  fromBytes: (bytes: Uint8Array) => Felt252Type;
+  isValid: (felt: Felt252Type) => boolean;
+  isZero: (felt: Felt252Type) => boolean;
+  equals: (a: Felt252Type, b: Felt252Type) => boolean;
+  toHex: (felt: Felt252Type) => string;
+  toBigInt: (felt: Felt252Type) => bigint;
+  encodeShortString: (str: string) => bigint;
+  encodeShortStringHex: (str: string) => string;
+  decodeShortString: (felt: bigint | string | Felt252Type) => string;
+  ZERO: Felt252Type;
+  ONE: Felt252Type;
+  TWO: Felt252Type;
+  PRIME: bigint;
+  MAX_SHORT_STRING_LENGTH: number;
+}
 
 // ============ Primitives API ============
 
@@ -21,25 +41,12 @@ export interface PrimitivesAPI {
   FIELD_PRIME: bigint;
   MAX_CONTRACT_ADDRESS: bigint;
 
-  // Felt252 constructors
-  Felt252: (value: Felt252Input) => Felt252Type;
-  fromHex: (hex: string) => Felt252Type;
-  fromBigInt: (value: bigint) => Felt252Type;
-  fromBytes: (bytes: Uint8Array) => Felt252Type;
-
-  // Felt252 conversions
-  toHex: (felt: Felt252Type) => string;
-  toBigInt: (felt: Felt252Type) => bigint;
-
-  // Felt252 utilities
-  isValid: (felt: Felt252Type) => boolean;
-  isZero: (felt: Felt252Type) => boolean;
-  equals: (a: Felt252Type, b: Felt252Type) => boolean;
+  // Felt252 constructor + static helpers
+  Felt252: FeltConstructor;
 
   // Address constructors
   ContractAddress: (value: Felt252Input) => ContractAddressType;
   ContractAddressUnchecked: (value: Felt252Input) => ContractAddressType;
-  isValidContractAddress: (felt: Felt252Type) => boolean;
 
   // Class hash
   ClassHash: (value: Felt252Input) => ClassHashType;
@@ -50,26 +57,12 @@ export interface PrimitivesAPI {
   StorageKeyUnchecked: (value: Felt252Input) => StorageKeyType;
 
   // Namespaces
-  Felt: {
-    from: (value: Felt252Input) => Felt252Type;
-    fromHex: (hex: string) => Felt252Type;
-    fromBigInt: (value: bigint) => Felt252Type;
-    fromBytes: (bytes: Uint8Array) => Felt252Type;
-    toHex: (felt: Felt252Type) => string;
-    toBigInt: (felt: Felt252Type) => bigint;
-    isValid: (felt: Felt252Type) => boolean;
-    isZero: (felt: Felt252Type) => boolean;
-    equals: (a: Felt252Type, b: Felt252Type) => boolean;
-    ZERO: Felt252Type;
-    ONE: Felt252Type;
-    TWO: Felt252Type;
-    PRIME: bigint;
-  };
+  Felt: FeltConstructor;
 
   Address: {
     from: (value: Felt252Input) => ContractAddressType;
     fromUnchecked: (value: Felt252Input) => ContractAddressType;
-    isValid: (felt: Felt252Type) => boolean;
+    isValid: (felt: Felt252Input) => boolean;
     MAX: bigint;
   };
 
@@ -162,15 +155,6 @@ export interface SerdeAPI {
   };
 }
 
-// ============ RPC API ============
-
-export interface RpcAPI {
-  StarknetRpcClient: new (config: RpcClientConfig) => StarknetRpcClient;
-  createClient: (config: RpcClientConfig) => StarknetRpcClient;
-  mainnet: (options?: Omit<RpcClientConfig, 'url'>) => StarknetRpcClient;
-  sepolia: (options?: Omit<RpcClientConfig, 'url'>) => StarknetRpcClient;
-}
-
 // ============ Combined API ============
 
 /**
@@ -178,4 +162,4 @@ export interface RpcAPI {
  *
  * All entrypoints (index, native, wasm) must satisfy this interface.
  */
-export type KunderaAPI = PrimitivesAPI & CryptoAPI & SerdeAPI & RpcAPI;
+export type KunderaAPI = PrimitivesAPI & CryptoAPI & SerdeAPI;

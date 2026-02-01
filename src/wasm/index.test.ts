@@ -7,7 +7,7 @@
 
 import { describe, expect, test, beforeAll } from 'bun:test';
 import * as wasmEntry from './index';
-import { Felt252, toBigInt, equals } from '../primitives/index';
+import { Felt252 } from '../primitives/index';
 
 // Check WASM availability
 const wasmAvailable = wasmEntry.isWasmAvailable();
@@ -46,7 +46,7 @@ describe('WASM Entrypoint', () => {
     test('exports Felt252', () => {
       expect(wasmEntry.Felt252).toBeDefined();
       const felt = wasmEntry.Felt252(42);
-      expect(wasmEntry.toBigInt(felt)).toBe(42n);
+      expect(felt.toBigInt()).toBe(42n);
     });
 
     test('exports ContractAddress', () => {
@@ -70,21 +70,6 @@ describe('WASM Entrypoint', () => {
     test('exports CairoSerde namespace', () => {
       expect(wasmEntry.CairoSerde).toBeDefined();
       expect(wasmEntry.CairoSerde.serializeU256).toBeDefined();
-    });
-  });
-
-  describe('rpc exports', () => {
-    test('exports StarknetRpcClient', () => {
-      expect(wasmEntry.StarknetRpcClient).toBeDefined();
-    });
-
-    test('exports createClient', () => {
-      expect(wasmEntry.createClient).toBeDefined();
-    });
-
-    test('exports mainnet and sepolia', () => {
-      expect(wasmEntry.mainnet).toBeDefined();
-      expect(wasmEntry.sepolia).toBeDefined();
     });
   });
 
@@ -125,7 +110,7 @@ describe('WASM Entrypoint', () => {
     test('feltAdd works', () => {
       if (!wasmAvailable) return;
       const result = wasmEntry.feltAdd(Felt252(2), Felt252(3));
-      expect(toBigInt(result)).toBe(5n);
+      expect(result.toBigInt()).toBe(5n);
     });
 
     test('sign and verify work', () => {
@@ -156,9 +141,6 @@ describe('API Parity', () => {
   test('main index and wasm index export same primitives functions', () => {
     // Check key primitives exports exist in both
     expect(wasmEntry.Felt252).toBeDefined();
-    expect(wasmEntry.fromHex).toBeDefined();
-    expect(wasmEntry.toHex).toBeDefined();
-    expect(wasmEntry.toBigInt).toBeDefined();
     expect(wasmEntry.ContractAddress).toBeDefined();
     expect(wasmEntry.ClassHash).toBeDefined();
     expect(wasmEntry.StorageKey).toBeDefined();
@@ -181,10 +163,4 @@ describe('API Parity', () => {
     expect(wasmEntry.deserializeArray).toBeDefined();
   });
 
-  test('main index and wasm index export same rpc functions', () => {
-    expect(wasmEntry.StarknetRpcClient).toBeDefined();
-    expect(wasmEntry.createClient).toBeDefined();
-    expect(wasmEntry.mainnet).toBeDefined();
-    expect(wasmEntry.sepolia).toBeDefined();
-  });
 });

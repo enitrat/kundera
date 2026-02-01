@@ -55,16 +55,15 @@ Never assume external data is already branded—always use the `.from()` constru
 | `Felt` | Raw 252-bit field element | `Felt.from('0x123')` |
 | `ContractAddress` | Contract address | `ContractAddress.from('0x456')` |
 | `ClassHash` | Contract class hash | `ClassHash.from('0x789')` |
-| `EntryPointSelector` | Function selector | `EntryPointSelector.from('transfer')` |
-| `TransactionHash` | Transaction hash | `TransactionHash.from('0xabc')` |
+| `StorageKey` | Storage slot key | `StorageKey.from('0xabc')` |
 
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Cairo Types" icon="code" href="/concepts/cairo-types">
-    Learn about Cairo type encoding and decoding.
-  </Card>
   <Card title="Primitives API" icon="cube" href="/api/primitives">
-    Full API reference for all primitive types.
+    Full API reference for primitive types.
+  </Card>
+  <Card title="ABI Encoding" icon="code" href="/guides/abi/encode-decode">
+    How primitives are encoded in calldata.
   </Card>
 </CardGroup>

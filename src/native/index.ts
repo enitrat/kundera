@@ -10,7 +10,7 @@
  */
 
 import type { Signature } from '../api-interface.js';
-import type { Felt252Type } from '../primitives/index.js';
+import { Felt252, type Felt252Type } from '../primitives/index.js';
 
 // ============ Re-export Primitives (unchanged) ============
 
@@ -22,19 +22,10 @@ export {
   Felt252,
   type Felt252Type,
   type Felt252Input,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  toHex,
-  toBigInt,
-  isValid,
-  isZero,
-  equals,
   // ContractAddress
   ContractAddress,
   ContractAddressUnchecked,
   type ContractAddressType,
-  isValidContractAddress,
   // ClassHash
   ClassHash,
   ClassHashUnchecked,
@@ -60,27 +51,6 @@ export {
   CairoSerde,
 } from '../serde/index.js';
 
-// ============ Re-export RPC (unchanged) ============
-
-export {
-  StarknetRpcClient,
-  createClient,
-  mainnet,
-  sepolia,
-  type RpcClientConfig,
-  type BlockId,
-  type BlockTag,
-  type BlockNumber,
-  type BlockHash,
-  type RpcError,
-  type FunctionCall,
-  type TransactionStatus,
-  type BlockHeader,
-  type ChainId,
-  type Nonce,
-  type StorageValue,
-  type ContractClass,
-} from '../rpc/index.js';
 
 // ============ Native FFI Loader ============
 
@@ -150,66 +120,66 @@ export async function loadWasmCrypto(): Promise<void> {
 
 export function pedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativePedersenHash(a, b);
+  return Felt252(nativePedersenHash(a, b));
 }
 
 export function poseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativePoseidonHash(a, b);
+  return Felt252(nativePoseidonHash(a, b));
 }
 
 export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
   ensureNativeAvailable();
-  return nativePoseidonHashMany(inputs);
+  return Felt252(nativePoseidonHashMany(inputs));
 }
 
 export function snKeccak(data: Uint8Array | string): Felt252Type {
   ensureNativeAvailable();
   // Convert string to bytes if needed
   const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
-  return nativeKeccak256(bytes);
+  return Felt252(nativeKeccak256(bytes));
 }
 
 // ============ Felt Arithmetic ============
 
 export function feltAdd(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativeFeltAdd(a, b);
+  return Felt252(nativeFeltAdd(a, b));
 }
 
 export function feltSub(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativeFeltSub(a, b);
+  return Felt252(nativeFeltSub(a, b));
 }
 
 export function feltMul(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativeFeltMul(a, b);
+  return Felt252(nativeFeltMul(a, b));
 }
 
 export function feltDiv(a: Felt252Type, b: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativeFeltDiv(a, b);
+  return Felt252(nativeFeltDiv(a, b));
 }
 
 export function feltNeg(a: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativeFeltNeg(a);
+  return Felt252(nativeFeltNeg(a));
 }
 
 export function feltInverse(a: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativeFeltInverse(a);
+  return Felt252(nativeFeltInverse(a));
 }
 
 export function feltPow(base: Felt252Type, exp: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativeFeltPow(base, exp);
+  return Felt252(nativeFeltPow(base, exp));
 }
 
 export function feltSqrt(a: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativeFeltSqrt(a);
+  return Felt252(nativeFeltSqrt(a));
 }
 
 // ============ ECDSA ============
@@ -218,7 +188,8 @@ export type { Signature } from '../api-interface.js';
 
 export function sign(privateKey: Felt252Type, messageHash: Felt252Type): Signature {
   ensureNativeAvailable();
-  return nativeSign(privateKey, messageHash);
+  const signature = nativeSign(privateKey, messageHash);
+  return { r: Felt252(signature.r), s: Felt252(signature.s) };
 }
 
 export function verify(
@@ -232,7 +203,7 @@ export function verify(
 
 export function getPublicKey(privateKey: Felt252Type): Felt252Type {
   ensureNativeAvailable();
-  return nativeGetPublicKey(privateKey);
+  return Felt252(nativeGetPublicKey(privateKey));
 }
 
 export function recover(
@@ -242,7 +213,7 @@ export function recover(
   v: Felt252Type
 ): Felt252Type {
   ensureNativeAvailable();
-  return nativeRecover(messageHash, r, s, v);
+  return Felt252(nativeRecover(messageHash, r, s, v));
 }
 
 // ============ Crypto Namespaces ============
@@ -256,11 +227,14 @@ export const Poseidon = {
   hashMany: poseidonHashMany,
 } as const;
 
-// Merge Felt primitives with crypto ops
+// Merge Felt primitives with crypto ops (preserve call signature)
 import { Felt as FeltPrimitives } from '../primitives/index.js';
 
-export const Felt = {
-  ...FeltPrimitives,
+const FeltBase = ((
+  value: Parameters<typeof FeltPrimitives>[0],
+) => FeltPrimitives(value)) as typeof FeltPrimitives;
+
+export const Felt = Object.assign(FeltBase, FeltPrimitives, {
   add: feltAdd,
   sub: feltSub,
   mul: feltMul,
@@ -269,7 +243,16 @@ export const Felt = {
   inverse: feltInverse,
   pow: feltPow,
   sqrt: feltSqrt,
-} as const;
+}) as typeof FeltPrimitives & {
+  add: typeof feltAdd;
+  sub: typeof feltSub;
+  mul: typeof feltMul;
+  div: typeof feltDiv;
+  neg: typeof feltNeg;
+  inverse: typeof feltInverse;
+  pow: typeof feltPow;
+  sqrt: typeof feltSqrt;
+};
 
 export const StarkCurve = {
   sign,
@@ -284,18 +267,8 @@ import type { KunderaAPI as _KunderaAPI } from '../api-interface.js';
 import {
   FIELD_PRIME,
   MAX_CONTRACT_ADDRESS,
-  Felt252,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  toHex,
-  toBigInt,
-  isValid,
-  isZero,
-  equals,
   ContractAddress,
   ContractAddressUnchecked,
-  isValidContractAddress,
   ClassHash,
   ClassHashUnchecked,
   StorageKey,
@@ -314,29 +287,13 @@ import {
   CairoSerde,
 } from '../serde/index.js';
 
-import {
-  StarknetRpcClient,
-  createClient,
-  mainnet,
-  sepolia,
-} from '../rpc/index.js';
-
 const _nativeAPI = {
   // Primitives
   FIELD_PRIME,
   MAX_CONTRACT_ADDRESS,
   Felt252,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  toHex,
-  toBigInt,
-  isValid,
-  isZero,
-  equals,
   ContractAddress,
   ContractAddressUnchecked,
-  isValidContractAddress,
   ClassHash,
   ClassHashUnchecked,
   StorageKey,
@@ -376,9 +333,4 @@ const _nativeAPI = {
   deserializeArray,
   serializeByteArray,
   CairoSerde,
-  // RPC
-  StarknetRpcClient,
-  createClient,
-  mainnet,
-  sepolia,
 } satisfies _KunderaAPI;

@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { encodeCalldata, decodeEvent, getContract } from '@starknet/kundera/abi';
+ * import { encodeCalldata, decodeEvent } from '@starknet/kundera/abi';
  *
  * // Encode function calldata
  * const result = encodeCalldata(abi, 'transfer', [recipient, amount]);
@@ -122,3 +122,18 @@ export {
   decodeShortString,
   MAX_SHORT_STRING_LENGTH,
 } from '../primitives/index.js';
+
+// Class hash utilities (moved from contract module)
+export type {
+  CompiledSierra,
+  CompiledSierraCasm,
+  SierraEntryPoint,
+  SierraEntryPoints,
+  CasmEntryPoint,
+  CasmEntryPoints,
+} from './classHash.js';
+export {
+  classHashFromSierra,
+  compiledClassHashFromCasm,
+  extractAbi,
+} from './classHash.js';

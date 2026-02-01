@@ -182,10 +182,14 @@ const { result } = decodeEvents(receipt, abi, {
 For RPC queries, compile your filter and pass to the RPC call:
 
 ```typescript
+import { httpTransport } from 'kundera/transport';
+import { starknet_getEvents } from 'kundera/rpc';
+
+const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
 const filter = compileEventFilter(abi, 'Transfer', { from: myAddress });
 
 // Use with RPC (convert to hex strings for API)
-const events = await provider.getEvents({
+const events = await starknet_getEvents(transport, {
   from_block: { block_number: startBlock },
   to_block: { block_number: endBlock },
   address: contractAddress,
@@ -209,7 +213,7 @@ const events = await provider.getEvents({
   <Card title="Events Guide" icon="bell" href="/guides/abi/events">
     Practical event decoding.
   </Card>
-  <Card title="Event Listening" icon="rss" href="/recipes/event-listening">
-    Subscribe to real-time events.
+  <Card title="WebSocket Provider Skill" icon="plug" href="/skills/websocket-provider">
+    Subscribe to real-time events over WebSocket transport.
   </Card>
 </CardGroup>

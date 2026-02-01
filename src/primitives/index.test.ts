@@ -1,14 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import {
   Felt252,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  toHex,
-  toBigInt,
-  isValid,
-  isZero,
-  equals,
   ContractAddress,
   ClassHash,
   StorageKey,
@@ -25,34 +17,34 @@ import {
 describe('Felt252', () => {
   test('from number', () => {
     const felt = Felt252(42);
-    expect(toBigInt(felt)).toBe(42n);
+    expect(felt.toBigInt()).toBe(42n);
   });
 
   test('from bigint', () => {
     const felt = Felt252(123456789n);
-    expect(toBigInt(felt)).toBe(123456789n);
+    expect(felt.toBigInt()).toBe(123456789n);
   });
 
   test('from hex with 0x prefix', () => {
-    const felt = fromHex('0x2a');
-    expect(toBigInt(felt)).toBe(42n);
+    const felt = Felt252.fromHex('0x2a');
+    expect(felt.toBigInt()).toBe(42n);
   });
 
   test('from hex without prefix', () => {
-    const felt = fromHex('2a');
-    expect(toBigInt(felt)).toBe(42n);
+    const felt = Felt252.fromHex('2a');
+    expect(felt.toBigInt()).toBe(42n);
   });
 
   test('from bytes', () => {
     const bytes = new Uint8Array(32);
     bytes[31] = 42;
-    const felt = fromBytes(bytes);
-    expect(toBigInt(felt)).toBe(42n);
+    const felt = Felt252.fromBytes(bytes);
+    expect(felt.toBigInt()).toBe(42n);
   });
 
   test('toHex returns padded hex', () => {
     const felt = Felt252(42);
-    const hex = toHex(felt);
+    const hex = felt.toHex();
     expect(hex).toStartWith('0x');
     expect(hex.length).toBe(66); // 0x + 64 hex chars
     expect(hex).toBe(
@@ -62,63 +54,63 @@ describe('Felt252', () => {
 
   test('hex roundtrip', () => {
     const original = Felt252(0x123456789abcdef0n);
-    const hex = toHex(original);
-    const parsed = fromHex(hex);
-    expect(equals(original, parsed)).toBe(true);
+    const hex = original.toHex();
+    const parsed = Felt252.fromHex(hex);
+    expect(original.equals(parsed)).toBe(true);
   });
 
   test('rejects negative values', () => {
-    expect(() => fromBigInt(-1n)).toThrow('negative');
+    expect(() => Felt252.fromBigInt(-1n)).toThrow('negative');
   });
 
   test('rejects values >= FIELD_PRIME', () => {
-    expect(() => fromBigInt(FIELD_PRIME)).toThrow('exceeds');
+    expect(() => Felt252.fromBigInt(FIELD_PRIME)).toThrow('exceeds');
   });
 
   test('rejects hex >= FIELD_PRIME', () => {
-    expect(() => fromHex('0x' + FIELD_PRIME.toString(16))).toThrow('exceeds');
+    expect(() => Felt252.fromHex('0x' + FIELD_PRIME.toString(16))).toThrow('exceeds');
   });
 
   test('rejects hex string too long', () => {
-    expect(() => fromHex('0x' + 'f'.repeat(65))).toThrow('too long');
+    expect(() => Felt252.fromHex('0x' + 'f'.repeat(65))).toThrow('too long');
   });
 
   test('rejects invalid hex string', () => {
-    expect(() => fromHex('0xzz')).toThrow('Invalid hex');
+    expect(() => Felt252.fromHex('0xzz')).toThrow('Invalid hex');
   });
 
   test('ZERO constant', () => {
-    expect(isZero(Felt.ZERO)).toBe(true);
-    expect(toBigInt(Felt.ZERO)).toBe(0n);
+    expect(Felt.ZERO.isZero()).toBe(true);
+    expect(Felt.ZERO.toBigInt()).toBe(0n);
   });
 
   test('ONE constant', () => {
-    expect(isZero(Felt.ONE)).toBe(false);
-    expect(toBigInt(Felt.ONE)).toBe(1n);
+    expect(Felt.ONE.isZero()).toBe(false);
+    expect(Felt.ONE.toBigInt()).toBe(1n);
   });
 
   test('isValid returns true for valid felt', () => {
-    expect(isValid(Felt252(42))).toBe(true);
+    expect(Felt252(42).isValid()).toBe(true);
   });
 
   test('isZero returns true for zero', () => {
-    expect(isZero(Felt252(0))).toBe(true);
-    expect(isZero(Felt252(1))).toBe(false);
+    expect(Felt252(0).isZero()).toBe(true);
+    expect(Felt252(1).isZero()).toBe(false);
   });
 
   test('equals compares correctly', () => {
     const a = Felt252(42);
     const b = Felt252(42);
     const c = Felt252(43);
-    expect(equals(a, b)).toBe(true);
-    expect(equals(a, c)).toBe(false);
+    expect(a.equals(b)).toBe(true);
+    expect(a.equals(c)).toBe(false);
   });
 });
 
 describe('ContractAddress', () => {
   test('creates valid address', () => {
     const addr = ContractAddress(42n);
-    expect(toBigInt(addr)).toBe(42n);
+    expect(addr.toBigInt()).toBe(42n);
   });
 
   test('rejects address >= 2^251', () => {
@@ -127,7 +119,7 @@ describe('ContractAddress', () => {
 
   test('accepts address just below limit', () => {
     const addr = ContractAddress(MAX_CONTRACT_ADDRESS - 1n);
-    expect(toBigInt(addr)).toBe(MAX_CONTRACT_ADDRESS - 1n);
+    expect(addr.toBigInt()).toBe(MAX_CONTRACT_ADDRESS - 1n);
   });
 
   test('Address.isValid checks range', () => {
@@ -135,7 +127,7 @@ describe('ContractAddress', () => {
     // Create a felt that's >= 2^251 but < FIELD_PRIME
     const bytes = new Uint8Array(32);
     bytes[0] = 0x08; // Sets bit 251
-    const largeFelt = fromBytes(bytes);
+    const largeFelt = Felt252.fromBytes(bytes);
     expect(Address.isValid(largeFelt)).toBe(false);
   });
 });
@@ -143,14 +135,14 @@ describe('ContractAddress', () => {
 describe('ClassHash', () => {
   test('creates valid class hash', () => {
     const hash = ClassHash(42n);
-    expect(toBigInt(hash)).toBe(42n);
+    expect(hash.toBigInt()).toBe(42n);
   });
 });
 
 describe('StorageKey', () => {
   test('creates valid storage key', () => {
     const key = StorageKey(42n);
-    expect(toBigInt(key)).toBe(42n);
+    expect(key.toBigInt()).toBe(42n);
   });
 });
 

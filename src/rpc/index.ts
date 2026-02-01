@@ -1,25 +1,73 @@
 /**
  * Starknet RPC Module
  *
- * JSON-RPC client for interacting with Starknet nodes.
+ * Tree-shakeable JSON-RPC methods for Starknet.
  */
 
-export {
-  StarknetRpcClient,
-  createClient,
-  mainnet,
-  sepolia,
-  type RpcClientConfig,
-  type BlockId,
-  type BlockTag,
-  type BlockNumber,
-  type BlockHash,
-  type RpcError,
-  type FunctionCall,
-  type TransactionStatus,
-  type BlockHeader,
-  type ChainId,
-  type Nonce,
-  type StorageValue,
-  type ContractClass,
-} from './client.js';
+export * from './methods/index.js';
+export * as Rpc from './namespace.js';
+
+export type { BlockHashAndNumber } from './methods/blockHashAndNumber.js';
+export type { EventsFilter } from './methods/getEvents.js';
+
+export type {
+  RpcError,
+  StarknetRpcErrorCode,
+  BlockTag,
+  BlockId,
+  BlockStatus,
+  BlockHeader,
+  BlockHeaderWithCommitments,
+  BlockWithTxHashes,
+  PreConfirmedBlockWithTxHashes,
+  BlockWithTxs,
+  PreConfirmedBlockWithTxs,
+  BlockWithReceipts,
+  PreConfirmedBlockWithReceipts,
+  BlockTransactionTrace,
+  StateUpdate,
+  PreConfirmedStateUpdate,
+  StorageProof,
+  ContractStorageDiffItem,
+  DeployedContractItem,
+  DeclaredClassItem,
+  ReplacedClassItem,
+  NonceUpdateItem,
+  TransactionStatus,
+  FunctionCall,
+  SimulationFlag,
+  FeeEstimate,
+  MessageFeeEstimate,
+  MsgFromL1,
+  MessagesStatusResponse,
+  SyncingStatus,
+  EventsResponse,
+  EmittedEvent,
+  NewHead,
+  TxnWithHash,
+  TxnReceiptWithBlockInfo,
+  TransactionTrace,
+  SimulatedTransaction,
+  BroadcastedTxn,
+  BroadcastedInvokeTxn,
+  BroadcastedDeclareTxn,
+  BroadcastedDeployAccountTxn,
+  ContractClass,
+  DeprecatedContractClass,
+  ContractClassResponse,
+  AddInvokeTransactionResult,
+  AddDeclareTransactionResult,
+  AddDeployAccountTransactionResult,
+  MessageStatus,
+  PendingTransaction,
+  TransactionStatusUpdate,
+  WsTransactionReceipt,
+  ReorgData,
+  WsNotificationPayload,
+  EventsSubscriptionParams,
+  NewHeadsSubscriptionParams,
+  PendingTransactionsSubscriptionParams,
+  TransactionReceiptsSubscriptionParams,
+  TxnFinalityStatusWithoutL1,
+  ReceiptFinalityStatus,
+} from './types.js';

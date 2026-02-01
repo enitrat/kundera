@@ -7,7 +7,7 @@
 
 import { existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
-import type { Felt252Type } from '../primitives/index.js';
+import { Felt252, type Felt252Type } from '../primitives/index.js';
 import { ErrorCode, type WasmExports, type WasmInstance } from './types.js';
 
 // ============ Constants ============
@@ -140,7 +140,7 @@ function writeFelt(felt: Felt252Type, ptr: number): void {
  */
 function readFelt(ptr: number): Felt252Type {
   const view = new Uint8Array(wasmInstance!.memory.buffer, ptr, FELT_SIZE);
-  return new Uint8Array(view) as Felt252Type;
+  return Felt252(new Uint8Array(view));
 }
 
 // ============ Error Handling ============
