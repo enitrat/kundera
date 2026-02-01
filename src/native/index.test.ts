@@ -24,7 +24,6 @@ import {
   getPublicKey,
   sign,
   verify,
-  StarkResult,
 } from './index';
 import { Felt252, FIELD_PRIME } from '../primitives/index';
 

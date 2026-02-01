@@ -10,7 +10,7 @@ import {
   starknet_addDeployAccountTransaction,
   starknet_estimateFee,
 } from 'kundera/rpc';
-import type { AddDeployAccountTransactionResult, FeeEstimate } from 'kundera/rpc';
+import type { AddDeployAccountTransactionResult, BroadcastedDeployAccountTxn, FeeEstimate, SimulationFlag } from 'kundera/rpc';
 import {
   computeContractAddress,
   computeDeployAccountV3Hash,
@@ -80,7 +80,7 @@ export async function deployAccount(
     type: 'DEPLOY_ACCOUNT',
     ...formatDeployAccountForRpc(tx),
     signature: signature.map((s) => Felt252(s).toHex()),
-  });
+  } as BroadcastedDeployAccountTxn);
 }
 
 export async function estimateDeployAccountFee(
@@ -106,10 +106,10 @@ export async function estimateDeployAccountFee(
     fee_data_availability_mode: 0,
   };
 
-  const simulationFlags = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
+  const simulationFlags: SimulationFlag[] = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
   const estimates = await starknet_estimateFee(
     options.transport,
-    [{ type: 'DEPLOY_ACCOUNT', ...formatDeployAccountForRpc(tx), signature: [] }],
+    [{ type: 'DEPLOY_ACCOUNT', ...formatDeployAccountForRpc(tx), signature: [] } as unknown as BroadcastedDeployAccountTxn],
     simulationFlags,
     'pending',
   );

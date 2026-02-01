@@ -15,14 +15,14 @@ const ABI = [
 const mockTransport: Transport = {
   type: 'http',
   async request() {
-    return { jsonrpc: '2.0', id: 1, result: null };
+    return { jsonrpc: '2.0', id: 1, result: null } as any;
   },
-  async requestBatch(requests: JsonRpcRequest[]) {
+  async requestBatch(requests: JsonRpcRequest[], _options?) {
     return requests.map((req, idx) => ({
       jsonrpc: '2.0',
       id: req.id ?? idx + 1,
       result: [idx === 0 ? '0x1' : '0x2'],
-    }));
+    })) as any;
   },
 };
 

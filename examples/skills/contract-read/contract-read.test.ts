@@ -14,14 +14,14 @@ const ABI = [
 
 const mockTransport: Transport = {
   type: 'http',
-  async request(request: JsonRpcRequest) {
+  async request(request: JsonRpcRequest, _options?) {
     if (request.method === 'starknet_call') {
-      return { jsonrpc: '2.0', id: request.id ?? 1, result: ['0x1'] };
+      return { jsonrpc: '2.0', id: request.id ?? 1, result: ['0x1'] } as any;
     }
-    return { jsonrpc: '2.0', id: request.id ?? 1, result: null };
+    return { jsonrpc: '2.0', id: request.id ?? 1, result: null } as any;
   },
   async requestBatch() {
-    return [];
+    return [] as any;
   },
 };
 

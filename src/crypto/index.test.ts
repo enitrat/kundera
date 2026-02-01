@@ -24,15 +24,13 @@ import {
   feltPow,
   feltSqrt,
   isNativeAvailable,
-  isWasmAvailable,
   isWasmLoaded,
-  loadWasmCrypto,
   Pedersen,
   Poseidon,
   StarkCurve,
   Felt,
 } from './index';
-import { Felt252, FIELD_PRIME } from '../primitives/index';
+import { Felt252, FIELD_PRIME, type Felt252Type } from '../primitives/index';
 
 // Detect native availability once
 const nativeAvailable = isNativeAvailable();

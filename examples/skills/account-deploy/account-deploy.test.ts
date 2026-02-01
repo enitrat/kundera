@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import '../../../src/test-utils/setupCrypto';
-import type { Transport } from 'kundera/transport';
+import type { Transport, TransportRequestOptions } from 'kundera/transport';
+import type { SignerInterface } from 'kundera/crypto';
 import { createAccountDeployer } from './index';
 
 type HandlerMap = Record<string, (params: unknown[] | Record<string, unknown> | undefined) => unknown>;
@@ -9,16 +10,16 @@ function createMockTransport(handlers: HandlerMap) {
   const calls: Array<{ method: string; params?: unknown }> = [];
   const transport: Transport = {
     type: 'custom',
-    request: async (request) => {
+    request: async <T = unknown>(request: any, _options?: TransportRequestOptions) => {
       calls.push({ method: request.method, params: request.params });
       const handler = handlers[request.method];
       if (!handler) {
         throw new Error(`Unhandled RPC method: ${request.method}`);
       }
       return {
-        jsonrpc: '2.0',
+        jsonrpc: '2.0' as const,
         id: request.id ?? 1,
-        result: handler(request.params),
+        result: handler(request.params) as T,
       };
     },
     requestBatch: async () => {
@@ -40,7 +41,10 @@ const feeEstimate = {
 describe('account-deploy skill', () => {
   it('submits deploy account transaction via RPC', async () => {
     let signedHash: Uint8Array | undefined;
-    const signer = {
+    const signer: SignerInterface = {
+      getPubKey: async () => '0x123',
+      signRaw: async () => ({ r: 7n as any, s: 8n as any }),
+      signMessage: async () => [7n, 8n],
       signTransaction: async (hash: Uint8Array) => {
         signedHash = hash;
         return [7n, 8n];
@@ -57,9 +61,11 @@ describe('account-deploy skill', () => {
       starknet_chainId: () => '0x534e5f5345504f4c4941',
       starknet_addDeployAccountTransaction: (params) => {
         const [tx] = params as Array<Record<string, unknown>>;
-        expect(tx.type).toBe('DEPLOY_ACCOUNT');
-        expect(tx.contract_address_salt).toBe('0xabc');
-        const calldata = tx.constructor_calldata as string[];
+        if (!tx) throw new Error('Transaction parameter missing');
+        expect(tx['type']).toBe('DEPLOY_ACCOUNT');
+        expect(tx['contract_address_salt']).toBe('0xabc');
+        const calldata = tx['constructor_calldata'] as string[];
+        if (!calldata[0]) throw new Error('Calldata missing');
         expect(BigInt(calldata[0])).toBe(1n);
         return { transaction_hash: '0xaaa', contract_address: '0xbbb' };
       },
@@ -74,8 +80,11 @@ describe('account-deploy skill', () => {
 
     const addCall = calls.find((call) => call.method === 'starknet_addDeployAccountTransaction');
     const [tx] = (addCall?.params as Array<Record<string, unknown>>) ?? [];
-    expect(BigInt((tx.signature as string[])[0])).toBe(7n);
-    expect(BigInt((tx.signature as string[])[1])).toBe(8n);
+    if (!tx) throw new Error('Transaction not found');
+    const signature = tx['signature'] as string[];
+    if (!signature[0] || !signature[1]) throw new Error('Signature missing');
+    expect(BigInt(signature[0])).toBe(7n);
+    expect(BigInt(signature[1])).toBe(8n);
   });
 
   it('estimates fee for deploy account', async () => {
@@ -89,15 +98,21 @@ describe('account-deploy skill', () => {
       starknet_estimateFee: (params) => {
         const [txs] = params as Array<unknown>;
         const [tx] = txs as Array<Record<string, unknown>>;
-        expect(tx.type).toBe('DEPLOY_ACCOUNT');
-        expect((tx.signature as string[]).length).toBe(0);
+        if (!tx) throw new Error('Transaction parameter missing');
+        expect(tx['type']).toBe('DEPLOY_ACCOUNT');
+        expect((tx['signature'] as string[]).length).toBe(0);
         return [feeEstimate];
       },
     });
 
     const deployer = createAccountDeployer({
       transport,
-      signer: { signTransaction: async () => [0n, 0n] },
+      signer: {
+        getPubKey: async () => '0x123',
+        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
+        signMessage: async () => [0n, 0n],
+        signTransaction: async () => [0n, 0n],
+      },
     });
 
     const estimate = await deployer.estimateFee(payload);
@@ -117,15 +132,21 @@ describe('account-deploy skill', () => {
         const [txs, flags] = params as Array<unknown>;
         expect(flags).toEqual(['SKIP_VALIDATE']);
         const [tx] = txs as Array<Record<string, unknown>>;
-        expect(tx.type).toBe('DEPLOY_ACCOUNT');
-        expect(BigInt(tx.nonce as string)).toBe(9n);
+        if (!tx) throw new Error('Transaction parameter missing');
+        expect(tx['type']).toBe('DEPLOY_ACCOUNT');
+        expect(BigInt(tx['nonce'] as string)).toBe(9n);
         return [feeEstimate];
       },
     });
 
     const deployer = createAccountDeployer({
       transport,
-      signer: { signTransaction: async () => [0n, 0n] },
+      signer: {
+        getPubKey: async () => '0x123',
+        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
+        signMessage: async () => [0n, 0n],
+        signTransaction: async () => [0n, 0n],
+      },
     });
 
     const estimate = await deployer.estimateFee(payload, {

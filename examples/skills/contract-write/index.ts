@@ -57,7 +57,7 @@ export async function writeContract(
     return err('ACCOUNT_REQUIRED', 'Account executor with execute() is required');
   }
 
-  const calldataResult = encodeCalldata(abi, functionName, args);
+  const calldataResult = encodeCalldata(abi, functionName, args as any);
   if (calldataResult.error) {
     return err('ENCODE_ERROR', calldataResult.error.message);
   }

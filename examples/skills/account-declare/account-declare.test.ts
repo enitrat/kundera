@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import '../../../src/test-utils/setupCrypto';
-import type { Transport } from 'kundera/transport';
+import type { Transport, TransportRequestOptions } from 'kundera/transport';
+import type { SignerInterface } from 'kundera/crypto';
 import { createAccountDeclarer } from './index';
 
 type HandlerMap = Record<string, (params: unknown[] | Record<string, unknown> | undefined) => unknown>;
@@ -9,16 +10,16 @@ function createMockTransport(handlers: HandlerMap) {
   const calls: Array<{ method: string; params?: unknown }> = [];
   const transport: Transport = {
     type: 'custom',
-    request: async (request) => {
+    request: async <T = unknown>(request: any, _options?: TransportRequestOptions) => {
       calls.push({ method: request.method, params: request.params });
       const handler = handlers[request.method];
       if (!handler) {
         throw new Error(`Unhandled RPC method: ${request.method}`);
       }
       return {
-        jsonrpc: '2.0',
+        jsonrpc: '2.0' as const,
         id: request.id ?? 1,
-        result: handler(request.params),
+        result: handler(request.params) as T,
       };
     },
     requestBatch: async () => {
@@ -40,7 +41,10 @@ const feeEstimate = {
 describe('account-declare skill', () => {
   it('submits declare transaction via RPC', async () => {
     let signedHash: Uint8Array | undefined;
-    const signer = {
+    const signer: SignerInterface = {
+      getPubKey: async () => '0x123',
+      signRaw: async () => ({ r: 9n as any, s: 10n as any }),
+      signMessage: async () => [9n, 10n],
       signTransaction: async (hash: Uint8Array) => {
         signedHash = hash;
         return [9n, 10n];
@@ -58,9 +62,10 @@ describe('account-declare skill', () => {
       starknet_getNonce: () => '0x2',
       starknet_addDeclareTransaction: (params) => {
         const [tx] = params as Array<Record<string, unknown>>;
-        expect(tx.type).toBe('DECLARE');
-        expect(tx.compiled_class_hash).toBe('0x222');
-        expect(tx.contract_class).toBe(payload.contract);
+        if (!tx) throw new Error('Transaction parameter missing');
+        expect(tx['type']).toBe('DECLARE');
+        expect(tx['compiled_class_hash']).toBe('0x222');
+        expect(tx['contract_class']).toBe(payload.contract);
         return { transaction_hash: '0xabc', class_hash: '0xdef' };
       },
     });
@@ -78,8 +83,11 @@ describe('account-declare skill', () => {
 
     const addCall = calls.find((call) => call.method === 'starknet_addDeclareTransaction');
     const [tx] = (addCall?.params as Array<Record<string, unknown>>) ?? [];
-    expect(BigInt((tx.signature as string[])[0])).toBe(9n);
-    expect(BigInt((tx.signature as string[])[1])).toBe(10n);
+    if (!tx) throw new Error('Transaction not found');
+    const signature = tx['signature'] as string[];
+    if (!signature[0] || !signature[1]) throw new Error('Signature incomplete');
+    expect(BigInt(signature[0])).toBe(9n);
+    expect(BigInt(signature[1])).toBe(10n);
   });
 
   it('estimates fee for declare', async () => {
@@ -94,8 +102,9 @@ describe('account-declare skill', () => {
       starknet_estimateFee: (params) => {
         const [txs] = params as Array<unknown>;
         const [tx] = txs as Array<Record<string, unknown>>;
-        expect(tx.type).toBe('DECLARE');
-        expect((tx.signature as string[]).length).toBe(0);
+        if (!tx) throw new Error('Transaction parameter missing');
+        expect(tx['type']).toBe('DECLARE');
+        expect((tx['signature'] as string[]).length).toBe(0);
         return [feeEstimate];
       },
     });
@@ -103,7 +112,12 @@ describe('account-declare skill', () => {
     const declarer = createAccountDeclarer({
       transport,
       address: '0xabc',
-      signer: { signTransaction: async () => [0n, 0n] },
+      signer: {
+        getPubKey: async () => '0x123',
+        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
+        signMessage: async () => [0n, 0n],
+        signTransaction: async () => [0n, 0n],
+      },
     });
 
     const estimate = await declarer.estimateFee(payload);
@@ -122,8 +136,9 @@ describe('account-declare skill', () => {
       starknet_chainId: () => '0x534e5f5345504f4c4941',
       starknet_addDeclareTransaction: (params) => {
         const [tx] = params as Array<Record<string, unknown>>;
-        expect(tx.type).toBe('DECLARE');
-        expect(BigInt(tx.nonce as string)).toBe(7n);
+        if (!tx) throw new Error('Transaction parameter missing');
+        expect(tx['type']).toBe('DECLARE');
+        expect(BigInt(tx['nonce'] as string)).toBe(7n);
         return { transaction_hash: '0xabc', class_hash: '0xdef' };
       },
     });
@@ -131,7 +146,12 @@ describe('account-declare skill', () => {
     const declarer = createAccountDeclarer({
       transport,
       address: '0xabc',
-      signer: { signTransaction: async () => [0n, 0n] },
+      signer: {
+        getPubKey: async () => '0x123',
+        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
+        signMessage: async () => [0n, 0n],
+        signTransaction: async () => [0n, 0n],
+      },
     });
 
     await declarer.declare(payload, { nonce: 7n });

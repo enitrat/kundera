@@ -11,8 +11,6 @@ import {
   type ParsedAbi,
   type Result,
   ok,
-  err,
-  abiError,
 } from './types.js';
 import { parseAbi, getFunction, computeSelector } from './parse.js';
 import { encodeArgs, encodeArgsObject } from './encode.js';

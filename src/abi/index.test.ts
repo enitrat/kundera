@@ -371,9 +371,9 @@ describe('Event Decoding', () => {
     expect(result.error).toBeNull();
     expect(result.result).not.toBeNull();
     expect(result.result!.name).toBe('Transfer');
-    expect(result.result!.args.from).toBe(from);
-    expect(result.result!.args.to).toBe(to);
-    expect(result.result!.args.amount).toBe(1000n);
+    expect(result.result!.args['from']).toBe(from);
+    expect(result.result!.args['to']).toBe(to);
+    expect(result.result!.args['amount']).toBe(1000n);
   });
 
   it('should decode event by selector', () => {
@@ -517,8 +517,8 @@ describe('Encode/Decode Roundtrip', () => {
       const decoded = decodeCalldata(EXTENDED_ABI, 'process_struct', encoded.result!);
       expect(decoded.error).toBeNull();
       const result = decoded.result![0] as Record<string, bigint>;
-      expect(result.field_a).toBe(data.field_a);
-      expect(result.field_b).toBe(data.field_b);
+      expect(result['field_a']).toBe(data.field_a);
+      expect(result['field_b']).toBe(data.field_b);
     }
   });
 
@@ -851,23 +851,26 @@ describe('decodeEvents - batch event decoding from receipts', () => {
 
     const [transfer1, approval, transfer2] = result.result!;
 
-    expect(transfer1.name).toBe('Transfer');
-    expect(transfer1.args.from).toBe(0x123n);
-    expect(transfer1.args.to).toBe(0x456n);
-    expect(transfer1.args.value).toBe(1000n);
-    expect(transfer1.index).toBe(0);
+    expect(transfer1).toBeDefined();
+    expect(transfer1!.name).toBe('Transfer');
+    expect(transfer1!.args['from']).toBe(0x123n);
+    expect(transfer1!.args['to']).toBe(0x456n);
+    expect(transfer1!.args['value']).toBe(1000n);
+    expect(transfer1!.index).toBe(0);
 
-    expect(approval.name).toBe('Approval');
-    expect(approval.args.owner).toBe(0x123n);
-    expect(approval.args.spender).toBe(0x789n);
-    expect(approval.args.value).toBe(2000n);
-    expect(approval.index).toBe(1);
+    expect(approval).toBeDefined();
+    expect(approval!.name).toBe('Approval');
+    expect(approval!.args['owner']).toBe(0x123n);
+    expect(approval!.args['spender']).toBe(0x789n);
+    expect(approval!.args['value']).toBe(2000n);
+    expect(approval!.index).toBe(1);
 
-    expect(transfer2.name).toBe('Transfer');
-    expect(transfer2.args.from).toBe(0xaaan);
-    expect(transfer2.args.to).toBe(0xbbbn);
-    expect(transfer2.args.value).toBe(500n);
-    expect(transfer2.index).toBe(2);
+    expect(transfer2).toBeDefined();
+    expect(transfer2!.name).toBe('Transfer');
+    expect(transfer2!.args['from']).toBe(0xaaan);
+    expect(transfer2!.args['to']).toBe(0xbbbn);
+    expect(transfer2!.args['value']).toBe(500n);
+    expect(transfer2!.index).toBe(2);
   });
 
   it('filters by contract address', () => {
@@ -876,8 +879,10 @@ describe('decodeEvents - batch event decoding from receipts', () => {
     });
     expect(result.error).toBeNull();
     expect(result.result).toHaveLength(2);
-    expect(result.result![0].name).toBe('Transfer');
-    expect(result.result![1].name).toBe('Approval');
+    expect(result.result![0]).toBeDefined();
+    expect(result.result![0]!.name).toBe('Transfer');
+    expect(result.result![1]).toBeDefined();
+    expect(result.result![1]!.name).toBe('Approval');
   });
 
   it('filters by contract address (string shorthand)', () => {
@@ -896,8 +901,10 @@ describe('decodeEvents - batch event decoding from receipts', () => {
     });
     expect(result.error).toBeNull();
     expect(result.result).toHaveLength(2);
-    expect(result.result![0].name).toBe('Transfer');
-    expect(result.result![1].name).toBe('Transfer');
+    expect(result.result![0]).toBeDefined();
+    expect(result.result![0]!.name).toBe('Transfer');
+    expect(result.result![1]).toBeDefined();
+    expect(result.result![1]!.name).toBe('Transfer');
   });
 
   it('filters by selector (hex)', () => {
@@ -906,7 +913,8 @@ describe('decodeEvents - batch event decoding from receipts', () => {
     });
     expect(result.error).toBeNull();
     expect(result.result).toHaveLength(1);
-    expect(result.result![0].name).toBe('Approval');
+    expect(result.result![0]).toBeDefined();
+    expect(result.result![0]!.name).toBe('Approval');
   });
 
   it('combines address and selector filters', () => {
@@ -916,8 +924,9 @@ describe('decodeEvents - batch event decoding from receipts', () => {
     });
     expect(result.error).toBeNull();
     expect(result.result).toHaveLength(1);
-    expect(result.result![0].name).toBe('Transfer');
-    expect(result.result![0].args.value).toBe(1000n);
+    expect(result.result![0]).toBeDefined();
+    expect(result.result![0]!.name).toBe('Transfer');
+    expect(result.result![0]!.args['value']).toBe(1000n);
   });
 
   it('returns empty array for no matching events', () => {
@@ -959,16 +968,19 @@ describe('decodeEvents - batch event decoding from receipts', () => {
     const result = decodeEvents(receiptWithUnknown, EVENT_ABI);
     expect(result.error).toBeNull();
     expect(result.result).toHaveLength(1);
-    expect(result.result![0].name).toBe('Transfer');
+    expect(result.result![0]).toBeDefined();
+    expect(result.result![0]!.name).toBe('Transfer');
   });
 
   it('includes fromAddress in decoded events', () => {
     const result = decodeEvents(sampleReceipt, EVENT_ABI);
     expect(result.error).toBeNull();
-    expect(result.result![0].fromAddress).toBe(
+    expect(result.result![0]).toBeDefined();
+    expect(result.result![0]!.fromAddress).toBe(
       '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7'
     );
-    expect(result.result![2].fromAddress).toBe('0x0deadbeef');
+    expect(result.result![2]).toBeDefined();
+    expect(result.result![2]!.fromAddress).toBe('0x0deadbeef');
   });
 
   it('preserves original event index', () => {
@@ -976,8 +988,10 @@ describe('decodeEvents - batch event decoding from receipts', () => {
       selector: 'Transfer',
     });
     expect(result.error).toBeNull();
-    expect(result.result![0].index).toBe(0); // First Transfer
-    expect(result.result![1].index).toBe(2); // Second Transfer (skipped Approval at index 1)
+    expect(result.result![0]).toBeDefined();
+    expect(result.result![0]!.index).toBe(0); // First Transfer
+    expect(result.result![1]).toBeDefined();
+    expect(result.result![1]!.index).toBe(2); // Second Transfer (skipped Approval at index 1)
   });
 });
 
@@ -1212,8 +1226,9 @@ describe('ABI-Typed Event Filtering (decodeEvents with event/args)', () => {
       });
       expect(result.error).toBeNull();
       expect(result.result).toHaveLength(1);
-      expect(result.result![0].args.from).toBe(0x111n);
-      expect(result.result![0].args.to).toBe(0x222n);
+      expect(result.result![0]).toBeDefined();
+      expect(result.result![0]!.args['from']).toBe(0x111n);
+      expect(result.result![0]!.args['to']).toBe(0x222n);
     });
 
     it('filters by event + OR array on indexed arg', () => {
@@ -1224,8 +1239,10 @@ describe('ABI-Typed Event Filtering (decodeEvents with event/args)', () => {
       });
       expect(result.error).toBeNull();
       expect(result.result).toHaveLength(2);
-      expect(result.result![0].args.from).toBe(0x111n);
-      expect(result.result![1].args.from).toBe(0x333n);
+      expect(result.result![0]).toBeDefined();
+      expect(result.result![0]!.args['from']).toBe(0x111n);
+      expect(result.result![1]).toBeDefined();
+      expect(result.result![1]!.args['from']).toBe(0x333n);
     });
 
     it('filters by event + multiple indexed args', () => {
@@ -1235,8 +1252,9 @@ describe('ABI-Typed Event Filtering (decodeEvents with event/args)', () => {
       });
       expect(result.error).toBeNull();
       expect(result.result).toHaveLength(1);
-      expect(result.result![0].args.from).toBe(0x111n);
-      expect(result.result![0].args.to).toBe(0x222n);
+      expect(result.result![0]).toBeDefined();
+      expect(result.result![0]!.args['from']).toBe(0x111n);
+      expect(result.result![0]!.args['to']).toBe(0x222n);
     });
 
     it('filters by event + address', () => {
@@ -1246,7 +1264,8 @@ describe('ABI-Typed Event Filtering (decodeEvents with event/args)', () => {
       });
       expect(result.error).toBeNull();
       expect(result.result).toHaveLength(1);
-      expect(result.result![0].args.from).toBe(0x555n);
+      expect(result.result![0]).toBeDefined();
+      expect(result.result![0]!.args['from']).toBe(0x555n);
     });
 
     it('address option is alias for contractAddress', () => {
@@ -1279,7 +1298,7 @@ describe('ABI-Typed Event Filtering (decodeEvents with event/args)', () => {
       expect(result.error).toBeNull();
       expect(result.result).toHaveLength(2);
       // Both events with to=0x222 should match
-      expect(result.result!.every((e) => e.args.to === 0x222n)).toBe(true);
+      expect(result.result!.every((e) => e.args['to'] === 0x222n)).toBe(true);
     });
   });
 
@@ -1338,7 +1357,8 @@ describe('ABI-Typed Event Filtering (decodeEvents with event/args)', () => {
       });
       expect(result.error).toBeNull();
       expect(result.result).toHaveLength(1);
-      expect(result.result![0].args.amount).toBe(1000n);
+      expect(result.result![0]).toBeDefined();
+      expect(result.result![0]!.args['amount']).toBe(1000n);
     });
 
     it('filters by large u256 indexed arg', () => {
@@ -1349,7 +1369,8 @@ describe('ABI-Typed Event Filtering (decodeEvents with event/args)', () => {
       });
       expect(result.error).toBeNull();
       expect(result.result).toHaveLength(1);
-      expect(result.result![0].args.amount).toBe(largeValue);
+      expect(result.result![0]).toBeDefined();
+      expect(result.result![0]!.args['amount']).toBe(largeValue);
     });
 
     it('errors on OR array for multi-felt type', () => {
@@ -1372,8 +1393,9 @@ describe('ABI-Typed Event Filtering (decodeEvents with event/args)', () => {
       });
       expect(result.error).toBeNull();
       expect(result.result).toHaveLength(1);
-      expect(result.result![0].name).toBe('Transfer');
-      expect(result.result![0].args.from).toBe(0x111n);
+      expect(result.result![0]).toBeDefined();
+      expect(result.result![0]!.name).toBe('Transfer');
+      expect(result.result![0]!.args['from']).toBe(0x111n);
     });
 
     it('rawKeys with OR values', () => {
@@ -1392,7 +1414,7 @@ describe('ABI-Typed Event Filtering (decodeEvents with event/args)', () => {
       });
       expect(result.error).toBeNull();
       expect(result.result).toHaveLength(2);
-      expect(result.result!.every((e) => e.args.to === 0x222n)).toBe(true);
+      expect(result.result!.every((e) => e.args['to'] === 0x222n)).toBe(true);
     });
   });
 

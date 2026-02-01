@@ -105,7 +105,8 @@ import {
   CairoSerde,
 } from './serde/index.js';
 
-
+// Type validator - ensures all exports match KunderaAPI interface
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _api = {
   // Primitives
   FIELD_PRIME,
@@ -153,3 +154,6 @@ const _api = {
   serializeByteArray,
   CairoSerde,
 } satisfies KunderaAPI;
+
+// Explicitly mark as used for type validation
+void _api;

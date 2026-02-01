@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import '../../../src/test-utils/setupCrypto';
-import type { Transport } from 'kundera/transport';
+import type { Transport, TransportRequestOptions } from 'kundera/transport';
+import type { SignerInterface } from 'kundera/crypto';
 import { createAccountInvoker } from './index';
 
 type HandlerMap = Record<string, (params: unknown[] | Record<string, unknown> | undefined) => unknown>;
@@ -9,16 +10,16 @@ function createMockTransport(handlers: HandlerMap) {
   const calls: Array<{ method: string; params?: unknown }> = [];
   const transport: Transport = {
     type: 'custom',
-    request: async (request) => {
+    request: async <T = unknown>(request: any, _options?: TransportRequestOptions) => {
       calls.push({ method: request.method, params: request.params });
       const handler = handlers[request.method];
       if (!handler) {
         throw new Error(`Unhandled RPC method: ${request.method}`);
       }
       return {
-        jsonrpc: '2.0',
+        jsonrpc: '2.0' as const,
         id: request.id ?? 1,
-        result: handler(request.params),
+        result: handler(request.params) as T,
       };
     },
     requestBatch: async () => {
@@ -40,7 +41,10 @@ const feeEstimate = {
 describe('account-invoke skill', () => {
   it('executes via RPC and formats signature', async () => {
     let signedHash: Uint8Array | undefined;
-    const signer = {
+    const signer: SignerInterface = {
+      getPubKey: async () => '0x123',
+      signRaw: async () => ({ r: 1n as any, s: 2n as any }),
+      signMessage: async () => [1n, 2n],
       signTransaction: async (hash: Uint8Array) => {
         signedHash = hash;
         return [1n, 2n];
@@ -52,7 +56,8 @@ describe('account-invoke skill', () => {
       starknet_getNonce: () => '0x1',
       starknet_addInvokeTransaction: (params) => {
         const [tx] = params as Array<Record<string, unknown>>;
-        expect(tx.type).toBe('INVOKE');
+        if (!tx) throw new Error('Transaction parameter missing');
+        expect(tx['type']).toBe('INVOKE');
         return { transaction_hash: '0x123' };
       },
     });
@@ -74,8 +79,12 @@ describe('account-invoke skill', () => {
 
     const addCall = calls.find((call) => call.method === 'starknet_addInvokeTransaction');
     const [tx] = (addCall?.params as Array<Record<string, unknown>>) ?? [];
-    expect(BigInt((tx.signature as string[])[0])).toBe(1n);
-    expect(BigInt((tx.signature as string[])[1])).toBe(2n);
+    if (!tx) throw new Error('Transaction not found');
+    const signature = tx['signature'] as string[];
+    expect(signature[0]).toBeDefined();
+    expect(signature[1]).toBeDefined();
+    expect(BigInt(signature[0]!)).toBe(1n);
+    expect(BigInt(signature[1]!)).toBe(2n);
   });
 
   it('estimates fee for invoke', async () => {
@@ -84,8 +93,9 @@ describe('account-invoke skill', () => {
       starknet_estimateFee: (params) => {
         const [txs] = params as Array<unknown>;
         const [tx] = txs as Array<Record<string, unknown>>;
-        expect(tx.type).toBe('INVOKE');
-        expect((tx.signature as string[]).length).toBe(0);
+        if (!tx) throw new Error('Transaction parameter missing');
+        expect(tx['type']).toBe('INVOKE');
+        expect((tx['signature'] as string[]).length).toBe(0);
         return [feeEstimate];
       },
     });
@@ -93,7 +103,12 @@ describe('account-invoke skill', () => {
     const account = createAccountInvoker({
       transport,
       address: '0xabc',
-      signer: { signTransaction: async () => [0n, 0n] },
+      signer: {
+        getPubKey: async () => '0x123',
+        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
+        signMessage: async () => [0n, 0n],
+        signTransaction: async () => [0n, 0n],
+      },
     });
 
     const estimate = await account.estimateFee({
@@ -113,7 +128,8 @@ describe('account-invoke skill', () => {
         const [txs, flags] = params as Array<unknown>;
         expect(flags).toEqual(['SKIP_VALIDATE']);
         const [tx] = txs as Array<Record<string, unknown>>;
-        expect(tx.type).toBe('INVOKE');
+        if (!tx) throw new Error('Transaction parameter missing');
+        expect(tx['type']).toBe('INVOKE');
         return [feeEstimate];
       },
     });
@@ -121,7 +137,12 @@ describe('account-invoke skill', () => {
     const account = createAccountInvoker({
       transport,
       address: '0xabc',
-      signer: { signTransaction: async () => [0n, 0n] },
+      signer: {
+        getPubKey: async () => '0x123',
+        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
+        signMessage: async () => [0n, 0n],
+        signTransaction: async () => [0n, 0n],
+      },
     });
 
     const estimate = await account.estimateFee(

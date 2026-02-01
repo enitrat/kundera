@@ -7,11 +7,8 @@
 import { snKeccak } from '../crypto/index.js';
 import {
   type Abi,
-  type AbiEntry,
   type AbiFunctionEntry,
   type AbiEventEntry,
-  type AbiStructEntry,
-  type AbiEnumEntry,
   type AbiConstructorEntry,
   type ParsedAbi,
   type IndexedFunction,

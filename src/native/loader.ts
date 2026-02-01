@@ -8,7 +8,7 @@
 
 import { createRequire } from 'node:module';
 import type { Felt252Type } from '../primitives/index.js';
-import { isBun, isNode, getNativeLibPath, getRuntime } from './platform.js';
+import { isBun, isNode, getRuntime } from './platform.js';
 
 const require = createRequire(import.meta.url);
 

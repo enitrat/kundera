@@ -9,15 +9,15 @@ import {
   starknet_getStorageAt,
 } from './index.js';
 import { ContractAddress, Felt252 } from '../primitives/index.js';
-import type { JsonRpcRequest, JsonRpcResponse, Transport } from '../transport/types.js';
+import type { JsonRpcRequest, JsonRpcResponse, Transport, TransportRequestOptions } from '../transport/types.js';
 
-function createMockTransport(
-  handler: (request: JsonRpcRequest) => JsonRpcResponse,
+function createMockTransport<T = unknown>(
+  handler: (request: JsonRpcRequest) => JsonRpcResponse<T>,
 ): Transport {
   return {
     type: 'http',
-    async request(request) {
-      return handler(request);
+    async request<R = unknown>(request: JsonRpcRequest, _options?: TransportRequestOptions): Promise<JsonRpcResponse<R>> {
+      return handler(request) as JsonRpcResponse<R>;
     },
     async requestBatch() {
       return [];
@@ -51,8 +51,9 @@ describe('rpc methods', () => {
     const address = ContractAddress(0x123n);
     await starknet_getNonce(transport, address);
 
-    expect(captured?.method).toBe('starknet_getNonce');
-    expect(captured?.params).toEqual(['pending', address.toHex()]);
+    expect(captured).not.toBeNull();
+    expect(captured!.method).toBe('starknet_getNonce');
+    expect(captured!.params).toEqual(['pending', address.toHex()]);
   });
 
   test('starknet_getStorageAt formats key', async () => {
@@ -69,7 +70,8 @@ describe('rpc methods', () => {
     const key = Felt252(1n);
     await starknet_getStorageAt(transport, '0xabc', key);
 
-    expect(captured?.params).toEqual(['0xabc', key.toHex(), 'latest']);
+    expect(captured).not.toBeNull();
+    expect(captured!.params).toEqual(['0xabc', key.toHex(), 'latest']);
   });
 
   test('errors include code and data', async () => {

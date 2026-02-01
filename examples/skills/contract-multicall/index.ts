@@ -61,7 +61,7 @@ export async function multicallRead(
     const calldataResult = encodeCalldata(
       params.abi,
       params.functionName,
-      params.args ?? [],
+      (params.args ?? []) as any,
     );
 
     if (calldataResult.error) {
@@ -75,7 +75,7 @@ export async function multicallRead(
     const call: FunctionCall = {
       contract_address: params.address,
       entry_point_selector: selector,
-      calldata,
+      calldata: calldata as any,
     };
 
     requestId += 1;
@@ -99,7 +99,7 @@ export async function multicallRead(
       return;
     }
 
-    const outputFelts = (response.result as string[]).map((value) => BigInt(value));
+    const outputFelts = (response.result as any as string[]).map((value) => BigInt(value));
     const decoded = decodeOutput(meta.abi, meta.functionName, outputFelts);
     if (decoded.error) {
       results[meta.index] = err('DECODE_ERROR', decoded.error.message);

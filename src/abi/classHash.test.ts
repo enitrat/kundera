@@ -209,7 +209,6 @@ describe('compiledClassHashFromCasm', () => {
     const casmWithoutSegments: CompiledSierraCasm = {
       ...minimalCasm,
       bytecode: ['0x1', '0x2', '0x3', '0x4'],
-      bytecode_segment_lengths: undefined,
     };
     const casmWithSegments: CompiledSierraCasm = {
       ...minimalCasm,
@@ -282,7 +281,9 @@ describe('extractAbi', () => {
     const result = extractAbi(sierra);
     expect(result.error).toBeNull();
     expect(result.result).toHaveLength(1);
-    expect(result.result![0].name).toBe('test');
+    if (result.result && result.result[0]) {
+      expect(result.result[0].name).toBe('test');
+    }
   });
 
   it('should extract ABI from string', () => {

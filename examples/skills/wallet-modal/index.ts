@@ -86,16 +86,18 @@ function ok(connection: WalletModalConnection): WalletModalResult {
   return { result: connection, error: null };
 }
 
-async function loadStarknetKit(): Promise<typeof import('@starknet-io/starknet-kit') | null> {
+async function loadStarknetKit(): Promise<any | null> {
   try {
+    // @ts-expect-error - Optional peer dependency
     return await import('@starknet-io/starknet-kit');
   } catch {
     return null;
   }
 }
 
-async function loadGetStarknet(): Promise<typeof import('get-starknet') | null> {
+async function loadGetStarknet(): Promise<any | null> {
   try {
+    // @ts-expect-error - Optional peer dependency
     return await import('get-starknet');
   } catch {
     return null;
@@ -127,21 +129,21 @@ export async function connectWalletWithModal(
       : 'https://starknet-sepolia.public.blastapi.io');
 
   if (modalProvider === 'starknetkit') {
-    return connectWithStarknetKit({ walletIds, rpcUrl: resolvedRpcUrl, chainId });
+    const opts = { rpcUrl: resolvedRpcUrl, chainId } as any;
+    if (walletIds !== undefined) opts.walletIds = walletIds;
+    return connectWithStarknetKit(opts);
   }
 
   if (modalProvider === 'get-starknet') {
-    return connectWithGetStarknet({ walletIds, rpcUrl: resolvedRpcUrl, chainId });
+    const opts = { rpcUrl: resolvedRpcUrl, chainId } as any;
+    if (walletIds !== undefined) opts.walletIds = walletIds;
+    return connectWithGetStarknet(opts);
   }
 
   return err('UNSUPPORTED_PROVIDER', `Unknown modal provider: ${modalProvider}`);
 }
 
-async function connectWithStarknetKit(options: {
-  walletIds?: string[];
-  rpcUrl: string;
-  chainId: string;
-}): Promise<WalletModalResult> {
+async function connectWithStarknetKit(options: any): Promise<WalletModalResult> {
   const starknetKit = await loadStarknetKit();
 
   if (!starknetKit) {
@@ -156,7 +158,7 @@ async function connectWithStarknetKit(options: {
 
     const connection = await connect({
       modalMode: 'alwaysAsk',
-      ...(options.walletIds && { include: options.walletIds }),
+      ...(options.walletIds ? { include: options.walletIds } : {}),
     });
 
     if (!connection?.wallet) {
@@ -182,11 +184,7 @@ async function connectWithStarknetKit(options: {
   }
 }
 
-async function connectWithGetStarknet(options: {
-  walletIds?: string[];
-  rpcUrl: string;
-  chainId: string;
-}): Promise<WalletModalResult> {
+async function connectWithGetStarknet(options: any): Promise<WalletModalResult> {
   const getStarknet = await loadGetStarknet();
 
   if (!getStarknet) {
@@ -201,7 +199,7 @@ async function connectWithGetStarknet(options: {
 
     const wallet = (await connect({
       modalMode: 'alwaysAsk',
-      ...(options.walletIds && { include: options.walletIds }),
+      ...(options.walletIds ? { include: options.walletIds } : {}),
     })) as StarknetWalletProvider | null;
 
     if (!wallet) {

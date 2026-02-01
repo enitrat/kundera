@@ -44,20 +44,6 @@ function readNext(ctx: DecodeContext): bigint {
   return value;
 }
 
-/**
- * Peek at next value without consuming
- */
-function peekNext(ctx: DecodeContext): bigint {
-  if (ctx.offset >= ctx.data.length) {
-    throw new Error(`Unexpected end of calldata at offset ${ctx.offset}`);
-  }
-  const value = ctx.data[ctx.offset];
-  if (value === undefined) {
-    throw new Error(`Unexpected end of calldata at offset ${ctx.offset}`);
-  }
-  return value;
-}
-
 // ============ Type Decoding ============
 
 /**

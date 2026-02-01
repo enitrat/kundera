@@ -11,7 +11,7 @@ import {
   starknet_addInvokeTransaction,
   starknet_estimateFee,
 } from 'kundera/rpc';
-import type { AddInvokeTransactionResult, FeeEstimate } from 'kundera/rpc';
+import type { AddInvokeTransactionResult, BroadcastedInvokeTxn, FeeEstimate, SimulationFlag } from 'kundera/rpc';
 import {
   computeInvokeV3Hash,
   computeSelector,
@@ -82,7 +82,7 @@ export async function invoke(
     type: 'INVOKE',
     ...formatInvokeForRpc(tx),
     signature: signature.map((s) => Felt252(s).toHex()),
-  });
+  } as BroadcastedInvokeTxn);
 }
 
 /**
@@ -111,10 +111,10 @@ export async function estimateInvokeFee(
     account_deployment_data: [],
   };
 
-  const simulationFlags = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
+  const simulationFlags: SimulationFlag[] = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
   const estimates = await starknet_estimateFee(
     options.transport,
-    [{ type: 'INVOKE', ...formatInvokeForRpc(tx), signature: [] }],
+    [{ type: 'INVOKE', ...formatInvokeForRpc(tx), signature: [] } as unknown as BroadcastedInvokeTxn],
     simulationFlags,
     'pending',
   );

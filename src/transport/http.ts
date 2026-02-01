@@ -301,7 +301,7 @@ export function httpTransport(
       if (requests.length === 0) return [];
 
       // Ensure all requests have ids
-      const requestsWithIds = requests.map((req, i) => ({
+      const requestsWithIds = requests.map((req) => ({
         ...req,
         id: req.id ?? ++requestIdCounter,
       }));

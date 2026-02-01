@@ -11,7 +11,7 @@ import {
   starknet_addDeclareTransaction,
   starknet_estimateFee,
 } from 'kundera/rpc';
-import type { AddDeclareTransactionResult, FeeEstimate } from 'kundera/rpc';
+import type { AddDeclareTransactionResult, BroadcastedDeclareTxn, FeeEstimate, SimulationFlag } from 'kundera/rpc';
 import {
   computeDeclareV3Hash,
   DEFAULT_RESOURCE_BOUNDS,
@@ -73,7 +73,7 @@ export async function declare(
     type: 'DECLARE',
     ...formatDeclareForRpc(tx, payload.contract),
     signature: signature.map((s) => Felt252(s).toHex()),
-  });
+  } as BroadcastedDeclareTxn);
 }
 
 export async function estimateDeclareFee(
@@ -97,10 +97,10 @@ export async function estimateDeclareFee(
     account_deployment_data: [],
   };
 
-  const simulationFlags = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
+  const simulationFlags: SimulationFlag[] = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
   const estimates = await starknet_estimateFee(
     options.transport,
-    [{ type: 'DECLARE', ...formatDeclareForRpc(tx, payload.contract), signature: [] }],
+    [{ type: 'DECLARE', ...formatDeclareForRpc(tx, payload.contract), signature: [] } as unknown as BroadcastedDeclareTxn],
     simulationFlags,
     'pending',
   );

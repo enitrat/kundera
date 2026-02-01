@@ -258,7 +258,7 @@ export function webSocketTransport(
           handleMessage(event.data as string);
         };
 
-        ws.onerror = (event) => {
+        ws.onerror = () => {
           const error = new Error('WebSocket error');
           if (!isConnected) {
             reject(error);

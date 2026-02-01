@@ -12,7 +12,7 @@ import {
   starknet_blockNumber,
   starknet_getNonce,
 } from 'kundera/rpc';
-import type { BlockId, EventsFilter, FeeEstimate as RpcFeeEstimate } from 'kundera/rpc';
+import type { BlockId, BroadcastedInvokeTxn, EventsFilter, FeeEstimate as RpcFeeEstimate, SimulationFlag } from 'kundera/rpc';
 import {
   encodeCalldata,
   decodeOutput,
@@ -145,7 +145,7 @@ export async function readContract(
 ): Promise<ContractResult<unknown[]>> {
   const { abi, address, functionName, args = [], blockId } = params;
 
-  const calldataResult = encodeCalldata(abi, functionName, args);
+  const calldataResult = encodeCalldata(abi, functionName, args as any);
   if (calldataResult.error) {
     return err('ENCODE_ERROR', calldataResult.error.message);
   }
@@ -158,10 +158,10 @@ export async function readContract(
       {
         contract_address: address,
         entry_point_selector: selector,
-        calldata,
+        calldata: calldata as any,
       },
       blockId,
-    );
+    ) as string[];
 
     const outputFelts = response.map((value) => BigInt(value));
     const decoded = decodeOutput(abi, functionName, outputFelts);
@@ -181,7 +181,7 @@ export async function readContract(
 // ============================================================================
 
 export async function writeContract(
-  transport: Transport,
+  _transport: Transport,
   params: WriteContractParams,
 ): Promise<ContractResult<WriteResult>> {
   const { abi, address, functionName, args = [], account, details } = params;
@@ -190,7 +190,7 @@ export async function writeContract(
     return err('ACCOUNT_REQUIRED', 'Account executor is required');
   }
 
-  const calldataResult = encodeCalldata(abi, functionName, args);
+  const calldataResult = encodeCalldata(abi, functionName, args as any);
   if (calldataResult.error) {
     return err('ENCODE_ERROR', calldataResult.error.message);
   }
@@ -199,7 +199,7 @@ export async function writeContract(
     const call: Call = {
       contractAddress: address,
       entrypoint: functionName,
-      calldata: calldataResult.result,
+      calldata: calldataResult.result as any,
     };
 
     const result = await account.execute(call, details);
@@ -235,7 +235,7 @@ export async function estimateContractFee(
 ): Promise<ContractResult<FeeEstimate>> {
   const { abi, address, functionName, args = [], account, details } = params;
 
-  const calldataResult = encodeCalldata(abi, functionName, args);
+  const calldataResult = encodeCalldata(abi, functionName, args as any);
   if (calldataResult.error) {
     return err('ENCODE_ERROR', calldataResult.error.message);
   }
@@ -245,7 +245,7 @@ export async function estimateContractFee(
     const call: Call = {
       contractAddress: address,
       entrypoint: functionName,
-      calldata: calldataResult.result,
+      calldata: calldataResult.result as any,
     };
 
     const tx: InvokeTransactionV3 = {
@@ -261,10 +261,10 @@ export async function estimateContractFee(
       account_deployment_data: [],
     };
 
-    const simulationFlags = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
+    const simulationFlags: SimulationFlag[] = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
     const estimates = await starknet_estimateFee(
       transport,
-      [{ type: 'INVOKE', ...formatInvokeForRpc(tx), signature: [] }],
+      [{ type: 'INVOKE', ...formatInvokeForRpc(tx), signature: [] } as unknown as BroadcastedInvokeTxn],
       simulationFlags,
       'pending',
     );
@@ -335,8 +335,8 @@ export function watchContractEvent(
             onEvent({
               name: event.name,
               args: event.args as Record<string, unknown>,
-              blockNumber: event.blockNumber ?? currentBlock,
-              transactionHash: event.transactionHash ?? '',
+              blockNumber: currentBlock,
+              transactionHash: '',
             });
           }
         }

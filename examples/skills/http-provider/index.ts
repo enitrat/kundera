@@ -57,7 +57,7 @@ export interface HttpProviderOptions {
   /** RPC endpoint URL */
   url: string;
   /** Transport options */
-  transport?: Omit<HttpTransportOptions, 'batch'> & { batch?: HttpTransportOptions['batch'] };
+  transport?: HttpTransportOptions;
 }
 
 export interface HttpProvider {

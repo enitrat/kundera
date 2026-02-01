@@ -8,7 +8,6 @@
 import { describe, expect, it, mock, beforeEach, afterEach } from 'bun:test';
 import {
   httpTransport,
-  webSocketTransport,
   fallbackTransport,
   createRequest,
   createErrorResponse,
@@ -93,11 +92,11 @@ describe('Transport Utilities', () => {
 
       const matched = matchBatchResponses(requests, responses);
 
-      expect(matched[0].id).toBe(1);
+      expect(matched[0]!.id).toBe(1);
       expect((matched[0] as { result: string }).result).toBe('a-result');
-      expect(matched[1].id).toBe(2);
+      expect(matched[1]!.id).toBe(2);
       expect((matched[1] as { result: string }).result).toBe('b-result');
-      expect(matched[2].id).toBe(3);
+      expect(matched[2]!.id).toBe(3);
       expect((matched[2] as { result: string }).result).toBe('c-result');
     });
 
@@ -114,8 +113,8 @@ describe('Transport Utilities', () => {
 
       const matched = matchBatchResponses(requests, responses);
 
-      expect(matched[0].id).toBe(1);
-      expect(isJsonRpcError(matched[1])).toBe(true);
+      expect(matched[0]!.id).toBe(1);
+      expect(isJsonRpcError(matched[1]!)).toBe(true);
     });
   });
 });
@@ -168,7 +167,7 @@ describe('HTTP Transport', () => {
       method: 'starknet_blockNumber',
     });
 
-    const call = mockFetch.mock.calls[0];
+    const call = mockFetch.mock.calls[0]!;
     const body = JSON.parse((call[1] as RequestInit).body as string);
     expect(body.id).toBeDefined();
   });
@@ -238,9 +237,9 @@ describe('HTTP Transport', () => {
       ]);
 
       // Responses should be matched to request order
-      expect(responses[0].id).toBe(1);
+      expect(responses[0]!.id).toBe(1);
       expect((responses[0] as { result: number }).result).toBe(100);
-      expect(responses[1].id).toBe(2);
+      expect(responses[1]!.id).toBe(2);
       expect((responses[1] as { result: string }).result).toBe('chain-id');
     });
   });
@@ -390,13 +389,13 @@ describe('Fallback Transport', () => {
   it('uses first transport on success', async () => {
     const primary: Transport = {
       type: 'http',
-      request: async () => ({ jsonrpc: '2.0', id: 1, result: 'primary' }),
+      request: async <T = unknown>() => ({ jsonrpc: '2.0' as const, id: 1, result: 'primary' }) as JsonRpcResponse<T>,
       requestBatch: async () => [],
     };
 
     const backup: Transport = {
       type: 'http',
-      request: async () => ({ jsonrpc: '2.0', id: 1, result: 'backup' }),
+      request: async <T = unknown>() => ({ jsonrpc: '2.0' as const, id: 1, result: 'backup' }) as JsonRpcResponse<T>,
       requestBatch: async () => [],
     };
 
@@ -413,14 +412,14 @@ describe('Fallback Transport', () => {
   it('falls back to second transport on failure', async () => {
     const primary: Transport = {
       type: 'http',
-      request: async () =>
-        createErrorResponse(1, JsonRpcErrorCode.InternalError, 'Failed'),
+      request: async <T = unknown>() =>
+        createErrorResponse(1, JsonRpcErrorCode.InternalError, 'Failed') as JsonRpcResponse<T>,
       requestBatch: async () => [],
     };
 
     const backup: Transport = {
       type: 'http',
-      request: async () => ({ jsonrpc: '2.0', id: 1, result: 'backup' }),
+      request: async <T = unknown>() => ({ jsonrpc: '2.0' as const, id: 1, result: 'backup' }) as JsonRpcResponse<T>,
       requestBatch: async () => [],
     };
 
@@ -448,7 +447,7 @@ describe('Fallback Transport', () => {
 
     const backup: Transport = {
       type: 'http',
-      request: async () => ({ jsonrpc: '2.0', id: 1, result: 'backup' }),
+      request: async <T = unknown>() => ({ jsonrpc: '2.0' as const, id: 1, result: 'backup' }) as JsonRpcResponse<T>,
       requestBatch: async () => [],
     };
 
@@ -497,11 +496,11 @@ describe('Fallback Transport', () => {
 
       const backup: Transport = {
         type: 'http',
-        request: async () => ({ jsonrpc: '2.0', id: 1, result: 'ok' }),
-        requestBatch: async () => [
-          { jsonrpc: '2.0', id: 1, result: 'batch-1' },
-          { jsonrpc: '2.0', id: 2, result: 'batch-2' },
-        ],
+        request: async <T = unknown>() => ({ jsonrpc: '2.0' as const, id: 1, result: 'ok' }) as JsonRpcResponse<T>,
+        requestBatch: async <T = unknown>() => [
+          { jsonrpc: '2.0' as const, id: 1, result: 'batch-1' },
+          { jsonrpc: '2.0' as const, id: 2, result: 'batch-2' },
+        ] as JsonRpcResponse<T>[],
       };
 
       const transport = fallbackTransport([primary, backup], { retryCount: 1 });
@@ -522,7 +521,7 @@ describe('Fallback Transport', () => {
 
       const primary: Transport = {
         type: 'http',
-        request: async () => {
+        request: async <T = unknown>() => {
           primaryCalls++;
           // Fail first 2 calls, then succeed
           if (primaryCalls <= 2) {
@@ -530,18 +529,18 @@ describe('Fallback Transport', () => {
               1,
               JsonRpcErrorCode.InternalError,
               'Failed',
-            );
+            ) as JsonRpcResponse<T>;
           }
-          return { jsonrpc: '2.0', id: 1, result: 'primary' };
+          return { jsonrpc: '2.0' as const, id: 1, result: 'primary' } as JsonRpcResponse<T>;
         },
         requestBatch: async () => [],
       };
 
       const backup: Transport = {
         type: 'http',
-        request: async () => {
+        request: async <T = unknown>() => {
           backupCalls++;
-          return { jsonrpc: '2.0', id: 1, result: 'backup' };
+          return { jsonrpc: '2.0' as const, id: 1, result: 'backup' } as JsonRpcResponse<T>;
         },
         requestBatch: async () => [],
       };
@@ -582,7 +581,7 @@ describe('JSON-RPC 2.0 Compliance', () => {
     await transport.request({ jsonrpc: '2.0', id: 1, method: 'test' });
 
     const body = JSON.parse(
-      (mockFetch.mock.calls[0][1] as RequestInit).body as string,
+      (mockFetch.mock.calls[0]![1] as RequestInit).body as string,
     );
     expect(body.jsonrpc).toBe('2.0');
   });
@@ -594,7 +593,7 @@ describe('JSON-RPC 2.0 Compliance', () => {
     await transport.request({ jsonrpc: '2.0', method: 'notify' });
 
     const body = JSON.parse(
-      (mockFetch.mock.calls[0][1] as RequestInit).body as string,
+      (mockFetch.mock.calls[0]![1] as RequestInit).body as string,
     );
     // We auto-assign id for internal tracking
     expect(body.id).toBeDefined();
@@ -621,11 +620,11 @@ describe('JSON-RPC 2.0 Compliance', () => {
     ]);
 
     // Responses should be reordered to match request order
-    expect(responses[0].id).toBe('a');
+    expect(responses[0]!.id).toBe('a');
     expect((responses[0] as { result: number }).result).toBe(1);
-    expect(responses[1].id).toBe('b');
+    expect(responses[1]!.id).toBe('b');
     expect((responses[1] as { result: number }).result).toBe(2);
-    expect(responses[2].id).toBe('c');
+    expect(responses[2]!.id).toBe('c');
     expect((responses[2] as { result: number }).result).toBe(3);
   });
 });

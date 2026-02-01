@@ -287,6 +287,8 @@ import {
   CairoSerde,
 } from '../serde/index.js';
 
+// Type validator - ensures all exports match _KunderaAPI interface
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _nativeAPI = {
   // Primitives
   FIELD_PRIME,
@@ -334,3 +336,6 @@ const _nativeAPI = {
   serializeByteArray,
   CairoSerde,
 } satisfies _KunderaAPI;
+
+// Explicitly mark as used for type validation
+void _nativeAPI;

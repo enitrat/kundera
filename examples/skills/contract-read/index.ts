@@ -47,7 +47,7 @@ export async function readContract(
 ): Promise<ContractResult<unknown[]>> {
   const { abi, address, functionName, args = [], blockId } = params;
 
-  const calldataResult = encodeCalldata(abi, functionName, args);
+  const calldataResult = encodeCalldata(abi, functionName, args as any);
   if (calldataResult.error) {
     return err('ENCODE_ERROR', calldataResult.error.message);
   }
@@ -58,11 +58,11 @@ export async function readContract(
   const call: FunctionCall = {
     contract_address: address,
     entry_point_selector: selector,
-    calldata,
+    calldata: calldata as any,
   };
 
   try {
-    const output = await starknet_call(transport, call, blockId);
+    const output = await starknet_call(transport, call, blockId) as string[];
     const outputFelts = output.map((value) => BigInt(value));
     const decoded = decodeOutput(abi, functionName, outputFelts);
     if (decoded.error) {

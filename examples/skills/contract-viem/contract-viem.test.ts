@@ -8,14 +8,12 @@ import {
   readContract,
   writeContract,
   simulateContract,
-  estimateContractFee,
   watchContractEvent,
   multicallRead,
   type ReadContractParams,
   type WriteContractParams,
   type ContractResult,
   type FeeEstimate,
-  type WriteResult,
 } from './index';
 
 const MOCK_ERC20_ABI = [
@@ -56,15 +54,15 @@ const mockTransport: Transport = {
   async request(request: JsonRpcRequest) {
     switch (request.method) {
       case 'starknet_call':
-        return { jsonrpc: '2.0', id: request.id ?? 1, result: ['0x1'] };
+        return { jsonrpc: '2.0', id: request.id ?? 1, result: ['0x1'] } as any;
       case 'starknet_blockNumber':
-        return { jsonrpc: '2.0', id: request.id ?? 1, result: 1000 };
+        return { jsonrpc: '2.0', id: request.id ?? 1, result: 1000 } as any;
       case 'starknet_getEvents':
         return {
           jsonrpc: '2.0',
           id: request.id ?? 1,
           result: { events: [], continuation_token: null },
-        };
+        } as any;
       case 'starknet_estimateFee':
         return {
           jsonrpc: '2.0',
@@ -79,15 +77,15 @@ const mockTransport: Transport = {
               unit: 'WEI',
             },
           ],
-        };
+        } as any;
       case 'starknet_getNonce':
-        return { jsonrpc: '2.0', id: request.id ?? 1, result: '0x1' };
+        return { jsonrpc: '2.0', id: request.id ?? 1, result: '0x1' } as any;
       default:
-        return { jsonrpc: '2.0', id: request.id ?? 1, result: null };
+        return { jsonrpc: '2.0', id: request.id ?? 1, result: null } as any;
     }
   },
   async requestBatch() {
-    return [];
+    return [] as any;
   },
 };
 

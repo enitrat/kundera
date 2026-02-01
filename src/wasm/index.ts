@@ -10,7 +10,7 @@
  *   const hash = kundera.pedersenHash(a, b);
  */
 
-import type { KunderaAPI, Signature } from '../api-interface.js';
+import type { Signature } from '../api-interface.js';
 import { Felt252, type Felt252Type } from '../primitives/index.js';
 
 // ============ Re-export Primitives (unchanged) ============
@@ -273,6 +273,8 @@ import {
   CairoSerde,
 } from '../serde/index.js';
 
+// Type validator - ensures all exports match _KunderaAPI interface
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _wasmAPI = {
   // Primitives
   FIELD_PRIME,
@@ -320,3 +322,6 @@ const _wasmAPI = {
   serializeByteArray,
   CairoSerde,
 } satisfies _KunderaAPI;
+
+// Explicitly mark as used for type validation
+void _wasmAPI;

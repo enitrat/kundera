@@ -53,10 +53,10 @@ describe('array serialization', () => {
     const serialized = serializeArray(items);
 
     expect(serialized.length).toBe(4); // length + 3 items
-    expect(serialized[0].toBigInt()).toBe(3n); // length
-    expect(serialized[1].equals(items[0])).toBe(true);
-    expect(serialized[2].equals(items[1])).toBe(true);
-    expect(serialized[3].equals(items[2])).toBe(true);
+    expect(serialized[0]?.toBigInt()).toBe(3n); // length
+    expect(serialized[1]?.equals(items[0]!)).toBe(true);
+    expect(serialized[2]?.equals(items[1]!)).toBe(true);
+    expect(serialized[3]?.equals(items[2]!)).toBe(true);
   });
 
   test('deserializes correctly', () => {
@@ -67,13 +67,13 @@ describe('array serialization', () => {
 
     expect(array.length).toBe(3);
     expect(nextOffset).toBe(4);
-    expect(array[0].equals(items[0])).toBe(true);
+    expect(array[0]?.equals(items[0]!)).toBe(true);
   });
 
   test('empty array', () => {
     const serialized = serializeArray([]);
     expect(serialized.length).toBe(1);
-    expect(serialized[0].toBigInt()).toBe(0n);
+    expect(serialized[0]?.toBigInt()).toBe(0n);
 
     const { array, nextOffset } = deserializeArray(serialized);
     expect(array.length).toBe(0);
@@ -88,8 +88,8 @@ describe('ByteArray serialization', () => {
 
     // [num_full_words=0, pending_word, pending_word_len=5]
     expect(serialized.length).toBe(3);
-    expect(serialized[0].toBigInt()).toBe(0n); // no full words
-    expect(serialized[2].toBigInt()).toBe(5n); // 5 pending bytes
+    expect(serialized[0]?.toBigInt()).toBe(0n); // no full words
+    expect(serialized[2]?.toBigInt()).toBe(5n); // 5 pending bytes
   });
 
   test('exact 31 bytes', () => {
@@ -98,8 +98,8 @@ describe('ByteArray serialization', () => {
 
     // [num_full_words=1, word0, pending_word=0, pending_word_len=0]
     expect(serialized.length).toBe(4);
-    expect(serialized[0].toBigInt()).toBe(1n); // 1 full word
-    expect(serialized[3].toBigInt()).toBe(0n); // 0 pending bytes
+    expect(serialized[0]?.toBigInt()).toBe(1n); // 1 full word
+    expect(serialized[3]?.toBigInt()).toBe(0n); // 0 pending bytes
   });
 
   test('32 bytes (1 full + 1 pending)', () => {
@@ -108,8 +108,8 @@ describe('ByteArray serialization', () => {
 
     // [num_full_words=1, word0, pending_word, pending_word_len=1]
     expect(serialized.length).toBe(4);
-    expect(serialized[0].toBigInt()).toBe(1n); // 1 full word
-    expect(serialized[3].toBigInt()).toBe(1n); // 1 pending byte
+    expect(serialized[0]?.toBigInt()).toBe(1n); // 1 full word
+    expect(serialized[3]?.toBigInt()).toBe(1n); // 1 pending byte
   });
 });
 
