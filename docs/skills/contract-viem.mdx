@@ -22,7 +22,7 @@ import { signRaw, signatureToArray } from 'kundera/crypto';
 import { createAccountInvoker } from './skills/account-invoke';
 import { readContract, writeContract } from './skills/contract-viem';
 
-const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 
 // Read (no account needed)
 const { result } = await readContract(transport, {

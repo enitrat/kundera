@@ -34,7 +34,7 @@ function httpTransport(url: string, options?: HttpTransportOptions): Transport
 
 ```typescript
 const transport = httpTransport(
-  'https://starknet-mainnet.public.blastapi.io',
+  'https://api.zan.top/public/starknet-sepolia',
   { timeout: 30000 }
 );
 
@@ -63,7 +63,7 @@ function webSocketTransport(options: WebSocketTransportOptions): WebSocketTransp
 
 ```typescript
 const transport = webSocketTransport({
-  url: 'wss://starknet-mainnet.public.blastapi.io',
+  url: 'wss://api.zan.top/public/starknet-sepolia',
 });
 
 await transport.connect();

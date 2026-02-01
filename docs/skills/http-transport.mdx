@@ -17,7 +17,7 @@ cp -r examples/skills/http-transport src/skills/
 ```ts
 import { httpTransport } from './skills/http-transport';
 
-const transport = httpTransport('https://starknet-mainnet.public.blastapi.io', {
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia', {
   batch: { batchWait: 10, batchSize: 50 },
   retries: 3,
   timeout: 30000,

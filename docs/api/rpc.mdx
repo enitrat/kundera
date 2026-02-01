@@ -11,7 +11,7 @@ Kundera exposes Starknet JSON-RPC methods as individual, tree-shakeable function
 import { httpTransport } from 'kundera/transport';
 import { starknet_getNonce, starknet_blockNumber } from 'kundera/rpc';
 
-const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 
 const block = await starknet_blockNumber(transport);
 const nonce = await starknet_getNonce(transport, '0xabc');

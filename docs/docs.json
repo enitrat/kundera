@@ -14,11 +14,34 @@
         "icon": "book-open",
         "groups": [
           {
+            "group": "Overview",
+            "icon": "house",
+            "pages": [
+              "index",
+              "overview/why-kundera",
+              "overview/architecture"
+            ]
+          },
+          {
             "group": "Getting Started",
             "icon": "rocket",
             "pages": [
+              "getting-started/quickstart",
               "getting-started/wasm",
               "getting-started/native"
+            ]
+          },
+          {
+            "group": "Primitives",
+            "icon": "cube",
+            "pages": [
+              "primitives/index",
+              "primitives/felt252",
+              "primitives/contract-address",
+              "primitives/class-hash",
+              "primitives/storage-key",
+              "primitives/eth-address",
+              "primitives/short-strings"
             ]
           },
           {

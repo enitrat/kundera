@@ -17,7 +17,7 @@ cp -r examples/skills/contract-read src/skills/
 import { httpTransport } from 'kundera/transport';
 import { readContract } from './skills/contract-read';
 
-const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 
 const { result, error } = await readContract(transport, {
   abi: ERC20_ABI,

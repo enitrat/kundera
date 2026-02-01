@@ -132,7 +132,7 @@ export default {
 |------------|-------------|
 | **Async loading** | `loadWasmCrypto()` is async; must await before use |
 | **Single instance** | WASM loads once globally; subsequent calls are no-ops |
-| **Memory** | WASM module uses ~2-4MB of memory |
+| **Memory** | WASM module requires additional memory |
 | **No threads** | Single-threaded; use Web Workers for parallelism |
 
 ## Related

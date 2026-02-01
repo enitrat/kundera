@@ -188,7 +188,7 @@ import { httpTransport } from 'kundera/transport';
 import { starknet_getEvents } from 'kundera/rpc';
 import { compileEventFilter } from './skills/event-filtering';
 
-const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 const filter = compileEventFilter(abi, 'Transfer', { from: myAddress });
 
 // Use with RPC (convert to hex strings for API)

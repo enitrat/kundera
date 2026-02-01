@@ -183,15 +183,73 @@ function signRaw(
 const signature = signRaw('0x123', '0xabc');
 ```
 
+## SNIP-12 Typed Data
+
+[SNIP-12](https://github.com/starknet-io/SNIPs/blob/main/SNIPS/snip-12.md) is Starknet's standard for signing typed structured data (similar to Ethereum's EIP-712). It enables users to sign human-readable data instead of opaque hashes.
+
+### Why SNIP-12?
+
+| Without SNIP-12 | With SNIP-12 |
+|-----------------|--------------|
+| User sees: `Sign hash 0x7f3a...` | User sees: `Transfer 100 STRK to alice.stark` |
+| Can't verify what they're signing | Clear, readable transaction details |
+| Phishing risk | Wallet shows structured data |
+
+### TypedData Structure
+
+```typescript
+interface TypedData {
+  types: Record<string, TypedDataType[]>;
+  primaryType: string;
+  domain: StarkNetDomain;
+  message: Record<string, unknown>;
+}
+
+interface StarkNetDomain {
+  name: string;
+  version: string;
+  chainId: string;
+  revision?: string;
+}
+```
+
 ### hashTypedData
 
-Compute the SNIP-12 typed data hash.
+Compute the SNIP-12 typed data hash for signing.
 
 ```typescript
 function hashTypedData(
   typedData: TypedData,
   accountAddress: string
 ): Felt252Type
+```
+
+```typescript
+const typedData: TypedData = {
+  types: {
+    StarkNetDomain: [
+      { name: 'name', type: 'felt' },
+      { name: 'version', type: 'felt' },
+      { name: 'chainId', type: 'felt' },
+    ],
+    Transfer: [
+      { name: 'recipient', type: 'felt' },
+      { name: 'amount', type: 'u256' },
+    ],
+  },
+  primaryType: 'Transfer',
+  domain: {
+    name: 'MyDApp',
+    version: '1',
+    chainId: '0x534e5f4d41494e', // SN_MAIN
+  },
+  message: {
+    recipient: '0x123...',
+    amount: { low: '1000000000000000000', high: '0' },
+  },
+};
+
+const hash = hashTypedData(typedData, accountAddress);
 ```
 
 ### signTypedData
@@ -205,6 +263,15 @@ function signTypedData(
   accountAddress: string
 ): Signature
 ```
+
+```typescript
+const signature = signTypedData(privateKey, typedData, accountAddress);
+// { r: Felt252Type, s: Felt252Type }
+```
+
+<Note>
+For user-facing applications, use wallet extensions (Argent, Braavos) which display SNIP-12 data to users for review before signing. Never ask users to sign raw hashes.
+</Note>
 
 ### verify
 
@@ -372,8 +439,11 @@ Never expose private keys in client-side code. Use wallet extensions for user-fa
 
 ## Related
 
-<CardGroup cols={1}>
+<CardGroup cols={2}>
   <Card title="Security" icon="shield" href="/concepts/security">
     Cryptographic best practices.
+  </Card>
+  <Card title="SNIP-12 Specification" icon="file-lines" href="https://github.com/starknet-io/SNIPs/blob/main/SNIPS/snip-12.md">
+    Official typed data signing standard.
   </Card>
 </CardGroup>

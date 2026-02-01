@@ -82,14 +82,15 @@ import { loadWasmCrypto } from 'kundera/wasm';
 await loadWasmCrypto();
 ```
 
-## Performance Comparison
+## Performance
 
-| Operation | Native (Bun) | WASM | JS (fallback) |
-|-----------|-------------|------|---------------|
-| Pedersen hash | ~50μs | ~200μs | ~2ms |
-| Poseidon hash | ~30μs | ~150μs | ~1.5ms |
-| ECDSA sign | ~100μs | ~400μs | ~5ms |
-| ECDSA verify | ~150μs | ~500μs | ~6ms |
+Native crypto avoids JavaScript overhead by calling Rust directly via FFI. This is the fastest option for backend services.
+
+| Backend | Best For |
+|---------|----------|
+| Native (Bun) | Backend services, CLI tools |
+| Native (Node) | Existing Node.js projects |
+| WASM | Browsers, portable environments |
 
 ## Related
 

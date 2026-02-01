@@ -18,7 +18,7 @@ import { httpTransport } from 'kundera/transport';
 import { signRaw, signatureToArray } from 'kundera/crypto';
 import { createAccountInvoker } from './skills/account-invoke';
 
-const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 const signTransaction = (hash) => signatureToArray(signRaw(PRIVATE_KEY, hash));
 
 const account = createAccountInvoker({ transport, address, signTransaction });

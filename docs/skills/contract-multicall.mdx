@@ -17,7 +17,7 @@ cp -r examples/skills/contract-multicall src/skills/
 import { httpTransport } from 'kundera/transport';
 import { multicallRead } from './skills/contract-multicall';
 
-const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 
 const results = await multicallRead(transport, [
   { abi: ERC20_ABI, address: token1, functionName: 'balance_of', args: [account] },

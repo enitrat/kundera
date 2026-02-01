@@ -1,0 +1,108 @@
+---
+title: What is Kundera?
+description: A fast, type-safe Starknet primitives library for TypeScript.
+---
+
+Kundera is a TypeScript library for working with Starknet primitives, cryptography, and JSON-RPC. It provides:
+
+- **Branded types** that catch address/hash mixups at compile time
+- **Native crypto** via Rust FFI for faster signing and hashing
+- **WASM fallback** for browsers and portable environments
+- **Tree-shakeable** modules—import only what you use
+
+```typescript
+import { ContractAddress, ClassHash } from 'kundera/primitives';
+import { pedersen } from 'kundera/crypto';
+import { starknet_call } from 'kundera/rpc';
+
+// Type-safe primitives
+const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+const classHash = ClassHash('0x...');
+
+// Fast cryptography
+const hash = pedersen(a, b);
+
+// Tree-shakeable RPC
+const result = await starknet_call(transport, { contract_address, entry_point, calldata });
+```
+
+## Who is Kundera For?
+
+| Use Case | Why Kundera |
+|----------|-------------|
+| **Backend services** | Native crypto avoids JS overhead |
+| **Frontend dApps** | WASM works in any browser |
+| **CLI tools** | Small bundle, fast startup |
+| **Libraries** | Tree-shakeable, no bloat for consumers |
+
+## Core Modules
+
+<CardGroup cols={2}>
+  <Card title="Primitives" icon="cube" href="/api/primitives">
+    Felt252, ContractAddress, ClassHash, StorageKey with branded types.
+  </Card>
+  <Card title="Crypto" icon="lock" href="/api/crypto">
+    Pedersen, Poseidon, ECDSA with native and WASM backends.
+  </Card>
+  <Card title="RPC" icon="network-wired" href="/api/rpc">
+    Tree-shakeable JSON-RPC methods for Starknet.
+  </Card>
+  <Card title="ABI" icon="code" href="/api/abi">
+    Encode and decode calldata using contract ABIs.
+  </Card>
+  <Card title="Serde" icon="arrows-rotate" href="/api/serde">
+    Serialize Cairo types to felts and back.
+  </Card>
+  <Card title="Transport" icon="satellite" href="/api/transport">
+    HTTP and WebSocket transports with batching.
+  </Card>
+</CardGroup>
+
+## Quick Example
+
+Read an ERC-20 balance:
+
+```typescript
+import { createHttpTransport } from 'kundera/transport';
+import { starknet_call } from 'kundera/rpc';
+import { decodeResult } from 'kundera/abi';
+import { ContractAddress } from 'kundera/primitives';
+
+const transport = createHttpTransport({ url: 'https://api.zan.top/public/starknet-sepolia' });
+
+const result = await starknet_call(transport, {
+  contract_address: ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7'),
+  entry_point_selector: 'balanceOf',
+  calldata: [accountAddress],
+});
+
+const balance = decodeResult(erc20Abi, 'balanceOf', result);
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
+    Get up and running in 5 minutes.
+  </Card>
+  <Card title="Why Kundera?" icon="question" href="/overview/why-kundera">
+    See how Kundera compares to alternatives.
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/overview/architecture">
+    Understand how the modules fit together.
+  </Card>
+  <Card title="Skills" icon="puzzle-piece" href="/skills/index">
+    Copy-paste patterns for common tasks.
+  </Card>
+</CardGroup>
+
+## Acknowledgments
+
+Kundera's architecture and documentation are heavily inspired by [Voltaire](https://voltaire.tevm.sh), the Ethereum primitives library from the [TEVM](https://tevm.sh) project. We adopted their approach to:
+
+- **Branded types** for compile-time type safety
+- **Data-first API design** with tree-shakeable modules
+- **Multi-backend crypto** (native, WASM, JS fallback)
+- **Documentation patterns** with per-primitive deep dives
+
+If you're building for Ethereum, check out Voltaire. We're grateful to the TEVM team for establishing these patterns.

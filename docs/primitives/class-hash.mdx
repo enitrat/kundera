@@ -1,0 +1,108 @@
+---
+title: ClassHash
+description: Branded type for contract class identifiers.
+---
+
+`ClassHash` is a branded type for Starknet contract class identifiers. A class hash uniquely identifies the code of a contract, separate from its deployed address.
+
+## Type Definition
+
+```typescript
+type ClassHashType = Brand<Uint8Array, 'ClassHash'> & FeltMethods;
+```
+
+## Constructors
+
+### ClassHash(value)
+
+Create a ClassHash from any Felt252Input.
+
+```typescript
+import { ClassHash } from 'kundera/primitives';
+
+const hash = ClassHash('0x052c7f38c1c123456789abcdef...');
+const hash2 = ClassHash(123n);
+```
+
+**Throws:**
+- All errors from `Felt252()` constructors
+- `Error: ClassHash must be < 2^251` - if value >= 2^251
+
+### ClassHash.from(value)
+
+Alias for `ClassHash(value)`.
+
+```typescript
+const hash = ClassHash.from('0x123');
+```
+
+## Instance Methods
+
+ClassHash inherits all methods from Felt252:
+
+```typescript
+const hash = ClassHash('0x123');
+
+hash.toHex();       // '0x0000...0123'
+hash.toBigInt();    // 291n
+hash.isValid();     // true
+hash.isZero();      // false
+hash.equals(other); // boolean
+```
+
+## Use Cases
+
+### Declaring Contracts
+
+When declaring a new contract class:
+
+```typescript
+import { ClassHash } from 'kundera/primitives';
+
+const declaredClassHash = ClassHash(declareTxResponse.class_hash);
+```
+
+### Deploying Contracts
+
+When deploying a contract instance:
+
+```typescript
+import { ClassHash, ContractAddress } from 'kundera/primitives';
+
+async function deployContract(classHash: ClassHashType): Promise<ContractAddressType> {
+  // classHash identifies WHICH contract code to deploy
+  // Returns the address WHERE it was deployed
+}
+```
+
+### Upgrading Contracts
+
+When upgrading a proxy contract to a new implementation:
+
+```typescript
+function upgrade(newClassHash: ClassHashType) {
+  // Point the proxy to new implementation code
+}
+```
+
+## Aliases
+
+```typescript
+import { Class } from 'kundera/primitives';
+
+// Class === ClassHash
+const a = Class('0x123');
+const b = ClassHash('0x123');
+a.equals(b); // true
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="ContractAddress" icon="file-contract" href="/primitives/contract-address">
+    Where a contract is deployed.
+  </Card>
+  <Card title="StorageKey" icon="database" href="/primitives/storage-key">
+    Storage slot addresses.
+  </Card>
+</CardGroup>
