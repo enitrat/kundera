@@ -12,7 +12,6 @@ import {
   TRANSACTION_VERSION,
   DEFAULT_RESOURCE_BOUNDS,
   TRANSACTION_HASH_PREFIX,
-  hashResourceBounds,
   hashTipAndResourceBounds,
   encodeDAModes,
   hashCalldata,
@@ -51,18 +50,6 @@ describe('account types + constants', () => {
 });
 
 describe('resource bounds hashing', () => {
-  it('hashes resource bounds', () => {
-    const resourceBounds: ResourceBoundsMapping = {
-      l1_gas: { max_amount: 1000n, max_price_per_unit: 100n },
-      l2_gas: { max_amount: 2000n, max_price_per_unit: 200n },
-      l1_data_gas: { max_amount: 500n, max_price_per_unit: 50n },
-    };
-
-    const hash = hashResourceBounds(resourceBounds);
-    expect(hash).toBeInstanceOf(Uint8Array);
-    expect(hash.length).toBe(32);
-  });
-
   it('hashes tip + resource bounds deterministically', () => {
     const resourceBounds: ResourceBoundsMapping = {
       l1_gas: { max_amount: 10000n, max_price_per_unit: 1000000000n },

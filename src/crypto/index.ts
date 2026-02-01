@@ -434,7 +434,6 @@ export {
 
 export {
   hashTipAndResourceBounds,
-  hashResourceBounds,
   encodeDAModes,
   hashCalldata,
   computeInvokeV3Hash,

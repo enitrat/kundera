@@ -53,8 +53,6 @@ export type {
   BroadcastedDeclareTxn,
   BroadcastedDeployAccountTxn,
   ContractClass,
-  DeprecatedContractClass,
-  ContractClassResponse,
   AddInvokeTransactionResult,
   AddDeclareTransactionResult,
   AddDeployAccountTransactionResult,

@@ -19,7 +19,13 @@ export const FIELD_PRIME =
 /**
  * Maximum valid contract address (< 2^251)
  */
-export const MAX_CONTRACT_ADDRESS = 1n << 251n;
+export const MAX_ADDRESS = 1n << 251n;
+export const MAX_CONTRACT_ADDRESS = MAX_ADDRESS;
+
+/**
+ * Maximum valid ETH address (< 2^160)
+ */
+export const MAX_ETH_ADDRESS = 1n << 160n;
 
 // ============ Felt252 ============
 
@@ -218,21 +224,11 @@ const createContractAddress = (felt: Felt252Input): ContractAddressType => {
   return f as unknown as ContractAddressType;
 };
 
-/**
- * Create a ContractAddress without validation (unsafe)
- */
-const createContractAddressUnchecked = (
-  felt: Felt252Input,
-): ContractAddressType => Felt252(felt) as unknown as ContractAddressType;
-
 export const ContractAddress = Object.assign(createContractAddress, {
   from: createContractAddress,
-  fromUnchecked: createContractAddressUnchecked,
   isValid: (felt: Felt252Input) => isValidContractAddressInternal(Felt252(felt)),
   MAX: MAX_CONTRACT_ADDRESS,
 });
-
-export const ContractAddressUnchecked = createContractAddressUnchecked;
 
 // ============ ClassHash ============
 
@@ -246,24 +242,15 @@ export type ClassHashType = Brand<Uint8Array, 'ClassHash'> & FeltMethods;
  */
 const createClassHash = (felt: Felt252Input): ClassHashType => {
   const f = Felt252(felt);
-  if (!f.isValid()) {
-    throw new Error('ClassHash must be a valid felt');
+  if (f.toBigInt() >= MAX_ADDRESS) {
+    throw new Error('ClassHash must be < 2^251');
   }
   return f as unknown as ClassHashType;
 };
 
-/**
- * Create a ClassHash without validation (unsafe)
- */
-const createClassHashUnchecked = (felt: Felt252Input): ClassHashType =>
-  Felt252(felt) as unknown as ClassHashType;
-
 export const ClassHash = Object.assign(createClassHash, {
   from: createClassHash,
-  fromUnchecked: createClassHashUnchecked,
 });
-
-export const ClassHashUnchecked = createClassHashUnchecked;
 
 // ============ StorageKey ============
 
@@ -277,24 +264,40 @@ export type StorageKeyType = Brand<Uint8Array, 'StorageKey'> & FeltMethods;
  */
 const createStorageKey = (felt: Felt252Input): StorageKeyType => {
   const f = Felt252(felt);
-  if (!f.isValid()) {
-    throw new Error('StorageKey must be a valid felt');
+  if (f.toBigInt() >= MAX_ADDRESS) {
+    throw new Error('StorageKey must be < 2^251');
   }
   return f as unknown as StorageKeyType;
 };
 
-/**
- * Create a StorageKey without validation (unsafe)
- */
-const createStorageKeyUnchecked = (felt: Felt252Input): StorageKeyType =>
-  Felt252(felt) as unknown as StorageKeyType;
-
 export const StorageKey = Object.assign(createStorageKey, {
   from: createStorageKey,
-  fromUnchecked: createStorageKeyUnchecked,
 });
 
-export const StorageKeyUnchecked = createStorageKeyUnchecked;
+// ============ EthAddress ============
+
+/**
+ * EthAddress - L1 Ethereum address used in L1-L2 messaging
+ * Must be < 2^160
+ */
+export type EthAddressType = Brand<Uint8Array, 'EthAddress'> & FeltMethods;
+
+/**
+ * Create an EthAddress from Felt252 (with validation)
+ */
+const createEthAddress = (felt: Felt252Input): EthAddressType => {
+  const f = Felt252(felt);
+  if (f.toBigInt() >= MAX_ETH_ADDRESS) {
+    throw new Error('EthAddress must be < 2^160');
+  }
+  return f as unknown as EthAddressType;
+};
+
+export const EthAddress = Object.assign(createEthAddress, {
+  from: createEthAddress,
+  isValid: (felt: Felt252Input) => Felt252(felt).toBigInt() < MAX_ETH_ADDRESS,
+  MAX: MAX_ETH_ADDRESS,
+});
 
 /**
  * Check if string contains only ASCII characters

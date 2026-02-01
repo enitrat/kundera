@@ -526,16 +526,6 @@ export interface DeclareTxnV3 {
  */
 export type DeclareTxn = DeclareTxnV0 | DeclareTxnV1 | DeclareTxnV2 | DeclareTxnV3;
 
-/**
- * Deploy transaction (deprecated but may appear in historical blocks)
- */
-export interface DeployTxn {
-  type: 'DEPLOY';
-  version: '0x0';
-  contract_address_salt: string;
-  constructor_calldata: string[];
-  class_hash: string;
-}
 
 /**
  * Deploy account transaction V1
@@ -581,7 +571,6 @@ export type Txn =
   | InvokeTxn
   | L1HandlerTxn
   | DeclareTxn
-  | DeployTxn
   | DeployAccountTxn;
 
 /**
@@ -686,14 +675,6 @@ export interface DeclareTxnReceipt extends TxnReceiptCommon {
 }
 
 /**
- * Deploy transaction receipt
- */
-export interface DeployTxnReceipt extends TxnReceiptCommon {
-  type: 'DEPLOY';
-  contract_address: string;
-}
-
-/**
  * Deploy account transaction receipt
  */
 export interface DeployAccountTxnReceipt extends TxnReceiptCommon {
@@ -708,7 +689,6 @@ export type TxnReceipt =
   | InvokeTxnReceipt
   | L1HandlerTxnReceipt
   | DeclareTxnReceipt
-  | DeployTxnReceipt
   | DeployAccountTxnReceipt;
 
 /**
@@ -768,7 +748,6 @@ export interface NonceUpdateItem {
  */
 export interface StateDiff {
   storage_diffs: ContractStorageDiffItem[];
-  deprecated_declared_classes: string[];
   declared_classes: DeclaredClassItem[];
   deployed_contracts: DeployedContractItem[];
   replaced_classes: ReplacedClassItem[];
@@ -824,36 +803,6 @@ export interface ContractClass {
   abi?: string;
 }
 
-/**
- * Deprecated entry point
- */
-export interface DeprecatedEntryPoint {
-  offset: string;
-  selector: string;
-}
-
-/**
- * Deprecated entry points by type
- */
-export interface DeprecatedEntryPointsByType {
-  CONSTRUCTOR: DeprecatedEntryPoint[];
-  EXTERNAL: DeprecatedEntryPoint[];
-  L1_HANDLER: DeprecatedEntryPoint[];
-}
-
-/**
- * Deprecated contract class (Cairo 0)
- */
-export interface DeprecatedContractClass {
-  program: string;
-  entry_points_by_type: DeprecatedEntryPointsByType;
-  abi?: string;
-}
-
-/**
- * Contract class (either Sierra or deprecated)
- */
-export type ContractClassResponse = ContractClass | DeprecatedContractClass;
 
 // ============================================================================
 // Message Types

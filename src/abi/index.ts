@@ -123,6 +123,7 @@ export type {
   SierraEntryPoints,
   CasmEntryPoint,
   CasmEntryPoints,
+  AbiArtifact,
 } from './classHash.js';
 export {
   classHashFromSierra,

@@ -77,27 +77,6 @@ function encodeResourceBound(
  *
  * Order: L1_GAS, L2_GAS, L1_DATA (per spec)
  */
-function encodeResourceBoundsArray(
-  resourceBounds: ResourceBoundsMapping
-): bigint[] {
-  const l1Gas = encodeResourceBound(
-    RESOURCE_TYPE.L1_GAS,
-    resourceBounds.l1_gas.max_amount,
-    resourceBounds.l1_gas.max_price_per_unit
-  );
-  const l2Gas = encodeResourceBound(
-    RESOURCE_TYPE.L2_GAS,
-    resourceBounds.l2_gas.max_amount,
-    resourceBounds.l2_gas.max_price_per_unit
-  );
-  const l1Data = encodeResourceBound(
-    RESOURCE_TYPE.L1_DATA,
-    resourceBounds.l1_data_gas.max_amount,
-    resourceBounds.l1_data_gas.max_price_per_unit
-  );
-
-  return [l1Gas, l2Gas, l1Data];
-}
 
 /**
  * Hash tip and resource bounds together for V3 transactions
@@ -123,25 +102,6 @@ export function hashTipAndResourceBounds(
   );
   // Note: L1_DATA is NOT included per starknet.js/starknet-jvm implementations
   return poseidonHashMany([Felt252(tip), Felt252(l1Gas), Felt252(l2Gas)]);
-}
-
-/**
- * Hash resource bounds for V3 transactions (without tip)
- * Returns Poseidon hash of encoded resource bounds
- *
- * @deprecated Use hashTipAndResourceBounds for V3 transaction hash computation
- */
-export function hashResourceBounds(
-  resourceBounds: ResourceBoundsMapping
-): Felt252Type {
-  const bounds = encodeResourceBoundsArray(resourceBounds);
-  const a = bounds[0];
-  const b = bounds[1];
-  const c = bounds[2];
-  if (a === undefined || b === undefined || c === undefined) {
-    throw new Error('Invalid resource bounds encoding');
-  }
-  return poseidonHashMany([Felt252(a), Felt252(b), Felt252(c)]);
 }
 
 // ============ DA Modes Encoding ============

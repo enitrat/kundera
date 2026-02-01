@@ -17,23 +17,25 @@ import { Felt252, type Felt252Type } from '../primitives/index.js';
 export {
   // Constants
   FIELD_PRIME,
+  MAX_ADDRESS,
   MAX_CONTRACT_ADDRESS,
+  MAX_ETH_ADDRESS,
   // Felt252
   Felt252,
   type Felt252Type,
   type Felt252Input,
   // ContractAddress
   ContractAddress,
-  ContractAddressUnchecked,
   type ContractAddressType,
   // ClassHash
   ClassHash,
-  ClassHashUnchecked,
   type ClassHashType,
   // StorageKey
   StorageKey,
-  StorageKeyUnchecked,
   type StorageKeyType,
+  // EthAddress
+  EthAddress,
+  type EthAddressType,
   // Namespaces (Felt is merged with crypto ops below)
   Address,
   Class,
@@ -266,13 +268,13 @@ export const StarkCurve = {
 import type { KunderaAPI as _KunderaAPI } from '../api-interface.js';
 import {
   FIELD_PRIME,
+  MAX_ADDRESS,
   MAX_CONTRACT_ADDRESS,
+  MAX_ETH_ADDRESS,
   ContractAddress,
-  ContractAddressUnchecked,
   ClassHash,
-  ClassHashUnchecked,
   StorageKey,
-  StorageKeyUnchecked,
+  EthAddress,
   Address,
   Class,
   Storage,
@@ -292,14 +294,14 @@ import {
 const _nativeAPI = {
   // Primitives
   FIELD_PRIME,
+  MAX_ADDRESS,
   MAX_CONTRACT_ADDRESS,
+  MAX_ETH_ADDRESS,
   Felt252,
   ContractAddress,
-  ContractAddressUnchecked,
   ClassHash,
-  ClassHashUnchecked,
   StorageKey,
-  StorageKeyUnchecked,
+  EthAddress,
   Address,
   Class,
   Storage,

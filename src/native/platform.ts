@@ -120,14 +120,10 @@ export function getNativeLibPath(): string | null {
     // 2. Platform-specific: native/<platform>-<arch>/
     join(process.cwd(), 'native', platformDir, libName),
 
-    // 3. Generic native dir (legacy)
-    join(process.cwd(), 'native', libName),
-
-    // 4. Relative to this module (installed package)
+    // 3. Relative to this module (installed package)
     join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'native', platformDir, libName),
-    join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'native', libName),
 
-    // 5. System paths
+    // 4. System paths
     join('/usr/local/lib', libName),
   ];
 

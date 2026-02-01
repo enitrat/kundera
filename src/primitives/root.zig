@@ -166,10 +166,6 @@ pub const ContractAddress = struct {
         return .{ .inner = felt };
     }
 
-    pub fn fromFeltUnchecked(felt: Felt252) ContractAddress {
-        return .{ .inner = felt };
-    }
-
     pub fn toFelt(self: ContractAddress) Felt252 {
         return self.inner;
     }
@@ -197,10 +193,6 @@ pub const ClassHash = struct {
         return .{ .inner = felt };
     }
 
-    pub fn fromFeltUnchecked(felt: Felt252) ClassHash {
-        return .{ .inner = felt };
-    }
-
     pub fn toFelt(self: ClassHash) Felt252 {
         return self.inner;
     }
@@ -225,10 +217,6 @@ pub const StorageKey = struct {
         if (!felt.isValid()) {
             return error.InvalidStorageKey;
         }
-        return .{ .inner = felt };
-    }
-
-    pub fn fromFeltUnchecked(felt: Felt252) StorageKey {
         return .{ .inner = felt };
     }
 

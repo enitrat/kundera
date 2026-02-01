@@ -4,8 +4,11 @@ import {
   ContractAddress,
   ClassHash,
   StorageKey,
+  EthAddress,
   FIELD_PRIME,
+  MAX_ADDRESS,
   MAX_CONTRACT_ADDRESS,
+  MAX_ETH_ADDRESS,
   Felt,
   Address,
   encodeShortString,
@@ -137,12 +140,37 @@ describe('ClassHash', () => {
     const hash = ClassHash(42n);
     expect(hash.toBigInt()).toBe(42n);
   });
+
+  test('rejects class hash >= 2^251', () => {
+    const bytes = new Uint8Array(32);
+    bytes[0] = 0x08; // Sets bit 251
+    const tooLarge = Felt252.fromBytes(bytes);
+    expect(() => ClassHash(tooLarge)).toThrow('< 2^251');
+  });
 });
 
 describe('StorageKey', () => {
   test('creates valid storage key', () => {
     const key = StorageKey(42n);
     expect(key.toBigInt()).toBe(42n);
+  });
+
+  test('rejects storage key >= 2^251', () => {
+    const bytes = new Uint8Array(32);
+    bytes[0] = 0x08; // Sets bit 251
+    const tooLarge = Felt252.fromBytes(bytes);
+    expect(() => StorageKey(tooLarge)).toThrow('< 2^251');
+  });
+});
+
+describe('EthAddress', () => {
+  test('creates valid ETH address', () => {
+    const addr = EthAddress(42n);
+    expect(addr.toBigInt()).toBe(42n);
+  });
+
+  test('rejects address >= 2^160', () => {
+    expect(() => EthAddress(MAX_ETH_ADDRESS)).toThrow('< 2^160');
   });
 });
 
@@ -155,6 +183,14 @@ describe('Constants', () => {
 
   test('MAX_CONTRACT_ADDRESS is 2^251', () => {
     expect(MAX_CONTRACT_ADDRESS).toBe(1n << 251n);
+  });
+
+  test('MAX_ADDRESS is 2^251', () => {
+    expect(MAX_ADDRESS).toBe(1n << 251n);
+  });
+
+  test('MAX_ETH_ADDRESS is 2^160', () => {
+    expect(MAX_ETH_ADDRESS).toBe(1n << 160n);
   });
 });
 

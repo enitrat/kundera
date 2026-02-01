@@ -397,9 +397,9 @@ export function compiledClassHashFromCasm(casm: CompiledSierraCasm): Result<stri
 }
 
 /**
- * Extract ABI from a contract artifact (Sierra or legacy)
+ * Extract ABI from a contract artifact (Sierra)
  *
- * @param artifact - Contract artifact (Sierra JSON or legacy contract)
+ * @param artifact - Contract artifact (Sierra JSON)
  * @returns Extracted ABI array, or error
  *
  * @example
@@ -412,9 +412,9 @@ export function compiledClassHashFromCasm(casm: CompiledSierraCasm): Result<stri
  * }
  * ```
  */
-export function extractAbi(
-  artifact: CompiledSierra | { abi: Abi | string } | unknown
-): Result<Abi> {
+export type AbiArtifact = CompiledSierra | { abi: Abi | string };
+
+export function extractAbi(artifact: AbiArtifact): Result<Abi> {
   try {
     // Check for Sierra artifact
     if (artifact && typeof artifact === 'object' && 'abi' in artifact) {

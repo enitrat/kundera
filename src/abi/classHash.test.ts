@@ -298,7 +298,7 @@ describe('extractAbi', () => {
   });
 
   it('should error on missing ABI', () => {
-    const artifact = { something: 'else' };
+    const artifact = {} as unknown as { abi: string };
     const result = extractAbi(artifact);
     expect(result.error).not.toBeNull();
     expect(result.error!.code).toBe('INVALID_ABI');

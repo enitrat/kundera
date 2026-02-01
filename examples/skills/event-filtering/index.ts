@@ -80,11 +80,8 @@ export interface DecodedReceiptEvent extends DecodedEvent {
 export interface DecodeEventsOptions {
   /** Filter events by contract address */
   contractAddress?: string;
-  /** Filter events by selector (event name or hex) - DEPRECATED: use `event` instead */
-  selector?: string;
   /**
    * Filter by event name (computes selector automatically)
-   * Takes precedence over `selector` if both are provided.
    */
   event?: string;
   /**
@@ -372,13 +369,6 @@ export function decodeEvents(
       return filterResult as Result<DecodedReceiptEvent[]>;
     }
     filter = filterResult.result;
-  } else if (opts.selector) {
-    // Legacy selector filter (backward compat)
-    const selector = opts.selector.startsWith('0x')
-      ? BigInt(opts.selector)
-      : computeSelector(opts.selector);
-    filter = { argKeys: [] };
-    filter.selector = selector;
   } else {
     // No filter - match all
     filter = { argKeys: [] };
@@ -469,12 +459,6 @@ export function decodeEventsStrict(
       return filterResult as Result<DecodedReceiptEvent[]>;
     }
     filter = filterResult.result;
-  } else if (opts.selector) {
-    const selector = opts.selector.startsWith('0x')
-      ? BigInt(opts.selector)
-      : computeSelector(opts.selector);
-    filter = { argKeys: [] };
-    filter.selector = selector;
   } else {
     filter = { argKeys: [] };
   }

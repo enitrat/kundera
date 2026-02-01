@@ -11,6 +11,7 @@ import type {
   ContractAddressType,
   ClassHashType,
   StorageKeyType,
+  EthAddressType,
 } from './primitives/index.js';
 
 export interface FeltConstructor {
@@ -39,41 +40,40 @@ export interface FeltConstructor {
 export interface PrimitivesAPI {
   // Constants
   FIELD_PRIME: bigint;
+  MAX_ADDRESS: bigint;
   MAX_CONTRACT_ADDRESS: bigint;
+  MAX_ETH_ADDRESS: bigint;
 
   // Felt252 constructor + static helpers
   Felt252: FeltConstructor;
 
   // Address constructors
   ContractAddress: (value: Felt252Input) => ContractAddressType;
-  ContractAddressUnchecked: (value: Felt252Input) => ContractAddressType;
 
   // Class hash
   ClassHash: (value: Felt252Input) => ClassHashType;
-  ClassHashUnchecked: (value: Felt252Input) => ClassHashType;
 
   // Storage key
   StorageKey: (value: Felt252Input) => StorageKeyType;
-  StorageKeyUnchecked: (value: Felt252Input) => StorageKeyType;
+
+  // Eth address
+  EthAddress: (value: Felt252Input) => EthAddressType;
 
   // Namespaces
   Felt: FeltConstructor;
 
   Address: {
     from: (value: Felt252Input) => ContractAddressType;
-    fromUnchecked: (value: Felt252Input) => ContractAddressType;
     isValid: (felt: Felt252Input) => boolean;
     MAX: bigint;
   };
 
   Class: {
     from: (value: Felt252Input) => ClassHashType;
-    fromUnchecked: (value: Felt252Input) => ClassHashType;
   };
 
   Storage: {
     from: (value: Felt252Input) => StorageKeyType;
-    fromUnchecked: (value: Felt252Input) => StorageKeyType;
   };
 }
 
