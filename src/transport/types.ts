@@ -99,10 +99,6 @@ export const JsonRpcErrorCode = {
 export interface TransportConfig {
   /** Request timeout in ms (default: 30000) */
   timeout?: number;
-  /** Number of retries on failure (default: 0) */
-  retries?: number;
-  /** Delay between retries in ms (default: 1000) */
-  retryDelay?: number;
 }
 
 /**
@@ -123,7 +119,6 @@ export interface TransportRequestOptions extends TransportConfig {
  * - Sending JSON-RPC requests
  * - Handling batching (if supported)
  * - Connection management
- * - Retry logic
  *
  * @example
  * ```ts

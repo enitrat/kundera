@@ -21,14 +21,18 @@ import {
   type UniversalDetails,
   type InvokeTransactionV3,
   type ResourceBoundsMapping,
-  type SignerInterface,
+  type SignatureArray,
 } from 'kundera/crypto';
-import { Felt252 } from 'kundera/primitives';
+import { Felt252, type Felt252Input } from 'kundera/primitives';
+
+export type SignTransaction = (
+  hash: Felt252Input,
+) => SignatureArray | Promise<SignatureArray>;
 
 export interface AccountInvokeOptions {
   transport: Transport;
   address: string;
-  signer: SignerInterface;
+  signTransaction: SignTransaction;
 }
 
 export interface AccountInvoker {
@@ -76,7 +80,7 @@ export async function invoke(
   };
 
   const txHash = computeInvokeV3Hash(tx, chainId);
-  const signature = await options.signer.signTransaction(txHash);
+  const signature = await options.signTransaction(txHash);
 
   return starknet_addInvokeTransaction(options.transport, {
     type: 'INVOKE',

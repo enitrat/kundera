@@ -12,13 +12,11 @@ import {
   // Factories
   httpTransport,
   webSocketTransport,
-  fallbackTransport,
   // Types
   type Transport,
   type EventTransport,
   type HttpTransportOptions,
   type WebSocketTransportOptions,
-  type FallbackTransportOptions,
   type JsonRpcRequest,
   type JsonRpcResponse,
 } from 'kundera/transport';
@@ -28,20 +26,17 @@ import {
 
 ### httpTransport
 
-Creates an HTTP transport.
+Creates a minimal HTTP transport.
 
 ```typescript
-function httpTransport(options: HttpTransportOptions): Transport
+function httpTransport(url: string, options?: HttpTransportOptions): Transport
 ```
 
 ```typescript
-const transport = httpTransport({
-  url: 'https://starknet-mainnet.public.blastapi.io',
-  timeout: 30000,
-  retry: 3,
-  retryDelay: 1000,
-  batch: { batchWait: 10, batchSize: 100 },
-});
+const transport = httpTransport(
+  'https://starknet-mainnet.public.blastapi.io',
+  { timeout: 30000 }
+);
 
 const result = await transport.request({
   method: 'starknet_blockNumber',
@@ -51,12 +46,12 @@ const result = await transport.request({
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `url` | `string` | required | RPC endpoint URL |
-| `headers` | `Record<string, string>` | `{}` | Custom HTTP headers |
+| `fetchOptions` | `RequestInit` | `{}` | Custom fetch options (headers, credentials, etc.) |
 | `timeout` | `number` | `30000` | Request timeout (ms) |
-| `retry` | `number` | `3` | Retry attempts |
-| `retryDelay` | `number` | `1000` | Delay between retries (ms) |
-| `batch` | `boolean \| BatchOptions` | `false` | Enable batching |
+
+<Tip>
+Need batching or retries? Use the HTTP Transport skill and pass its transport into your provider.
+</Tip>
 
 ### webSocketTransport
 
@@ -84,28 +79,6 @@ transport.subscribe('sub_id', (data) => {
 | `url` | `string` | required | WebSocket URL |
 | `reconnect` | `boolean` | `true` | Auto-reconnect |
 | `reconnectDelay` | `number` | `1000` | Reconnect delay (ms) |
-
-### fallbackTransport
-
-Chains transports with automatic failover.
-
-```typescript
-function fallbackTransport(options: FallbackTransportOptions): Transport
-```
-
-```typescript
-const transport = fallbackTransport({
-  transports: [
-    httpTransport({ url: 'https://primary.example.com' }),
-    httpTransport({ url: 'https://backup.example.com' }),
-  ],
-});
-```
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `transports` | `Transport[]` | required | Ordered fallback list |
-| `retryAll` | `boolean` | `true` | Retry all on failure |
 
 ## Interfaces
 

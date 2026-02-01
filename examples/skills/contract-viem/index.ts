@@ -16,7 +16,8 @@ import type { BlockId, BroadcastedInvokeTxn, EventsFilter, FeeEstimate as RpcFee
 import {
   encodeCalldata,
   decodeOutput,
-  decodeEvents,
+  decodeEventBySelector,
+  getEventSelectorHex,
   getFunctionSelectorHex,
   type Abi,
 } from 'kundera/abi';
@@ -301,6 +302,7 @@ export function watchContractEvent(
 
   let lastBlock = fromBlock ?? 0;
   let stopped = false;
+  const selectorHex = getEventSelectorHex(eventName).toLowerCase();
 
   const poll = async () => {
     if (stopped) return;
@@ -324,21 +326,22 @@ export function watchContractEvent(
 
       const eventsResult = await starknet_getEvents(transport, filter);
       if (eventsResult.events) {
-        const decoded = decodeEvents(
-          { events: eventsResult.events },
-          abi,
-          { event: eventName },
-        );
+        for (const event of eventsResult.events) {
+          if (!event.keys || event.keys.length === 0) continue;
+          if (event.keys[0]?.toLowerCase() !== selectorHex) continue;
 
-        if (decoded.result) {
-          for (const event of decoded.result) {
-            onEvent({
-              name: event.name,
-              args: event.args as Record<string, unknown>,
-              blockNumber: currentBlock,
-              transactionHash: '',
-            });
-          }
+          const decoded = decodeEventBySelector(abi, {
+            keys: event.keys,
+            data: event.data ?? [],
+          });
+          if (decoded.error) continue;
+
+          onEvent({
+            name: decoded.result.name,
+            args: decoded.result.args as Record<string, unknown>,
+            blockNumber: currentBlock,
+            transactionHash: '',
+          });
         }
       }
 

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import '../../../src/test-utils/setupCrypto';
 import type { Transport, TransportRequestOptions } from 'kundera/transport';
-import type { SignerInterface } from 'kundera/crypto';
 import { createAccountDeclarer } from './index';
 
 type HandlerMap = Record<string, (params: unknown[] | Record<string, unknown> | undefined) => unknown>;
@@ -40,15 +39,10 @@ const feeEstimate = {
 
 describe('account-declare skill', () => {
   it('submits declare transaction via RPC', async () => {
-    let signedHash: Uint8Array | undefined;
-    const signer: SignerInterface = {
-      getPubKey: async () => '0x123',
-      signRaw: async () => ({ r: 9n as any, s: 10n as any }),
-      signMessage: async () => [9n, 10n],
-      signTransaction: async (hash: Uint8Array) => {
-        signedHash = hash;
-        return [9n, 10n];
-      },
+    let signedHash: unknown;
+    const signTransaction = async (hash: unknown) => {
+      signedHash = hash;
+      return [9n, 10n];
     };
 
     const payload = {
@@ -73,13 +67,13 @@ describe('account-declare skill', () => {
     const declarer = createAccountDeclarer({
       transport,
       address: '0xabc',
-      signer,
+      signTransaction,
     });
 
     const result = await declarer.declare(payload);
     expect(result.transaction_hash).toBe('0xabc');
     expect(result.class_hash).toBe('0xdef');
-    expect(signedHash).toBeInstanceOf(Uint8Array);
+    expect(signedHash).toBeDefined();
 
     const addCall = calls.find((call) => call.method === 'starknet_addDeclareTransaction');
     const [tx] = (addCall?.params as Array<Record<string, unknown>>) ?? [];
@@ -112,12 +106,7 @@ describe('account-declare skill', () => {
     const declarer = createAccountDeclarer({
       transport,
       address: '0xabc',
-      signer: {
-        getPubKey: async () => '0x123',
-        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
-        signMessage: async () => [0n, 0n],
-        signTransaction: async () => [0n, 0n],
-      },
+      signTransaction: async () => [0n, 0n],
     });
 
     const estimate = await declarer.estimateFee(payload);
@@ -146,12 +135,7 @@ describe('account-declare skill', () => {
     const declarer = createAccountDeclarer({
       transport,
       address: '0xabc',
-      signer: {
-        getPubKey: async () => '0x123',
-        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
-        signMessage: async () => [0n, 0n],
-        signTransaction: async () => [0n, 0n],
-      },
+      signTransaction: async () => [0n, 0n],
     });
 
     await declarer.declare(payload, { nonce: 7n });

@@ -1,0 +1,30 @@
+---
+title: "HTTP Transport"
+description: "Advanced HTTP JSON-RPC transport with batching and retries."
+---
+
+This skill provides an HTTP transport with batching and retry support.
+Copy it into your project when you need more than the primitive transport.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/http-transport src/skills/
+```
+
+## Usage
+
+```ts
+import { httpTransport } from './skills/http-transport';
+
+const transport = httpTransport('https://starknet-mainnet.public.blastapi.io', {
+  batch: { batchWait: 10, batchSize: 50 },
+  retries: 3,
+  timeout: 30000,
+});
+```
+
+## Notes
+
+- `batch` enables auto-batching for concurrent requests.
+- `retries` uses exponential backoff (`retryDelay * 2^attempt`).

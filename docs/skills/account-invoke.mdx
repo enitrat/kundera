@@ -15,13 +15,13 @@ cp -r examples/skills/account-invoke src/skills/
 
 ```ts
 import { httpTransport } from 'kundera/transport';
-import { PrivateKeySigner } from 'kundera/crypto';
+import { signRaw, signatureToArray } from 'kundera/crypto';
 import { createAccountInvoker } from './skills/account-invoke';
 
 const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
-const signer = new PrivateKeySigner(PRIVATE_KEY);
+const signTransaction = (hash) => signatureToArray(signRaw(PRIVATE_KEY, hash));
 
-const account = createAccountInvoker({ transport, address, signer });
+const account = createAccountInvoker({ transport, address, signTransaction });
 
 const { transaction_hash } = await account.execute({
   contractAddress: CONTRACT_ADDRESS,

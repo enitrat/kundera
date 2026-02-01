@@ -6,16 +6,16 @@ Declare contract classes with a signer.
 
 ```ts
 import { httpTransport } from 'kundera/transport';
-import { PrivateKeySigner } from 'kundera/crypto';
+import { signRaw, signatureToArray } from 'kundera/crypto';
 import { createAccountDeclarer } from './skills/account-declare';
 
 const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
-const signer = new PrivateKeySigner(PRIVATE_KEY);
+const signTransaction = (hash) => signatureToArray(signRaw(PRIVATE_KEY, hash));
 
 const declarer = createAccountDeclarer({
   transport,
   address: ACCOUNT_ADDRESS,
-  signer,
+  signTransaction,
 });
 
 const { transaction_hash, class_hash } = await declarer.declare({

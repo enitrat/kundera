@@ -445,5 +445,4 @@ export {
   EXECUTE_SELECTOR,
 } from './account-hash.js';
 
-export type { SignerInterface } from './signer.js';
-export { PrivateKeySigner, createSigner } from './signer.js';
+export { signRaw, signTypedData, hashTypedData } from './signer.js';

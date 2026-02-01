@@ -30,7 +30,7 @@ export {
 } from './types.js';
 
 // HTTP Transport
-export { httpTransport, type HttpTransportOptions, type BatchOptions } from './http.js';
+export { httpTransport, type HttpTransportOptions } from './http.js';
 
 // WebSocket Transport
 export {
@@ -38,6 +38,3 @@ export {
   type WebSocketTransport,
   type WebSocketTransportOptions,
 } from './websocket.js';
-
-// Fallback Transport
-export { fallbackTransport, type FallbackTransportOptions } from './fallback.js';

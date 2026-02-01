@@ -100,18 +100,10 @@ export {
 // Events
 export type {
   EventData,
-  ReceiptEvent,
-  TransactionReceipt,
-  DecodedReceiptEvent,
-  DecodeEventsOptions,
-  CompiledEventFilter,
 } from './events.js';
 export {
   decodeEvent,
   decodeEventBySelector,
-  decodeEvents,
-  decodeEventsStrict,
-  compileEventFilter,
   getEventSelector,
   getEventSelectorHex,
 } from './events.js';

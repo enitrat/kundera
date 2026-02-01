@@ -5,11 +5,7 @@
  * Copy into your codebase and tailor methods as needed.
  */
 
-import {
-  httpTransport,
-  type HttpTransportOptions,
-  type Transport,
-} from 'kundera/transport';
+import { httpTransport, type HttpTransportOptions, type Transport } from 'kundera/transport';
 import {
   starknet_chainId,
   starknet_blockNumber,
@@ -54,10 +50,12 @@ import type {
 import type { ContractAddressType, ClassHashType, Felt252Type } from 'kundera/primitives';
 
 export interface HttpProviderOptions {
-  /** RPC endpoint URL */
-  url: string;
-  /** Transport options */
-  transport?: HttpTransportOptions;
+  /** RPC endpoint URL (used if transport is not provided) */
+  url?: string;
+  /** Provide a custom transport (e.g., batched/retrying transport skill) */
+  transport?: Transport;
+  /** Transport options for the default HTTP transport */
+  transportOptions?: HttpTransportOptions;
 }
 
 export interface HttpProvider {
@@ -122,7 +120,16 @@ export interface HttpProvider {
  * Create an HTTP provider backed by Kundera transports.
  */
 export function createHttpProvider(options: HttpProviderOptions): HttpProvider {
-  const transport = httpTransport(options.url, options.transport);
+  if (!options.transport && !options.url) {
+    throw new Error('HttpProvider requires either a transport or a url');
+  }
+
+  const transport =
+    options.transport ??
+    httpTransport(
+      options.url ?? '',
+      options.transportOptions,
+    );
 
   return {
     transport,

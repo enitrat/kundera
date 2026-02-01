@@ -62,14 +62,15 @@ Private keys should NEVER appear in:
 | **Testing** | Devnet accounts (funded test accounts) |
 
 ```typescript
-import { createSigner } from 'kundera/crypto';
+import { signRaw } from 'kundera/crypto';
 import { connectWalletWithModal } from './skills/wallet-modal';
 
 // ✅ Good: Environment variable
-const signer = createSigner(process.env.PRIVATE_KEY!);
+const messageHash = computeMessageHash(...);
+const signature = signRaw(process.env.PRIVATE_KEY!, messageHash);
 
 // ❌ Bad: Hardcoded
-const signer = createSigner('0x123...');
+const signature = signRaw('0x123...', messageHash);
 
 // ✅ Good: Browser wallet
 const { result } = await connectWalletWithModal();
@@ -105,6 +106,8 @@ const isValid = verify(publicKey, messageHash, signature);
 Use typed data to prevent signature replay attacks:
 
 ```typescript
+import { signTypedData, signatureToArray } from 'kundera/crypto';
+
 const typedData = {
   types: {
     StarkNetDomain: [...],
@@ -119,8 +122,8 @@ const typedData = {
   message: { ... },
 };
 
-const signer = createSigner(privateKey);
-const signature = await signer.signMessage(typedData, accountAddress);
+const signature = signTypedData(privateKey, typedData, accountAddress);
+const signatureArray = signatureToArray(signature);
 ```
 
 ### Domain Separation
@@ -137,9 +140,11 @@ Always verify transaction details before signing:
 
 ```typescript
 import { encodeCalldata } from 'kundera/abi';
+import { signRaw, signatureToArray } from 'kundera/crypto';
 import { createAccountInvoker } from './skills/account-invoke';
 
-const account = createAccountInvoker({ transport, address, signer });
+const signTransaction = (hash) => signatureToArray(signRaw(privateKey, hash));
+const account = createAccountInvoker({ transport, address, signTransaction });
 const calldata = encodeCalldata(abi, 'transfer', [to, amount]);
 if (calldata.error) throw new Error(calldata.error.message);
 
@@ -211,7 +216,7 @@ import { createHttpProvider } from './skills/http-provider';
 // Server-side: Use environment variables
 const provider = createHttpProvider({
   url: process.env.RPC_URL!,
-  headers: { 'x-api-key': process.env.RPC_KEY! },
+  transportOptions: { fetchOptions: { headers: { 'x-api-key': process.env.RPC_KEY! } } },
 });
 
 // Client-side: Use a proxy

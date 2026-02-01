@@ -168,6 +168,44 @@ const signature = sign(privateKey, messageHash);
 // { r: Felt252Type, s: Felt252Type }
 ```
 
+### signRaw
+
+Convenience wrapper that accepts `Felt252Input` values.
+
+```typescript
+function signRaw(
+  privateKey: Felt252Input,
+  hash: Felt252Input
+): Signature
+```
+
+```typescript
+const signature = signRaw('0x123', '0xabc');
+```
+
+### hashTypedData
+
+Compute the SNIP-12 typed data hash.
+
+```typescript
+function hashTypedData(
+  typedData: TypedData,
+  accountAddress: string
+): Felt252Type
+```
+
+### signTypedData
+
+Hash and sign typed data in one step.
+
+```typescript
+function signTypedData(
+  privateKey: Felt252Input,
+  typedData: TypedData,
+  accountAddress: string
+): Signature
+```
+
 ### verify
 
 Verify a signature.

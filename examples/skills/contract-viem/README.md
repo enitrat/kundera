@@ -22,7 +22,7 @@ No additional dependencies required - uses only Kundera core APIs.
 
 ```ts
 import { httpTransport } from 'kundera/transport';
-import { PrivateKeySigner } from 'kundera/crypto';
+import { signRaw, signatureToArray } from 'kundera/crypto';
 import { createAccountInvoker } from './skills/account-invoke';
 import { readContract, writeContract, watchContractEvent } from './skills/contract-viem';
 
@@ -37,8 +37,8 @@ const { result } = await readContract(transport, {
 });
 
 // Write
-const signer = new PrivateKeySigner(privateKey);
-const account = createAccountInvoker({ transport, address, signer });
+const signTransaction = (hash) => signatureToArray(signRaw(privateKey, hash));
+const account = createAccountInvoker({ transport, address, signTransaction });
 
 const { result: tx } = await writeContract(transport, {
   abi: ERC20_ABI,

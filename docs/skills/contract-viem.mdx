@@ -18,7 +18,7 @@ cp -r examples/skills/contract-viem src/skills/
 
 ```ts
 import { httpTransport } from 'kundera/transport';
-import { PrivateKeySigner } from 'kundera/crypto';
+import { signRaw, signatureToArray } from 'kundera/crypto';
 import { createAccountInvoker } from './skills/account-invoke';
 import { readContract, writeContract } from './skills/contract-viem';
 
@@ -33,8 +33,8 @@ const { result } = await readContract(transport, {
 });
 
 // Write (requires account)
-const signer = new PrivateKeySigner(privateKey);
-const account = createAccountInvoker({ transport, address, signer });
+const signTransaction = (hash) => signatureToArray(signRaw(privateKey, hash));
+const account = createAccountInvoker({ transport, address, signTransaction });
 
 const { result: tx } = await writeContract(transport, {
   abi: ERC20_ABI,

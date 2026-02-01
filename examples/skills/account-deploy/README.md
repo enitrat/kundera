@@ -6,13 +6,13 @@ Deploy account contracts with a signer.
 
 ```ts
 import { httpTransport } from 'kundera/transport';
-import { PrivateKeySigner } from 'kundera/crypto';
+import { signRaw, signatureToArray } from 'kundera/crypto';
 import { createAccountDeployer } from './skills/account-deploy';
 
 const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
-const signer = new PrivateKeySigner(PRIVATE_KEY);
+const signTransaction = (hash) => signatureToArray(signRaw(PRIVATE_KEY, hash));
 
-const deployer = createAccountDeployer({ transport, signer });
+const deployer = createAccountDeployer({ transport, signTransaction });
 
 const result = await deployer.deployAccount({
   classHash: ACCOUNT_CLASS_HASH,

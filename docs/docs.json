@@ -55,11 +55,13 @@
             "icon": "puzzle-piece",
             "pages": [
               "skills/index",
+              "skills/http-transport",
               "skills/http-provider",
               "skills/websocket-provider",
               "skills/contract-read",
               "skills/contract-write",
               "skills/contract-multicall",
+              "skills/event-filtering",
               "skills/account-invoke",
               "skills/account-declare",
               "skills/account-deploy",

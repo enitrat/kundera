@@ -19,15 +19,19 @@ import {
   type DeclarePayload,
   type DeclareTransactionV3,
   type ResourceBoundsMapping,
-  type SignerInterface,
+  type SignatureArray,
   type UniversalDetails,
 } from 'kundera/crypto';
-import { Felt252 } from 'kundera/primitives';
+import { Felt252, type Felt252Input } from 'kundera/primitives';
+
+export type SignTransaction = (
+  hash: Felt252Input,
+) => SignatureArray | Promise<SignatureArray>;
 
 export interface AccountDeclareOptions {
   transport: Transport;
   address: string;
-  signer: SignerInterface;
+  signTransaction: SignTransaction;
 }
 
 export interface AccountDeclarer {
@@ -67,7 +71,7 @@ export async function declare(
   };
 
   const txHash = computeDeclareV3Hash(tx, chainId);
-  const signature = await options.signer.signTransaction(txHash);
+  const signature = await options.signTransaction(txHash);
 
   return starknet_addDeclareTransaction(options.transport, {
     type: 'DECLARE',

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import '../../../src/test-utils/setupCrypto';
 import type { Transport, TransportRequestOptions } from 'kundera/transport';
-import type { SignerInterface } from 'kundera/crypto';
 import { createAccountDeployer } from './index';
 
 type HandlerMap = Record<string, (params: unknown[] | Record<string, unknown> | undefined) => unknown>;
@@ -40,15 +39,10 @@ const feeEstimate = {
 
 describe('account-deploy skill', () => {
   it('submits deploy account transaction via RPC', async () => {
-    let signedHash: Uint8Array | undefined;
-    const signer: SignerInterface = {
-      getPubKey: async () => '0x123',
-      signRaw: async () => ({ r: 7n as any, s: 8n as any }),
-      signMessage: async () => [7n, 8n],
-      signTransaction: async (hash: Uint8Array) => {
-        signedHash = hash;
-        return [7n, 8n];
-      },
+    let signedHash: unknown;
+    const signTransaction = async (hash: unknown) => {
+      signedHash = hash;
+      return [7n, 8n];
     };
 
     const payload = {
@@ -71,12 +65,12 @@ describe('account-deploy skill', () => {
       },
     });
 
-    const deployer = createAccountDeployer({ transport, signer });
+    const deployer = createAccountDeployer({ transport, signTransaction });
     const result = await deployer.deployAccount(payload);
 
     expect(result.transaction_hash).toBe('0xaaa');
     expect(result.contract_address).toBe('0xbbb');
-    expect(signedHash).toBeInstanceOf(Uint8Array);
+    expect(signedHash).toBeDefined();
 
     const addCall = calls.find((call) => call.method === 'starknet_addDeployAccountTransaction');
     const [tx] = (addCall?.params as Array<Record<string, unknown>>) ?? [];
@@ -107,12 +101,7 @@ describe('account-deploy skill', () => {
 
     const deployer = createAccountDeployer({
       transport,
-      signer: {
-        getPubKey: async () => '0x123',
-        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
-        signMessage: async () => [0n, 0n],
-        signTransaction: async () => [0n, 0n],
-      },
+      signTransaction: async () => [0n, 0n],
     });
 
     const estimate = await deployer.estimateFee(payload);
@@ -141,12 +130,7 @@ describe('account-deploy skill', () => {
 
     const deployer = createAccountDeployer({
       transport,
-      signer: {
-        getPubKey: async () => '0x123',
-        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
-        signMessage: async () => [0n, 0n],
-        signTransaction: async () => [0n, 0n],
-      },
+      signTransaction: async () => [0n, 0n],
     });
 
     const estimate = await deployer.estimateFee(payload, {

@@ -91,10 +91,10 @@ Starknet RPC uses a `keys` parameter with OR semantics per position:
 
 ## Kundera's Typed Filtering
 
-Kundera provides ABI-aware filtering:
+Kundera provides ABI-aware filtering via the event-filtering skill:
 
 ```typescript
-import { decodeEvents } from 'kundera/abi';
+import { decodeEvents } from './skills/event-filtering';
 
 // Filter by event name
 const { result } = decodeEvents(receipt, abi, {
@@ -148,7 +148,7 @@ OR arrays are not supported for multi-felt indexed types. Use exact match only.
 Pre-compile filters for repeated use:
 
 ```typescript
-import { compileEventFilter } from 'kundera/abi';
+import { compileEventFilter } from './skills/event-filtering';
 
 const { result: filter } = compileEventFilter(abi, 'Transfer', {
   from: myAddress,
@@ -163,6 +163,8 @@ const { result: filter } = compileEventFilter(abi, 'Transfer', {
 For complex filters, use `rawKeys` directly:
 
 ```typescript
+import { decodeEvents } from './skills/event-filtering';
+
 const { result } = decodeEvents(receipt, abi, {
   rawKeys: [
     [computeSelector('Transfer')],  // Exact selector
@@ -179,11 +181,12 @@ const { result } = decodeEvents(receipt, abi, {
 | `decodeEvents(receipt, abi, filter)` | Filter events you already have |
 | RPC `starknet_getEvents` | Query events from blockchain |
 
-For RPC queries, compile your filter and pass to the RPC call:
+For RPC queries, compile your filter (skill) and pass to the RPC call:
 
 ```typescript
 import { httpTransport } from 'kundera/transport';
 import { starknet_getEvents } from 'kundera/rpc';
+import { compileEventFilter } from './skills/event-filtering';
 
 const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
 const filter = compileEventFilter(abi, 'Transfer', { from: myAddress });

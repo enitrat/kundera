@@ -3,7 +3,7 @@ title: Decode Events
 description: Decode contract events from transaction receipts with type-safe filtering.
 ---
 
-Kundera provides powerful event decoding with ABI-typed filtering. Decode individual events or batch process entire transaction receipts.
+Kundera provides primitive event decoding in `kundera/abi`. For receipt-wide decoding and filtering, use the event-filtering skill.
 
 ## Decode Single Event
 
@@ -32,7 +32,7 @@ if (!error) {
 Process all events in a transaction receipt:
 
 ```typescript
-import { decodeEvents } from 'kundera/abi';
+import { decodeEvents } from './skills/event-filtering';
 
 const receipt = await provider.getTransactionReceipt(txHash);
 
@@ -52,6 +52,8 @@ for (const event of events) {
 Filter to events from a specific contract:
 
 ```typescript
+import { decodeEvents } from './skills/event-filtering';
+
 const { result } = decodeEvents(receipt, abi, {
   contractAddress: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
 });
@@ -65,6 +67,8 @@ const { result: same } = decodeEvents(receipt, abi, '0x049d...');
 Filter to specific event types:
 
 ```typescript
+import { decodeEvents } from './skills/event-filtering';
+
 const { result } = decodeEvents(receipt, abi, {
   event: 'Transfer',
 });
@@ -77,6 +81,8 @@ const { result } = decodeEvents(receipt, abi, {
 Filter by indexed event parameters (keys):
 
 ```typescript
+import { decodeEvents } from './skills/event-filtering';
+
 // Find transfers FROM a specific address
 const { result } = decodeEvents(receipt, abi, {
   event: 'Transfer',
@@ -101,6 +107,8 @@ const { result: exact } = decodeEvents(receipt, abi, {
 Match any of multiple values for an indexed argument:
 
 ```typescript
+import { decodeEvents } from './skills/event-filtering';
+
 // Transfers FROM address A OR address B
 const { result } = decodeEvents(receipt, abi, {
   event: 'Transfer',
@@ -117,6 +125,8 @@ Only single-felt types (felt252, ContractAddress, u128, etc.) support OR arrays.
 Combine address, event, and argument filters:
 
 ```typescript
+import { decodeEvents } from './skills/event-filtering';
+
 const { result } = decodeEvents(receipt, abi, {
   address: '0x049d...', // Contract address
   event: 'Transfer',    // Event name
@@ -129,7 +139,7 @@ const { result } = decodeEvents(receipt, abi, {
 Use `decodeEventsStrict` to error on unknown events:
 
 ```typescript
-import { decodeEventsStrict } from 'kundera/abi';
+import { decodeEventsStrict } from './skills/event-filtering';
 
 // Throws error if any event can't be decoded
 const { result, error } = decodeEventsStrict(receipt, abi);
@@ -153,7 +163,7 @@ Use strict mode when you expect all events to match your ABI.
 Pre-compile filters for reuse:
 
 ```typescript
-import { compileEventFilter } from 'kundera/abi';
+import { compileEventFilter } from './skills/event-filtering';
 
 const { result: filter } = compileEventFilter(abi, 'Transfer', {
   from: 0x123n,
@@ -193,6 +203,7 @@ For advanced filtering, use `rawKeys` to specify exact key positions:
 
 ```typescript
 import { computeSelector } from 'kundera/abi';
+import { decodeEvents } from './skills/event-filtering';
 
 const { result } = decodeEvents(receipt, abi, {
   rawKeys: [

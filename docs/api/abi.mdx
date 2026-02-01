@@ -43,9 +43,6 @@ import {
   // Events
   decodeEvent,
   decodeEventBySelector,
-  decodeEvents,
-  decodeEventsStrict,
-  compileEventFilter,
   getEventSelector,
   getEventSelectorHex,
   // Short strings
@@ -60,10 +57,7 @@ import {
   type AbiErrorCode,
   type CairoValue,
   type DecodedEvent,
-  type DecodedReceiptEvent,
   type EventData,
-  type TransactionReceipt,
-  type DecodeEventsOptions,
 } from 'kundera/abi';
 ```
 
@@ -288,47 +282,10 @@ Auto-detect event from selector in keys[0].
 const { result } = decodeEventBySelector(abi, { keys, data });
 ```
 
-### decodeEvents
-
-Decode all events from a transaction receipt.
-
-```typescript
-function decodeEvents(
-  receipt: TransactionReceipt,
-  abi: Abi,
-  options?: DecodeEventsOptions | string
-): Result<DecodedReceiptEvent[]>
-```
-
-```typescript
-// All events
-const { result } = decodeEvents(receipt, abi);
-
-// Filter by address
-const { result } = decodeEvents(receipt, abi, contractAddress);
-
-// Filter by event + args
-const { result } = decodeEvents(receipt, abi, {
-  event: 'Transfer',
-  args: { from: 0x123n },
-});
-```
-
-### decodeEventsStrict
-
-Same as `decodeEvents` but errors on unknown events.
-
-### compileEventFilter
-
-Pre-compile an event filter for reuse.
-
-```typescript
-function compileEventFilter(
-  abi: Abi,
-  eventName: string,
-  args?: Record<string, CairoValue | CairoValue[]>
-): Result<CompiledEventFilter>
-```
+<Tip>
+Receipt-wide decoding and typed filtering are provided as a skill. See the Event Filtering skill for `decodeEvents`,
+`decodeEventsStrict`, and `compileEventFilter`.
+</Tip>
 
 ### getEventSelector / getEventSelectorHex
 
@@ -388,28 +345,6 @@ interface CairoEnumValue {
 interface DecodedEvent {
   name: string;
   args: Record<string, CairoValue>;
-}
-```
-
-### DecodedReceiptEvent
-
-```typescript
-interface DecodedReceiptEvent extends DecodedEvent {
-  index: number;
-  fromAddress: string;
-}
-```
-
-### DecodeEventsOptions
-
-```typescript
-interface DecodeEventsOptions {
-  contractAddress?: string;
-  address?: string;        // Alias for contractAddress
-  selector?: string;       // Event selector or name
-  event?: string;          // Event name (compiles filter)
-  args?: Record<string, CairoValue | CairoValue[]>;
-  rawKeys?: bigint[][];    // Escape hatch
 }
 ```
 

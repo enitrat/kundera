@@ -22,12 +22,10 @@ The default transport for request/response patterns:
 ```typescript
 import { httpTransport } from 'kundera/transport';
 
-const transport = httpTransport({
-  url: 'https://starknet-mainnet.public.blastapi.io',
-  timeout: 30000,
-  retry: 3,
-  retryDelay: 1000,
-});
+const transport = httpTransport(
+  'https://starknet-mainnet.public.blastapi.io',
+  { timeout: 30000 }
+);
 
 // Make a raw JSON-RPC request
 const result = await transport.request({
@@ -36,29 +34,23 @@ const result = await transport.request({
 });
 ```
 
-## Request Batching
+## Request Batching (Skill)
 
-Combine multiple requests into a single HTTP call:
+For batching and retries, use the HTTP transport skill:
 
 ```typescript
-const transport = httpTransport({
-  url: 'https://...',
-  batch: {
-    batchWait: 10,    // Wait 10ms to collect requests
-    batchSize: 100,   // Max requests per batch
-  },
+import { httpTransport } from './skills/http-transport';
+
+const transport = httpTransport('https://...', {
+  batch: { batchWait: 10, batchSize: 100 },
+  retries: 3,
 });
 
-// These requests are automatically batched
 const [block, chain] = await Promise.all([
   transport.request({ method: 'starknet_blockNumber', params: [] }),
   transport.request({ method: 'starknet_chainId', params: [] }),
 ]);
 ```
-
-<Tip>
-Batching reduces HTTP overhead when making many concurrent requests. Enable it for high-throughput scenarios.
-</Tip>
 
 ## WebSocket Transport
 
@@ -76,28 +68,6 @@ await transport.connect();
 // Subscribe to notifications
 transport.subscribe('sub_123', (data) => {
   console.log('Received:', data);
-});
-```
-
-## Fallback Transport
-
-Chain multiple transports with automatic failover:
-
-```typescript
-import { fallbackTransport, httpTransport } from 'kundera/transport';
-
-const transport = fallbackTransport({
-  transports: [
-    httpTransport({ url: 'https://primary-rpc.example.com' }),
-    httpTransport({ url: 'https://backup-rpc.example.com' }),
-    httpTransport({ url: 'https://starknet-mainnet.public.blastapi.io' }),
-  ],
-});
-
-// Automatically tries next transport on failure
-const result = await transport.request({
-  method: 'starknet_blockNumber',
-  params: [],
 });
 ```
 
@@ -123,12 +93,8 @@ const customTransport: Transport = {
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `url` | `string` | required | RPC endpoint URL |
-| `headers` | `Record<string,string>` | `{}` | Custom HTTP headers |
+| `fetchOptions` | `RequestInit` | `{}` | Custom fetch options (headers, credentials, etc.) |
 | `timeout` | `number` | `30000` | Request timeout (ms) |
-| `retry` | `number` | `3` | Retry attempts |
-| `retryDelay` | `number` | `1000` | Delay between retries (ms) |
-| `batch` | `boolean \| object` | `false` | Enable request batching |
 
 ### WebSocket Options
 
@@ -137,13 +103,6 @@ const customTransport: Transport = {
 | `url` | `string` | required | WebSocket endpoint URL |
 | `reconnect` | `boolean` | `true` | Auto-reconnect |
 | `reconnectDelay` | `number` | `1000` | Reconnect delay (ms) |
-
-### Fallback Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `transports` | `Transport[]` | required | Ordered list of transports |
-| `retryAll` | `boolean` | `true` | Retry all transports on failure |
 
 ## Related
 

@@ -1,0 +1,31 @@
+---
+title: "Event Filtering"
+description: "Decode and filter receipt events with ABI metadata."
+---
+
+This skill provides `decodeEvents`, `decodeEventsStrict`, and `compileEventFilter` helpers.
+Copy it into your project and tailor filtering logic as needed.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/event-filtering src/skills/
+```
+
+## Usage
+
+```ts
+import { decodeEvents } from './skills/event-filtering';
+
+const { result } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { from: [addr1, addr2], to: addr3 },
+  address: contractAddress,
+});
+```
+
+## Notes
+
+- `decodeEvents` skips unknown events.
+- `decodeEventsStrict` returns an error on the first unknown event.
+- `compileEventFilter` builds raw key filters for reuse.

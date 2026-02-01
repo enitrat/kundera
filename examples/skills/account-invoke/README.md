@@ -6,16 +6,16 @@ Execute invoke transactions with a signer. Copy into your project.
 
 ```ts
 import { httpTransport } from 'kundera/transport';
-import { PrivateKeySigner } from 'kundera/crypto';
+import { signRaw, signatureToArray } from 'kundera/crypto';
 import { createAccountInvoker } from './skills/account-invoke';
 
 const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');
-const signer = new PrivateKeySigner(PRIVATE_KEY);
+const signTransaction = (hash) => signatureToArray(signRaw(PRIVATE_KEY, hash));
 
 const account = createAccountInvoker({
   transport,
   address: ACCOUNT_ADDRESS,
-  signer,
+  signTransaction,
 });
 
 const { transaction_hash } = await account.execute({

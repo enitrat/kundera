@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import '../../../src/test-utils/setupCrypto';
 import type { Transport, TransportRequestOptions } from 'kundera/transport';
-import type { SignerInterface } from 'kundera/crypto';
 import { createAccountInvoker } from './index';
 
 type HandlerMap = Record<string, (params: unknown[] | Record<string, unknown> | undefined) => unknown>;
@@ -40,15 +39,10 @@ const feeEstimate = {
 
 describe('account-invoke skill', () => {
   it('executes via RPC and formats signature', async () => {
-    let signedHash: Uint8Array | undefined;
-    const signer: SignerInterface = {
-      getPubKey: async () => '0x123',
-      signRaw: async () => ({ r: 1n as any, s: 2n as any }),
-      signMessage: async () => [1n, 2n],
-      signTransaction: async (hash: Uint8Array) => {
-        signedHash = hash;
-        return [1n, 2n];
-      },
+    let signedHash: unknown;
+    const signTransaction = async (hash: unknown) => {
+      signedHash = hash;
+      return [1n, 2n];
     };
 
     const { transport, calls } = createMockTransport({
@@ -65,7 +59,7 @@ describe('account-invoke skill', () => {
     const account = createAccountInvoker({
       transport,
       address: '0xabc',
-      signer,
+      signTransaction,
     });
 
     const result = await account.execute({
@@ -75,7 +69,7 @@ describe('account-invoke skill', () => {
     });
 
     expect(result.transaction_hash).toBe('0x123');
-    expect(signedHash).toBeInstanceOf(Uint8Array);
+    expect(signedHash).toBeDefined();
 
     const addCall = calls.find((call) => call.method === 'starknet_addInvokeTransaction');
     const [tx] = (addCall?.params as Array<Record<string, unknown>>) ?? [];
@@ -103,12 +97,7 @@ describe('account-invoke skill', () => {
     const account = createAccountInvoker({
       transport,
       address: '0xabc',
-      signer: {
-        getPubKey: async () => '0x123',
-        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
-        signMessage: async () => [0n, 0n],
-        signTransaction: async () => [0n, 0n],
-      },
+      signTransaction: async () => [0n, 0n],
     });
 
     const estimate = await account.estimateFee({
@@ -137,12 +126,7 @@ describe('account-invoke skill', () => {
     const account = createAccountInvoker({
       transport,
       address: '0xabc',
-      signer: {
-        getPubKey: async () => '0x123',
-        signRaw: async () => ({ r: 0n as any, s: 0n as any }),
-        signMessage: async () => [0n, 0n],
-        signTransaction: async () => [0n, 0n],
-      },
+      signTransaction: async () => [0n, 0n],
     });
 
     const estimate = await account.estimateFee(

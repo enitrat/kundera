@@ -1,7 +1,7 @@
 /**
- * Signer Interface and Implementations
+ * Signing Helpers
  *
- * Abstract signing interface with PrivateKeySigner implementation.
+ * Functional signing helpers and typed data hashing (SNIP-12).
  *
  * @module crypto/signer
  */
@@ -11,100 +11,28 @@ import {
   type Felt252Type,
   type Felt252Input,
 } from '../primitives/index.js';
-import { sign, getPublicKey, poseidonHashMany, type Signature } from './index.js';
-import type { TypedData, SignatureArray } from './account-types.js';
+import { sign as signPrimitive, poseidonHashMany, type Signature } from './index.js';
+import type { TypedData } from './account-types.js';
 
-// ============ Signer Interface ============
+// ============ Signing Helpers ============
 
 /**
- * Abstract signer interface for account operations
+ * Sign a raw message hash with a private key.
  */
-export interface SignerInterface {
-  /**
-   * Get the public key associated with this signer
-   */
-  getPubKey(): Promise<string>;
-
-  /**
-   * Sign a message hash
-   * @param hash - The message hash to sign
-   */
-  signRaw(hash: Felt252Input): Promise<Signature>;
-
-  /**
-   * Sign typed data (SNIP-12 / EIP-712 style)
-   * @param typedData - The typed data to sign
-   * @param accountAddress - The account address for domain separation
-   */
-  signMessage(
-    typedData: TypedData,
-    accountAddress: string
-  ): Promise<SignatureArray>;
-
-  /**
-   * Sign a transaction hash
-   * @param hash - The transaction hash to sign
-   */
-  signTransaction(hash: Felt252Input): Promise<SignatureArray>;
+export function signRaw(privateKey: Felt252Input, hash: Felt252Input): Signature {
+  return signPrimitive(Felt252(privateKey), Felt252(hash));
 }
 
-// ============ Private Key Signer ============
-
 /**
- * Signer implementation using a private key
+ * Sign typed data (SNIP-12 / EIP-712 style) with a private key.
  */
-export class PrivateKeySigner implements SignerInterface {
-  private readonly privateKey: Felt252Type;
-  private publicKey: Felt252Type | null = null;
-
-  /**
-   * Create a new PrivateKeySigner
-   * @param privateKey - The private key (hex string, bigint, or Felt252)
-   */
-  constructor(privateKey: Felt252Input) {
-    this.privateKey = Felt252(privateKey);
-  }
-
-  /**
-   * Get the public key (computed lazily and cached)
-   */
-  async getPubKey(): Promise<string> {
-    if (!this.publicKey) {
-      this.publicKey = getPublicKey(this.privateKey);
-    }
-    return this.publicKey.toHex();
-  }
-
-  /**
-   * Sign a raw message hash
-   */
-  async signRaw(hash: Felt252Input): Promise<Signature> {
-    const hashFelt = Felt252(hash);
-    return sign(this.privateKey, hashFelt);
-  }
-
-  /**
-   * Sign typed data (SNIP-12)
-   *
-   * The typed data hash is computed as:
-   * poseidon("StarkNet Message", domain_hash, account, message_hash)
-   */
-  async signMessage(
-    typedData: TypedData,
-    accountAddress: string
-  ): Promise<SignatureArray> {
-    const messageHash = computeTypedDataHash(typedData, accountAddress);
-    const signature = await this.signRaw(messageHash);
-    return [signature.r.toBigInt(), signature.s.toBigInt()];
-  }
-
-  /**
-   * Sign a transaction hash
-   */
-  async signTransaction(hash: Felt252Input): Promise<SignatureArray> {
-    const signature = await this.signRaw(hash);
-    return [signature.r.toBigInt(), signature.s.toBigInt()];
-  }
+export function signTypedData(
+  privateKey: Felt252Input,
+  typedData: TypedData,
+  accountAddress: string,
+): Signature {
+  const messageHash = hashTypedData(typedData, accountAddress);
+  return signRaw(privateKey, messageHash);
 }
 
 // ============ Typed Data Hashing (SNIP-12) ============
@@ -121,15 +49,15 @@ const STARKNET_MESSAGE_PREFIX = Felt252(
  *
  * hash = poseidon(prefix, domain_hash, account, message_hash)
  */
-function computeTypedDataHash(
+export function hashTypedData(
   typedData: TypedData,
-  accountAddress: string
+  accountAddress: string,
 ): Felt252Type {
   const domainHash = hashDomain(typedData.domain);
   const messageHash = hashStruct(
     typedData.primaryType,
     typedData.message,
-    typedData.types
+    typedData.types,
   );
 
   return poseidonHashMany([
@@ -168,7 +96,7 @@ function hashDomain(domain: TypedData['domain']): Felt252Type {
 function hashStruct(
   typeName: string,
   data: Record<string, unknown>,
-  types: TypedData['types']
+  types: TypedData['types'],
 ): Felt252Type {
   const typeHash = computeTypeHash(typeName, types);
   const fields = types[typeName] || [];
@@ -188,7 +116,7 @@ function hashStruct(
  */
 function computeTypeHash(
   typeName: string,
-  types: TypedData['types']
+  types: TypedData['types'],
 ): Felt252Type {
   const typeString = encodeType(typeName, types);
   return hashShortString(typeString);
@@ -211,7 +139,7 @@ function encodeType(typeName: string, types: TypedData['types']): string {
 function hashValue(
   type: string,
   value: unknown,
-  types: TypedData['types']
+  types: TypedData['types'],
 ): Felt252Type {
   // Primitive types
   if (type === 'felt' || type === 'felt252') {
@@ -271,13 +199,4 @@ function shortStringToFelt(str: string): Felt252Type {
     result = result * 256n + BigInt(str.charCodeAt(i));
   }
   return Felt252(result);
-}
-
-// ============ Factory Functions ============
-
-/**
- * Create a PrivateKeySigner from a private key
- */
-export function createSigner(privateKey: Felt252Input): SignerInterface {
-  return new PrivateKeySigner(privateKey);
 }

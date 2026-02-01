@@ -11,7 +11,6 @@ import { createHttpProvider } from './skills/http-provider';
 
 const provider = createHttpProvider({
   url: 'https://starknet-mainnet.public.blastapi.io',
-  transport: { batch: { batchWait: 10, batchSize: 50 }, timeout: 30000 },
 });
 
 const chainId = await provider.chainId();
@@ -23,3 +22,4 @@ const block = await provider.blockNumber();
 - All methods are thin wrappers around `kundera/rpc` functions.
 - Add/remove methods to match your app's needs.
 - `provider.transport` exposes the low-level transport for custom calls.
+- For batching/retries, use the `http-transport` skill and pass it as `transport`.
