@@ -1,0 +1,130 @@
+{
+  "name": "kundera-effect",
+  "version": "0.1.0",
+  "description": "Effect-TS integration for Kundera Starknet primitives library",
+  "author": "Starknet",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/starknet/kundera.git",
+    "directory": "kundera-effect"
+  },
+  "homepage": "https://github.com/starknet/kundera/tree/main/kundera-effect",
+  "bugs": {
+    "url": "https://github.com/starknet/kundera/issues"
+  },
+  "keywords": [
+    "starknet",
+    "effect",
+    "effect-ts",
+    "crypto",
+    "abi",
+    "primitives",
+    "typed-errors"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./abi": {
+      "types": "./dist/abi/index.d.ts",
+      "import": "./dist/abi/index.js"
+    },
+    "./primitives": {
+      "types": "./dist/primitives/index.d.ts",
+      "import": "./dist/primitives/index.js"
+    },
+    "./crypto": {
+      "types": "./dist/crypto/index.d.ts",
+      "import": "./dist/crypto/index.js"
+    },
+    "./serde": {
+      "types": "./dist/serde/index.d.ts",
+      "import": "./dist/serde/index.js"
+    },
+    "./transport": {
+      "types": "./dist/transport/index.d.ts",
+      "import": "./dist/transport/index.js"
+    },
+    "./rpc": {
+      "types": "./dist/rpc/index.d.ts",
+      "import": "./dist/rpc/index.js"
+    },
+    "./native": {
+      "types": "./dist/native/index.d.ts",
+      "import": "./dist/native/index.js"
+    },
+    "./wasm": {
+      "types": "./dist/wasm/index.d.ts",
+      "import": "./dist/wasm/index.js"
+    },
+    "./wasm-loader": {
+      "types": "./dist/wasm-loader/index.d.ts",
+      "import": "./dist/wasm-loader/index.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "abi": [
+        "./dist/abi/index.d.ts"
+      ],
+      "primitives": [
+        "./dist/primitives/index.d.ts"
+      ],
+      "crypto": [
+        "./dist/crypto/index.d.ts"
+      ],
+      "serde": [
+        "./dist/serde/index.d.ts"
+      ],
+      "transport": [
+        "./dist/transport/index.d.ts"
+      ],
+      "rpc": [
+        "./dist/rpc/index.d.ts"
+      ],
+      "native": [
+        "./dist/native/index.d.ts"
+      ],
+      "wasm": [
+        "./dist/wasm/index.d.ts"
+      ],
+      "wasm-loader": [
+        "./dist/wasm-loader/index.d.ts"
+      ]
+    }
+  },
+  "sideEffects": false,
+  "peerDependencies": {
+    "@starknet/kundera": "^0.1.0",
+    "effect": "^3.19.0"
+  },
+  "peerDependenciesMeta": {
+    "@starknet/kundera": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@starknet/kundera": "file:..",
+    "effect": "^3.19.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.8"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run build && bun run typecheck"
+  }
+}
