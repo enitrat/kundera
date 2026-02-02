@@ -9,6 +9,14 @@ export default defineConfig({
   resolve: {
     alias: [
       {
+        find: /^kundera-sn$/,
+        replacement: path.resolve(kunderaRoot, "src/index.ts")
+      },
+      {
+        find: /^kundera-sn\/(.*)$/,
+        replacement: path.resolve(kunderaRoot, "src/$1/index.ts")
+      },
+      {
         find: /^@starknet\/kundera$/,
         replacement: path.resolve(kunderaRoot, "src/index.ts")
       },

@@ -60,7 +60,7 @@ import type {
   TypedData,
   SignatureArray
 } from "kundera-sn/crypto";
-import type { Felt252Type } from "kundera-sn/primitives";
+import type { Felt252Input, Felt252Type } from "kundera-sn/primitives";
 import { tryCrypto, tryCryptoPromise } from "./utils.js";
 export { CryptoError } from "../errors.js";
 
@@ -219,9 +219,12 @@ export const hashTipAndResourceBounds = (
     () => hashTipAndResourceBoundsBase(tip, resourceBounds)
   );
 
-export const encodeDAModes = (mode: DataAvailabilityMode) =>
-  tryCrypto("encodeDAModes", { mode }, "valid DA mode", () =>
-    encodeDAModesBase(mode)
+export const encodeDAModes = (
+  nonceMode: DataAvailabilityMode,
+  feeMode: DataAvailabilityMode
+) =>
+  tryCrypto("encodeDAModes", { nonceMode, feeMode }, "valid DA mode", () =>
+    encodeDAModesBase(nonceMode, feeMode)
   );
 
 export const hashCalldata = (calldata: bigint[]) =>
@@ -231,42 +234,43 @@ export const hashCalldata = (calldata: bigint[]) =>
 
 export const computeInvokeV3Hash = (
   payload: InvokeTransactionV3,
-  details: UniversalDetails
+  chainId: Felt252Input
 ) =>
   tryCrypto(
     "computeInvokeV3Hash",
-    { payload, details },
+    { payload, chainId },
     "valid invoke payload",
-    () => computeInvokeV3HashBase(payload, details)
+    () => computeInvokeV3HashBase(payload, chainId)
   );
 
 export const computeDeclareV3Hash = (
   payload: DeclareTransactionV3,
-  details: UniversalDetails
+  chainId: Felt252Input
 ) =>
   tryCrypto(
     "computeDeclareV3Hash",
-    { payload, details },
+    { payload, chainId },
     "valid declare payload",
-    () => computeDeclareV3HashBase(payload, details)
+    () => computeDeclareV3HashBase(payload, chainId)
   );
 
 export const computeDeployAccountV3Hash = (
   payload: DeployAccountTransactionV3,
-  details: UniversalDetails
+  contractAddress: Felt252Input,
+  chainId: Felt252Input
 ) =>
   tryCrypto(
     "computeDeployAccountV3Hash",
-    { payload, details },
+    { payload, contractAddress, chainId },
     "valid deploy account payload",
-    () => computeDeployAccountV3HashBase(payload, details)
+    () => computeDeployAccountV3HashBase(payload, contractAddress, chainId)
   );
 
 export const computeContractAddress = (
-  salt: Felt252Type,
-  classHash: Felt252Type,
-  constructorCalldata: Felt252Type[],
-  deployerAddress: Felt252Type
+  classHash: Felt252Input,
+  salt: Felt252Input,
+  constructorCalldata: bigint[],
+  deployerAddress?: Felt252Input
 ) =>
   tryCrypto(
     "computeContractAddress",
@@ -274,8 +278,8 @@ export const computeContractAddress = (
     "valid deploy parameters",
     () =>
       computeContractAddressBase(
-        salt,
         classHash,
+        salt,
         constructorCalldata,
         deployerAddress
       )

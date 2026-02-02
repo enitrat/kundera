@@ -160,19 +160,34 @@ export const getEnum = (abi: ParsedAbi, name: string) => getEnumBase(abi, name);
 export const encodeValue = (value: CairoValue, typeStr: string, abi: ParsedAbi) =>
   fromResult(encodeValueBase(value, typeStr, abi));
 export const encodeArgs = (args: CairoValue[], inputs: AbiMember[], abi: ParsedAbi) =>
-  fromResult(encodeArgsBase(args, inputs, abi));
+  fromResult(encodeArgsBase(inputs, args, abi));
 export const encodeArgsObject = (
   args: Record<string, CairoValue>,
   inputs: AbiMember[],
   abi: ParsedAbi
-) => fromResult(encodeArgsObjectBase(args, inputs, abi));
+) => fromResult(encodeArgsObjectBase(inputs, args, abi));
 
 export const decodeValue = (
   data: bigint[],
   typeStr: string,
   abi: ParsedAbi,
   offset = 0
-) => fromResult(decodeValueBase(data, typeStr, abi, offset));
+) => {
+  if (offset === 0) {
+    return fromResult(decodeValueBase(data, typeStr, abi));
+  }
+
+  const sliced = data.slice(offset);
+  const result = decodeValueBase(sliced, typeStr, abi);
+  if (result.error) {
+    return fromResult(result);
+  }
+
+  return fromResult({
+    result: { value: result.result.value, consumed: result.result.consumed + offset },
+    error: null
+  });
+};
 
 export const decodeArgs = (data: bigint[], inputs: AbiMember[], abi: ParsedAbi) =>
   fromResult(decodeArgsBase(data, inputs, abi));
@@ -219,11 +234,8 @@ export const decodeEvent = (
   eventName: string,
   data: EventData
 ) => fromResult(decodeEventBase(abi, eventName, data));
-export const decodeEventBySelector = (
-  abi: Abi,
-  selectorHex: string,
-  data: EventData
-) => fromResult(decodeEventBySelectorBase(abi, selectorHex, data));
+export const decodeEventBySelector = (abi: Abi, data: EventData) =>
+  fromResult(decodeEventBySelectorBase(abi, data));
 
 export const getEventSelector = (eventName: string) =>
   tryAbi("getEventSelector", { eventName }, "ENCODE_ERROR", () =>

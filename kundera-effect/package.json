@@ -1,6 +1,6 @@
 {
   "name": "kundera-sn-effect",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Effect-TS integration for Kundera Starknet primitives library",
   "author": "Starknet",
   "license": "MIT",
@@ -124,6 +124,7 @@
     "build": "tsup",
     "test": "vitest",
     "test:run": "vitest run",
+    "pretypecheck": "bun run --cwd .. build:types",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build && bun run typecheck"
   }

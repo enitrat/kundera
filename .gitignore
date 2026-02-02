@@ -1,7 +1,7 @@
 .claude/tsc-cache/
-/node_modules/
-/dist/
-/types/
-/target/
-/wasm/
-/.zig-cache/
+node_modules/
+dist/
+types/
+target/
+wasm/
+.zig-cache/
