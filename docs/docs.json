@@ -93,6 +93,19 @@
             ]
           },
           {
+            "group": "Effect Integration",
+            "icon": "bolt",
+            "pages": [
+              "effect/index",
+              "effect/primitives",
+              "effect/abi",
+              "effect/crypto",
+              "effect/rpc",
+              "effect/serde",
+              "effect/transport"
+            ]
+          },
+          {
             "group": "API Reference",
             "icon": "code",
             "pages": [

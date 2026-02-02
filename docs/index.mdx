@@ -26,6 +26,28 @@ const hash = pedersen(a, b);
 const result = await starknet_call(transport, { contract_address, entry_point, calldata });
 ```
 
+## Featured: kundera-effect
+
+**For production applications, we recommend [kundera-effect](/effect/index)** — Effect-TS integration with typed errors, dependency injection, and composable operations.
+
+```typescript
+import { Effect } from 'effect';
+import * as Abi from 'kundera-effect/abi';
+import * as Rpc from 'kundera-effect/rpc';
+
+const program = Effect.gen(function* () {
+  const calldata = yield* Abi.encodeCalldata(abi, 'transfer', args);
+  const result = yield* Rpc.starknet_call(transport, call, 'latest');
+  return result;
+}).pipe(
+  Effect.retry({ times: 3 }),
+  Effect.timeout('10 seconds'),
+  Effect.catchTag('RpcError', (e) => Effect.succeed(fallback))
+);
+```
+
+[Get started with kundera-effect →](/effect/index)
+
 ## Who is Kundera For?
 
 | Use Case | Why Kundera |

@@ -1,0 +1,100 @@
+---
+title: kundera-effect
+description: Effect-TS integration for type-safe, composable Starknet operations
+---
+
+# kundera-effect
+
+**For production applications, we recommend kundera-effect** — Effect-TS integration with typed errors, dependency injection, and composable operations.
+
+## Why Effect?
+
+| Feature | Plain Kundera | kundera-effect |
+|---------|---------------|----------------|
+| Error handling | try/catch | Typed `Effect<A, E, R>` |
+| Retries | Manual | `Effect.retry({ times: 3 })` |
+| Timeouts | Manual | `Effect.timeout("10s")` |
+| Composition | Promise chains | Effect generators |
+| Testing | Mocks | Dependency injection |
+
+## Quick Comparison
+
+**Plain Kundera:**
+```typescript
+import { encodeCalldata } from '@starknet/kundera/abi';
+import { starknet_call } from '@starknet/kundera/rpc';
+
+try {
+  const calldata = encodeCalldata(abi, 'transfer', args);
+  const result = await starknet_call(transport, call, 'latest');
+} catch (e) {
+  // What kind of error? ABI? RPC? Network?
+}
+```
+
+**kundera-effect:**
+```typescript
+import { Effect } from 'effect';
+import * as Abi from 'kundera-effect/abi';
+import * as Rpc from 'kundera-effect/rpc';
+
+const program = Effect.gen(function* () {
+  const calldata = yield* Abi.encodeCalldata(abi, 'transfer', args);
+  const result = yield* Rpc.starknet_call(transport, call, 'latest');
+  return result;
+}).pipe(
+  Effect.retry({ times: 3 }),
+  Effect.timeout('10 seconds'),
+  Effect.catchTag('RpcError', (e) => Effect.succeed(fallback))
+);
+```
+
+## Installation
+
+```bash
+npm install kundera-effect effect @starknet/kundera
+```
+
+## Modules
+
+<CardGroup cols={2}>
+  <Card title="Primitives" icon="cube" href="/effect/primitives">
+    Felt252, ContractAddress, ClassHash with Effect wrappers.
+  </Card>
+  <Card title="ABI" icon="code" href="/effect/abi">
+    Encode and decode calldata with typed AbiError.
+  </Card>
+  <Card title="Crypto" icon="lock" href="/effect/crypto">
+    Pedersen, Poseidon, signatures with CryptoError.
+  </Card>
+  <Card title="RPC" icon="network-wired" href="/effect/rpc">
+    All JSON-RPC methods with RpcError handling.
+  </Card>
+  <Card title="Serde" icon="arrows-rotate" href="/effect/serde">
+    Cairo serialization with SerdeError.
+  </Card>
+  <Card title="Transport" icon="satellite" href="/effect/transport">
+    HTTP and WebSocket with TransportError.
+  </Card>
+</CardGroup>
+
+## Error Types
+
+All operations return typed errors you can pattern match:
+
+```typescript
+import { Effect } from 'effect';
+
+const program = myOperation.pipe(
+  Effect.catchTags({
+    PrimitiveError: (e) => /* handle invalid felt/address */,
+    AbiError: (e) => /* handle encoding/decoding failure */,
+    CryptoError: (e) => /* handle hash/signature failure */,
+    RpcError: (e) => /* handle network/RPC failure */,
+  })
+);
+```
+
+## Full Documentation
+
+See the [kundera-effect package](https://github.com/starknet/kundera/tree/master/kundera-effect/docs) for complete API documentation.

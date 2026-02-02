@@ -1,0 +1,94 @@
+---
+title: Effect Primitives
+description: Starknet primitives with Effect error handling
+---
+
+# Effect Primitives
+
+All primitive constructors return `Effect<T, PrimitiveError>` for type-safe error handling.
+
+## Available Primitives
+
+| Primitive | Description |
+|-----------|-------------|
+| `Felt252` | Field element (< 2^252) |
+| `ContractAddress` | Contract address (< 2^251) |
+| `ClassHash` | Contract class hash |
+| `StorageKey` | Storage slot key |
+| `EthAddress` | Ethereum address (20 bytes) |
+| `ShortString` | Cairo short string (< 31 chars) |
+
+## Usage
+
+```typescript
+import { Effect } from 'effect';
+import * as Felt252 from 'kundera-effect/primitives/Felt252';
+import * as ContractAddress from 'kundera-effect/primitives/ContractAddress';
+
+const program = Effect.gen(function* () {
+  // Parse from various formats
+  const felt = yield* Felt252.from('0x123');
+  const address = yield* ContractAddress.from('0x049d...');
+
+  // Pure functions don't need Effect
+  const hex = Felt252.toHex(felt);
+  const isZero = Felt252.isZero(felt);
+
+  return { felt, address, hex };
+});
+```
+
+## Error Handling
+
+```typescript
+const program = Felt252.from('invalid').pipe(
+  Effect.catchTag('PrimitiveError', (e) => {
+    console.log(e.operation); // "Felt252.from"
+    console.log(e.input);     // "invalid"
+    console.log(e.expected);  // "hex string, bigint, number, or 32-byte Uint8Array"
+    return Effect.succeed(Felt252.ZERO);
+  })
+);
+```
+
+## Constructors
+
+### Felt252
+
+```typescript
+yield* Felt252.from(value);       // string | bigint | number | Uint8Array
+yield* Felt252.fromHex('0x123');  // hex string
+yield* Felt252.fromBigInt(123n);  // bigint
+yield* Felt252.fromBytes(bytes);  // 32-byte Uint8Array
+```
+
+### ContractAddress
+
+```typescript
+yield* ContractAddress.from('0x049d...');
+ContractAddress.isValid(value); // boolean (pure)
+```
+
+### ClassHash
+
+```typescript
+yield* ClassHash.from('0x07b3...');
+```
+
+### StorageKey
+
+```typescript
+yield* StorageKey.from('0x110e...');
+```
+
+### EthAddress
+
+```typescript
+yield* EthAddress.from('0xd8da6bf26964af9d7eed9e03e53415d37aa96045');
+```
+
+### ShortString
+
+```typescript
+yield* ShortString.from('hello'); // max 31 ASCII chars
+```

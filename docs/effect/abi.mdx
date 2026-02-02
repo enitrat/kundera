@@ -1,0 +1,69 @@
+---
+title: Effect ABI
+description: ABI encoding and decoding with typed errors
+---
+
+# Effect ABI
+
+All ABI operations return `Effect<T, AbiError>` for type-safe error handling.
+
+## Encoding
+
+```typescript
+import { Effect } from 'effect';
+import * as Abi from 'kundera-effect/abi';
+
+const program = Effect.gen(function* () {
+  // Encode function calldata
+  const calldata = yield* Abi.encodeCalldata(abi, 'transfer', [recipient, amount]);
+
+  // Encode a single value
+  const encoded = yield* Abi.encodeValue(value, 'core::integer::u256', parsedAbi);
+
+  return calldata;
+});
+```
+
+## Decoding
+
+```typescript
+const program = Effect.gen(function* () {
+  // Decode function output
+  const result = yield* Abi.decodeOutput(abi, 'balanceOf', outputFelts);
+
+  // Decode as named object
+  const { balance } = yield* Abi.decodeOutputObject(abi, 'balanceOf', outputFelts);
+
+  // Decode event
+  const event = yield* Abi.decodeEvent(abi, 'Transfer', eventData);
+
+  return { result, balance, event };
+});
+```
+
+## Selectors
+
+```typescript
+const selector = yield* Abi.getFunctionSelector('transfer');
+const selectorHex = yield* Abi.getFunctionSelectorHex('transfer');
+const eventSelector = yield* Abi.getEventSelector('Transfer');
+```
+
+## Class Hash
+
+```typescript
+const classHash = yield* Abi.classHashFromSierra(sierraContract);
+const compiledHash = yield* Abi.compiledClassHashFromCasm(casmContract);
+```
+
+## Error Handling
+
+```typescript
+const program = Abi.encodeCalldata(abi, 'unknownFn', []).pipe(
+  Effect.catchTag('AbiError', (e) => {
+    console.log(e.code);    // "NOT_FOUND"
+    console.log(e.message); // "Function 'unknownFn' not found"
+    return Effect.succeed([]);
+  })
+);
+```
