@@ -10,13 +10,11 @@ export const tryPrimitive = <T>(
   Effect.try({
     try: thunk,
     catch: (error) =>
-      new PrimitiveError(
-        error instanceof Error ? error.message : "Primitive operation failed",
-        {
-          operation,
-          input,
-          expected,
-          cause: error instanceof Error ? error : undefined
-        }
-      )
+      new PrimitiveError({
+        message: error instanceof Error ? error.message : "Primitive operation failed",
+        operation,
+        input,
+        expected,
+        cause: error instanceof Error ? error : undefined
+      })
   });

@@ -10,15 +10,13 @@ export const tryCrypto = <T>(
   Effect.try({
     try: thunk,
     catch: (error) =>
-      new CryptoError(
-        error instanceof Error ? error.message : "Crypto operation failed",
-        {
-          operation,
-          input,
-          expected,
-          cause: error instanceof Error ? error : undefined
-        }
-      )
+      new CryptoError({
+        message: error instanceof Error ? error.message : "Crypto operation failed",
+        operation,
+        input,
+        expected,
+        cause: error instanceof Error ? error : undefined
+      })
   });
 
 export const tryCryptoPromise = <T>(
@@ -30,13 +28,11 @@ export const tryCryptoPromise = <T>(
   Effect.tryPromise({
     try: thunk,
     catch: (error) =>
-      new CryptoError(
-        error instanceof Error ? error.message : "Crypto operation failed",
-        {
-          operation,
-          input,
-          expected,
-          cause: error instanceof Error ? error : undefined
-        }
-      )
+      new CryptoError({
+        message: error instanceof Error ? error.message : "Crypto operation failed",
+        operation,
+        input,
+        expected,
+        cause: error instanceof Error ? error : undefined
+      })
   });

@@ -10,15 +10,13 @@ const tryRpc = <T>(
   Effect.tryPromise({
     try: thunk,
     catch: (error) =>
-      new RpcError(
-        error instanceof Error ? error.message : "RPC call failed",
-        {
-          operation,
-          input,
-          expected: "JSON-RPC success response",
-          cause: error instanceof Error ? error : undefined
-        }
-      )
+      new RpcError({
+        message: error instanceof Error ? error.message : "RPC call failed",
+        operation,
+        input,
+        expected: "JSON-RPC success response",
+        cause: error instanceof Error ? error : undefined
+      })
   });
 
 const wrapRpcMethod = <Args extends readonly unknown[], T>(

@@ -18,15 +18,13 @@ const trySerde = <T>(
   Effect.try({
     try: thunk,
     catch: (error) =>
-      new SerdeError(
-        error instanceof Error ? error.message : "Serde operation failed",
-        {
-          operation,
-          input,
-          expected,
-          cause: error instanceof Error ? error : undefined
-        }
-      )
+      new SerdeError({
+        message: error instanceof Error ? error.message : "Serde operation failed",
+        operation,
+        input,
+        expected,
+        cause: error instanceof Error ? error : undefined
+      })
   });
 
 export { SerdeError } from "../errors.js";

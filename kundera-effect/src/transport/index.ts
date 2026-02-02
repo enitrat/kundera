@@ -34,15 +34,13 @@ const tryTransport = <T>(
   Effect.try({
     try: thunk,
     catch: (error) =>
-      new TransportError(
-        error instanceof Error ? error.message : "Transport operation failed",
-        {
-          operation,
-          input,
-          expected,
-          cause: error instanceof Error ? error : undefined
-        }
-      )
+      new TransportError({
+        message: error instanceof Error ? error.message : "Transport operation failed",
+        operation,
+        input,
+        expected,
+        cause: error instanceof Error ? error : undefined
+      })
   });
 
 const tryTransportPromise = <T>(
@@ -54,15 +52,13 @@ const tryTransportPromise = <T>(
   Effect.tryPromise({
     try: thunk,
     catch: (error) =>
-      new TransportError(
-        error instanceof Error ? error.message : "Transport operation failed",
-        {
-          operation,
-          input,
-          expected,
-          cause: error instanceof Error ? error : undefined
-        }
-      )
+      new TransportError({
+        message: error instanceof Error ? error.message : "Transport operation failed",
+        operation,
+        input,
+        expected,
+        cause: error instanceof Error ? error : undefined
+      })
   });
 
 export type {
