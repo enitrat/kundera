@@ -1,17 +1,17 @@
 {
-  "name": "kundera-effect",
-  "version": "0.1.0",
+  "name": "kundera-sn-effect",
+  "version": "0.0.1",
   "description": "Effect-TS integration for Kundera Starknet primitives library",
   "author": "Starknet",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/starknet/kundera.git",
+    "url": "git+https://github.com/enitrat/kundera.git",
     "directory": "kundera-effect"
   },
-  "homepage": "https://github.com/starknet/kundera/tree/main/kundera-effect",
+  "homepage": "https://github.com/enitrat/kundera/tree/main/kundera-effect",
   "bugs": {
-    "url": "https://github.com/starknet/kundera/issues"
+    "url": "https://github.com/enitrat/kundera/issues"
   },
   "keywords": [
     "starknet",
@@ -105,16 +105,16 @@
   },
   "sideEffects": false,
   "peerDependencies": {
-    "@starknet/kundera": "^0.1.0",
+    "kundera-sn": "^0.0.1",
     "effect": "^3.19.0"
   },
   "peerDependenciesMeta": {
-    "@starknet/kundera": {
+    "kundera-sn": {
       "optional": true
     }
   },
   "devDependencies": {
-    "@starknet/kundera": "file:..",
+    "kundera-sn": "file:..",
     "effect": "^3.19.0",
     "tsup": "^8.4.0",
     "typescript": "^5.9.3",
