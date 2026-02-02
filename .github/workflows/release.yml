@@ -95,9 +95,12 @@ jobs:
             native/**
 
       - name: Publish to npm
-        if: ${{ secrets.NPM_TOKEN != '' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-          npm publish --access public
+          if [ -n "$NPM_TOKEN" ]; then
+            npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
+            npm publish
+          else
+            echo "NPM_TOKEN not set, skipping publish"
+          fi

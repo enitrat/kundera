@@ -1,6 +1,6 @@
 {
-  "name": "@starknet/kundera",
-  "version": "0.1.0",
+  "name": "kundera-sn",
+  "version": "0.0.1",
   "private": false,
   "description": "Starknet primitives and cryptography library with TypeScript implementations and native Zig bindings",
   "keywords": [
@@ -16,7 +16,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/starknet/kundera.git"
+    "url": "git+https://github.com/enitrat/kundera.git"
   },
   "license": "MIT",
   "sideEffects": false,
