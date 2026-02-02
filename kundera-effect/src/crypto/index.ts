@@ -35,7 +35,7 @@ import {
   TRANSACTION_HASH_PREFIX,
   signatureToArray,
   EXECUTE_SELECTOR
-} from "@starknet/kundera/crypto";
+} from "kundera-sn/crypto";
 import type {
   Signature,
   ResourceBounds,
@@ -59,8 +59,8 @@ import type {
   TypedDataType,
   TypedData,
   SignatureArray
-} from "@starknet/kundera/crypto";
-import type { Felt252Type } from "@starknet/kundera/primitives";
+} from "kundera-sn/crypto";
+import type { Felt252Type } from "kundera-sn/primitives";
 import { tryCrypto, tryCryptoPromise } from "./utils.js";
 export { CryptoError } from "../errors.js";
 

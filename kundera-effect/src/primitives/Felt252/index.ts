@@ -4,13 +4,13 @@ import {
   type Felt252Type,
   FIELD_PRIME,
   MAX_SHORT_STRING_LENGTH
-} from "@starknet/kundera/primitives";
+} from "kundera-sn/primitives";
 import { tryPrimitive } from "../utils.js";
 
-export type { Felt252Input, Felt252Type } from "@starknet/kundera/primitives";
-export { FIELD_PRIME, MAX_SHORT_STRING_LENGTH } from "@starknet/kundera/primitives";
+export type { Felt252Input, Felt252Type } from "kundera-sn/primitives";
+export { FIELD_PRIME, MAX_SHORT_STRING_LENGTH } from "kundera-sn/primitives";
 
-export { Felt252 } from "@starknet/kundera/primitives";
+export { Felt252 } from "kundera-sn/primitives";
 
 export const from = (value: Felt252Input) =>
   tryPrimitive(

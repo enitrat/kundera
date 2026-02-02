@@ -19,16 +19,16 @@ export default defineConfig({
   splitting: false,
   treeshake: true,
   external: [
-    "@starknet/kundera",
-    "@starknet/kundera/abi",
-    "@starknet/kundera/crypto",
-    "@starknet/kundera/primitives",
-    "@starknet/kundera/serde",
-    "@starknet/kundera/transport",
-    "@starknet/kundera/rpc",
-    "@starknet/kundera/native",
-    "@starknet/kundera/wasm",
-    "@starknet/kundera/wasm-loader",
+    "kundera-sn",
+    "kundera-sn/abi",
+    "kundera-sn/crypto",
+    "kundera-sn/primitives",
+    "kundera-sn/serde",
+    "kundera-sn/transport",
+    "kundera-sn/rpc",
+    "kundera-sn/native",
+    "kundera-sn/wasm",
+    "kundera-sn/wasm-loader",
     "effect"
   ]
 });

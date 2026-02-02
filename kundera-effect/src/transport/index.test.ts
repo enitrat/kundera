@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as Effect from "effect/Effect";
 import * as Either from "effect/Either";
-import type { JsonRpcRequest, JsonRpcResponse, Transport } from "@starknet/kundera/transport";
+import type { JsonRpcRequest, JsonRpcResponse, Transport } from "kundera-sn/transport";
 import * as TransportEffect from "./index.js";
 
 describe("transport effect wrappers", () => {

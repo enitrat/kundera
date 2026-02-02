@@ -19,7 +19,7 @@ kundera-effect wraps all Kundera operations in Effect-TS, providing:
 ## Installation
 
 ```bash
-npm install kundera-effect effect @starknet/kundera
+npm install kundera-effect effect kundera-sn
 ```
 
 ## Quick Start

@@ -4,10 +4,10 @@ import {
   decodeShortString,
   MAX_SHORT_STRING_LENGTH,
   type Felt252Type
-} from "@starknet/kundera/primitives";
+} from "kundera-sn/primitives";
 import { tryPrimitive } from "../utils.js";
 
-export { MAX_SHORT_STRING_LENGTH } from "@starknet/kundera/primitives";
+export { MAX_SHORT_STRING_LENGTH } from "kundera-sn/primitives";
 
 export const encode = (value: string) =>
   tryPrimitive(
@@ -33,4 +33,4 @@ export const decode = (value: bigint | string | Felt252Type) =>
     () => decodeShortString(value)
   );
 
-export { encodeShortString, encodeShortStringHex, decodeShortString } from "@starknet/kundera/primitives";
+export { encodeShortString, encodeShortStringHex, decodeShortString } from "kundera-sn/primitives";

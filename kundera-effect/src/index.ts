@@ -5,9 +5,9 @@ export type {
   ClassHashType,
   StorageKeyType,
   EthAddressType
-} from "@starknet/kundera/primitives";
+} from "kundera-sn/primitives";
 
-export type { Result, AbiError, AbiErrorCode } from "@starknet/kundera/abi";
+export type { Result, AbiError, AbiErrorCode } from "kundera-sn/abi";
 
 export { PrimitiveError, CryptoError, RpcError, SerdeError, TransportError } from "./errors.js";
 

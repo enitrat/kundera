@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import * as Rpc from "@starknet/kundera/rpc";
+import * as Rpc from "kundera-sn/rpc";
 import { RpcError } from "../errors.js";
 
 const tryRpc = <T>(
@@ -165,8 +165,8 @@ export const starknet_unsubscribe = wrapRpcMethod(
   Rpc.starknet_unsubscribe
 );
 
-export type { BlockHashAndNumber } from "@starknet/kundera/rpc";
-export type { EventsFilter } from "@starknet/kundera/rpc";
+export type { BlockHashAndNumber } from "kundera-sn/rpc";
+export type { EventsFilter } from "kundera-sn/rpc";
 
 export type {
   RpcError as RpcErrorType,
@@ -226,4 +226,4 @@ export type {
   TransactionReceiptsSubscriptionParams,
   TxnFinalityStatusWithoutL1,
   ReceiptFinalityStatus
-} from "@starknet/kundera/rpc";
+} from "kundera-sn/rpc";

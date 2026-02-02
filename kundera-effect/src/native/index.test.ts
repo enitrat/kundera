@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as Effect from "effect/Effect";
 import * as Either from "effect/Either";
-import { Felt252 } from "@starknet/kundera/primitives";
+import { Felt252 } from "kundera-sn/primitives";
 import * as Native from "./index.js";
 
 describe("native effect wrappers", () => {

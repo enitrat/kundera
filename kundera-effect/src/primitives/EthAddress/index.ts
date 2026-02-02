@@ -3,13 +3,13 @@ import {
   type EthAddressType,
   type Felt252Input,
   MAX_ETH_ADDRESS
-} from "@starknet/kundera/primitives";
+} from "kundera-sn/primitives";
 import { tryPrimitive } from "../utils.js";
 
-export type { EthAddressType } from "@starknet/kundera/primitives";
-export { MAX_ETH_ADDRESS } from "@starknet/kundera/primitives";
+export type { EthAddressType } from "kundera-sn/primitives";
+export { MAX_ETH_ADDRESS } from "kundera-sn/primitives";
 
-export { EthAddress } from "@starknet/kundera/primitives";
+export { EthAddress } from "kundera-sn/primitives";
 
 export const from = (value: Felt252Input) =>
   tryPrimitive(

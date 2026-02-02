@@ -74,7 +74,7 @@ await deploy({ classHash: address });
 ## Installation
 
 ```bash
-npm install kundera-sn-effect effect @starknet/kundera
+npm install kundera-sn-effect effect kundera-sn
 ```
 
 ## Features
