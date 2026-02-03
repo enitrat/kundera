@@ -46,6 +46,58 @@ const program = Effect.gen(function* () {
 const balance = await Effect.runPromise(program);
 ```
 
+## Typed Contract Factory (Voltaire-style)
+
+Use `ContractFactory` with an `as const` ABI for a type-safe API surface while keeping
+runtime encoding flexible.
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
+
+const erc20Abi = [
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [{ name: "owner", type: "core::starknet::contract_address::ContractAddress" }],
+    outputs: [{ name: "balance", type: "core::integer::u256" }],
+    state_mutability: "view"
+  },
+  {
+    type: "function",
+    name: "transfer",
+    inputs: [
+      { name: "to", type: "core::starknet::contract_address::ContractAddress" },
+      { name: "amount", type: "core::integer::u256" }
+    ],
+    outputs: [],
+    state_mutability: "external"
+  }
+] as const;
+
+const program = Effect.gen(function* () {
+  const token = yield* Services.Contract.ContractFactory(
+    yield* ContractAddress.from("0x..."),
+    erc20Abi
+  );
+  const owner = yield* ContractAddress.from("0x...");
+  const recipient = yield* ContractAddress.from("0x...");
+  const balance = yield* token.read.balanceOf(owner);
+  const tx = yield* token.write.transfer(recipient, 10n, {
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+    }
+  });
+  return { balance, tx };
+}).pipe(
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(Services.ContractWrite.ContractWrite)
+);
+```
+
 **starknet.js** - Felt and Address are both hex strings, easily confused:
 ```typescript
 import { num } from "starknet";

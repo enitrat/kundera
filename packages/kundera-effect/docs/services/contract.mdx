@@ -5,6 +5,7 @@ description: Read-only contract calls with ABI decoding.
 
 <Info>
 ContractService focuses on read-only calls. For state changes use `SignerService`.
+If you want a Voltaire-style, ABI-typed API surface, use `ContractFactory`.
 </Info>
 
 # Contract Service
@@ -20,7 +21,7 @@ import { Services } from "@kundera-sn/kundera-effect";
 
 ## Live Layer
 
-- `Services.Contract.Contract` (requires `ProviderService`)
+- `Services.Contract.ContractLayer` (requires `ProviderService`)
 
 ## Read Contract
 
@@ -38,7 +39,7 @@ const program = Effect.gen(function* () {
   });
 }).pipe(
   Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
-  Effect.provide(Services.Contract.Contract)
+  Effect.provide(Services.Contract.ContractLayer)
 );
 ```
 
@@ -55,6 +56,62 @@ const program = Effect.gen(function* () {
   });
   return call;
 });
+```
+
+## Typed Contract Factory (Voltaire-style)
+
+`ContractFactory` generates a type-safe API surface from an `as const` ABI, while internally
+keeping runtime encoding flexible. This mirrors Voltaire’s pattern: strict types at the edge,
+`unknown[]` inside.
+
+```ts
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
+
+const erc20Abi = [
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [{ name: "owner", type: "core::starknet::contract_address::ContractAddress" }],
+    outputs: [{ name: "balance", type: "core::integer::u256" }],
+    state_mutability: "view"
+  },
+  {
+    type: "function",
+    name: "transfer",
+    inputs: [
+      { name: "to", type: "core::starknet::contract_address::ContractAddress" },
+      { name: "amount", type: "core::integer::u256" }
+    ],
+    outputs: [],
+    state_mutability: "external"
+  }
+] as const;
+
+const program = Effect.gen(function* () {
+  const token = yield* Services.Contract.ContractFactory(
+    yield* ContractAddress.from("0x..."),
+    erc20Abi
+  );
+
+  const owner = yield* ContractAddress.from("0x...");
+  const recipient = yield* ContractAddress.from("0x...");
+
+  const balance = yield* token.read.balanceOf(owner);
+  const tx = yield* token.write.transfer(recipient, 10n, {
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+    }
+  });
+
+  return { balance, tx };
+}).pipe(
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(Services.ContractWrite.ContractWrite)
+);
 ```
 
 ## Call Raw

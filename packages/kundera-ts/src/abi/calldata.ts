@@ -12,6 +12,12 @@ import {
   type Result,
   ok,
 } from './types.js';
+import type {
+  Abi as KanabiAbi,
+  ExtractAbiFunction,
+  ExtractAbiFunctionNames,
+  ExtractArgs,
+} from 'abi-wan-kanabi/kanabi';
 import { parseAbi, getFunction, computeSelector } from './parse.js';
 import { encodeArgs, encodeArgsObject } from './encode.js';
 import { decodeArgs, decodeArgsObject, decodeOutputs, decodeOutputsObject } from './decode.js';
@@ -58,6 +64,14 @@ function getParsedAbi(abi: Abi): Result<ParsedAbi> {
  * }
  * ```
  */
+export function encodeCalldata<
+  TAbi extends KanabiAbi,
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+>(
+  abi: TAbi,
+  fnName: TFunctionName,
+  args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>
+): Result<bigint[]>;
 export function encodeCalldata(
   abi: Abi,
   fnName: string,
@@ -235,6 +249,14 @@ export function getFunctionSelectorHex(fnName: string): string {
  * @param args - Function arguments
  * @returns { selector, calldata } or error
  */
+export function compileCalldata<
+  TAbi extends KanabiAbi,
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+>(
+  abi: TAbi,
+  fnName: TFunctionName,
+  args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>
+): Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }>;
 export function compileCalldata(
   abi: Abi,
   fnName: string,

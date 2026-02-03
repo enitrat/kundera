@@ -1,4 +1,10 @@
 import { Effect } from "effect";
+import type {
+  Abi as KanabiAbi,
+  ExtractAbiFunction,
+  ExtractAbiFunctionNames,
+  ExtractArgs
+} from "abi-wan-kanabi/kanabi";
 import {
   abiError,
   type Abi,
@@ -201,8 +207,26 @@ export const decodeOutputsObject = (
   abi: ParsedAbi
 ) => fromResult(decodeOutputsObjectBase(data, outputs, abi));
 
-export const encodeCalldata = (abi: Abi, fnName: string, args: CairoValue[]) =>
-  fromResult(encodeCalldataBase(abi, fnName, args));
+export function encodeCalldata<
+  TAbi extends KanabiAbi,
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+>(
+  abi: TAbi,
+  fnName: TFunctionName,
+  args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>
+): Effect.Effect<bigint[], AbiError>;
+export function encodeCalldata(
+  abi: Abi,
+  fnName: string,
+  args: CairoValue[] | Record<string, CairoValue>
+): Effect.Effect<bigint[], AbiError>;
+export function encodeCalldata(
+  abi: Abi,
+  fnName: string,
+  args: CairoValue[] | Record<string, CairoValue>
+): Effect.Effect<bigint[], AbiError> {
+  return fromResult(encodeCalldataBase(abi, fnName, args));
+}
 export const decodeCalldata = (
   abi: Abi,
   fnName: string,
@@ -217,12 +241,26 @@ export const decodeOutput = (abi: Abi, fnName: string, output: bigint[]) =>
   fromResult(decodeOutputBase(abi, fnName, output));
 export const decodeOutputObject = (abi: Abi, fnName: string, output: bigint[]) =>
   fromResult(decodeOutputObjectBase(abi, fnName, output));
-export const compileCalldata = (
+export function compileCalldata<
+  TAbi extends KanabiAbi,
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+>(
+  abi: TAbi,
+  fnName: TFunctionName,
+  args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>
+): Effect.Effect<{ selector: bigint; selectorHex: string; calldata: bigint[] }, AbiError>;
+export function compileCalldata(
   abi: Abi,
   fnName: string,
   args: CairoValue[] | Record<string, CairoValue>
-): Effect.Effect<{ selector: bigint; selectorHex: string; calldata: bigint[] }, AbiError> =>
-  fromResult(compileCalldataBase(abi, fnName, args));
+): Effect.Effect<{ selector: bigint; selectorHex: string; calldata: bigint[] }, AbiError>;
+export function compileCalldata(
+  abi: Abi,
+  fnName: string,
+  args: CairoValue[] | Record<string, CairoValue>
+): Effect.Effect<{ selector: bigint; selectorHex: string; calldata: bigint[] }, AbiError> {
+  return fromResult(compileCalldataBase(abi, fnName, args));
+}
 
 export const getFunctionSelector = (fnName: string) =>
   tryAbi("getFunctionSelector", { fnName }, "ENCODE_ERROR", () =>

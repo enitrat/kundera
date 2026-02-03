@@ -9,15 +9,15 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /^@kundera-sn/kundera-ts$/,
+        find: /^@kundera-sn\/kundera-ts$/,
         replacement: path.resolve(kunderaRoot, "src/index.ts")
       },
       {
-        find: /^@kundera-sn/kundera-ts\/(Felt252|ContractAddress|ClassHash|StorageKey|ShortString|EthAddress|Address)$/,
+        find: /^@kundera-sn\/kundera-ts\/(Felt252|ContractAddress|ClassHash|StorageKey|ShortString|EthAddress|Address)$/,
         replacement: path.resolve(kunderaRoot, "src/primitives/$1/index.ts")
       },
       {
-        find: /^@kundera-sn/kundera-ts\/(.*)$/,
+        find: /^@kundera-sn\/kundera-ts\/(.*)$/,
         replacement: path.resolve(kunderaRoot, "src/$1/index.ts")
       },
       {

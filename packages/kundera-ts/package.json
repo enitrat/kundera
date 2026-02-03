@@ -1,6 +1,6 @@
 {
   "name": "@kundera-sn/kundera-ts",
-  "version": "0.0.2-rc0",
+  "version": "0.0.2",
   "private": false,
   "description": "Starknet primitives and cryptography library with TypeScript implementations and native Zig bindings",
   "keywords": [
@@ -160,5 +160,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "abi-wan-kanabi": "^2.2.4"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@kundera-sn/kundera-effect",
-  "version": "0.0.2-rc0",
+  "version": "0.0.2",
   "description": "Effect-TS integration for Kundera Starknet primitives library",
   "author": "Starknet",
   "license": "MIT",
@@ -112,7 +112,7 @@
   },
   "sideEffects": false,
   "peerDependencies": {
-    "@kundera-sn/kundera-ts": "^0.0.2-rc0",
+    "@kundera-sn/kundera-ts": "^0.0.2",
     "effect": "^3.19.0"
   },
   "peerDependenciesMeta": {
@@ -134,5 +134,8 @@
     "pretypecheck": "bun run --cwd ../kundera-ts build:dist",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run build && bun run typecheck"
+  },
+  "dependencies": {
+    "abi-wan-kanabi": "^2.2.4"
   }
 }

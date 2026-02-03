@@ -9,7 +9,7 @@ const toHex = (value: bigint | string) =>
 
 const toBigintArray = (values: string[]): bigint[] => values.map((value) => BigInt(value));
 
-export const Contract = Layer.effect(
+export const ContractLayer = Layer.effect(
   ContractService,
   Effect.gen(function* () {
     const provider = yield* ProviderService;
