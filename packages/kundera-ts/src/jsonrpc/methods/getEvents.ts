@@ -1,15 +1,6 @@
 import type { Transport } from '../../transport/types.js';
 import { buildRequest, unwrapResponse } from '../utils.js';
-import type { BlockId, EventsResponse } from '../types.js';
-
-export interface EventsFilter {
-  from_block?: BlockId;
-  to_block?: BlockId;
-  address?: string;
-  keys?: string[][];
-  continuation_token?: string;
-  chunk_size: number;
-}
+import type { EventsFilter, EventsResponse } from '../types.js';
 
 /**
  * Get events matching a filter.

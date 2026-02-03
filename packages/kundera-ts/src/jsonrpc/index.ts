@@ -8,7 +8,7 @@ export * from './methods/index.js';
 export * as Rpc from './namespace.js';
 
 export type { BlockHashAndNumber } from './methods/blockHashAndNumber.js';
-export type { EventsFilter } from './methods/getEvents.js';
+export type { EventsFilter } from './types.js';
 
 export type {
   RpcError,
@@ -37,6 +37,8 @@ export type {
   FunctionCall,
   SimulationFlag,
   FeeEstimate,
+  ResourceBounds,
+  ResourceBoundsMapping,
   MessageFeeEstimate,
   MsgFromL1,
   MessagesStatusResponse,

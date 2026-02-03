@@ -5,6 +5,7 @@ import type { Abi, CairoValue } from "kundera-sn/abi";
 import type { AddInvokeTransactionResult } from "kundera-sn/jsonrpc";
 import type { ResourceBoundsInput } from "../Account/AccountService.js";
 import type { InvokeParams } from "../Signer/SignerService.js";
+import type { NonceManagerService } from "../NonceManager/NonceManagerService.js";
 
 export type ContractWriteCall = {
   contractAddress: string;
@@ -40,10 +41,12 @@ export class ContractWriteError extends Data.TaggedError("ContractWriteError")<{
 
 export type ContractWriteShape = {
   buildCall: (params: BuildCallParams) => Effect.Effect<ContractWriteCall, ContractWriteError>;
-  invoke: (params: InvokeCallsParams) => Effect.Effect<AddInvokeTransactionResult, ContractWriteError>;
+  invoke: (
+    params: InvokeCallsParams
+  ) => Effect.Effect<AddInvokeTransactionResult, ContractWriteError, NonceManagerService>;
   writeContract: (
     params: WriteContractParams
-  ) => Effect.Effect<AddInvokeTransactionResult, ContractWriteError>;
+  ) => Effect.Effect<AddInvokeTransactionResult, ContractWriteError, NonceManagerService>;
 };
 
 export class ContractWriteService extends Context.Tag("ContractWriteService")<

@@ -8,7 +8,7 @@ import {
 } from "kundera-sn/crypto";
 import { getPublicKey } from "kundera-sn/crypto";
 import { signRaw } from "kundera-sn/crypto";
-import { Felt252 } from "kundera-sn/Felt252";
+import { Felt252, type Felt252Type } from "kundera-sn/Felt252";
 import type { BroadcastedInvokeTxn } from "kundera-sn/jsonrpc";
 import { AccountService, AccountError, type InvokeV3Params, type ResourceBoundsInput } from "./AccountService.js";
 
@@ -20,8 +20,8 @@ export type OpenZeppelinAccountConfig = {
 const toHex = (value: bigint | string) =>
   typeof value === "string" ? value : `0x${value.toString(16)}`;
 
-const feltToHex = (value: { toHex?: () => string }) =>
-  typeof value?.toHex === "function" ? value.toHex() : toHex(value as unknown as bigint);
+const feltToHex = (value: bigint | Felt252Type) =>
+  typeof value === "bigint" ? toHex(value) : value.toHex();
 
 const toBigInt = (value: bigint | string) =>
   typeof value === "string" ? BigInt(value) : value;
@@ -39,7 +39,7 @@ const buildExecuteCalldata = (
     const selector =
       call.entrypoint.startsWith("0x")
         ? BigInt(call.entrypoint)
-        : computeSelector(call.entrypoint);
+        : computeSelector(call.entrypoint).toBigInt();
 
     callArray.push(contractAddress, selector, dataOffset, dataLen);
     calldata.push(...call.calldata.map((value) => BigInt(value)));
@@ -111,7 +111,7 @@ export const OpenZeppelinAccount = (config: OpenZeppelinAccountConfig) =>
         try: () => {
           const tx: InvokeTransactionV3 = {
             version: 3,
-            sender_address: toBigInt(config.address),
+            sender_address: config.address,
             calldata: buildExecuteCalldata(params.calls),
             nonce: params.nonce,
             resource_bounds: toAccountResourceBounds(params.resourceBounds),

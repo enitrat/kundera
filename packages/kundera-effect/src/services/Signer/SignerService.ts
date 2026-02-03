@@ -2,6 +2,7 @@ import * as Context from "effect/Context";
 import * as Data from "effect/Data";
 import type * as Effect from "effect/Effect";
 import type { AddInvokeTransactionResult } from "kundera-sn/jsonrpc";
+import type { NonceManagerService } from "../NonceManager/NonceManagerService.js";
 import type { InvokeV3Params } from "../Account/AccountService.js";
 
 export type InvokeParams = Omit<InvokeV3Params, "nonce" | "chainId"> & {
@@ -16,7 +17,9 @@ export class SignerError extends Data.TaggedError("SignerError")<{
 }> {}
 
 export type SignerShape = {
-  readonly invoke: (params: InvokeParams) => Effect.Effect<AddInvokeTransactionResult, SignerError>;
+  readonly invoke: (
+    params: InvokeParams
+  ) => Effect.Effect<AddInvokeTransactionResult, SignerError, NonceManagerService>;
 };
 
 export class SignerService extends Context.Tag("SignerService")<

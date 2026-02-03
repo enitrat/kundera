@@ -180,7 +180,17 @@ export const RpcBatch = (config: RpcBatchConfig) =>
                 )
               };
             }
-            return { ok: true, value: (response as JsonRpcResponse<unknown>).result };
+            if ("result" in response) {
+              return { ok: true, value: response.result };
+            }
+            return {
+              ok: false,
+              error: toRpcError(
+                "rpcBatch",
+                items[index] ?? requests[index],
+                { code: -1, message: "Invalid JSON-RPC response" }
+              )
+            };
           });
         }
       });

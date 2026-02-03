@@ -81,7 +81,14 @@ export enum StarknetRpcErrorCode {
 }
 
 export type { BlockHashAndNumber } from './methods/blockHashAndNumber.js';
-export type { EventsFilter } from './methods/getEvents.js';
+export interface EventsFilter {
+  from_block?: BlockId;
+  to_block?: BlockId;
+  address?: string;
+  keys?: string[][];
+  continuation_token?: string;
+  chunk_size: number;
+}
 
 /**
  * Block tag for specifying block context
@@ -1051,9 +1058,9 @@ export interface SimulatedTransaction {
 /**
  * Broadcasted invoke transaction
  */
-export type BroadcastedInvokeTxn = Omit<InvokeTxnV1 | InvokeTxnV3, 'type'> & {
-  type: 'INVOKE';
-};
+export type BroadcastedInvokeTxn =
+  | (Omit<InvokeTxnV1, 'type'> & { type: 'INVOKE' })
+  | (Omit<InvokeTxnV3, 'type'> & { type: 'INVOKE' });
 
 /**
  * Broadcasted declare transaction V2

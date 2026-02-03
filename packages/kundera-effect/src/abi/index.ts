@@ -217,7 +217,11 @@ export const decodeOutput = (abi: Abi, fnName: string, output: bigint[]) =>
   fromResult(decodeOutputBase(abi, fnName, output));
 export const decodeOutputObject = (abi: Abi, fnName: string, output: bigint[]) =>
   fromResult(decodeOutputObjectBase(abi, fnName, output));
-export const compileCalldata = (abi: Abi, fnName: string, args: CairoValue[]) =>
+export const compileCalldata = (
+  abi: Abi,
+  fnName: string,
+  args: CairoValue[] | Record<string, CairoValue>
+): Effect.Effect<{ selector: bigint; selectorHex: string; calldata: bigint[] }, AbiError> =>
   fromResult(compileCalldataBase(abi, fnName, args));
 
 export const getFunctionSelector = (fnName: string) =>

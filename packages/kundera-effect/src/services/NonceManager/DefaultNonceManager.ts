@@ -18,22 +18,22 @@ export const DefaultNonceManager = Layer.effect(
       });
 
     const get = (address: string, chainId: bigint) =>
-      Effect.gen(function* () {
-        try {
-          const onchain = BigInt(yield* fetchNonce(address));
+      fetchNonce(address).pipe(
+        Effect.map((value) => BigInt(value)),
+        Effect.map((onchain) => {
           const key = keyFor(address, chainId);
           const delta = deltas.get(key) ?? 0n;
           return onchain + delta;
-        } catch (error) {
-          return yield* Effect.fail(
+        }),
+        Effect.mapError(
+          (error) =>
             new NonceError({
               address,
               message: error instanceof Error ? error.message : "Failed to fetch nonce",
               cause: error
             })
-          );
-        }
-      });
+        )
+      );
 
     const consume = (address: string, chainId: bigint) =>
       get(address, chainId).pipe(
