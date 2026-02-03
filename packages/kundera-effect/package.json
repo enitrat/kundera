@@ -1,6 +1,6 @@
 {
   "name": "@kundera-sn/kundera-effect",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Effect-TS integration for Kundera Starknet primitives library",
   "author": "Starknet",
   "license": "MIT",
@@ -161,7 +161,7 @@
   },
   "sideEffects": false,
   "peerDependencies": {
-    "@kundera-sn/kundera-ts": "^0.0.2",
+    "@kundera-sn/kundera-ts": "^0.0.3",
     "effect": "^3.19.0"
   },
   "peerDependenciesMeta": {

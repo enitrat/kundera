@@ -37,6 +37,7 @@ import {
   type DecodedEvent,
   type Call,
   type FeeEstimate,
+  type Result,
   type EventData,
   type CompiledSierra,
   type CompiledSierraCasm,
@@ -83,6 +84,18 @@ import {
   MAX_SHORT_STRING_LENGTH
 } from "@kundera-sn/kundera-ts/abi";
 import { fromResult } from "../utils/fromResult.js";
+
+const encodeCalldataBaseUntyped = encodeCalldataBase as (
+  abi: Abi,
+  fnName: string,
+  args: CairoValue[] | Record<string, CairoValue>
+) => Result<bigint[], AbiError>;
+
+const compileCalldataBaseUntyped = compileCalldataBase as (
+  abi: Abi,
+  fnName: string,
+  args: CairoValue[] | Record<string, CairoValue>
+) => Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }, AbiError>;
 
 export type {
   Abi,
@@ -225,7 +238,7 @@ export function encodeCalldata(
   fnName: string,
   args: CairoValue[] | Record<string, CairoValue>
 ): Effect.Effect<bigint[], AbiError> {
-  return fromResult(encodeCalldataBase(abi, fnName, args));
+  return fromResult(encodeCalldataBaseUntyped(abi, fnName, args));
 }
 export const decodeCalldata = (
   abi: Abi,
@@ -259,7 +272,7 @@ export function compileCalldata(
   fnName: string,
   args: CairoValue[] | Record<string, CairoValue>
 ): Effect.Effect<{ selector: bigint; selectorHex: string; calldata: bigint[] }, AbiError> {
-  return fromResult(compileCalldataBase(abi, fnName, args));
+  return fromResult(compileCalldataBaseUntyped(abi, fnName, args));
 }
 
 export const getFunctionSelector = (fnName: string) =>
