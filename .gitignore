@@ -6,4 +6,6 @@ target/
 wasm/
 !packages/kundera-effect/src/wasm/
 !packages/kundera-effect/src/wasm/**
+!packages/kundera-ts/src/wasm/
+!packages/kundera-ts/src/wasm/**
 .zig-cache/
