@@ -1,5 +1,5 @@
 import * as Context from "effect/Context";
-import * as Data from "effect/Data";
+import { Schema } from "effect";
 import type * as Effect from "effect/Effect";
 import type {
   BlockId,
@@ -10,11 +10,14 @@ import type {
 import type { ResourceBoundsInput } from "../Account/AccountService.js";
 import type { ProviderService } from "../Provider/index.js";
 
-export class FeeEstimationError extends Data.TaggedError("FeeEstimationError")<{
-  readonly input: unknown;
-  readonly message: string;
-  readonly cause?: unknown;
-}> {}
+export class FeeEstimationError extends Schema.TaggedError<FeeEstimationError>()(
+  "FeeEstimationError",
+  {
+    input: Schema.Unknown,
+    message: Schema.String,
+    cause: Schema.optional(Schema.Unknown),
+  }
+) {}
 
 export type ResourceBoundsOptions = {
   multiplier?: number;

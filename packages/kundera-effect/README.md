@@ -36,14 +36,13 @@ const program = Effect.gen(function* () {
   }, "latest");
   return yield* Abi.decodeOutput(abi, "balanceOf", result);
 }).pipe(
-  Effect.retry({ times: 3 }),           // explicit retry policy
-  Effect.timeout("10 seconds"),         // explicit timeout
-  Effect.catchTag("RpcError", (e) =>    // typed error handling
-    Effect.succeed(0n)
-  )
+  Effect.retry({ times: 3 }),       // explicit retry policy
+  Effect.timeout("10 seconds")      // explicit timeout
 );
 
+// Errors are typed - handle at the application boundary
 const balance = await Effect.runPromise(program);
+// Or use Effect.either to get Either<Error, Value> for explicit handling
 ```
 
 ## Typed Contract Factory (Voltaire-style)

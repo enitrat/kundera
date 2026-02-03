@@ -1,5 +1,5 @@
 import * as Context from "effect/Context";
-import * as Data from "effect/Data";
+import { Schema } from "effect";
 import type * as Effect from "effect/Effect";
 import type { Abi, CairoValue } from "@kundera-sn/kundera-ts/abi";
 import type { AddInvokeTransactionResult } from "@kundera-sn/kundera-ts/jsonrpc";
@@ -33,11 +33,14 @@ export type InvokeCallsParams = Omit<InvokeParams, "calls"> & {
   calls: ContractWriteCall[];
 };
 
-export class ContractWriteError extends Data.TaggedError("ContractWriteError")<{
-  readonly input: unknown;
-  readonly message: string;
-  readonly cause?: unknown;
-}> {}
+export class ContractWriteError extends Schema.TaggedError<ContractWriteError>()(
+  "ContractWriteError",
+  {
+    input: Schema.Unknown,
+    message: Schema.String,
+    cause: Schema.optional(Schema.Unknown),
+  }
+) {}
 
 export type ContractWriteShape = {
   buildCall: (params: BuildCallParams) => Effect.Effect<ContractWriteCall, ContractWriteError>;

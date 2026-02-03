@@ -1,13 +1,16 @@
 import * as Context from "effect/Context";
-import * as Data from "effect/Data";
+import { Schema } from "effect";
 import type * as Effect from "effect/Effect";
 import type { ProviderService } from "../Provider/index.js";
 
-export class NonceError extends Data.TaggedError("NonceError")<{
-  readonly address: string;
-  readonly message: string;
-  readonly cause?: unknown;
-}> {}
+export class NonceError extends Schema.TaggedError<NonceError>()(
+  "NonceError",
+  {
+    address: Schema.String,
+    message: Schema.String,
+    cause: Schema.optional(Schema.Unknown),
+  }
+) {}
 
 export type NonceManagerShape = {
   readonly get: (

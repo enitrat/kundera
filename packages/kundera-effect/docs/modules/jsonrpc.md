@@ -231,7 +231,7 @@ const transport = httpTransport("https://starknet-mainnet.public.blastapi.io");
 const program = Effect.gen(function* () {
   // Get current block
   const blockNumber = yield* Rpc.starknet_blockNumber(transport);
-  console.log("Current block:", blockNumber);
+  yield* Effect.log("Current block", { blockNumber });
 
   // Get ETH balance
   const balance = yield* Rpc.starknet_call(transport, {
@@ -248,15 +248,24 @@ await Effect.runPromise(program);
 
 ## Error Handling
 
-All RPC methods return `Effect<T, RpcError>`:
+All RPC methods return `Effect<T, RpcError>`. Errors are type-safe and can be handled with `catchTag`:
 
 ```typescript
-const program = Rpc.starknet_getTransactionByHash(transport, "0xinvalid").pipe(
-  Effect.catchTag("RpcError", (e) => {
-    console.log(e.operation); // "starknet_getTransactionByHash"
-    console.log(e.message);   // JSON-RPC error message
-    return Effect.succeed(null);
-  })
+// Errors propagate automatically - handle at the application boundary
+const program = Effect.gen(function* () {
+  const tx = yield* Rpc.starknet_getTransactionByHash(transport, txHash);
+  return tx;
+});
+
+// At application boundary
+Effect.runPromise(program).catch((e) => {
+  // e.operation = "starknet_getTransactionByHash"
+  // e.message = JSON-RPC error message
+});
+
+// Or transform errors while keeping them in the error channel
+const withBetterError = program.pipe(
+  Effect.mapError((e) => new AppError(`Failed to fetch tx: ${e.message}`))
 );
 ```
 

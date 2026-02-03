@@ -1,5 +1,5 @@
 import * as Context from "effect/Context";
-import * as Data from "effect/Data";
+import { Schema } from "effect";
 import type * as Effect from "effect/Effect";
 import type { Abi, CairoValue, DecodedStruct } from "@kundera-sn/kundera-ts/abi";
 
@@ -17,11 +17,14 @@ export type ReadContractParams = {
   blockId?: string | { block_number: number } | { block_hash: string };
 };
 
-export class ContractError extends Data.TaggedError("ContractError")<{
-  readonly input: unknown;
-  readonly message: string;
-  readonly cause?: unknown;
-}> {}
+export class ContractError extends Schema.TaggedError<ContractError>()(
+  "ContractError",
+  {
+    input: Schema.Unknown,
+    message: Schema.String,
+    cause: Schema.optional(Schema.Unknown),
+  }
+) {}
 
 export type ContractShape = {
   readonly buildCall: (

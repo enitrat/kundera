@@ -1,5 +1,5 @@
 import * as Context from "effect/Context";
-import * as Data from "effect/Data";
+import { Schema } from "effect";
 import type * as Effect from "effect/Effect";
 import type { BroadcastedInvokeTxn } from "@kundera-sn/kundera-ts/jsonrpc";
 import type { ResourceBoundsMapping as RpcResourceBounds } from "@kundera-sn/kundera-ts/jsonrpc";
@@ -26,11 +26,14 @@ export type InvokeV3Params = {
   feeDataAvailabilityMode?: 0;
 };
 
-export class AccountError extends Data.TaggedError("AccountError")<{
-  readonly input: unknown;
-  readonly message: string;
-  readonly cause?: unknown;
-}> {}
+export class AccountError extends Schema.TaggedError<AccountError>()(
+  "AccountError",
+  {
+    input: Schema.Unknown,
+    message: Schema.String,
+    cause: Schema.optional(Schema.Unknown),
+  }
+) {}
 
 export type AccountShape = {
   readonly address: string;

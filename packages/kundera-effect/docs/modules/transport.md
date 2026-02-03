@@ -138,8 +138,10 @@ Check if response is an error.
 
 ```typescript
 if (Transport.isJsonRpcError(response)) {
-  console.log(response.error.code);
-  console.log(response.error.message);
+  yield* Effect.logError("RPC error", {
+    code: response.error.code,
+    message: response.error.message
+  });
 }
 ```
 
@@ -205,7 +207,7 @@ const program = Effect.gen(function* () {
     Transport.createRequest("starknet_blockNumber", [])
   );
 
-  console.log("Block:", blockNumber);
+  yield* Effect.log("Block", { blockNumber });
 
   // For WebSocket
   const ws = Transport.webSocketTransport({
@@ -229,12 +231,17 @@ const program = Effect.gen(function* () {
 
 ## Error Handling
 
+Transport errors propagate through the Effect error channel. Handle them at the application boundary or transform them:
+
 ```typescript
-const program = Transport.request(transport, request).pipe(
-  Effect.catchTag("TransportError", (e) => {
-    console.log(e.operation); // "request"
-    console.log(e.message);   // Network error details
-    return Effect.fail(e);
-  })
+// Errors propagate automatically - no need to catch locally
+const program = Effect.gen(function* () {
+  const response = yield* Transport.request(transport, request);
+  return response;
+});
+
+// Transform errors if needed
+const withContext = program.pipe(
+  Effect.mapError((e) => new AppError(`Transport failed: ${e.message}`))
 );
 ```
