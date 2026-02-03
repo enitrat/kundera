@@ -94,8 +94,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: native-*
-          path: packages/kundera-ts
-          merge-multiple: true
+          path: packages/kundera-ts/native
 
       - name: Build dist
         run: pnpm --filter kundera-sn build:dist
