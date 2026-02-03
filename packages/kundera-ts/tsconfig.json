@@ -32,6 +32,6 @@
       "kundera/*": ["./src/*/index.ts"]
     }
   },
-  "include": ["src/**/*.ts", "examples/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "examples/**/*.ts"],
   "exclude": ["node_modules", "dist", "types", "**/*.test.ts", "**/*.test-d.ts"]
 }

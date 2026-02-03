@@ -2,8 +2,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "rootDir": "src"
+    "rootDir": "src",
+    "paths": {
+      "abi-wan-kanabi": ["../../node_modules/abi-wan-kanabi/dist/index.d.ts"],
+      "abi-wan-kanabi/kanabi": ["../../node_modules/abi-wan-kanabi/dist/kanabi.d.ts"]
+    }
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.d.ts"],
   "exclude": ["**/*.test.ts", "node_modules", "dist", "types"]
 }

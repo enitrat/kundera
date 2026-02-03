@@ -22,6 +22,33 @@ import { parseAbi, getFunction, computeSelector } from './parse.js';
 import { encodeArgs, encodeArgsObject } from './encode.js';
 import { decodeArgs, decodeArgsObject, decodeOutputs, decodeOutputsObject } from './decode.js';
 
+function encodeCalldataInternal(
+  abi: Abi,
+  fnName: string,
+  args: CairoValue[] | Record<string, CairoValue>
+): Result<bigint[]> {
+  // Parse ABI
+  const parsedResult = getParsedAbi(abi);
+  if (parsedResult.error) {
+    return parsedResult as Result<bigint[]>;
+  }
+  const parsed = parsedResult.result;
+
+  // Get function
+  const fnResult = getFunction(parsed, fnName);
+  if (fnResult.error) {
+    return fnResult as Result<bigint[]>;
+  }
+  const fn = fnResult.result;
+
+  // Encode arguments
+  if (Array.isArray(args)) {
+    return encodeArgs(fn.entry.inputs, args, parsed);
+  } else {
+    return encodeArgsObject(fn.entry.inputs, args, parsed);
+  }
+}
+
 // ============ ABI Caching ============
 
 const abiCache = new WeakMap<Abi, ParsedAbi>();
@@ -77,26 +104,7 @@ export function encodeCalldata(
   fnName: string,
   args: CairoValue[] | Record<string, CairoValue>
 ): Result<bigint[]> {
-  // Parse ABI
-  const parsedResult = getParsedAbi(abi);
-  if (parsedResult.error) {
-    return parsedResult as Result<bigint[]>;
-  }
-  const parsed = parsedResult.result;
-
-  // Get function
-  const fnResult = getFunction(parsed, fnName);
-  if (fnResult.error) {
-    return fnResult as Result<bigint[]>;
-  }
-  const fn = fnResult.result;
-
-  // Encode arguments
-  if (Array.isArray(args)) {
-    return encodeArgs(fn.entry.inputs, args, parsed);
-  } else {
-    return encodeArgsObject(fn.entry.inputs, args, parsed);
-  }
+  return encodeCalldataInternal(abi, fnName, args);
 }
 
 /**
@@ -262,7 +270,7 @@ export function compileCalldata(
   fnName: string,
   args: CairoValue[] | Record<string, CairoValue>
 ): Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }> {
-  const encoded = encodeCalldata(abi, fnName, args);
+  const encoded = encodeCalldataInternal(abi, fnName, args);
   if (encoded.error) {
     return encoded as Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }>;
   }

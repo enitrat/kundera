@@ -18,7 +18,6 @@
  * ```
  */
 
-import './kanabi-config.js';
 
 // Types
 export type {
