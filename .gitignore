@@ -4,4 +4,6 @@ dist/
 types/
 target/
 wasm/
+!packages/kundera-effect/src/wasm/
+!packages/kundera-effect/src/wasm/**
 .zig-cache/

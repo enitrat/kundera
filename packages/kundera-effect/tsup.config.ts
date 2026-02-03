@@ -15,7 +15,7 @@ export default defineConfig({
     "src/wasm-loader/index.ts"
   ],
   format: ["esm"],
-  dts: true,
+  dts: false,
   clean: true,
   splitting: false,
   treeshake: true,

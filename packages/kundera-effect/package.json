@@ -128,7 +128,7 @@
     "vitest": "^2.1.8"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsc -p tsconfig.build.json",
     "test": "bun run --cwd ../kundera-ts build:wasm && vitest run",
     "test:run": "bun run --cwd ../kundera-ts build:wasm && vitest run",
     "pretypecheck": "bun run --cwd ../kundera-ts build:dist",
