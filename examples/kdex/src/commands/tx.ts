@@ -6,64 +6,28 @@
 
 import { Effect } from "effect";
 import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
-import { createTransport, type Network } from "../config.js";
+import { TransportTag } from "../config.js";
 
-export async function tx(txHash: string, network: Network): Promise<void> {
-  const transport = createTransport(network);
-
-  const program = Effect.gen(function* () {
+export const tx = (txHash: string) =>
+  Effect.gen(function* () {
+    const transport = yield* TransportTag;
     const transaction = yield* Rpc.starknet_getTransactionByHash(transport, txHash);
+    yield* Effect.log(JSON.stringify(transaction, null, 2));
     return transaction;
-  }).pipe(
-    Effect.catchTag("RpcError", (e) => {
-      console.error(`RPC error: ${e.message}`);
-      return Effect.succeed(null);
-    })
-  );
+  });
 
-  const result = await Effect.runPromise(program);
-
-  if (result) {
-    console.log(JSON.stringify(result, null, 2));
-  }
-}
-
-export async function txStatus(txHash: string, network: Network): Promise<void> {
-  const transport = createTransport(network);
-
-  const program = Effect.gen(function* () {
+export const txStatus = (txHash: string) =>
+  Effect.gen(function* () {
+    const transport = yield* TransportTag;
     const status = yield* Rpc.starknet_getTransactionStatus(transport, txHash);
+    yield* Effect.log(JSON.stringify(status, null, 2));
     return status;
-  }).pipe(
-    Effect.catchTag("RpcError", (e) => {
-      console.error(`RPC error: ${e.message}`);
-      return Effect.succeed(null);
-    })
-  );
+  });
 
-  const result = await Effect.runPromise(program);
-
-  if (result) {
-    console.log(JSON.stringify(result, null, 2));
-  }
-}
-
-export async function txReceipt(txHash: string, network: Network): Promise<void> {
-  const transport = createTransport(network);
-
-  const program = Effect.gen(function* () {
+export const txReceipt = (txHash: string) =>
+  Effect.gen(function* () {
+    const transport = yield* TransportTag;
     const receipt = yield* Rpc.starknet_getTransactionReceipt(transport, txHash);
+    yield* Effect.log(JSON.stringify(receipt, null, 2));
     return receipt;
-  }).pipe(
-    Effect.catchTag("RpcError", (e) => {
-      console.error(`RPC error: ${e.message}`);
-      return Effect.succeed(null);
-    })
-  );
-
-  const result = await Effect.runPromise(program);
-
-  if (result) {
-    console.log(JSON.stringify(result, null, 2));
-  }
-}
+  });

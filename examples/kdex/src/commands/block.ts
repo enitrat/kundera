@@ -7,7 +7,7 @@
 import { Effect } from "effect";
 import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
 import type { BlockId } from "@kundera-sn/kundera-ts/jsonrpc";
-import { createTransport, type Network } from "../config.js";
+import { TransportTag } from "../config.js";
 
 function parseBlockId(blockIdStr: string | undefined): BlockId {
   if (!blockIdStr || blockIdStr === "latest") {
@@ -22,41 +22,23 @@ function parseBlockId(blockIdStr: string | undefined): BlockId {
   return { block_number: parseInt(blockIdStr, 10) };
 }
 
-export async function block(
-  blockIdStr: string | undefined,
-  options: { full?: boolean },
-  network: Network
-): Promise<void> {
-  const transport = createTransport(network);
-  const blockId = parseBlockId(blockIdStr);
+export const block = (blockIdStr: string | undefined, options: { full?: boolean }) =>
+  Effect.gen(function* () {
+    const transport = yield* TransportTag;
+    const blockId = parseBlockId(blockIdStr);
 
-  const program = Effect.gen(function* () {
-    if (options.full) {
-      return yield* Rpc.starknet_getBlockWithTxs(transport, blockId);
-    }
-    return yield* Rpc.starknet_getBlockWithTxHashes(transport, blockId);
-  }).pipe(
-    Effect.catchTag("RpcError", (e) => {
-      console.error(`RPC error: ${e.message}`);
-      return Effect.succeed(null);
-    })
-  );
+    const result = options.full
+      ? yield* Rpc.starknet_getBlockWithTxs(transport, blockId)
+      : yield* Rpc.starknet_getBlockWithTxHashes(transport, blockId);
 
-  const result = await Effect.runPromise(program);
-
-  if (result) {
-    console.log(JSON.stringify(result, null, 2));
-  }
-}
-
-export async function blockHashAndNumber(network: Network): Promise<void> {
-  const transport = createTransport(network);
-
-  const program = Effect.gen(function* () {
-    return yield* Rpc.starknet_blockHashAndNumber(transport);
+    yield* Effect.log(JSON.stringify(result, null, 2));
+    return result;
   });
 
-  const result = await Effect.runPromise(program);
-  console.log(`Block #${result.block_number}`);
-  console.log(`Hash: ${result.block_hash}`);
-}
+export const blockHashAndNumber = Effect.gen(function* () {
+  const transport = yield* TransportTag;
+  const result = yield* Rpc.starknet_blockHashAndNumber(transport);
+  yield* Effect.log(`Block #${result.block_number}`);
+  yield* Effect.log(`Hash: ${result.block_hash}`);
+  return result;
+});

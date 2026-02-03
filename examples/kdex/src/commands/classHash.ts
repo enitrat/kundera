@@ -7,32 +7,17 @@
 import { Effect } from "effect";
 import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
 import { ContractAddress } from "@kundera-sn/kundera-effect/primitives";
-import { createTransport, type Network } from "../config.js";
+import { TransportTag } from "../config.js";
 
-export async function classHash(address: string, network: Network): Promise<void> {
-  const transport = createTransport(network);
-
-  const program = Effect.gen(function* () {
+export const classHash = (address: string) =>
+  Effect.gen(function* () {
+    const transport = yield* TransportTag;
     const contractAddress = yield* ContractAddress.from(address);
     const hash = yield* Rpc.starknet_getClassHashAt(
       transport,
-      contractAddress.toHex(),
+      contractAddress,
       "latest"
     );
+    yield* Effect.log(hash);
     return hash;
-  }).pipe(
-    Effect.catchTag("PrimitiveError", (e) => {
-      console.error(`Invalid address: ${e.message}`);
-      return Effect.succeed("");
-    }),
-    Effect.catchTag("RpcError", (e) => {
-      console.error(`RPC error: ${e.message}`);
-      return Effect.succeed("");
-    })
-  );
-
-  const result = await Effect.runPromise(program);
-  if (result) {
-    console.log(result);
-  }
-}
+  });

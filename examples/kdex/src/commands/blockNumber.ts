@@ -6,16 +6,11 @@
 
 import { Effect } from "effect";
 import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
-import { createTransport, type Network } from "../config.js";
+import { TransportTag } from "../config.js";
 
-export async function blockNumber(network: Network): Promise<void> {
-  const transport = createTransport(network);
-
-  const program = Effect.gen(function* () {
-    const blockNum = yield* Rpc.starknet_blockNumber(transport);
-    return blockNum;
-  });
-
-  const result = await Effect.runPromise(program);
-  console.log(result);
-}
+export const blockNumber = Effect.gen(function* () {
+  const transport = yield* TransportTag;
+  const blockNum = yield* Rpc.starknet_blockNumber(transport);
+  yield* Effect.log(blockNum);
+  return blockNum;
+});

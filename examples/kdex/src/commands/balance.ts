@@ -8,7 +8,7 @@ import { Effect } from "effect";
 import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
 import * as Abi from "@kundera-sn/kundera-effect/abi";
 import { ContractAddress } from "@kundera-sn/kundera-effect/primitives";
-import { createTransport, type Network } from "../config.js";
+import { TransportTag, type Network } from "../config.js";
 
 // Token addresses on Starknet mainnet
 const TOKEN_ADDRESSES = {
@@ -35,15 +35,23 @@ const ERC20_ABI = [
 
 export type Token = "ETH" | "STRK";
 
-export async function balance(
-  address: string,
-  token: Token,
-  network: Network
-): Promise<void> {
-  const transport = createTransport(network);
-  const tokenAddress = TOKEN_ADDRESSES[network][token];
+function formatBalance(value: bigint, decimals: number): string {
+  const divisor = 10n ** BigInt(decimals);
+  const integerPart = value / divisor;
+  const fractionalPart = value % divisor;
 
-  const program = Effect.gen(function* () {
+  const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
+  // Show only first 6 decimal places
+  const truncatedFractional = fractionalStr.slice(0, 6).replace(/0+$/, "") || "0";
+
+  return `${integerPart}.${truncatedFractional}`;
+}
+
+export const balance = (address: string, token: Token, network: Network) =>
+  Effect.gen(function* () {
+    const transport = yield* TransportTag;
+    const tokenAddress = TOKEN_ADDRESSES[network][token];
+
     // Validate and create the contract address
     const accountAddress = yield* ContractAddress.from(address);
 
@@ -69,37 +77,9 @@ export async function balance(
     const high = BigInt(result[1]);
     const balanceValue = low + (high << 128n);
 
+    // Format with decimals (18 decimals for both ETH and STRK)
+    const formatted = formatBalance(balanceValue, 18);
+    yield* Effect.log(`${formatted} ${token}`);
+
     return balanceValue;
-  }).pipe(
-    Effect.catchTag("PrimitiveError", (e) => {
-      console.error(`Invalid address: ${e.message}`);
-      return Effect.succeed(0n);
-    }),
-    Effect.catchTag("AbiError", (e) => {
-      console.error(`ABI error: ${e.message}`);
-      return Effect.succeed(0n);
-    }),
-    Effect.catchTag("RpcError", (e) => {
-      console.error(`RPC error: ${e.message}`);
-      return Effect.succeed(0n);
-    })
-  );
-
-  const result = await Effect.runPromise(program);
-
-  // Format with decimals (18 decimals for both ETH and STRK)
-  const formatted = formatBalance(result, 18);
-  console.log(`${formatted} ${token}`);
-}
-
-function formatBalance(value: bigint, decimals: number): string {
-  const divisor = 10n ** BigInt(decimals);
-  const integerPart = value / divisor;
-  const fractionalPart = value % divisor;
-
-  const fractionalStr = fractionalPart.toString().padStart(decimals, "0");
-  // Show only first 6 decimal places
-  const truncatedFractional = fractionalStr.slice(0, 6).replace(/0+$/, "") || "0";
-
-  return `${integerPart}.${truncatedFractional}`;
-}
+  });
