@@ -1,5 +1,5 @@
 import { copyFileSync, existsSync, lstatSync, mkdirSync, readlinkSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const scriptDir = resolve(fileURLToPath(new URL(".", import.meta.url)));
@@ -29,5 +29,14 @@ if (existsSync(wasmLinkPath)) {
   }
 }
 
-mkdirSync(wasmTargetDir, { recursive: true });
+try {
+  mkdirSync(wasmTargetDir, { recursive: true });
+} catch (error) {
+  if (error && error.code === "ENOENT") {
+    mkdirSync(dirname(wasmTargetDir), { recursive: true });
+    mkdirSync(wasmTargetDir, { recursive: true });
+  } else {
+    throw error;
+  }
+}
 copyFileSync(wasmSourcePath, resolve(wasmTargetDir, "crypto.wasm"));
