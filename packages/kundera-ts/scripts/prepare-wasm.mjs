@@ -21,11 +21,15 @@ if (!existsSync(wasmSourcePath)) {
 }
 
 let wasmTargetDir = wasmLinkPath;
-if (existsSync(wasmLinkPath)) {
+try {
   const stat = lstatSync(wasmLinkPath);
   if (stat.isSymbolicLink()) {
     const linkTarget = readlinkSync(wasmLinkPath);
     wasmTargetDir = resolve(packageDir, linkTarget);
+  }
+} catch (error) {
+  if (!error || error.code !== "ENOENT") {
+    throw error;
   }
 }
 
