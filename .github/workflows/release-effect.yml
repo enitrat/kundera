@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   publish-effect:
-    name: Build and publish kundera-sn-effect
+    name: Build and publish kundera-effect
     runs-on: ubuntu-latest
     # Only run if this is an effect package release
     if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'effect-v')
@@ -46,13 +46,13 @@ jobs:
         run: pnpm install
 
       - name: Type check
-        run: pnpm --filter kundera-sn-effect typecheck
+        run: pnpm --filter kundera-effect typecheck
 
       - name: Run tests
-        run: pnpm --filter kundera-sn-effect test:run
+        run: pnpm --filter kundera-effect test:run
 
       - name: Build
-        run: pnpm --filter kundera-sn-effect build
+        run: pnpm --filter kundera-effect build
 
       - name: Publish to npm
         env:
@@ -60,7 +60,7 @@ jobs:
         run: |
           if [ -n "$NPM_TOKEN" ]; then
             npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-            pnpm --filter kundera-sn-effect publish --access public --no-git-checks
+            pnpm --filter kundera-effect publish --access public --no-git-checks
           else
             echo "NPM_TOKEN not set, skipping publish"
           fi

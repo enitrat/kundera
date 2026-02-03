@@ -1,4 +1,4 @@
-# kundera-sn-effect Type Errors Report
+# kundera-effect Type Errors Report
 
 **Generated**: 2026-02-02
 **Status**: ❌ BLOCKING - Package cannot build
@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-The `kundera-sn-effect` package has **121+ type errors** preventing compilation. The errors stem from missing exports in the main `kundera-sn` package that `kundera-effect` depends on.
+The `kundera-effect` package has **121+ type errors** preventing compilation. The errors stem from missing exports in the main `kundera-sn` package that `kundera-effect` depends on.
 
 **Root Cause**: `kundera-effect` was developed against a different/incomplete version of the main package API. Many types and functions it expects are either:
 1. Not implemented in `kundera-sn`
@@ -291,7 +291,7 @@ Some types are **declared** in kundera-sn but not **exported**:
 1. Accept that kundera-effect is for a future version
 2. Keep it in the repo but don't publish yet
 3. Focus on completing kundera-sn first
-4. Publish kundera-sn-effect when main package is ready
+4. Publish kundera-effect when main package is ready
 
 **Pros**: No rushed/incomplete releases
 **Cons**: Effect integration delayed

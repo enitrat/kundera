@@ -1,4 +1,4 @@
-# kundera-sn-effect
+# kundera-effect
 
 Effect-TS integration for the [Kundera](https://github.com/enitrat/kundera) Starknet primitives library. Type-safe operations with composable, error-handled Effects.
 
@@ -18,12 +18,12 @@ try {
 }
 ```
 
-**kundera-sn-effect** - explicit control over errors and composition:
+**kundera-effect** - explicit control over errors and composition:
 ```typescript
 import { Effect } from "effect";
-import * as Abi from "kundera-sn-effect/abi";
-import * as JsonRpc from "kundera-sn-effect/jsonrpc";
-import { httpTransport } from "kundera-sn-effect/transport";
+import * as Abi from "kundera-effect/abi";
+import * as JsonRpc from "kundera-effect/jsonrpc";
+import { httpTransport } from "kundera-effect/transport";
 
 const transport = httpTransport({ url: "https://..." });
 
@@ -59,10 +59,10 @@ await contract.deploy({
 });
 ```
 
-**kundera-sn-effect** - branded types prevent mixing:
+**kundera-effect** - branded types prevent mixing:
 ```typescript
-import * as ContractAddress from "kundera-sn-effect/primitives/ContractAddress";
-import * as ClassHash from "kundera-sn-effect/primitives/ClassHash";
+import * as ContractAddress from "kundera-effect/primitives/ContractAddress";
+import * as ClassHash from "kundera-effect/primitives/ClassHash";
 
 const address = yield* ContractAddress.from("0x049d...");
 const classHash = yield* ClassHash.from("0x07b3...");
@@ -74,7 +74,7 @@ await deploy({ classHash: address });
 ## Installation
 
 ```bash
-npm install kundera-sn-effect effect kundera-sn
+npm install kundera-effect effect kundera-sn
 ```
 
 ## Features
@@ -87,15 +87,15 @@ npm install kundera-sn-effect effect kundera-sn
 
 ## Modules
 
-- `kundera-sn-effect/abi` - ABI parsing, encoding, decoding
-- `kundera-sn-effect/primitives` - Felt252, ContractAddress, ClassHash, etc.
-- `kundera-sn-effect/crypto` - Pedersen, Poseidon, STARK signatures
-- `kundera-sn-effect/serde` - Cairo serialization
-- `kundera-sn-effect/jsonrpc` - Starknet JSON-RPC methods
-- `kundera-sn-effect/transport` - HTTP and WebSocket transports
-- `kundera-sn-effect/native` - Native backend with Effect wrappers
-- `kundera-sn-effect/wasm` - WASM backend with Effect wrappers
-- `kundera-sn-effect/wasm-loader` - WASM loader utilities
+- `kundera-effect/abi` - ABI parsing, encoding, decoding
+- `kundera-effect/primitives` - Felt252, ContractAddress, ClassHash, etc.
+- `kundera-effect/crypto` - Pedersen, Poseidon, STARK signatures
+- `kundera-effect/serde` - Cairo serialization
+- `kundera-effect/jsonrpc` - Starknet JSON-RPC methods
+- `kundera-effect/transport` - HTTP and WebSocket transports
+- `kundera-effect/native` - Native backend with Effect wrappers
+- `kundera-effect/wasm` - WASM backend with Effect wrappers
+- `kundera-effect/wasm-loader` - WASM loader utilities
 
 ## Error Types
 
