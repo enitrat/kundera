@@ -6,6 +6,7 @@
 
 import { existsSync, readFileSync } from 'fs';
 import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import type { WasmExports } from './types.js';
 import { wasmInstance, setWasmInstance } from './state.js';
 import { getWasiShim } from './wasi-shim.js';
@@ -16,15 +17,16 @@ import { resetAllocator } from './memory.js';
  */
 export function findWasmFile(): string | null {
   const fileName = 'crypto.wasm';
+  const moduleDir = dirname(fileURLToPath(import.meta.url));
 
   // Search paths
   const searchPaths = [
     // Development: wasm/ directory
     join(process.cwd(), 'wasm', fileName),
     // Relative to this module
-    join(dirname(import.meta.path), '..', '..', 'wasm', fileName),
+    join(moduleDir, '..', '..', 'wasm', fileName),
     // Installed package
-    join(dirname(import.meta.path), '..', '..', '..', 'wasm', fileName),
+    join(moduleDir, '..', '..', '..', 'wasm', fileName),
   ];
 
   for (const path of searchPaths) {

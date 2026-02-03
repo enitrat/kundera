@@ -145,6 +145,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",
+    "@types/bun": "^1.1.17",
+    "@types/node": "^22.13.1",
     "starknet": "6.23.1",
     "tsup": "^8.0.0",
     "typescript": "^5.7.0",
