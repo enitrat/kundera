@@ -129,7 +129,7 @@
     "build:dist": "tsup",
     "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly --outDir types",
     "build:native": "cargo build --release --manifest-path ../../Cargo.toml",
-    "build:wasm": "cargo build --release --target wasm32-wasip1 --manifest-path ../../Cargo.toml && mkdir -p wasm && cp ../../target/wasm32-wasip1/release/starknet_crypto_ffi.wasm wasm/crypto.wasm",
+    "build:wasm": "cargo build --release --target wasm32-wasip1 --manifest-path ../../Cargo.toml && node scripts/prepare-wasm.mjs",
     "build:zig": "bun run --cwd ../.. build:zig",
     "package:native": "bun run ../../scripts/package-native.ts --out .",
     "typecheck": "tsc --noEmit",
