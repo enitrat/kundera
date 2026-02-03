@@ -1,0 +1,193 @@
+---
+title: Transport API
+description: Low-level transport interfaces and factories.
+---
+
+Transports handle raw JSON-RPC communication. Providers use transports internally.
+
+## Imports
+
+```typescript
+import {
+  // Factories
+  httpTransport,
+  webSocketTransport,
+  // Types
+  type Transport,
+  type EventTransport,
+  type HttpTransportOptions,
+  type WebSocketTransportOptions,
+  type JsonRpcRequest,
+  type JsonRpcResponse,
+} from 'kundera-sn/transport';
+```
+
+## Factories
+
+### httpTransport
+
+Creates a minimal HTTP transport.
+
+```typescript
+function httpTransport(url: string, options?: HttpTransportOptions): Transport
+```
+
+```typescript
+const transport = httpTransport(
+  'https://api.zan.top/public/starknet-sepolia',
+  { timeout: 30000 }
+);
+
+const response = await transport.request(
+  createRequest('starknet_blockNumber', [])
+);
+
+if (isJsonRpcError(response)) {
+  throw new Error(response.error.message);
+}
+
+const result = response.result;
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `fetchOptions` | `RequestInit` | `{}` | Custom fetch options (headers, credentials, etc.) |
+| `timeout` | `number` | `30000` | Request timeout (ms) |
+
+<Tip>
+Need batching or retries? Use the HTTP Transport skill and pass its transport into your provider.
+</Tip>
+
+### webSocketTransport
+
+Creates a WebSocket transport with subscription support.
+
+```typescript
+function webSocketTransport(options: WebSocketTransportOptions): WebSocketTransport
+```
+
+```typescript
+const transport = webSocketTransport({
+  url: 'wss://api.zan.top/public/starknet-sepolia',
+});
+
+await transport.connect();
+
+// Subscribe to notifications
+transport.subscribe('sub_id', (data) => {
+  console.log('Received:', data);
+});
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | WebSocket URL |
+| `reconnect` | `boolean` | `true` | Auto-reconnect |
+| `reconnectDelay` | `number` | `1000` | Reconnect delay (ms) |
+
+## Interfaces
+
+### Transport
+
+```typescript
+interface Transport {
+  request<T>(request: JsonRpcRequest): Promise<JsonRpcResponse<T>>;
+  requestBatch<T>(requests: JsonRpcRequest[]): Promise<JsonRpcResponse<T>[]>;
+}
+```
+
+### EventTransport
+
+Extends `Transport` with subscription support.
+
+```typescript
+interface EventTransport extends Transport {
+  connect(): Promise<void>;
+  disconnect(): void;
+  isConnected(): boolean;
+  subscribe(id: string, callback: (data: unknown) => void): void;
+  unsubscribe(id: string): void;
+}
+```
+
+## Types
+
+### JsonRpcRequest
+
+```typescript
+interface JsonRpcRequest {
+  jsonrpc: '2.0';
+  id?: number | string;
+  method: string;
+  params?: unknown[] | Record<string, unknown>;
+}
+```
+
+### JsonRpcResponse
+
+```typescript
+interface JsonRpcSuccessResponse<T> {
+  jsonrpc: '2.0';
+  id: number | string;
+  result: T;
+}
+
+interface JsonRpcErrorResponse {
+  jsonrpc: '2.0';
+  id: number | string;
+  error: JsonRpcError;
+}
+
+interface JsonRpcError {
+  code: number;
+  message: string;
+  data?: unknown;
+}
+```
+
+## Utilities
+
+### createRequest
+
+Create a JSON-RPC request object.
+
+```typescript
+import { createRequest } from 'kundera-sn/transport';
+
+const request = createRequest('starknet_blockNumber', []);
+// { jsonrpc: '2.0', id: 1, method: 'starknet_blockNumber', params: [] }
+```
+
+### requestBatch
+
+Send a batch of requests (responses are matched by id).
+
+```typescript
+const responses = await transport.requestBatch([
+  createRequest('starknet_blockNumber', []),
+  createRequest('starknet_chainId', [])
+]);
+```
+
+### isJsonRpcError
+
+Type guard for error responses.
+
+```typescript
+import { isJsonRpcError } from 'kundera-sn/transport';
+
+if (isJsonRpcError(response)) {
+  console.error(response.error.message);
+}
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Transport Guide" icon="layer-group" href="/guides/provider/transport">
+    Transport concepts and patterns.
+  </Card>
+  <Card title="HTTP Provider Skill" icon="plug" href="/skills/http-provider">
+    Build a provider on top of HTTP transport.
+  </Card>
+</CardGroup>

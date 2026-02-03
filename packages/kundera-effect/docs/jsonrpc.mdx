@@ -1,0 +1,99 @@
+---
+title: Effect RPC
+description: Starknet JSON-RPC with typed errors
+---
+
+# Effect RPC
+
+All RPC methods return `Effect<T, RpcError>` for type-safe error handling.
+
+## Read Methods
+
+```typescript
+import { Effect } from 'effect';
+import * as Rpc from 'kundera-effect/jsonrpc';
+import { httpTransport } from 'kundera-effect/transport';
+
+const transport = httpTransport('https://...');
+
+const program = Effect.gen(function* () {
+  // Block info
+  const blockNumber = yield* Rpc.starknet_blockNumber(transport);
+  const block = yield* Rpc.starknet_getBlockWithTxHashes(transport, 'latest');
+
+  // Storage
+  const value = yield* Rpc.starknet_getStorageAt(transport, address, key, 'latest');
+  const nonce = yield* Rpc.starknet_getNonce(transport, 'latest', address);
+
+  // Transactions
+  const tx = yield* Rpc.starknet_getTransactionByHash(transport, txHash);
+  const receipt = yield* Rpc.starknet_getTransactionReceipt(transport, txHash);
+
+  return { blockNumber, block, value, nonce, tx, receipt };
+});
+```
+
+## Call
+
+```typescript
+const result = yield* Rpc.starknet_call(transport, {
+  contract_address: address,
+  entry_point_selector: selector,
+  calldata: []
+}, 'latest');
+```
+
+## Fee Estimation
+
+```typescript
+const estimate = yield* Rpc.starknet_estimateFee(
+  transport,
+  [transaction],
+  simulationFlags,
+  'latest'
+);
+```
+
+## Submit Transactions
+
+```typescript
+const result = yield* Rpc.starknet_addInvokeTransaction(transport, invokeTx);
+const result = yield* Rpc.starknet_addDeclareTransaction(transport, declareTx);
+const result = yield* Rpc.starknet_addDeployAccountTransaction(transport, deployTx);
+```
+
+## Events
+
+```typescript
+const events = yield* Rpc.starknet_getEvents(transport, {
+  filter: {
+    from_block: { block_number: 0 },
+    to_block: 'latest',
+    address: contractAddress,
+    keys: [[eventSelector]]
+  },
+  chunk_size: 100
+});
+```
+
+## WebSocket Subscriptions
+
+```typescript
+const subId = yield* Rpc.starknet_subscribeNewHeads(transport, params);
+const subId = yield* Rpc.starknet_subscribeEvents(transport, params);
+yield* Rpc.starknet_unsubscribe(transport, subId);
+```
+
+## Error Handling
+
+```typescript
+const program = Rpc.starknet_getTransactionByHash(transport, '0xinvalid').pipe(
+  Effect.retry({ times: 3 }),
+  Effect.timeout('10 seconds'),
+  Effect.catchTag('RpcError', (e) => {
+    console.log(e.operation); // "starknet_getTransactionByHash"
+    console.log(e.message);   // RPC error details
+    return Effect.succeed(null);
+  })
+);
+```

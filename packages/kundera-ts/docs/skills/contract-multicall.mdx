@@ -1,0 +1,26 @@
+---
+title: "Contract Multicall"
+description: "Batch multiple read calls with requestBatch."
+---
+
+Batch read-only calls in a single JSON-RPC request using `transport.requestBatch`.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/contract-multicall src/skills/
+```
+
+## Usage
+
+```ts
+import { httpTransport } from 'kundera-sn/transport';
+import { multicallRead } from './skills/contract-multicall';
+
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+
+const results = await multicallRead(transport, [
+  { abi: ERC20_ABI, address: token1, functionName: 'balance_of', args: [account] },
+  { abi: ERC20_ABI, address: token2, functionName: 'balance_of', args: [account] },
+]);
+```

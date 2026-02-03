@@ -1,0 +1,3 @@
+# Map kundera-sn imports to parent package
+[install]
+# Use workspace linking for kundera-sn

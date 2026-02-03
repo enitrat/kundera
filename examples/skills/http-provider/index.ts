@@ -5,7 +5,7 @@
  * Copy into your codebase and tailor methods as needed.
  */
 
-import { httpTransport, type HttpTransportOptions, type Transport } from 'kundera/transport';
+import { httpTransport, type HttpTransportOptions, type Transport } from 'kundera-sn/transport';
 import {
   starknet_chainId,
   starknet_blockNumber,
@@ -35,7 +35,7 @@ import {
   starknet_simulateTransactions,
   starknet_traceTransaction,
   starknet_traceBlockTransactions,
-} from 'kundera/rpc';
+} from 'kundera-sn/jsonrpc';
 import type {
   BlockId,
   BroadcastedTxn,
@@ -46,8 +46,8 @@ import type {
   EventsFilter,
   FunctionCall,
   SimulationFlag,
-} from 'kundera/rpc';
-import type { ContractAddressType, ClassHashType, Felt252Type } from 'kundera/primitives';
+} from 'kundera-sn/jsonrpc';
+import type { ContractAddressType, ClassHashType, Felt252Type } from 'kundera-sn';
 
 export interface HttpProviderOptions {
   /** RPC endpoint URL (used if transport is not provided) */

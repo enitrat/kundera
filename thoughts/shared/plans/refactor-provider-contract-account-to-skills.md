@@ -21,20 +21,20 @@ Author: phoenix-agent
 
 | Export Path | Description | Why Opinionated |
 |-------------|-------------|-----------------|
-| `kundera/provider` | `HttpProvider`, `WebSocketProvider`, `createHttpProvider()` | Bundles transport choices, batching logic, event handling |
-| `kundera/contract` | `getContract()`, `ContractInstance` | Bundles ABI encoding, RPC calls, account binding |
-| `kundera/account` | `Account`, `createAccount()`, `WalletAccount` | Bundles signer, nonce management, tx building |
-| `kundera/rpc` | `StarknetRpcClient` class | Class-based API (not tree-shakeable) |
+| `kundera-sn/provider` | `HttpProvider`, `WebSocketProvider`, `createHttpProvider()` | Bundles transport choices, batching logic, event handling |
+| `kundera-sn/contract` | `getContract()`, `ContractInstance` | Bundles ABI encoding, RPC calls, account binding |
+| `kundera-sn/account` | `Account`, `createAccount()`, `WalletAccount` | Bundles signer, nonce management, tx building |
+| `kundera-sn/jsonrpc` | `StarknetRpcClient` class | Class-based API (not tree-shakeable) |
 
 ### What Should Remain (Primitives)
 
 | Export Path | Content | Status |
 |-------------|---------|--------|
-| `kundera/primitives` | `Felt252`, `ContractAddress`, `ClassHash`, etc. | Keep |
-| `kundera/crypto` | `poseidonHash`, `pedersenHash`, `sign`, `verify` | Keep |
-| `kundera/serde` | Serialization utilities | Keep |
-| `kundera/abi` | ABI parsing, encoding, decoding | Keep |
-| `kundera/transport` | Low-level transports | Keep (refactor) |
+| `kundera-sn` | `Felt252`, `ContractAddress`, `ClassHash`, etc. | Keep |
+| `kundera-sn/crypto` | `poseidonHash`, `pedersenHash`, `sign`, `verify` | Keep |
+| `kundera-sn/serde` | Serialization utilities | Keep |
+| `kundera-sn/abi` | ABI parsing, encoding, decoding | Keep |
+| `kundera-sn/transport` | Low-level transports | Keep (refactor) |
 
 ### Dependency Graph
 
@@ -45,7 +45,7 @@ Provider (to remove)
   └── Bundles: batching, retries, event handling
 
 Contract (to remove)
-  ├── Uses: abi/, rpc/, primitives/
+  ├── Uses: abi/, jsonrpc/, primitives/
   ├── UsedBy: examples/, skills/contract-viem
   └── Bundles: ABI binding, read/write patterns
 
@@ -75,21 +75,21 @@ RPC Client (to refactor)
     "./serde": "./dist/serde/index.js",
     "./abi": "./dist/abi/index.js",
     "./transport": "./dist/transport/index.js",
-    "./rpc": "./dist/rpc/index.js"
+    "./jsonrpc": "./dist/jsonrpc/index.js"
   }
 }
 ```
 
 **Removed:**
-- `kundera/provider`
-- `kundera/contract`
-- `kundera/account`
-- `kundera/wallet`
+- `kundera-sn/provider`
+- `kundera-sn/contract`
+- `kundera-sn/account`
+- `kundera-sn/wallet`
 
 ### New RPC Module (Tree-Shakeable)
 
 ```typescript
-// kundera/rpc - Tree-shakeable individual methods
+// kundera-sn/jsonrpc - Tree-shakeable individual methods
 
 // Individual RPC methods (tree-shakeable)
 export { starknet_chainId } from './methods/chainId.js';
@@ -185,7 +185,7 @@ examples/skills/
 #### Current (Class-based, not tree-shakeable)
 
 ```typescript
-// src/rpc/client.ts
+// src/jsonrpc/client.ts
 export class StarknetRpcClient {
   async chainId(): Promise<string> { ... }
   async blockNumber(): Promise<number> { ... }
@@ -197,7 +197,7 @@ export class StarknetRpcClient {
 #### Target (Function-based, tree-shakeable)
 
 ```typescript
-// src/rpc/methods/chainId.ts
+// src/jsonrpc/methods/chainId.ts
 import type { Transport } from '../../transport/types.js';
 import type { JsonRpcRequest } from '../../transport/types.js';
 
@@ -236,7 +236,7 @@ export function ChainIdRequest(): JsonRpcRequest {
 ```
 
 ```typescript
-// src/rpc/methods/getNonce.ts
+// src/jsonrpc/methods/getNonce.ts
 import type { Transport, JsonRpcRequest } from '../../transport/types.js';
 import type { BlockId } from '../types.js';
 import { formatBlockId } from '../utils.js';
@@ -263,7 +263,7 @@ export async function starknet_getNonce(
 #### File Structure
 
 ```
-src/rpc/
+src/jsonrpc/
 ├── index.ts                     # Re-exports all methods + types
 ├── types.ts                     # OpenRPC types (BlockId, etc.)
 ├── utils.ts                     # Shared utilities (formatBlockId)
@@ -294,19 +294,19 @@ src/rpc/
 ```
 
 **Tasks:**
-- [ ] Create `src/rpc/types.ts` with all OpenRPC types
-- [ ] Create `src/rpc/utils.ts` with formatBlockId, etc.
-- [ ] Create individual method files in `src/rpc/methods/`
-- [ ] Create `src/rpc/namespace.ts` for convenience API
-- [ ] Update `src/rpc/index.ts` to export tree-shakeable functions
+- [ ] Create `src/jsonrpc/types.ts` with all OpenRPC types
+- [ ] Create `src/jsonrpc/utils.ts` with formatBlockId, etc.
+- [ ] Create individual method files in `src/jsonrpc/methods/`
+- [ ] Create `src/jsonrpc/namespace.ts` for convenience API
+- [ ] Update `src/jsonrpc/index.ts` to export tree-shakeable functions
 - [ ] Keep `StarknetRpcClient` temporarily for backward compat (deprecated)
 - [ ] Add tests for each method
 
 **Rollback:** Keep old `client.ts`, export both APIs
 
 **Acceptance:**
-- [ ] Individual imports work: `import { starknet_getNonce } from 'kundera/rpc'`
-- [ ] Namespace works: `import { Rpc } from 'kundera/rpc'`
+- [ ] Individual imports work: `import { starknet_getNonce } from 'kundera-sn/jsonrpc'`
+- [ ] Namespace works: `import { Rpc } from 'kundera-sn/jsonrpc'`
 - [ ] All existing tests pass
 
 ---
@@ -331,14 +331,14 @@ src/rpc/
  * Creates a JSON-RPC provider over HTTP with batching and retry support.
  * Copy and customize for your needs.
  */
-import { httpTransport, type HttpTransportOptions } from 'kundera/transport';
+import { httpTransport, type HttpTransportOptions } from 'kundera-sn/transport';
 import {
   starknet_chainId,
   starknet_blockNumber,
   starknet_getNonce,
   starknet_call,
   // ... other methods you need
-} from 'kundera/rpc';
+} from 'kundera-sn/jsonrpc';
 
 export interface HttpProviderOptions {
   /** RPC endpoint URL */
@@ -383,8 +383,8 @@ export function createHttpProvider(options: HttpProviderOptions) {
  *
  * Real-time subscriptions for Starknet events.
  */
-import { webSocketTransport } from 'kundera/transport';
-import type { Transport } from 'kundera/transport';
+import { webSocketTransport } from 'kundera-sn/transport';
+import type { Transport } from 'kundera-sn/transport';
 
 export interface WebSocketProviderOptions {
   url: string;
@@ -418,13 +418,13 @@ export function createWebSocketProvider(options: WebSocketProviderOptions) {
 - [ ] Create `examples/skills/websocket-provider/` with index.ts, README.md, test
 - [ ] Create `docs/skills/http-provider.mdx` documentation
 - [ ] Create `docs/skills/websocket-provider.mdx` documentation
-- [ ] Mark `kundera/provider` exports as deprecated
+- [ ] Mark `kundera-sn/provider` exports as deprecated
 
 **Rollback:** Provider exports remain, skills are additive
 
 **Acceptance:**
 - [ ] Skills work standalone with copy-paste
-- [ ] Skills only import from `kundera/transport` and `kundera/rpc`
+- [ ] Skills only import from `kundera-sn/transport` and `kundera-sn/jsonrpc`
 
 ---
 
@@ -440,32 +440,32 @@ export function createWebSocketProvider(options: WebSocketProviderOptions) {
 
 Keep existing `contract-viem` skill (it's already well-structured), but:
 
-1. Remove `kundera/contract` library export
+1. Remove `kundera-sn/contract` library export
 2. Update `contract-viem` to use tree-shakeable RPC
 
 ##### Updated Contract Skill
 
 ```typescript
 // examples/skills/contract-viem/index.ts
-import { httpTransport } from 'kundera/transport';
-import { starknet_call, starknet_estimateFee } from 'kundera/rpc';
-import { encodeCalldata, decodeOutputs } from 'kundera/abi';
+import { httpTransport } from 'kundera-sn/transport';
+import { starknet_call, starknet_estimateFee } from 'kundera-sn/jsonrpc';
+import { encodeCalldata, decodeOutputs } from 'kundera-sn/abi';
 
 // ... rest of implementation using tree-shakeable imports
 ```
 
 **Tasks:**
-- [ ] Update `contract-viem` skill to use `kundera/rpc` methods (not StarknetRpcClient)
+- [ ] Update `contract-viem` skill to use `kundera-sn/jsonrpc` methods (not StarknetRpcClient)
 - [ ] Create minimal `contract-read` skill (just reading)
 - [ ] Create `contract-write` skill (requires account)
 - [ ] Create `contract-multicall` skill (batch reading)
-- [ ] Remove `kundera/contract` from package.json exports
+- [ ] Remove `kundera-sn/contract` from package.json exports
 - [ ] Update `docs/skills/contract-viem.mdx`
 
 **Rollback:** Contract exports remain
 
 **Acceptance:**
-- [ ] Skills work without `kundera/contract`
+- [ ] Skills work without `kundera-sn/contract`
 - [ ] All contract tests pass
 
 ---
@@ -485,7 +485,7 @@ import { encodeCalldata, decodeOutputs } from 'kundera/abi';
 The hash computation and signing utilities are primitives:
 
 ```typescript
-// kundera/crypto (already exists, augment)
+// kundera-sn/crypto (already exists, augment)
 export {
   computeInvokeV3Hash,
   computeDeclareV3Hash,
@@ -494,7 +494,7 @@ export {
   computeSelector,
 } from './account/hash.js';  // Move to crypto
 
-// kundera/serde (for Signer)
+// kundera-sn/serde (for Signer)
 // Signer is a utility, could stay or become skill
 ```
 
@@ -509,15 +509,15 @@ export {
  *
  * Execute invoke transactions on Starknet.
  */
-import { httpTransport } from 'kundera/transport';
+import { httpTransport } from 'kundera-sn/transport';
 import {
   starknet_getNonce,
   starknet_chainId,
   starknet_estimateFee,
   starknet_addInvokeTransaction,
-} from 'kundera/rpc';
-import { computeInvokeV3Hash } from 'kundera/crypto';
-import { sign } from 'kundera/crypto';
+} from 'kundera-sn/jsonrpc';
+import { computeInvokeV3Hash } from 'kundera-sn/crypto';
+import { sign } from 'kundera-sn/crypto';
 
 export interface InvokeOptions {
   transport: Transport;
@@ -583,18 +583,18 @@ export function createWalletAccount(options: WalletAccountOptions) {
 ```
 
 **Tasks:**
-- [ ] Move hash functions to `kundera/crypto`
+- [ ] Move hash functions to `kundera-sn/crypto`
 - [ ] Create `examples/skills/account-invoke/`
 - [ ] Create `examples/skills/account-declare/`
 - [ ] Create `examples/skills/account-deploy/`
 - [ ] Update `examples/skills/wallet-modal/` to not depend on Account class
 - [ ] Create `docs/skills/account-invoke.mdx`
-- [ ] Remove `kundera/account` from package.json exports
+- [ ] Remove `kundera-sn/account` from package.json exports
 
 **Rollback:** Account exports remain
 
 **Acceptance:**
-- [ ] Skills work without `kundera/account`
+- [ ] Skills work without `kundera-sn/account`
 - [ ] Wallet modal skill works independently
 
 ---
@@ -625,9 +625,9 @@ export function createWalletAccount(options: WalletAccountOptions) {
 
 | Change | Impact | Migration Path |
 |--------|--------|----------------|
-| `kundera/provider` removed | High | Copy http-provider skill |
-| `kundera/contract` removed | High | Copy contract-viem skill |
-| `kundera/account` removed | High | Copy account-invoke skill |
+| `kundera-sn/provider` removed | High | Copy http-provider skill |
+| `kundera-sn/contract` removed | High | Copy contract-viem skill |
+| `kundera-sn/account` removed | High | Copy account-invoke skill |
 | `StarknetRpcClient` removed | Medium | Use tree-shakeable `starknet_*` functions |
 | `getContract()` removed | High | Use skill or direct ABI encoding |
 | `Account` class removed | High | Use skill or build transactions manually |
@@ -641,7 +641,7 @@ export function createWalletAccount(options: WalletAccountOptions) {
 
 Before:
 ```typescript
-import { createHttpProvider } from 'kundera/provider';
+import { createHttpProvider } from 'kundera-sn/provider';
 const provider = createHttpProvider('https://...');
 const nonce = await provider.getNonce(address);
 ```
@@ -649,14 +649,14 @@ const nonce = await provider.getNonce(address);
 After:
 ```typescript
 // Option 1: Use tree-shakeable functions directly
-import { httpTransport } from 'kundera/transport';
-import { starknet_getNonce } from 'kundera/rpc';
+import { httpTransport } from 'kundera-sn/transport';
+import { starknet_getNonce } from 'kundera-sn/jsonrpc';
 
 const transport = httpTransport('https://...');
 const nonce = await starknet_getNonce(transport, address);
 
 // Option 2: Copy the http-provider skill
-cp -r node_modules/@starknet/kundera/examples/skills/http-provider src/skills/
+cp -r node_modules/kundera-sn-sn/examples/skills/http-provider src/skills/
 import { createHttpProvider } from './skills/http-provider';
 ```
 
@@ -664,7 +664,7 @@ import { createHttpProvider } from './skills/http-provider';
 
 Before:
 ```typescript
-import { getContract } from 'kundera/contract';
+import { getContract } from 'kundera-sn/contract';
 const contract = getContract({ abi, address, client });
 const balance = await contract.read('balance_of', [address]);
 ```
@@ -672,7 +672,7 @@ const balance = await contract.read('balance_of', [address]);
 After:
 ```typescript
 // Copy the contract-viem skill
-cp -r node_modules/@starknet/kundera/examples/skills/contract-viem src/skills/
+cp -r node_modules/kundera-sn-sn/examples/skills/contract-viem src/skills/
 import { readContract } from './skills/contract-viem';
 const { result } = await readContract(client, {
   abi, address, functionName: 'balance_of', args: [address]

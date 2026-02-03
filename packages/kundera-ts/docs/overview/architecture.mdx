@@ -1,0 +1,247 @@
+---
+title: Architecture
+description: How Kundera's modules fit together.
+---
+
+Kundera is organized into independent, tree-shakeable modules that compose together.
+
+## Module Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         Skills                              │
+│  (Copy-paste patterns: providers, accounts, contracts)      │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      Application Layer                       │
+├───────────────┬───────────────┬───────────────┬─────────────┤
+│      JSON-RPC      │      ABI      │     Serde     │  Transport  │
+│  (Methods)    │  (Encoding)   │ (Serializing) │  (Network)  │
+└───────────────┴───────────────┴───────────────┴─────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                        Core Layer                           │
+├─────────────────────────────┬───────────────────────────────┤
+│        Primitives           │            Crypto             │
+│  (Felt, Address, Hash)      │  (Pedersen, Poseidon, ECDSA)  │
+└─────────────────────────────┴───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                       Crypto Backend                         │
+├─────────────────────────────┬───────────────────────────────┤
+│          Native             │             WASM              │
+│   (Rust FFI, Bun/Node)      │    (Browser, portable)        │
+└─────────────────────────────┴───────────────────────────────┘
+```
+
+## Core Layer
+
+The foundation—types and cryptography with no external dependencies.
+
+### Primitives (`kundera-sn`)
+
+Branded types for Starknet values:
+
+| Type | Description |
+|------|-------------|
+| `Felt252` | 252-bit field element |
+| `ContractAddress` | Contract address (validated) |
+| `ClassHash` | Contract class hash |
+| `StorageKey` | Storage slot key |
+
+All types share the same underlying representation (`Uint8Array`) but are distinguished at the type level.
+
+### Crypto (`kundera-sn/crypto`)
+
+Cryptographic operations with pluggable backends:
+
+| Function | Description |
+|----------|-------------|
+| `pedersen(a, b)` | Pedersen hash of two felts |
+| `poseidon(values)` | Poseidon hash of array |
+| `sign(privateKey, hash)` | ECDSA signature |
+| `verify(publicKey, hash, signature)` | Verify signature |
+| `getPublicKey(privateKey)` | Derive public key |
+
+The crypto module auto-selects the fastest available backend (native > WASM > JS fallback).
+
+## Application Layer
+
+Higher-level modules that compose primitives and crypto.
+
+### Transport (`kundera-sn/transport`)
+
+Network communication with Starknet nodes:
+
+```typescript
+import { httpTransport } from 'kundera-sn/transport';
+
+const transport = httpTransport(
+  'https://api.zan.top/public/starknet-sepolia',
+  { timeout: 30_000 }
+);
+```
+
+Features:
+- HTTP and WebSocket transports
+- JSON-RPC request batching
+- Subscription support over WebSocket
+
+### JSON-RPC (`kundera-sn/jsonrpc`)
+
+Tree-shakeable JSON-RPC methods:
+
+```typescript
+import { starknet_call, starknet_getTransactionReceipt } from 'kundera-sn/jsonrpc';
+
+// Each method is independently importable
+const result = await starknet_call(transport, request);
+```
+
+Every Starknet JSON-RPC method is a separate export—import only what you use.
+
+### ABI (`kundera-sn/abi`)
+
+Encode and decode calldata:
+
+```typescript
+import { encodeCalldata, decodeOutputObject } from 'kundera-sn/abi';
+
+const encoded = encodeCalldata(abi, 'transfer', [recipient, amount]);
+if (encoded.error) {
+  throw encoded.error;
+}
+const calldata = encoded.result;
+const decoded = decodeOutputObject(abi, 'balanceOf', response.map(BigInt));
+if (decoded.error) {
+  throw decoded.error;
+}
+const result = decoded.result;
+```
+
+### Serde (`kundera-sn/serde`)
+
+Serialize Cairo types to felts:
+
+```typescript
+import { serialize, deserialize } from 'kundera-sn/serde';
+
+// Cairo struct → felt array
+const felts = serialize(schema, { x: 1n, y: 2n });
+
+// Felt array → Cairo struct
+const point = deserialize(schema, felts);
+```
+
+## Crypto Backend
+
+Pluggable backend for cryptographic operations.
+
+### Native (`kundera-sn/native`)
+
+Uses Rust FFI for maximum performance. Available in:
+- **Bun** (built-in FFI)
+- **Node.js** (requires `ffi-napi`)
+
+```typescript
+import { isNativeAvailable } from 'kundera-sn/native';
+
+if (isNativeAvailable()) {
+  // Using native crypto
+}
+```
+
+### WASM (`kundera-sn/wasm`)
+
+WebAssembly module for browsers and portable environments:
+
+```typescript
+import { loadWasmCrypto, isWasmLoaded } from 'kundera-sn/wasm';
+
+await loadWasmCrypto();
+// Now crypto functions use WASM backend
+```
+
+## Skills Layer
+
+Pre-built patterns that combine the modules above. Copy them into your project and adapt as needed.
+
+| Skill | Modules Used |
+|-------|--------------|
+| HTTP Provider | Transport + JSON-RPC |
+| Contract Read | Transport + JSON-RPC + ABI |
+| Account Invoke | Transport + JSON-RPC + ABI + Crypto |
+
+Skills are not published as packages—they're documented code you own.
+
+## Data Flow Example
+
+Reading an ERC-20 balance:
+
+```
+┌─────────────┐
+│  Your Code  │
+└──────┬──────┘
+       │ ContractAddress('0x...')
+       ▼
+┌─────────────┐
+│ Primitives  │ Creates branded type
+└──────┬──────┘
+       │ ContractAddressType
+       ▼
+┌─────────────┐
+│     ABI     │ Encodes calldata
+└──────┬──────┘
+       │ ['0x123', '0x456']
+       ▼
+┌─────────────┐
+│     JSON-RPC     │ Builds JSON-RPC request
+└──────┬──────┘
+       │ { method: 'starknet_call', params: [...] }
+       ▼
+┌─────────────┐
+│  Transport  │ Sends HTTP request
+└──────┬──────┘
+       │ HTTP POST
+       ▼
+   [Starknet Node]
+```
+
+## Import Patterns
+
+### Minimal (just primitives)
+
+```typescript
+import { Felt252, ContractAddress } from 'kundera-sn';
+```
+
+### Read-only app
+
+```typescript
+import { ContractAddress } from 'kundera-sn';
+import { starknet_call } from 'kundera-sn/jsonrpc';
+import { httpTransport } from 'kundera-sn/transport';
+```
+
+### Full signing capability
+
+```typescript
+import { ContractAddress } from 'kundera-sn';
+import { sign, pedersen } from 'kundera-sn/crypto';
+import { loadWasmCrypto } from 'kundera-sn/wasm';
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
+    Get up and running in 5 minutes.
+  </Card>
+  <Card title="Branded Types" icon="tag" href="/concepts/branded-types">
+    Why branded types prevent bugs.
+  </Card>
+</CardGroup>

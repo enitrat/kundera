@@ -1,0 +1,17 @@
+[resolve]
+alias = {
+  "kundera-sn" = "./packages/kundera-ts/src/index.ts",
+  "kundera-sn/abi" = "./packages/kundera-ts/src/abi/index.ts",
+  "kundera-sn/crypto" = "./packages/kundera-ts/src/crypto/index.ts",
+  "kundera-sn/jsonrpc" = "./packages/kundera-ts/src/jsonrpc/index.ts",
+  "kundera-sn/transport" = "./packages/kundera-ts/src/transport/index.ts"
+}
+
+[install]
+alias = {
+  "kundera-sn" = "./packages/kundera-ts/src/index.ts",
+  "kundera-sn/abi" = "./packages/kundera-ts/src/abi/index.ts",
+  "kundera-sn/crypto" = "./packages/kundera-ts/src/crypto/index.ts",
+  "kundera-sn/jsonrpc" = "./packages/kundera-ts/src/jsonrpc/index.ts",
+  "kundera-sn/transport" = "./packages/kundera-ts/src/transport/index.ts"
+}

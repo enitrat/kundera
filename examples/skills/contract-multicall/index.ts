@@ -4,16 +4,16 @@
  * Batch multiple read-only calls using transport.requestBatch.
  */
 
-import { encodeCalldata, decodeOutput, getFunctionSelectorHex, type Abi } from 'kundera/abi';
-import { Felt252 } from 'kundera/primitives';
+import { encodeCalldata, decodeOutput, getFunctionSelectorHex, type Abi } from 'kundera-sn/abi';
+import { Felt252 } from 'kundera-sn';
 import {
   createRequest,
   matchBatchResponses,
   type JsonRpcRequest,
   type JsonRpcResponse,
   type Transport,
-} from 'kundera/transport';
-import type { BlockId, FunctionCall } from 'kundera/rpc';
+} from 'kundera-sn/transport';
+import type { BlockId, FunctionCall } from 'kundera-sn/jsonrpc';
 
 export interface ReadContractParams {
   abi: Abi;

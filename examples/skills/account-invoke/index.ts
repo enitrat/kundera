@@ -4,14 +4,14 @@
  * Execute invoke transactions on Starknet.
  */
 
-import type { Transport } from 'kundera/transport';
+import type { Transport } from 'kundera-sn/transport';
 import {
   starknet_chainId,
   starknet_getNonce,
   starknet_addInvokeTransaction,
   starknet_estimateFee,
-} from 'kundera/rpc';
-import type { AddInvokeTransactionResult, BroadcastedInvokeTxn, FeeEstimate, SimulationFlag } from 'kundera/rpc';
+} from 'kundera-sn/jsonrpc';
+import type { AddInvokeTransactionResult, BroadcastedInvokeTxn, FeeEstimate, SimulationFlag } from 'kundera-sn/jsonrpc';
 import {
   computeInvokeV3Hash,
   computeSelector,
@@ -22,8 +22,8 @@ import {
   type InvokeTransactionV3,
   type ResourceBoundsMapping,
   type SignatureArray,
-} from 'kundera/crypto';
-import { Felt252, type Felt252Input } from 'kundera/primitives';
+} from 'kundera-sn/crypto';
+import { Felt252, type Felt252Input } from 'kundera-sn';
 
 export type SignTransaction = (
   hash: Felt252Input,
@@ -205,7 +205,7 @@ function formatResourceBoundsForRpc(
       max_amount: Felt252(rb.l2_gas.max_amount).toHex(),
       max_price_per_unit: Felt252(rb.l2_gas.max_price_per_unit).toHex(),
     },
-    l1_data: {
+    l1_data_gas: {
       max_amount: Felt252(rb.l1_data_gas.max_amount).toHex(),
       max_price_per_unit: Felt252(rb.l1_data_gas.max_price_per_unit).toHex(),
     },

@@ -21,8 +21,8 @@ No additional dependencies required - uses only Kundera core APIs.
 ## Usage
 
 ```ts
-import { httpTransport } from 'kundera/transport';
-import { signRaw, signatureToArray } from 'kundera/crypto';
+import { httpTransport } from 'kundera-sn/transport';
+import { signRaw, signatureToArray } from 'kundera-sn/crypto';
 import { createAccountInvoker } from './skills/account-invoke';
 import { readContract, writeContract, watchContractEvent } from './skills/contract-viem';
 

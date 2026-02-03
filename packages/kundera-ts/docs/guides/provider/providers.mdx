@@ -1,0 +1,89 @@
+---
+title: Provider Layer
+description: HTTP and WebSocket providers on top of transports.
+---
+
+Providers wrap transports with a typed request interface and convenience methods.
+
+## When to Use a Provider
+
+Use a provider if you want:
+
+- `request()` with EIP-1193-style arguments
+- Built-in retries and timeouts per request
+- Typed Starknet convenience methods (`starknet_*`)
+- WebSocket subscriptions via async generators
+
+Use raw transports if you want full control or minimal overhead.
+
+## HTTP Provider
+
+```typescript
+import { HttpProvider } from 'kundera-sn/provider';
+import { Starknet } from 'kundera-sn/jsonrpc';
+
+const provider = new HttpProvider({
+  url: 'https://api.zan.top/public/starknet-sepolia',
+  timeout: 30_000,
+  retry: 2,
+  retryDelay: 250
+});
+
+const chainId = await provider.request<string>(Starknet.ChainIdRequest());
+```
+
+## WebSocket Provider
+
+```typescript
+import { WebSocketProvider } from 'kundera-sn/provider';
+
+const ws = new WebSocketProvider('wss://api.zan.top/public/starknet-sepolia');
+await ws.connect();
+
+const block = await ws.request({ method: 'starknet_blockNumber', params: [] });
+```
+
+### Subscriptions
+
+```typescript
+for await (const event of ws.events.events({
+  from_address: '0x...',
+  keys: [['0x...']],
+  block_id: 'latest'
+})) {
+  console.log(event);
+}
+```
+
+## Convenience Methods
+
+Providers expose `starknet_*` methods that return `Response<T>` (result or error).
+
+```typescript
+const response = await provider.starknet_getBlockWithTxHashes('latest');
+if (response.error) {
+  throw new Error(response.error.message);
+}
+```
+
+## Typed Providers
+
+`TypedProvider` helps enforce a schema for `request()`:
+
+```typescript
+import type { TypedProvider } from 'kundera-sn/provider';
+import type { RpcSchema } from 'kundera-sn/provider';
+
+const typed: TypedProvider<RpcSchema> = provider;
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider API" icon="plug" href="/api/provider">
+    Provider types and method surface.
+  </Card>
+  <Card title="Transport Guide" icon="layer-group" href="/guides/provider/transport">
+    Understand the underlying transport layer.
+  </Card>
+</CardGroup>

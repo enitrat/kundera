@@ -1,116 +1,25 @@
 {
-  "name": "kundera-sn",
-  "version": "0.0.1",
-  "private": false,
-  "description": "Starknet primitives and cryptography library with TypeScript implementations and native Zig bindings",
-  "keywords": [
-    "starknet",
-    "cairo",
-    "felt252",
-    "pedersen",
-    "poseidon",
-    "primitives",
-    "crypto",
-    "zig",
-    "ffi"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/enitrat/kundera.git"
-  },
-  "license": "MIT",
-  "sideEffects": false,
+  "name": "kundera-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Kundera Starknet primitives monorepo",
   "type": "module",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "types": "./types/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./primitives": {
-      "types": "./types/primitives/index.d.ts",
-      "import": "./dist/primitives/index.js",
-      "require": "./dist/primitives/index.cjs"
-    },
-    "./crypto": {
-      "types": "./types/crypto/index.d.ts",
-      "import": "./dist/crypto/index.js",
-      "require": "./dist/crypto/index.cjs"
-    },
-    "./serde": {
-      "types": "./types/serde/index.d.ts",
-      "import": "./dist/serde/index.js",
-      "require": "./dist/serde/index.cjs"
-    },
-    "./native": {
-      "types": "./types/native/index.d.ts",
-      "import": "./dist/native/index.js",
-      "require": "./dist/native/index.cjs"
-    },
-    "./wasm": {
-      "types": "./types/wasm/index.d.ts",
-      "import": "./dist/wasm/index.js",
-      "require": "./dist/wasm/index.cjs"
-    },
-    "./wasm-loader": {
-      "types": "./types/wasm-loader/index.d.ts",
-      "import": "./dist/wasm-loader/index.js",
-      "require": "./dist/wasm-loader/index.cjs"
-    },
-    "./rpc": {
-      "types": "./types/rpc/index.d.ts",
-      "import": "./dist/rpc/index.js",
-      "require": "./dist/rpc/index.cjs"
-    },
-    "./abi": {
-      "types": "./types/abi/index.d.ts",
-      "import": "./dist/abi/index.js",
-      "require": "./dist/abi/index.cjs"
-    },
-    "./transport": {
-      "types": "./types/transport/index.d.ts",
-      "import": "./dist/transport/index.js",
-      "require": "./dist/transport/index.cjs"
-    }
-  },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./types/index.d.ts",
-  "files": [
-    "dist",
-    "types",
-    "wasm",
-    "native"
-  ],
   "scripts": {
-    "build": "bun run build:native && bun run build:wasm && bun run build:dist && bun run build:types",
-    "build:dist": "tsup",
-    "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly --outDir types",
-    "build:native": "cargo build --release",
-    "build:wasm": "cargo build --release --target wasm32-wasip1 && mkdir -p wasm && cp target/wasm32-wasip1/release/starknet_crypto_ffi.wasm wasm/crypto.wasm",
+    "build": "pnpm -r build",
     "build:zig": "zig build",
-    "package:native": "bun run scripts/package-native.ts",
-    "typecheck": "tsc --noEmit",
-    "test": "bun test",
-    "test:zig": "zig build test",
-    "test:rust": "cargo test",
-    "lint": "biome check src/",
-    "format": "biome format --write src/",
-    "prepublishOnly": "bun run build && bun run test"
+    "test": "pnpm -r test",
+    "test:run": "pnpm -r test:run",
+    "format": "zig build format && pnpm -r format",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "rm -rf zig-out .zig-cache target && pnpm -r clean",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && pnpm -r publish --access public"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.0",
-    "starknet": "6.23.1",
-    "tsup": "^8.0.0",
-    "typescript": "^5.7.0",
-    "vitest": "^2.0.0"
+    "@changesets/changelog-github": "^0.5.2",
+    "@changesets/cli": "^2.29.8"
   },
-  "optionalDependencies": {
-    "ffi-napi": "^4.0.3",
-    "ref-napi": "^3.0.3"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "packageManager": "pnpm@10.26.2"
 }

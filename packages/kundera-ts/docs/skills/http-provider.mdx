@@ -1,0 +1,33 @@
+---
+title: "HTTP Provider"
+description: "Lightweight JSON-RPC provider built on transports + rpc methods."
+---
+
+This skill creates a minimal HTTP provider that wraps `kundera-sn/transport` and `kundera-sn/jsonrpc`.
+Copy it into your project and tailor the method surface to your needs.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/http-provider src/skills/
+```
+
+## Usage
+
+```ts
+import { createHttpProvider } from './skills/http-provider';
+
+const provider = createHttpProvider({
+  url: 'https://api.zan.top/public/starknet-sepolia',
+});
+
+const chainId = await provider.chainId();
+const block = await provider.blockNumber();
+```
+
+## Notes
+
+- Methods are thin wrappers around `kundera-sn/jsonrpc`.
+- Add/remove methods to match your app's needs.
+- `provider.transport` exposes the low-level transport for custom calls.
+- For batching/retries, use the `http-transport` skill and pass it as `transport`.

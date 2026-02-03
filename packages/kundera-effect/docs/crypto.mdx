@@ -1,0 +1,88 @@
+---
+title: Effect Crypto
+description: Cryptographic operations with typed errors
+---
+
+# Effect Crypto
+
+All crypto operations return `Effect<T, CryptoError>` for type-safe error handling.
+
+<Note>
+Tests assume crypto is available. The test runner builds WASM before execution and fails if native or WASM crypto cannot be loaded.
+</Note>
+
+## Hash Functions
+
+```typescript
+import { Effect } from 'effect';
+import * as Crypto from 'kundera-effect/crypto';
+
+const program = Effect.gen(function* () {
+  // Pedersen hash
+  const pedersen = yield* Crypto.pedersenHash(a, b);
+
+  // Poseidon hash
+  const poseidon = yield* Crypto.poseidonHash(a, b);
+  const poseidonMany = yield* Crypto.poseidonHashMany([a, b, c]);
+
+  // Starknet keccak
+  const keccak = yield* Crypto.snKeccak('hello');
+
+  return { pedersen, poseidon, keccak };
+});
+```
+
+## Signatures
+
+```typescript
+const program = Effect.gen(function* () {
+  // Sign a message
+  const signature = yield* Crypto.sign(privateKey, messageHash);
+
+  // Verify
+  const valid = yield* Crypto.verify(publicKey, messageHash, signature);
+
+  // Get public key
+  const pubKey = yield* Crypto.getPublicKey(privateKey);
+
+  return { signature, valid, pubKey };
+});
+```
+
+## Transaction Hashes
+
+```typescript
+const hash = yield* Crypto.computeInvokeV3Hash(payload, details);
+const hash = yield* Crypto.computeDeclareV3Hash(payload, details);
+const hash = yield* Crypto.computeDeployAccountV3Hash(payload, details);
+```
+
+## Contract Address
+
+```typescript
+const address = yield* Crypto.computeContractAddress(
+  salt,
+  classHash,
+  constructorCalldata,
+  deployerAddress
+);
+```
+
+## Felt Arithmetic
+
+```typescript
+const sum = yield* Crypto.feltAdd(a, b);
+const diff = yield* Crypto.feltSub(a, b);
+const prod = yield* Crypto.feltMul(a, b);
+const quot = yield* Crypto.feltDiv(a, b);
+```
+
+## Namespaces
+
+```typescript
+// Alternative namespace-based API
+const hash = yield* Crypto.Pedersen.hash(a, b);
+const hash = yield* Crypto.Poseidon.hash(a, b);
+const sum = yield* Crypto.Felt.add(a, b);
+const sig = yield* Crypto.StarkCurve.sign(privateKey, hash);
+```

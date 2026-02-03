@@ -5,7 +5,7 @@
  * Uses peer dependencies + dynamic imports to avoid bundling wallet SDKs.
  */
 
-import { httpTransport, type Transport } from 'kundera/transport';
+import { httpTransport, type Transport } from 'kundera-sn/transport';
 
 // ============================================================================
 // Types

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "kundera-effect",
+  "colors": {
+    "primary": "#7C3AED",
+    "light": "#A78BFA",
+    "dark": "#5B21B6"
+  },
+  "navigation": {
+    "anchors": [
+      {
+        "anchor": "Documentation",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "icon": "rocket",
+            "pages": [
+              "index",
+              "primitives",
+              "abi",
+              "crypto",
+              "jsonrpc",
+              "serde",
+              "transport",
+              "services"
+            ]
+          },
+          {
+            "group": "Services",
+            "icon": "server",
+            "pages": [
+              "services/provider",
+              "services/fee-estimator",
+              "services/contract",
+              "services/contract-write",
+              "services/account",
+              "services/argentx-account",
+              "services/signer",
+              "services/nonce-manager",
+              "services/rpc-batch"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/starknet/kundera"
+    }
+  ]
+}

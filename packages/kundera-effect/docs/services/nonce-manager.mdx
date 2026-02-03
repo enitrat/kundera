@@ -1,0 +1,61 @@
+---
+title: Nonce Manager Service
+description: Local nonce sequencing for concurrent transactions.
+---
+
+<Info>
+NonceManagerService mirrors the nonce manager pattern from Voltaire/EVM tooling to avoid races.
+</Info>
+
+# Nonce Manager Service
+
+`NonceManagerService` caches nonces and increments locally to avoid collisions in concurrent tx submissions.
+
+## Imports
+
+```ts
+import { Effect } from "effect";
+import { Services } from "kundera-effect";
+```
+
+## Live Layer
+
+- `Services.NonceManager.DefaultNonceManager` (requires `ProviderService`)
+
+## Consume Nonces
+
+```ts
+const program = Effect.gen(function* () {
+  const manager = yield* Services.NonceManager.NonceManagerService;
+  const nonce1 = yield* manager.consume("0x...", 1n);
+  const nonce2 = yield* manager.consume("0x...", 1n);
+  return [nonce1, nonce2];
+}).pipe(
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
+  Effect.provide(Services.NonceManager.DefaultNonceManager)
+);
+```
+
+## Reset
+
+```ts
+const program = Effect.gen(function* () {
+  const manager = yield* Services.NonceManager.NonceManagerService;
+  yield* manager.reset("0x...", 1n);
+});
+```
+
+## Errors
+
+`NonceManagerService` surfaces `NonceError` when the on-chain nonce fetch fails.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Signer" icon="signature" href="/services/signer">
+    Use nonces automatically when signing.
+  </Card>
+  <Card title="Provider" icon="plug" href="/services/provider">
+    ProviderService and presets.
+  </Card>
+</CardGroup>

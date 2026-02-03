@@ -1,0 +1,135 @@
+---
+title: Why Kundera?
+description: Performance, type safety, and tree-shaking for Starknet development.
+---
+
+Kundera is designed for developers who need speed, correctness, and small bundles when building on Starknet.
+
+## Performance
+
+Cryptographic operations are a bottleneck in Starknet applications. Kundera offers multiple backends:
+
+| Backend | Environment | Notes |
+|---------|-------------|-------|
+| **Native** | Bun, Node.js | Rust via FFI, fastest option |
+| **WASM** | Browsers, portable | Good performance, works everywhere |
+| **JS fallback** | Any | Pure TypeScript, no dependencies |
+
+<Note>
+We haven't published formal benchmarks yet. If performance matters for your use case, we recommend running your own benchmarks with realistic workloads.
+</Note>
+
+## Type Safety
+
+Starknet uses 252-bit field elements for everything—addresses, class hashes, storage keys, nonces. They're all the same size, but mixing them is a bug.
+
+**Without branded types:**
+
+```typescript
+// Both are just strings—easy to mix up
+const address = '0x049d36570d4e...';
+const classHash = '0x052c7f38c1...';
+
+// No compile-time error, runtime bug
+deployContract(classHash, address); // Oops, wrong order!
+```
+
+**With Kundera:**
+
+```typescript
+import { ContractAddress, ClassHash } from 'kundera-sn';
+
+const address = ContractAddress('0x049d36570d4e...');
+const classHash = ClassHash('0x052c7f38c1...');
+
+// TypeScript catches this at compile time
+deployContract(classHash, address);
+//             ~~~~~~~~~ Type error!
+```
+
+Branded types have **zero runtime cost**—they exist only in TypeScript's type system.
+
+## Tree-Shaking
+
+Kundera uses a data-first architecture with separate entry points. Import only what you need:
+
+```typescript
+// Only imports primitives
+import { Felt252, ContractAddress } from 'kundera-sn';
+
+// Only imports crypto
+import { pedersen, poseidon } from 'kundera-sn/crypto';
+
+// Only imports one RPC method
+import { starknet_call } from 'kundera-sn/jsonrpc';
+```
+
+Compare to monolithic libraries where importing one function pulls in the entire SDK.
+
+## vs starknet.js
+
+| Aspect | Kundera | starknet.js |
+|--------|---------|-------------|
+| **Bundle size** | Tree-shakeable, pay for what you use | Monolithic |
+| **Crypto backend** | Native or WASM options | Pure JS |
+| **Type safety** | Branded types prevent mixups | Plain strings |
+| **API style** | Functions, data-first | Classes, OOP |
+| **Maturity** | New | Battle-tested |
+
+<Note>
+starknet.js is mature and widely used. Choose Kundera if you need performance or type safety; choose starknet.js if you need ecosystem compatibility.
+</Note>
+
+## Design Philosophy
+
+### Data-First
+
+Functions take data and return data. No classes, no `this`, no hidden state.
+
+```typescript
+// Data in, data out
+const hash = pedersen(a, b);
+const result = await starknet_call(transport, request);
+```
+
+### Explicit Over Implicit
+
+No global configuration. Pass dependencies explicitly.
+
+```typescript
+// Transport is explicit, not global
+const transport = httpTransport(url);
+await starknet_call(transport, request);
+```
+
+### Fail Fast
+
+Invalid inputs throw immediately with clear error messages.
+
+```typescript
+// Throws InvalidAddressError with details
+ContractAddress('not-a-valid-address');
+```
+
+## When to Use Kundera
+
+**Good fit:**
+- Backend services processing many transactions
+- Performance-critical frontend operations
+- Libraries that need tree-shaking
+- Projects that value type safety
+
+**Consider alternatives:**
+- Quick prototypes (starknet.js has more examples)
+- Projects already using starknet.js (migration cost)
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="sitemap" href="/overview/architecture">
+    How Kundera's modules fit together.
+  </Card>
+  <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
+    Get up and running in 5 minutes.
+  </Card>
+</CardGroup>

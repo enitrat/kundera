@@ -13,7 +13,7 @@ import {
   JsonRpcErrorCode,
   createErrorResponse,
   matchBatchResponses,
-} from 'kundera/transport';
+} from 'kundera-sn/transport';
 
 // ============ HTTP Transport Options ============
 

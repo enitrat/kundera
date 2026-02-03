@@ -1,0 +1,193 @@
+---
+title: Effect Services
+description: Transport/Provider/RpcBatch services for kundera-effect
+---
+
+# Effect Services
+
+kundera-effect exposes a minimal services layer similar to Voltaire’s DI model.
+
+## What’s Included
+
+- `TransportService` + live layers: `HttpTransport`, `WebSocketTransport` (retry/timeout/rate-limit)
+- `ProviderService`: typed `request({ method, params })`
+- `RawProviderService`: wrap a provider instance for Effect
+- `FeeEstimatorService`: estimate fees + derive resource bounds
+- `RpcBatchService`: request batching with configurable queueing
+- `ContractService`: typed `readContract` + `callRaw`
+- `ContractWriteService`: write contract calls with a signer
+- `AccountService`: OpenZeppelin + ArgentX account signing for `INVOKE_V3`
+- `SignerService`: sign + submit invoke transactions
+- `NonceManagerService`: local nonce sequencing
+- Presets: `createHttpProvider`, `createWebSocketProvider`, `createHttpProviderWithBatch`
+
+## Service Pages
+
+<CardGroup cols={2}>
+  <Card title="Provider" icon="plug" href="/services/provider">
+    ProviderService, RawProvider, and presets.
+  </Card>
+  <Card title="Fee Estimator" icon="gauge-high" href="/services/fee-estimator">
+    Estimate fees and derive resource bounds.
+  </Card>
+  <Card title="Contract" icon="file-contract" href="/services/contract">
+    Read-only contract calls with ABI decoding.
+  </Card>
+  <Card title="Contract Write" icon="pen" href="/services/contract-write">
+    Write contract calls with a signer.
+  </Card>
+  <Card title="Account" icon="user-shield" href="/services/account">
+    Account layers for OpenZeppelin and ArgentX.
+  </Card>
+  <Card title="ArgentX Account" icon="user-astronaut" href="/services/argentx-account">
+    ArgentX signature format and guardian support.
+  </Card>
+  <Card title="Signer" icon="signature" href="/services/signer">
+    Sign + submit invoke transactions.
+  </Card>
+  <Card title="Nonce Manager" icon="hashtag" href="/services/nonce-manager">
+    Local nonce sequencing for concurrent txs.
+  </Card>
+  <Card title="RPC Batch" icon="layer-group" href="/services/rpc-batch">
+    Batch JSON-RPC requests with queueing.
+  </Card>
+</CardGroup>
+
+## Example
+
+```ts
+import { Effect } from "effect";
+import { Services } from "kundera-effect";
+
+const program = Effect.gen(function* () {
+  const provider = yield* Services.Provider.ProviderService;
+  const chainId = yield* provider.request<string>({
+    method: "starknet_chainId",
+    params: []
+  });
+  return chainId;
+}).pipe(
+  Effect.provide(
+    Services.Presets.createHttpProvider(
+      "https://starknet.example.com",
+      undefined,
+      {
+        timeoutMs: 10_000,
+        retry: { maxRetries: 3, delayMs: 200 },
+        rateLimit: { maxRequests: 10, intervalMs: 1000 }
+      }
+    )
+  )
+);
+
+await Effect.runPromise(program);
+```
+
+## Contract Reads
+
+```ts
+import { Effect } from "effect";
+import { Services } from "kundera-effect";
+import erc20Abi from "./erc20.abi.json";
+
+const program = Effect.gen(function* () {
+  const contract = yield* Services.Contract.ContractService;
+
+  return yield* contract.readContract({
+    abi: erc20Abi,
+    address: "0x...",
+    functionName: "balanceOf",
+    args: ["0x..."]
+  });
+}).pipe(
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
+  Effect.provide(Services.Contract.Contract)
+);
+
+await Effect.runPromise(program);
+```
+
+## Sign Invokes (OpenZeppelin Accounts)
+
+```ts
+import { Effect } from "effect";
+import { Services } from "kundera-effect";
+
+const program = Effect.gen(function* () {
+  const signer = yield* Services.Signer.SignerService;
+
+  return yield* signer.invoke({
+    calls: [
+      {
+        contractAddress: "0x...",
+        entrypoint: "transfer",
+        calldata: [1n, 2n]
+      }
+    ],
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+    }
+  });
+}).pipe(
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
+  Effect.provide(Services.Account.OpenZeppelinAccount({
+    address: "0x...",
+    privateKey: "0x..."
+  })),
+  Effect.provide(Services.Signer.Signer)
+);
+
+await Effect.runPromise(program);
+```
+
+## Nonce Management
+
+Add `DefaultNonceManager` to avoid nonce races with concurrent transactions.
+
+```ts
+const program = Effect.gen(function* () {
+  const signer = yield* Services.Signer.SignerService;
+  const result = yield* signer.invoke({
+    calls: [{ contractAddress: "0x...", entrypoint: "transfer", calldata: [1n] }],
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+    }
+  });
+  return result;
+}).pipe(
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
+  Effect.provide(Services.Account.OpenZeppelinAccount({
+    address: "0x...",
+    privateKey: "0x..."
+  })),
+  Effect.provide(Services.NonceManager.DefaultNonceManager),
+  Effect.provide(Services.Signer.Signer)
+);
+```
+
+## Batching
+
+```ts
+import { Effect } from "effect";
+import { Services } from "kundera-effect";
+
+const program = Effect.gen(function* () {
+  const batch = yield* Services.RpcBatch.RpcBatchService;
+  const [chainId, blockNumber] = yield* Effect.all([
+    batch.request<string>("starknet_chainId"),
+    batch.request<number>("starknet_blockNumber")
+  ]);
+  return { chainId, blockNumber };
+}).pipe(
+  Effect.provide(
+    Services.Presets.createHttpProviderWithBatch("https://starknet.example.com", {
+      maxBatchSize: 20,
+      maxWaitTime: 10
+    })
+  )
+);
+
+await Effect.runPromise(program);
+```

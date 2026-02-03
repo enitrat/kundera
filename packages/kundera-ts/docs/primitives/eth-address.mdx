@@ -1,0 +1,103 @@
+---
+title: EthAddress
+description: Branded type for L1 Ethereum addresses.
+---
+
+`EthAddress` is a branded type for L1 Ethereum addresses used in L1-L2 messaging. It's constrained to be less than 2^160 (the size of an Ethereum address).
+
+## Type Definition
+
+```typescript
+type EthAddressType = Brand<Uint8Array, 'EthAddress'> & FeltMethods;
+```
+
+## Constructors
+
+### EthAddress(value)
+
+Create an EthAddress from any Felt252Input.
+
+```typescript
+import { EthAddress } from 'kundera-sn';
+
+const addr = EthAddress('0x742d35Cc6634C0532925a3b844Bc9e7595f7BABE');
+const addr2 = EthAddress(0x742d35Cc6634C0532925a3b844Bc9e7595f7BABEn);
+```
+
+**Throws:**
+- All errors from `Felt252()` constructors
+- `Error: EthAddress must be < 2^160` - if value >= 2^160
+
+### EthAddress.from(value)
+
+Alias for `EthAddress(value)`.
+
+```typescript
+const addr = EthAddress.from('0x742d35Cc6634C0532925a3b844Bc9e7595f7BABE');
+```
+
+## Static Methods
+
+### EthAddress.isValid(value)
+
+Check if a value is a valid Ethereum address (< 2^160).
+
+```typescript
+EthAddress.isValid('0x742d35Cc6634C0532925a3b844Bc9e7595f7BABE'); // true
+EthAddress.isValid(1n << 160n);                                    // false
+EthAddress.isValid(1n << 251n);                                    // false
+```
+
+## Constants
+
+```typescript
+EthAddress.MAX; // 2^160 (maximum valid value + 1)
+```
+
+## Instance Methods
+
+EthAddress inherits all methods from Felt252:
+
+```typescript
+const addr = EthAddress('0x742d35Cc6634C0532925a3b844Bc9e7595f7BABE');
+
+addr.toHex();       // '0x0000...742d35Cc6634C0532925a3b844Bc9e7595f7BABE'
+addr.toBigInt();    // bigint representation
+addr.isValid();     // true
+addr.isZero();      // false
+addr.equals(other); // boolean
+```
+
+## Use Cases
+
+### L1-L2 Messaging
+
+When sending messages between Ethereum (L1) and Starknet (L2):
+
+```typescript
+import { EthAddress, ContractAddress } from 'kundera-sn';
+
+// L1 contract sending message to L2
+const l1Sender = EthAddress('0x742d35Cc6634C0532925a3b844Bc9e7595f7BABE');
+const l2Recipient = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+```
+
+### Bridge Contracts
+
+When interacting with token bridges:
+
+```typescript
+// L1 token address for bridging
+const l1Token = EthAddress('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'); // USDC on Ethereum
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="ContractAddress" icon="file-contract" href="/primitives/contract-address">
+    Starknet contract addresses.
+  </Card>
+  <Card title="Primitives Overview" icon="cube" href="/primitives">
+    All primitive types.
+  </Card>
+</CardGroup>

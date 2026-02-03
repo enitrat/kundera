@@ -5,8 +5,8 @@ Declare contract classes with a signer.
 ## Quick Start
 
 ```ts
-import { httpTransport } from 'kundera/transport';
-import { signRaw, signatureToArray } from 'kundera/crypto';
+import { httpTransport } from 'kundera-sn/transport';
+import { signRaw, signatureToArray } from 'kundera-sn/crypto';
 import { createAccountDeclarer } from './skills/account-declare';
 
 const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');

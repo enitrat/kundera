@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "kundera-sn": ["../kundera-ts/dist/index.js"],
+      "kundera-sn/*": ["../kundera-ts/dist/*/index.js"],
+      "kundera-sn/Felt252": ["../kundera-ts/dist/primitives/Felt252/index.js"],
+      "kundera-sn/ContractAddress": ["../kundera-ts/dist/primitives/ContractAddress/index.js"],
+      "kundera-sn/ClassHash": ["../kundera-ts/dist/primitives/ClassHash/index.js"],
+      "kundera-sn/StorageKey": ["../kundera-ts/dist/primitives/StorageKey/index.js"],
+      "kundera-sn/ShortString": ["../kundera-ts/dist/primitives/ShortString/index.js"],
+      "kundera-sn/EthAddress": ["../kundera-ts/dist/primitives/EthAddress/index.js"],
+      "kundera-sn/Address": ["../kundera-ts/dist/primitives/Address/index.js"]
+    },
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test-d.ts"]
+}

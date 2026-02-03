@@ -1,0 +1,52 @@
+---
+title: RPC
+description: Tree-shakeable Starknet JSON-RPC methods.
+---
+
+Kundera exposes Starknet JSON-RPC methods as individual, tree-shakeable functions.
+
+## Usage
+
+```ts
+import { httpTransport } from 'kundera-sn/transport';
+import { starknet_getNonce, starknet_blockNumber } from 'kundera-sn/jsonrpc';
+
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+
+const block = await starknet_blockNumber(transport);
+const nonce = await starknet_getNonce(transport, '0xabc');
+```
+
+## Request Builders
+
+Use request builders when you want to plug into a provider or custom batching pipeline.
+
+```ts
+import { HttpProvider } from 'kundera-sn/provider';
+import { Starknet } from 'kundera-sn/jsonrpc';
+
+const provider = new HttpProvider('https://api.zan.top/public/starknet-sepolia');
+
+const req = Starknet.BlockNumberRequest();
+const blockNumber = await provider.request<string>(req);
+```
+
+## Provider Integration
+
+All builders return `RequestArguments` compatible with `HttpProvider` and `WebSocketProvider`:
+
+```ts
+import { WebSocketProvider } from 'kundera-sn/provider';
+import { Starknet } from 'kundera-sn/jsonrpc';
+
+const ws = new WebSocketProvider('wss://api.zan.top/public/starknet-sepolia');
+const status = await ws.request(
+  Starknet.GetTransactionStatusRequest('0xdeadbeef')
+);
+```
+
+## Notes
+
+- Each `starknet_*` function accepts a `Transport` instance as its first argument.
+- Import only what you use for best tree-shaking.
+- For batching, use `transport.requestBatch` with `createRequest` from `kundera-sn/transport`.

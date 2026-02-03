@@ -1,0 +1,151 @@
+---
+title: WASM Crypto
+description: Use WASM crypto for browsers and portable environments.
+---
+
+WASM crypto enables Kundera to run in browsers and environments without FFI support. It must be explicitly loaded before signing or hashing operations.
+
+## Loading WASM
+
+Call `loadWasmCrypto()` once at application startup:
+
+```typescript
+import { loadWasmCrypto, isWasmLoaded } from 'kundera-sn/wasm';
+
+await loadWasmCrypto();
+console.log('WASM ready:', isWasmLoaded()); // true
+```
+
+<Warning>
+## Load Before Use
+
+Crypto operations will throw if WASM isn't loaded:
+
+```typescript
+import { sign } from 'kundera-sn/wasm';
+
+// ERROR: throws if WASM not loaded
+const signature = sign(privateKey, messageHash);
+```
+
+Always load WASM at app startup before any signing or hashing.
+</Warning>
+
+## Browser Setup
+
+In browsers, load WASM early in your application:
+
+```typescript
+// main.ts or app initialization
+import { loadWasmCrypto } from 'kundera-sn/wasm';
+
+async function init() {
+  await loadWasmCrypto();
+  // Now safe to use Kundera
+}
+
+init();
+```
+
+### With React
+
+```tsx
+// App.tsx
+import { useEffect, useState } from 'react';
+import { loadWasmCrypto } from 'kundera-sn/wasm';
+
+function App() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    loadWasmCrypto().then(() => setReady(true));
+  }, []);
+
+  if (!ready) return <div>Loading crypto...</div>;
+
+  return <YourApp />;
+}
+```
+
+### With Next.js
+
+```typescript
+// pages/_app.tsx or app/layout.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import { loadWasmCrypto } from 'kundera-sn/wasm';
+
+export default function RootLayout({ children }) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    loadWasmCrypto().then(() => setReady(true));
+  }, []);
+
+  if (!ready) return null;
+  return children;
+}
+```
+
+## Checking Status
+
+```typescript
+import { isWasmAvailable, isWasmLoaded } from 'kundera-sn/wasm';
+
+// Can WASM be loaded? (checks if WebAssembly exists)
+console.log('WASM available:', isWasmAvailable());
+
+// Is WASM already loaded?
+console.log('WASM loaded:', isWasmLoaded());
+```
+
+## WASM File Location
+
+The WASM file is bundled with the package. For custom bundler configurations, you may need to configure asset handling:
+
+<Note>
+Tests require crypto to be available. Test scripts build `wasm/crypto.wasm` before running, and the suite fails if WASM or native crypto can't be loaded.
+</Note>
+
+### Webpack
+
+```javascript
+// webpack.config.js
+module.exports = {
+  experiments: {
+    asyncWebAssembly: true,
+  },
+};
+```
+
+### Vite
+
+```typescript
+// vite.config.ts
+export default {
+  optimizeDeps: {
+    exclude: ['kundera'],
+  },
+};
+```
+
+## Constraints
+
+| Constraint | Description |
+|------------|-------------|
+| **Async loading** | `loadWasmCrypto()` is async; must await before use |
+| **Single instance** | WASM loads once globally; subsequent calls are no-ops |
+| **Memory** | WASM module requires additional memory |
+| **No threads** | Single-threaded; use Web Workers for parallelism |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Native Crypto" icon="bolt" href="/getting-started/native">
+    Use native crypto for server-side performance.
+  </Card>
+  <Card title="Crypto API" icon="lock" href="/api/crypto">
+    Cryptographic function reference.
+  </Card>
+</CardGroup>

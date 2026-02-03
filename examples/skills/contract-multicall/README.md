@@ -5,7 +5,7 @@ Batch multiple read-only calls using `transport.requestBatch`.
 ## Quick Start
 
 ```ts
-import { httpTransport } from 'kundera/transport';
+import { httpTransport } from 'kundera-sn/transport';
 import { multicallRead } from './skills/contract-multicall';
 
 const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');

@@ -1,0 +1,28 @@
+---
+title: "Contract Read"
+description: "Read-only contract calls with ABI encoding/decoding."
+---
+
+A minimal read-only contract helper built on `starknet_call`.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/contract-read src/skills/
+```
+
+## Usage
+
+```ts
+import { httpTransport } from 'kundera-sn/transport';
+import { readContract } from './skills/contract-read';
+
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+
+const { result, error } = await readContract(transport, {
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  functionName: 'balance_of',
+  args: [accountAddress],
+});
+```

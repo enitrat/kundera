@@ -20,6 +20,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -31,7 +41,7 @@ jobs:
           targets: wasm32-wasip1
 
       - name: Install dependencies
-        run: bun install
+        run: pnpm install
 
       - name: Build native (Rust)
         run: cargo build --release
@@ -40,16 +50,16 @@ jobs:
         run: cargo test
 
       - name: Build WASM
-        run: bun run build:wasm
+        run: pnpm --filter kundera-sn build:wasm
 
       - name: JS tests
-        run: bun test
+        run: pnpm -r test:run
 
       - name: Build dist
-        run: bun run build:dist
+        run: pnpm --filter kundera-sn build:dist
 
       - name: Build types
-        run: bun run build:types
+        run: pnpm --filter kundera-sn build:types
 
   zig-tests:
     name: Zig tests (ubuntu)
@@ -63,6 +73,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -78,7 +98,7 @@ jobs:
           version: 0.12.0
 
       - name: Install dependencies
-        run: bun install
+        run: pnpm install
 
       - name: Build native (Rust)
         run: cargo build --release

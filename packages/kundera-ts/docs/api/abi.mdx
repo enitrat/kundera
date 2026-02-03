@@ -1,0 +1,384 @@
+---
+title: ABI API
+description: Calldata encoding, decoding, event parsing, and result helpers.
+---
+
+Complete reference for ABI parsing, calldata encoding/decoding, and event handling.
+
+## Imports
+
+```typescript
+import {
+  // Result helpers
+  ok,
+  err,
+  abiError,
+  // Parsing
+  parseAbi,
+  parseType,
+  computeSelector,
+  computeSelectorHex,
+  getFunction,
+  getEvent,
+  getStruct,
+  getEnum,
+  // High-level encoding/decoding
+  encodeCalldata,
+  decodeCalldata,
+  decodeCalldataObject,
+  decodeOutput,
+  decodeOutputObject,
+  compileCalldata,
+  getFunctionSelector,
+  getFunctionSelectorHex,
+  // Low-level encoding/decoding
+  encodeValue,
+  encodeArgs,
+  encodeArgsObject,
+  decodeValue,
+  decodeArgs,
+  decodeArgsObject,
+  decodeOutputs,
+  decodeOutputsObject,
+  // Events
+  decodeEvent,
+  decodeEventBySelector,
+  getEventSelector,
+  getEventSelectorHex,
+  // Short strings
+  encodeShortString,
+  decodeShortString,
+  MAX_SHORT_STRING_LENGTH,
+  // Types
+  type Abi,
+  type ParsedAbi,
+  type Result,
+  type AbiError,
+  type AbiErrorCode,
+  type CairoValue,
+  type DecodedEvent,
+  type EventData,
+} from 'kundera-sn/abi';
+```
+
+## Result Helpers
+
+All ABI functions return `{ result, error }` instead of throwing.
+
+### ok
+
+Create a successful result.
+
+```typescript
+function ok<T>(value: T): Result<T>
+```
+
+### err
+
+Create an error result.
+
+```typescript
+function err(code: AbiErrorCode, message: string): Result<never>
+```
+
+### abiError
+
+Create an ABI error object.
+
+```typescript
+function abiError(code: AbiErrorCode, message: string): AbiError
+```
+
+## Parsing
+
+### parseAbi
+
+Parse a raw ABI into an indexed structure.
+
+```typescript
+function parseAbi(abi: Abi): Result<ParsedAbi>
+```
+
+```typescript
+const { result: parsed, error } = parseAbi(abi);
+if (!error) {
+  console.log('Functions:', parsed.functions.size);
+  console.log('Events:', parsed.events.size);
+}
+```
+
+### computeSelector
+
+Compute the selector (starknet_keccak) for a function or event name.
+
+```typescript
+function computeSelector(name: string): bigint
+```
+
+### computeSelectorHex
+
+Same as `computeSelector` but returns hex string.
+
+```typescript
+function computeSelectorHex(name: string): string
+```
+
+### getFunction / getEvent / getStruct / getEnum
+
+Lookup helpers on parsed ABI.
+
+```typescript
+const { result: fn } = getFunction(parsedAbi, 'transfer');
+const { result: event } = getEvent(parsedAbi, 'Transfer');
+```
+
+## Calldata Encoding
+
+### encodeCalldata
+
+Encode function arguments to calldata.
+
+```typescript
+function encodeCalldata(
+  abi: Abi,
+  fnName: string,
+  args: CairoValue[] | Record<string, CairoValue>
+): Result<bigint[]>
+```
+
+```typescript
+// Array style
+const { result } = encodeCalldata(abi, 'transfer', [recipient, amount]);
+
+// Object style
+const { result } = encodeCalldata(abi, 'transfer', {
+  recipient: '0x123',
+  amount: 1000n,
+});
+```
+
+### compileCalldata
+
+Same as `encodeCalldata` (alias for starknet.js compatibility).
+
+### getFunctionSelector / getFunctionSelectorHex
+
+Get function selector by name.
+
+```typescript
+const selector = getFunctionSelector('transfer');
+const selectorHex = getFunctionSelectorHex('transfer');
+```
+
+## Calldata Decoding
+
+### decodeCalldata
+
+Decode calldata to an array of values.
+
+```typescript
+function decodeCalldata(
+  abi: Abi,
+  fnName: string,
+  calldata: bigint[]
+): Result<CairoValue[]>
+```
+
+### decodeCalldataObject
+
+Decode calldata to a named object.
+
+```typescript
+function decodeCalldataObject(
+  abi: Abi,
+  fnName: string,
+  calldata: bigint[]
+): Result<Record<string, CairoValue>>
+```
+
+### decodeOutput / decodeOutputObject
+
+Decode function return values.
+
+```typescript
+const { result } = decodeOutput(abi, 'balance_of', [1000n, 0n]);
+// result: [1000n]
+
+const { result: obj } = decodeOutputObject(abi, 'balance_of', [1000n, 0n]);
+// obj: { balance: 1000n }
+```
+
+## Low-Level Encoding
+
+### encodeValue
+
+Encode a single value by type string.
+
+```typescript
+function encodeValue(
+  value: CairoValue,
+  typeStr: string,
+  abi: ParsedAbi
+): Result<bigint[]>
+```
+
+### encodeArgs / encodeArgsObject
+
+Encode multiple arguments with type info.
+
+```typescript
+const { result } = encodeArgs(fnInputs, [arg1, arg2], parsedAbi);
+const { result } = encodeArgsObject(fnInputs, { name: arg1 }, parsedAbi);
+```
+
+## Low-Level Decoding
+
+### decodeValue
+
+Decode a single value by type string.
+
+```typescript
+function decodeValue(
+  calldata: bigint[],
+  typeStr: string,
+  abi: ParsedAbi
+): Result<{ value: CairoValue; consumed: number }>
+```
+
+### decodeArgs / decodeArgsObject
+
+Decode multiple arguments.
+
+### decodeOutputs / decodeOutputsObject
+
+Decode function outputs.
+
+## Event Decoding
+
+### decodeEvent
+
+Decode a single event by name or selector.
+
+```typescript
+function decodeEvent(
+  abi: Abi,
+  eventNameOrSelector: string,
+  eventData: EventData
+): Result<DecodedEvent>
+```
+
+```typescript
+const { result } = decodeEvent(abi, 'Transfer', {
+  keys: [selector, from, to],
+  data: [amountLow, amountHigh],
+});
+```
+
+### decodeEventBySelector
+
+Auto-detect event from selector in keys[0].
+
+```typescript
+const { result } = decodeEventBySelector(abi, { keys, data });
+```
+
+<Tip>
+Receipt-wide decoding and typed filtering are provided as a skill. See the Event Filtering skill for `decodeEvents`,
+`decodeEventsStrict`, and `compileEventFilter`.
+</Tip>
+
+### getEventSelector / getEventSelectorHex
+
+Get event selector by name.
+
+## Short Strings
+
+### encodeShortString
+
+Encode string to felt (max 31 chars).
+
+```typescript
+const felt = encodeShortString('hello');
+// 0x68656c6c6fn
+```
+
+### decodeShortString
+
+Decode felt to string.
+
+```typescript
+const str = decodeShortString(0x68656c6c6fn);
+// 'hello'
+```
+
+### MAX_SHORT_STRING_LENGTH
+
+Constant: `31`
+
+## Types
+
+### CairoValue
+
+```typescript
+type CairoValue =
+  | bigint
+  | number
+  | string
+  | boolean
+  | CairoValue[]
+  | Record<string, CairoValue>
+  | CairoEnumValue;
+```
+
+### CairoEnumValue
+
+```typescript
+interface CairoEnumValue {
+  variant: string;
+  value: CairoValue | null;
+}
+```
+
+### DecodedEvent
+
+```typescript
+interface DecodedEvent {
+  name: string;
+  args: Record<string, CairoValue>;
+}
+```
+
+### AbiError
+
+```typescript
+interface AbiError {
+  code: AbiErrorCode;
+  message: string;
+}
+```
+
+### AbiErrorCode
+
+```typescript
+type AbiErrorCode =
+  | 'PARSE_ERROR'
+  | 'FUNCTION_NOT_FOUND'
+  | 'EVENT_NOT_FOUND'
+  | 'STRUCT_NOT_FOUND'
+  | 'ENUM_NOT_FOUND'
+  | 'INVALID_ARGS'
+  | 'ENCODE_ERROR'
+  | 'DECODE_ERROR'
+  | 'ACCOUNT_REQUIRED';
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Encode/Decode Guide" icon="code" href="/guides/abi/encode-decode">
+    Calldata encoding guide.
+  </Card>
+  <Card title="Events Guide" icon="bell" href="/guides/abi/events">
+    Event decoding guide.
+  </Card>
+</CardGroup>

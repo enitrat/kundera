@@ -1,0 +1,94 @@
+---
+title: Provider Service
+description: ProviderService, RawProvider, and DI presets for JSON-RPC.
+---
+
+<Info>
+These services mirror Voltaire’s Effect service architecture: small, composable layers with explicit dependencies.
+</Info>
+
+# Provider Service
+
+`ProviderService` wraps a transport and exposes `request({ method, params })` returning `Effect<T, RpcError | TransportError>`.
+
+## Imports
+
+```ts
+import { Effect } from "effect";
+import { Services } from "kundera-effect";
+```
+
+## Live Layers
+
+- `Services.Provider.Provider` (requires `TransportService`)
+- `Services.RawProvider.RawProvider` (returns raw JSON-RPC responses)
+- `Services.Presets.createHttpProvider(url, transportOptions?, transportConfig?)`
+- `Services.Presets.createWebSocketProvider(url, transportOptions?, transportConfig?)`
+- `Services.Presets.createHttpProviderWithBatch(url, batchConfig, ...)`
+
+## Basic Usage
+
+```ts
+const program = Effect.gen(function* () {
+  const provider = yield* Services.Provider.ProviderService;
+  const chainId = yield* provider.request<string>({
+    method: "starknet_chainId",
+    params: []
+  });
+  return chainId;
+}).pipe(
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com"))
+);
+```
+
+## Raw Provider
+
+Wrap an existing provider instance (for example `HttpProvider`) to get an Effect-friendly API.
+
+```ts
+import { HttpProvider } from "kundera-sn/provider";
+
+const provider = new HttpProvider("https://starknet.example.com");
+
+const program = Effect.gen(function* () {
+  const raw = yield* Services.RawProvider.RawProviderService;
+  const response = yield* raw.request<string>({
+    method: "starknet_blockNumber",
+    params: []
+  });
+  return response;
+}).pipe(
+  Effect.provide(Services.RawProvider.RawProvider(provider))
+);
+```
+
+## Error Handling
+
+```ts
+import { Effect } from "effect";
+import { RpcError, TransportError } from "kundera-effect";
+
+const program = Effect.gen(function* () {
+  const provider = yield* Services.Provider.ProviderService;
+  return yield* provider.request<string>({
+    method: "starknet_chainId",
+    params: []
+  });
+}).pipe(
+  Effect.catchTags({
+    RpcError: (e: RpcError) => Effect.fail(e),
+    TransportError: (e: TransportError) => Effect.fail(e)
+  })
+);
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Transport" icon="satellite" href="/transport">
+    Low-level transport Effects.
+  </Card>
+  <Card title="RPC Batch" icon="layer-group" href="/services/rpc-batch">
+    Batch requests with queueing.
+  </Card>
+</CardGroup>

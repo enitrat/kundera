@@ -4,13 +4,13 @@
  * Deploy account contracts with a signer.
  */
 
-import type { Transport } from 'kundera/transport';
+import type { Transport } from 'kundera-sn/transport';
 import {
   starknet_chainId,
   starknet_addDeployAccountTransaction,
   starknet_estimateFee,
-} from 'kundera/rpc';
-import type { AddDeployAccountTransactionResult, BroadcastedDeployAccountTxn, FeeEstimate, SimulationFlag } from 'kundera/rpc';
+} from 'kundera-sn/jsonrpc';
+import type { AddDeployAccountTransactionResult, BroadcastedDeployAccountTxn, FeeEstimate, SimulationFlag } from 'kundera-sn/jsonrpc';
 import {
   computeContractAddress,
   computeDeployAccountV3Hash,
@@ -21,8 +21,8 @@ import {
   type ResourceBoundsMapping,
   type SignatureArray,
   type UniversalDetails,
-} from 'kundera/crypto';
-import { Felt252, type Felt252Input } from 'kundera/primitives';
+} from 'kundera-sn/crypto';
+import { Felt252, type Felt252Input } from 'kundera-sn';
 
 export type SignTransaction = (
   hash: Felt252Input,
@@ -169,7 +169,7 @@ function formatResourceBoundsForRpc(
       max_amount: Felt252(rb.l2_gas.max_amount).toHex(),
       max_price_per_unit: Felt252(rb.l2_gas.max_price_per_unit).toHex(),
     },
-    l1_data: {
+    l1_data_gas: {
       max_amount: Felt252(rb.l1_data_gas.max_amount).toHex(),
       max_price_per_unit: Felt252(rb.l1_data_gas.max_price_per_unit).toHex(),
     },

@@ -1,0 +1,206 @@
+---
+title: Encode & Decode Calldata
+description: Encode function arguments and decode outputs using ABI types.
+---
+
+Kundera provides type-safe encoding and decoding of Starknet calldata. The ABI module handles all Cairo types including primitives, u256, arrays, structs, and enums.
+
+## Encode Function Calldata
+
+Use `encodeCalldata` to encode arguments for a contract function:
+
+```typescript
+import { encodeCalldata } from 'kundera-sn/abi';
+
+const abi = [...]; // Your contract ABI
+
+// Array-style arguments
+const { result, error } = encodeCalldata(abi, 'transfer', [
+  '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7', // recipient
+  1000000000000000000n, // amount (1 token with 18 decimals)
+]);
+
+if (error) {
+  console.error('Encode failed:', error.code, error.message);
+} else {
+  console.log('Calldata:', result);
+  // [recipient, amount_low, amount_high]
+}
+```
+
+### Object-Style Arguments
+
+Use named parameters for clarity:
+
+```typescript
+const { result } = encodeCalldata(abi, 'transfer', {
+  recipient: '0x123...',
+  amount: 500n,
+});
+```
+
+## Decode Function Calldata
+
+Decode encoded calldata back to values:
+
+```typescript
+import { decodeCalldata } from 'kundera-sn/abi';
+
+const calldata = [0xdeadbeefn, 1000n, 0n]; // recipient, amount_low, amount_high
+
+const { result, error } = decodeCalldata(abi, 'transfer', calldata);
+if (!error) {
+  const [recipient, amount] = result;
+  console.log('Recipient:', recipient); // 0xdeadbeefn
+  console.log('Amount:', amount);       // 1000n (u256 reconstructed)
+}
+```
+
+## Decode Function Outputs
+
+Decode return values from contract calls:
+
+```typescript
+import { decodeOutput } from 'kundera-sn/abi';
+
+// Raw output from balance_of (u256 = [low, high])
+const rawOutput = [1000n, 0n];
+
+const { result } = decodeOutput(abi, 'balance_of', rawOutput);
+console.log('Balance:', result[0]); // 1000n
+```
+
+## Type Encoding Rules
+
+| Cairo Type | Encoding |
+|------------|----------|
+| `felt252` | Single value |
+| `ContractAddress` | Single felt |
+| `u128`, `u64`, `u32`, `u16`, `u8` | Single felt |
+| `u256` | `[low, high]` (two u128 values) |
+| `bool` | `0n` or `1n` |
+| `Array<T>` | `[length, ...elements]` |
+| `Struct` | Fields in declaration order |
+| `Enum` | `[variant_index, ...variant_data]` |
+
+## Encoding Complex Types
+
+### Arrays
+
+Arrays are prefixed with their length:
+
+```typescript
+const { result } = encodeCalldata(abi, 'process_array', [
+  [1n, 2n, 3n, 4n, 5n], // Array<felt252>
+]);
+// Result: [5n, 1n, 2n, 3n, 4n, 5n]
+```
+
+### Structs
+
+Struct fields are encoded in declaration order:
+
+```typescript
+const { result } = encodeCalldata(abi, 'process_struct', [
+  { field_a: 100n, field_b: 200n },
+]);
+// Result: [100n, 200n]
+```
+
+### Enums
+
+Enums encode the variant index followed by variant data:
+
+```typescript
+// Unit variant (no data)
+const { result: r1 } = encodeCalldata(abi, 'process_enum', [
+  { variant: 'None', value: null },
+]);
+// Result: [0n]
+
+// Data variant
+const { result: r2 } = encodeCalldata(abi, 'process_enum', [
+  { variant: 'Some', value: 42n },
+]);
+// Result: [1n, 42n]
+```
+
+## Low-Level Encoding
+
+For fine-grained control, use `encodeValue` and `decodeValue`:
+
+```typescript
+import { parseAbi, encodeValue, decodeValue } from 'kundera-sn/abi';
+
+const { result: parsedAbi } = parseAbi(abi);
+
+// Encode a single u256
+const { result: encoded } = encodeValue(
+  1000000000000000000n,
+  'core::integer::u256',
+  parsedAbi
+);
+// [1000000000000000000n, 0n]
+
+// Decode it back
+const { result: decoded } = decodeValue(
+  encoded,
+  'core::integer::u256',
+  parsedAbi
+);
+console.log(decoded.value); // 1000000000000000000n
+```
+
+## Error Handling
+
+All functions return `{ result, error }`:
+
+```typescript
+const { result, error } = encodeCalldata(abi, 'unknown_function', []);
+
+if (error) {
+  switch (error.code) {
+    case 'FUNCTION_NOT_FOUND':
+      console.error('Function does not exist in ABI');
+      break;
+    case 'INVALID_ARGS':
+      console.error('Wrong number of arguments');
+      break;
+    case 'ENCODE_ERROR':
+      console.error('Value encoding failed:', error.message);
+      break;
+  }
+}
+```
+
+<Warning>
+## Value Limits
+
+- `felt252` must be less than the field prime (~2^251)
+- `u128` must be less than 2^128
+- Short strings are limited to 31 ASCII characters
+</Warning>
+
+## Roundtrip Verification
+
+Encoding and decoding are reversible:
+
+```typescript
+const args = [0x123n, 1000n];
+
+const encoded = encodeCalldata(abi, 'transfer', args);
+const decoded = decodeCalldata(abi, 'transfer', encoded.result!);
+
+// decoded.result equals args
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="ABI API" icon="code" href="/api/abi">
+    Full ABI encoding/decoding API reference.
+  </Card>
+  <Card title="Cairo Types" icon="cube" href="/concepts/cairo-types">
+    Understanding Cairo type encoding.
+  </Card>
+</CardGroup>

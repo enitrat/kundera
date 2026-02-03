@@ -1,0 +1,145 @@
+---
+title: ContractAddress
+description: Branded type for Starknet contract addresses.
+---
+
+`ContractAddress` is a branded type for Starknet contract addresses. It's a `Felt252` with an additional constraint: the value must be less than 2^251.
+
+## Type Definition
+
+```typescript
+type ContractAddressType = Brand<Uint8Array, 'ContractAddress'> & FeltMethods;
+```
+
+The branding prevents accidentally passing a `ClassHash` where a `ContractAddress` is expected, even though both are valid felt values.
+
+## Why Branded?
+
+Without branding, it's easy to mix up addresses and hashes:
+
+```typescript
+// Without branding - compiles but wrong
+function deployContract(address: bigint, classHash: bigint) { ... }
+deployContract(classHash, address); // Oops, reversed!
+
+// With branding - caught at compile time
+function deployContract(address: ContractAddressType, classHash: ClassHashType) { ... }
+deployContract(classHash, address); // TypeScript error!
+```
+
+## Constructors
+
+### ContractAddress(value)
+
+Create a ContractAddress from any Felt252Input.
+
+```typescript
+import { ContractAddress } from 'kundera-sn';
+
+const addr = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+const addr2 = ContractAddress(123n);
+```
+
+**Throws:**
+- All errors from `Felt252()` constructors
+- `Error: Contract address must be < 2^251` - if value >= 2^251
+
+### ContractAddress.from(value)
+
+Alias for `ContractAddress(value)`.
+
+```typescript
+const addr = ContractAddress.from('0x123');
+```
+
+## Static Methods
+
+### ContractAddress.isValid(value)
+
+Check if a value is a valid contract address (< 2^251).
+
+```typescript
+ContractAddress.isValid('0x123');              // true
+ContractAddress.isValid(1n << 251n);           // false
+ContractAddress.isValid(FIELD_PRIME - 1n);     // false (valid felt, invalid address)
+```
+
+<Note>
+Use `isValid()` to check before constructing if you want to handle invalid addresses gracefully instead of catching exceptions.
+</Note>
+
+## Constants
+
+```typescript
+ContractAddress.MAX; // 2^251 (maximum valid value + 1)
+```
+
+## Instance Methods
+
+ContractAddress inherits all methods from Felt252:
+
+```typescript
+const addr = ContractAddress('0x123');
+
+addr.toHex();       // '0x0000...0123'
+addr.toBigInt();    // 291n
+addr.isValid();     // true
+addr.isZero();      // false
+addr.equals(other); // boolean
+```
+
+## Validation Example
+
+```typescript
+import { ContractAddress } from 'kundera-sn';
+
+function getBalance(address: string): bigint {
+  // Validate before use
+  if (!ContractAddress.isValid(address)) {
+    throw new Error('Invalid contract address');
+  }
+
+  const addr = ContractAddress(address);
+  // ... use addr
+}
+
+// Or let constructor throw
+function getBalanceStrict(address: string): bigint {
+  const addr = ContractAddress(address); // throws if invalid
+  // ... use addr
+}
+```
+
+## Aliases
+
+```typescript
+import { Address } from 'kundera-sn';
+
+// Address === ContractAddress
+const a = Address('0x123');
+const b = ContractAddress('0x123');
+a.equals(b); // true
+```
+
+## Common Addresses
+
+ETH token on Starknet Mainnet:
+```typescript
+const ETH_TOKEN = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+```
+
+STRK token on Starknet Mainnet:
+```typescript
+const STRK_TOKEN = ContractAddress('0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d');
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="ClassHash" icon="fingerprint" href="/primitives/class-hash">
+    Contract class identifiers.
+  </Card>
+  <Card title="EthAddress" icon="ethereum" href="/primitives/eth-address">
+    L1 Ethereum addresses.
+  </Card>
+</CardGroup>

@@ -1,0 +1,114 @@
+---
+title: Provider API
+description: Typed HTTP and WebSocket providers for Starknet JSON-RPC.
+---
+
+Providers wrap transports with a higher-level API. They expose `request()` for EIP-1193-style calls and typed `starknet_*` convenience methods that return `Response<T>`.
+
+## Imports
+
+```typescript
+import {
+  HttpProvider,
+  WebSocketProvider,
+  type Provider,
+  type RequestArguments,
+  type RequestOptions,
+  type Response
+} from 'kundera-sn/provider';
+```
+
+## Provider Interface
+
+```typescript
+interface Provider {
+  request(args: RequestArguments): Promise<unknown>;
+  on(event: string, listener: (...args: any[]) => void): void;
+  removeListener(event: string, listener: (...args: any[]) => void): void;
+}
+```
+
+## HttpProvider
+
+```typescript
+const provider = new HttpProvider({
+  url: 'https://api.zan.top/public/starknet-sepolia',
+  timeout: 30_000,
+  retry: 2,
+  retryDelay: 500
+});
+
+const chainId = await provider.request<string>({
+  method: 'starknet_chainId',
+  params: []
+});
+```
+
+## WebSocketProvider
+
+```typescript
+const ws = new WebSocketProvider({
+  url: 'wss://api.zan.top/public/starknet-sepolia'
+});
+
+await ws.connect();
+const block = await ws.request(
+  { method: 'starknet_blockNumber', params: [] }
+);
+```
+
+### Subscription Streams
+
+`WebSocketProvider.events` exposes async generators for Starknet subscriptions.
+
+```typescript
+for await (const head of ws.events.newHeads()) {
+  console.log(head);
+}
+```
+
+## Request Builders
+
+Use the JSON-RPC request builders with any provider:
+
+```typescript
+import { Starknet } from 'kundera-sn/jsonrpc';
+
+const request = Starknet.BlockNumberRequest();
+const blockNumber = await provider.request<string>(request);
+```
+
+## Typed Convenience Methods
+
+Providers include `starknet_*` methods that return `Response<T>` instead of throwing.
+
+```typescript
+const response = await provider.starknet_blockNumber();
+if (response.error) {
+  console.error(response.error.message);
+} else {
+  console.log(response.result);
+}
+```
+
+## Request Options
+
+Per-request overrides for timeouts and retries:
+
+```typescript
+const response = await provider.starknet_getBlockWithTxHashes(
+  'latest',
+  { timeout: 10_000, retryCount: 1, retryDelay: 200 }
+);
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Transport API" icon="satellite" href="/api/transport">
+    Low-level JSON-RPC transports.
+  </Card>
+  <Card title="Provider Guide" icon="plug" href="/guides/provider/providers">
+    Patterns for HTTP and WebSocket providers.
+  </Card>
+</CardGroup>

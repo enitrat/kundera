@@ -23,6 +23,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -32,19 +42,19 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
-        run: bun install
+        run: pnpm install
 
       - name: Build native (Rust)
         run: cargo build --release
 
       - name: Package native
-        run: bun run package:native
+        run: pnpm --filter kundera-sn package:native
 
       - name: Upload native artifact
         uses: actions/upload-artifact@v4
         with:
           name: native-${{ matrix.os }}
-          path: native
+          path: packages/kundera-ts/native
 
   publish:
     name: Assemble + publish
@@ -57,6 +67,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.2
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -68,31 +88,31 @@ jobs:
           targets: wasm32-wasip1
 
       - name: Install dependencies
-        run: bun install
+        run: pnpm install
 
       - name: Download native artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: native-*
-          path: .
+          path: packages/kundera-ts
           merge-multiple: true
 
       - name: Build dist
-        run: bun run build:dist
+        run: pnpm --filter kundera-sn build:dist
 
       - name: Build types
-        run: bun run build:types
+        run: pnpm --filter kundera-sn build:types
 
       - name: Build WASM
-        run: bun run build:wasm
+        run: pnpm --filter kundera-sn build:wasm
 
       - name: Upload release assets
         if: ${{ github.event_name == 'release' }}
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            wasm/crypto.wasm
-            native/**
+            packages/kundera-ts/wasm/crypto.wasm
+            packages/kundera-ts/native/**
 
       - name: Publish to npm
         env:
@@ -100,7 +120,7 @@ jobs:
         run: |
           if [ -n "$NPM_TOKEN" ]; then
             npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-            npm publish
+            pnpm --filter kundera-sn publish --access public --no-git-checks
           else
             echo "NPM_TOKEN not set, skipping publish"
           fi

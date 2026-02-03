@@ -4,15 +4,15 @@
  * Tree-shakeable contract helpers using Kundera transport + rpc primitives.
  */
 
-import type { Transport } from 'kundera/transport';
+import type { Transport } from 'kundera-sn/transport';
 import {
   starknet_call,
   starknet_estimateFee,
   starknet_getEvents,
   starknet_blockNumber,
   starknet_getNonce,
-} from 'kundera/rpc';
-import type { BlockId, BroadcastedInvokeTxn, EventsFilter, FeeEstimate as RpcFeeEstimate, SimulationFlag } from 'kundera/rpc';
+} from 'kundera-sn/jsonrpc';
+import type { BlockId, BroadcastedInvokeTxn, EventsFilter, FeeEstimate as RpcFeeEstimate, SimulationFlag } from 'kundera-sn/jsonrpc';
 import {
   encodeCalldata,
   decodeOutput,
@@ -20,8 +20,8 @@ import {
   getEventSelectorHex,
   getFunctionSelectorHex,
   type Abi,
-} from 'kundera/abi';
-import { Felt252 } from 'kundera/primitives';
+} from 'kundera-sn/abi';
+import { Felt252 } from 'kundera-sn';
 import {
   DEFAULT_RESOURCE_BOUNDS,
   TRANSACTION_VERSION,
@@ -30,7 +30,7 @@ import {
   type InvokeTransactionV3,
   type ResourceBoundsMapping,
   type UniversalDetails,
-} from 'kundera/crypto';
+} from 'kundera-sn/crypto';
 
 // ============================================================================
 // Types

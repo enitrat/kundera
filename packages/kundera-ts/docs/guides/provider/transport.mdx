@@ -1,0 +1,115 @@
+---
+title: Transport Layer
+description: Low-level transports for HTTP, WebSocket, and custom protocols.
+---
+
+Transports handle the raw JSON-RPC communication layer. Providers wrap transports with higher-level APIs.
+
+## Architecture
+
+```
+┌─────────────────┐
+│    Provider     │  High-level API (methods, types)
+├─────────────────┤
+│    Transport    │  Raw JSON-RPC over HTTP/WS
+└─────────────────┘
+```
+
+## HTTP Transport
+
+The default transport for request/response patterns:
+
+```typescript
+import { httpTransport, createRequest } from 'kundera-sn/transport';
+
+const transport = httpTransport(
+  'https://api.zan.top/public/starknet-sepolia',
+  { timeout: 30000 }
+);
+
+// Make a raw JSON-RPC request
+const result = await transport.request(
+  createRequest('starknet_blockNumber', [])
+);
+```
+
+## Request Batching (Skill)
+
+For batching and retries, use the HTTP transport skill:
+
+```typescript
+import { httpTransport } from './skills/http-transport';
+
+const transport = httpTransport('https://...', {
+  batch: { batchWait: 10, batchSize: 100 },
+  retries: 3,
+});
+
+const [block, chain] = await Promise.all([
+  transport.request(createRequest('starknet_blockNumber', [])),
+  transport.request(createRequest('starknet_chainId', [])),
+]);
+```
+
+## WebSocket Transport
+
+For real-time subscriptions:
+
+```typescript
+import { webSocketTransport } from 'kundera-sn/transport';
+
+const transport = webSocketTransport({
+  url: 'wss://api.zan.top/public/starknet-sepolia',
+});
+
+await transport.connect();
+
+// Subscribe to notifications
+transport.subscribe('sub_123', (data) => {
+  console.log('Received:', data);
+});
+```
+
+## Custom Transport
+
+Implement the `Transport` interface for custom protocols:
+
+```typescript
+import type { Transport, JsonRpcRequest, JsonRpcResponse } from 'kundera-sn/transport';
+
+const customTransport: Transport = {
+  async request<T>(request: JsonRpcRequest): Promise<T> {
+    // Your custom implementation
+    const response = await myCustomFetch(request);
+    return response.result;
+  },
+};
+```
+
+## Transport Configuration
+
+### HTTP Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `fetchOptions` | `RequestInit` | `{}` | Custom fetch options (headers, credentials, etc.) |
+| `timeout` | `number` | `30000` | Request timeout (ms) |
+
+### WebSocket Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | WebSocket endpoint URL |
+| `reconnect` | `boolean` | `true` | Auto-reconnect |
+| `reconnectDelay` | `number` | `1000` | Reconnect delay (ms) |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="HTTP Provider Skill" icon="plug" href="/skills/http-provider">
+    High-level provider built on HTTP transport.
+  </Card>
+  <Card title="WebSocket Provider Skill" icon="plug" href="/skills/websocket-provider">
+    Subscriptions and streaming over WebSocket.
+  </Card>
+</CardGroup>

@@ -11,7 +11,7 @@
  */
 
 import { join, dirname } from 'path';
-import { existsSync, mkdirSync, copyFileSync, readdirSync } from 'fs';
+import { existsSync, mkdirSync, copyFileSync } from 'fs';
 
 // Platform configurations
 const PLATFORMS = {
@@ -49,7 +49,11 @@ function getCurrentPlatform(): PlatformKey {
   return key;
 }
 
-function packageForPlatform(platformKey: PlatformKey, projectRoot: string): boolean {
+function packageForPlatform(
+  platformKey: PlatformKey,
+  projectRoot: string,
+  outputRoot: string
+): boolean {
   const config = PLATFORMS[platformKey];
 
   // Source paths to check
@@ -74,7 +78,7 @@ function packageForPlatform(platformKey: PlatformKey, projectRoot: string): bool
   }
 
   // Destination
-  const destDir = join(projectRoot, 'native', platformKey);
+  const destDir = join(outputRoot, 'native', platformKey);
   const destPath = join(destDir, config.libName);
 
   // Create directory if needed
@@ -88,9 +92,22 @@ function packageForPlatform(platformKey: PlatformKey, projectRoot: string): bool
   return true;
 }
 
+function parseOutDir(args: string[]): string | null {
+  const outIndex = args.indexOf('--out');
+  if (outIndex === -1) return null;
+  const outDir = args[outIndex + 1];
+  if (!outDir) {
+    throw new Error('--out requires a path');
+  }
+  return outDir;
+}
+
 function main() {
   const projectRoot = join(dirname(import.meta.path), '..');
   const args = process.argv.slice(2);
+  const outDirFromArgs = parseOutDir(args);
+  const outputRoot =
+    outDirFromArgs ?? process.env.KUNDERA_NATIVE_OUT ?? projectRoot;
   const packageAll = args.includes('--all');
 
   console.log('Packaging native libraries...\n');
@@ -100,7 +117,7 @@ function main() {
     console.log('Mode: all platforms\n');
     let packaged = 0;
     for (const platformKey of Object.keys(PLATFORMS) as PlatformKey[]) {
-      if (packageForPlatform(platformKey, projectRoot)) {
+      if (packageForPlatform(platformKey, projectRoot, outputRoot)) {
         packaged++;
       }
     }
@@ -110,7 +127,7 @@ function main() {
     const currentPlatform = getCurrentPlatform();
     console.log(`Mode: current platform (${currentPlatform})\n`);
 
-    if (!packageForPlatform(currentPlatform, projectRoot)) {
+    if (!packageForPlatform(currentPlatform, projectRoot, outputRoot)) {
       console.error(`\nError: Native library not found for ${currentPlatform}`);
       console.error('Build with: cargo build --release');
       process.exit(1);
