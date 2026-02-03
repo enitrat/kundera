@@ -10,7 +10,7 @@ Native crypto provides the fastest signing and hashing operations by using Rust 
 Use the explicit native entrypoint in Bun. No additional setup required.
 
 ```typescript
-import { isNativeAvailable } from 'kundera-sn/native';
+import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
 
 console.log('Native available:', isNativeAvailable());
 // true in Bun
@@ -31,7 +31,7 @@ npm install ffi-napi
 Then use the native entrypoint:
 
 ```typescript
-import { isNativeAvailable } from 'kundera-sn/native';
+import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
 
 console.log('Native available:', isNativeAvailable());
 // true if ffi-napi is installed
@@ -63,7 +63,7 @@ npm install --global windows-build-tools
 Kundera looks for the native library (`libkundera_crypto.dylib`, `.so`, or `.dll`) in these locations:
 
 1. `KUNDERA_NATIVE_LIB` environment variable
-2. Adjacent to the package: `node_modules/kundera-sn/native/`
+2. Adjacent to the package: `node_modules/@kundera-sn/kundera-ts/native/`
 3. System library paths
 
 To specify a custom path:
@@ -77,7 +77,7 @@ export KUNDERA_NATIVE_LIB=/path/to/libkundera_crypto.dylib
 Use the WASM entrypoint instead:
 
 ```typescript
-import { loadWasmCrypto } from 'kundera-sn/wasm';
+import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
 
 await loadWasmCrypto();
 ```

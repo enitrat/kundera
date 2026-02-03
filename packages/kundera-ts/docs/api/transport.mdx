@@ -19,7 +19,7 @@ import {
   type WebSocketTransportOptions,
   type JsonRpcRequest,
   type JsonRpcResponse,
-} from 'kundera-sn/transport';
+} from '@kundera-sn/kundera-ts/transport';
 ```
 
 ## Factories
@@ -152,7 +152,7 @@ interface JsonRpcError {
 Create a JSON-RPC request object.
 
 ```typescript
-import { createRequest } from 'kundera-sn/transport';
+import { createRequest } from '@kundera-sn/kundera-ts/transport';
 
 const request = createRequest('starknet_blockNumber', []);
 // { jsonrpc: '2.0', id: 1, method: 'starknet_blockNumber', params: [] }
@@ -174,7 +174,7 @@ const responses = await transport.requestBatch([
 Type guard for error responses.
 
 ```typescript
-import { isJsonRpcError } from 'kundera-sn/transport';
+import { isJsonRpcError } from '@kundera-sn/kundera-ts/transport';
 
 if (isJsonRpcError(response)) {
   console.error(response.error.message);

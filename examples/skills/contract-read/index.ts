@@ -4,11 +4,11 @@
  * Read-only contract calls with ABI encoding/decoding.
  */
 
-import { encodeCalldata, decodeOutput, getFunctionSelectorHex, type Abi } from 'kundera-sn/abi';
-import { Felt252 } from 'kundera-sn';
-import { starknet_call } from 'kundera-sn/jsonrpc';
-import type { BlockId, FunctionCall } from 'kundera-sn/jsonrpc';
-import type { Transport } from 'kundera-sn/transport';
+import { encodeCalldata, decodeOutput, getFunctionSelectorHex, type Abi } from '@kundera-sn/kundera-ts/abi';
+import { Felt252 } from '@kundera-sn/kundera-ts';
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import type { BlockId, FunctionCall } from '@kundera-sn/kundera-ts/jsonrpc';
+import type { Transport } from '@kundera-sn/kundera-ts/transport';
 
 export interface ReadContractParams {
   abi: Abi;

@@ -4,7 +4,7 @@
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import type { RequestArguments } from "kundera-sn/provider";
+import type { RequestArguments } from "@kundera-sn/kundera-ts/provider";
 import { RpcError, TransportError } from "../../errors.js";
 import { RawProviderService } from "./RawProviderService.js";
 

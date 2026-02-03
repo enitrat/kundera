@@ -1,7 +1,7 @@
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
 import type * as Effect from "effect/Effect";
-import type { AddInvokeTransactionResult } from "kundera-sn/jsonrpc";
+import type { AddInvokeTransactionResult } from "@kundera-sn/kundera-ts/jsonrpc";
 import type { NonceManagerService } from "../NonceManager/NonceManagerService.js";
 import type { InvokeV3Params } from "../Account/AccountService.js";
 

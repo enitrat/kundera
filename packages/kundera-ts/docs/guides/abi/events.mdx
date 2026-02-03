@@ -3,14 +3,14 @@ title: Decode Events
 description: Decode contract events from transaction receipts with type-safe filtering.
 ---
 
-Kundera provides primitive event decoding in `kundera-sn/abi`. For receipt-wide decoding and filtering, use the event-filtering skill.
+Kundera provides primitive event decoding in `@kundera-sn/kundera-ts/abi`. For receipt-wide decoding and filtering, use the event-filtering skill.
 
 ## Decode Single Event
 
 Decode an event by name using its keys and data:
 
 ```typescript
-import { decodeEvent, getEventSelector } from 'kundera-sn/abi';
+import { decodeEvent, getEventSelector } from '@kundera-sn/kundera-ts/abi';
 
 const abi = [...]; // Contract ABI with Transfer event
 
@@ -202,7 +202,7 @@ In the ABI, members specify their location:
 For advanced filtering, use `rawKeys` to specify exact key positions:
 
 ```typescript
-import { computeSelector } from 'kundera-sn/abi';
+import { computeSelector } from '@kundera-sn/kundera-ts/abi';
 import { decodeEvents } from './skills/event-filtering';
 
 const { result } = decodeEvents(receipt, abi, {

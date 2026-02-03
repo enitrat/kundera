@@ -1,7 +1,7 @@
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
 import type * as Effect from "effect/Effect";
-import type { Abi, CairoValue, DecodedStruct } from "kundera-sn/abi";
+import type { Abi, CairoValue, DecodedStruct } from "@kundera-sn/kundera-ts/abi";
 
 export type ContractCallInput = {
   contractAddress: string;

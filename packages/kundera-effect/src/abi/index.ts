@@ -39,7 +39,7 @@ import {
   type CasmEntryPoint,
   type CasmEntryPoints,
   type AbiArtifact
-} from "kundera-sn/abi";
+} from "@kundera-sn/kundera-ts/abi";
 import {
   parseAbi as parseAbiBase,
   parseType as parseTypeBase,
@@ -75,7 +75,7 @@ import {
   encodeShortString,
   decodeShortString,
   MAX_SHORT_STRING_LENGTH
-} from "kundera-sn/abi";
+} from "@kundera-sn/kundera-ts/abi";
 import { fromResult } from "../utils/fromResult.js";
 
 export type {

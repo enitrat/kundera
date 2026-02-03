@@ -1,11 +1,11 @@
 ---
 title: Effect Services
-description: Transport/Provider/RpcBatch services for kundera-effect
+description: Transport/Provider/RpcBatch services for @kundera-sn/kundera-effect
 ---
 
 # Effect Services
 
-kundera-effect exposes a minimal services layer similar to Voltaire’s DI model.
+@kundera-sn/kundera-effect exposes a minimal services layer similar to Voltaire’s DI model.
 
 ## What’s Included
 
@@ -57,7 +57,7 @@ kundera-effect exposes a minimal services layer similar to Voltaire’s DI model
 
 ```ts
 import { Effect } from "effect";
-import { Services } from "kundera-effect";
+import { Services } from "@kundera-sn/kundera-effect";
 
 const program = Effect.gen(function* () {
   const provider = yield* Services.Provider.ProviderService;
@@ -87,7 +87,7 @@ await Effect.runPromise(program);
 
 ```ts
 import { Effect } from "effect";
-import { Services } from "kundera-effect";
+import { Services } from "@kundera-sn/kundera-effect";
 import erc20Abi from "./erc20.abi.json";
 
 const program = Effect.gen(function* () {
@@ -111,7 +111,7 @@ await Effect.runPromise(program);
 
 ```ts
 import { Effect } from "effect";
-import { Services } from "kundera-effect";
+import { Services } from "@kundera-sn/kundera-effect";
 
 const program = Effect.gen(function* () {
   const signer = yield* Services.Signer.SignerService;
@@ -171,7 +171,7 @@ const program = Effect.gen(function* () {
 
 ```ts
 import { Effect } from "effect";
-import { Services } from "kundera-effect";
+import { Services } from "@kundera-sn/kundera-effect";
 
 const program = Effect.gen(function* () {
   const batch = yield* Services.RpcBatch.RpcBatchService;

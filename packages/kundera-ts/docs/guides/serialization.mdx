@@ -8,8 +8,8 @@ Serialize TypeScript values to Cairo calldata format and deserialize results bac
 ## Quick Start
 
 ```typescript
-import { serializeU256, deserializeU256, serializeArray } from 'kundera-sn/serde';
-import { Felt252 } from 'kundera-sn';
+import { serializeU256, deserializeU256, serializeArray } from '@kundera-sn/kundera-ts/serde';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 // Serialize u256 to [low, high] felts
 const [low, high] = serializeU256(1000000000000000000n);
@@ -27,7 +27,7 @@ const serialized = serializeArray(felts);
 
 | Scenario | Approach |
 |----------|----------|
-| Contract calls | Use `encodeCalldata` from `kundera-sn/abi` |
+| Contract calls | Use `encodeCalldata` from `@kundera-sn/kundera-ts/abi` |
 | Manual calldata | Use serde functions directly |
 | Custom encoding | Use serde functions directly |
 | Parsing raw results | Use serde functions directly |
@@ -41,7 +41,7 @@ For most use cases, the ABI module handles serialization automatically. Use serd
 Cairo's u256 is split into two 128-bit felt values: `low` and `high`.
 
 ```typescript
-import { serializeU256, deserializeU256 } from 'kundera-sn/serde';
+import { serializeU256, deserializeU256 } from '@kundera-sn/kundera-ts/serde';
 
 // Small values: high = 0
 const amount = 1000000000000000000n; // 1e18
@@ -61,8 +61,8 @@ const original = deserializeU256([low2, high2]);
 ### Manual u256 Calldata
 
 ```typescript
-import { serializeU256 } from 'kundera-sn/serde';
-import { Felt252 } from 'kundera-sn';
+import { serializeU256 } from '@kundera-sn/kundera-ts/serde';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 // Build ERC20 transfer calldata manually
 const recipient = Felt252('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
@@ -76,8 +76,8 @@ const calldata = [recipient, amountLow, amountHigh];
 Cairo arrays are serialized with a length prefix.
 
 ```typescript
-import { serializeArray, deserializeArray } from 'kundera-sn/serde';
-import { Felt252 } from 'kundera-sn';
+import { serializeArray, deserializeArray } from '@kundera-sn/kundera-ts/serde';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 // Serialize: adds length prefix
 const values = [Felt252(1n), Felt252(2n), Felt252(3n)];
@@ -94,8 +94,8 @@ const { array, nextOffset } = deserializeArray(data, 0);
 ### Array of u256
 
 ```typescript
-import { serializeU256 } from 'kundera-sn/serde';
-import { Felt252 } from 'kundera-sn';
+import { serializeU256 } from '@kundera-sn/kundera-ts/serde';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 // Serialize array of u256 values
 const amounts = [100n, 200n, 300n];
@@ -115,7 +115,7 @@ const calldata = [
 For arbitrary bytes, use Cairo's ByteArray format.
 
 ```typescript
-import { serializeByteArray } from 'kundera-sn/serde';
+import { serializeByteArray } from '@kundera-sn/kundera-ts/serde';
 
 // Encode text
 const text = new TextEncoder().encode('Hello, Starknet!');
@@ -131,7 +131,7 @@ ByteArray format:
 ### Long Strings
 
 ```typescript
-import { serializeByteArray } from 'kundera-sn/serde';
+import { serializeByteArray } from '@kundera-sn/kundera-ts/serde';
 
 // Long string (> 31 bytes)
 const longText = 'This is a much longer string that exceeds thirty-one bytes';
@@ -151,7 +151,7 @@ const serialized = serializeByteArray(bytes);
 All functions are also available under a namespace:
 
 ```typescript
-import { CairoSerde } from 'kundera-sn/serde';
+import { CairoSerde } from '@kundera-sn/kundera-ts/serde';
 
 const [low, high] = CairoSerde.serializeU256(1000n);
 const value = CairoSerde.deserializeU256([low, high]);
@@ -163,8 +163,8 @@ const serialized = CairoSerde.serializeArray(felts);
 ### Multicall Calldata
 
 ```typescript
-import { serializeArray, serializeU256 } from 'kundera-sn/serde';
-import { Felt252 } from 'kundera-sn';
+import { serializeArray, serializeU256 } from '@kundera-sn/kundera-ts/serde';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 // Build multicall calldata for account.execute
 function buildMulticallData(calls: Array<{
@@ -193,7 +193,7 @@ function buildMulticallData(calls: Array<{
 ### Parse Storage Result
 
 ```typescript
-import { deserializeU256, deserializeArray } from 'kundera-sn/serde';
+import { deserializeU256, deserializeArray } from '@kundera-sn/kundera-ts/serde';
 
 // Raw storage result: [array_len, ...items, u256_low, u256_high]
 const rawResult = [2n, 100n, 200n, 1000000n, 0n];
@@ -210,8 +210,8 @@ const balance = deserializeU256([rawResult[3], rawResult[4]]);
 ### Custom Struct Serialization
 
 ```typescript
-import { serializeU256 } from 'kundera-sn/serde';
-import { Felt252 } from 'kundera-sn';
+import { serializeU256 } from '@kundera-sn/kundera-ts/serde';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 interface Order {
   maker: string;
@@ -240,9 +240,9 @@ function serializeOrder(order: Order): bigint[] {
 ## Comparison with ABI Encoding
 
 ```typescript
-import { encodeCalldata } from 'kundera-sn/abi';
-import { serializeU256 } from 'kundera-sn/serde';
-import { Felt252 } from 'kundera-sn';
+import { encodeCalldata } from '@kundera-sn/kundera-ts/abi';
+import { serializeU256 } from '@kundera-sn/kundera-ts/serde';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 // Using ABI (recommended for contract calls)
 const { result: calldata1 } = encodeCalldata(abi, 'transfer', {

@@ -21,10 +21,10 @@ The primitives module provides type-safe Starknet primitive types wrapped in Eff
 ## Import
 
 ```typescript
-import * as Primitives from "kundera-effect/primitives";
+import * as Primitives from "@kundera-sn/kundera-effect/primitives";
 
 // Or individual primitives
-import { Felt252, ContractAddress } from "kundera-effect/primitives";
+import { Felt252, ContractAddress } from "@kundera-sn/kundera-effect/primitives";
 ```
 
 ## Error Handling
@@ -33,7 +33,7 @@ All constructors return `Effect<T, PrimitiveError>`:
 
 ```typescript
 import { Effect } from "effect";
-import * as Felt252 from "kundera-effect/primitives/Felt252";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
 
 const program = Effect.gen(function* () {
   const felt = yield* Felt252.from("0x123");
@@ -55,7 +55,7 @@ const result = await Effect.runPromise(
 Non-fallible operations are exposed directly (not wrapped in Effect):
 
 ```typescript
-import * as Felt252 from "kundera-effect/primitives/Felt252";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
 
 // These don't need Effect - they're pure functions
 const hex = Felt252.toHex(felt);

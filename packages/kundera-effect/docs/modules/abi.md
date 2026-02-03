@@ -10,7 +10,7 @@ The `Abi` module provides comprehensive ABI parsing, calldata encoding, and outp
 ## Import
 
 ```typescript
-import * as Abi from "kundera-effect/abi";
+import * as Abi from "@kundera-sn/kundera-effect/abi";
 ```
 
 ## Types
@@ -229,7 +229,7 @@ const str = Abi.decodeShortString(felt);
 
 ```typescript
 import { Effect } from "effect";
-import * as Abi from "kundera-effect/abi";
+import * as Abi from "@kundera-sn/kundera-effect/abi";
 
 const erc20Abi = [...]; // Your ABI
 

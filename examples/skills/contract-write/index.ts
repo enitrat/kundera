@@ -4,8 +4,8 @@
  * State-changing contract calls using an account executor.
  */
 
-import { encodeCalldata, type Abi } from 'kundera-sn/abi';
-import type { Call, UniversalDetails } from 'kundera-sn/crypto';
+import { encodeCalldata, type Abi } from '@kundera-sn/kundera-ts/abi';
+import type { Call, UniversalDetails } from '@kundera-sn/kundera-ts/crypto';
 
 export interface AccountExecutor {
   address: string;

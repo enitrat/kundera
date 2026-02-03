@@ -10,7 +10,7 @@ WASM crypto enables Kundera to run in browsers and environments without FFI supp
 Call `loadWasmCrypto()` once at application startup:
 
 ```typescript
-import { loadWasmCrypto, isWasmLoaded } from 'kundera-sn/wasm';
+import { loadWasmCrypto, isWasmLoaded } from '@kundera-sn/kundera-ts/wasm';
 
 await loadWasmCrypto();
 console.log('WASM ready:', isWasmLoaded()); // true
@@ -22,7 +22,7 @@ console.log('WASM ready:', isWasmLoaded()); // true
 Crypto operations will throw if WASM isn't loaded:
 
 ```typescript
-import { sign } from 'kundera-sn/wasm';
+import { sign } from '@kundera-sn/kundera-ts/wasm';
 
 // ERROR: throws if WASM not loaded
 const signature = sign(privateKey, messageHash);
@@ -37,7 +37,7 @@ In browsers, load WASM early in your application:
 
 ```typescript
 // main.ts or app initialization
-import { loadWasmCrypto } from 'kundera-sn/wasm';
+import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
 
 async function init() {
   await loadWasmCrypto();
@@ -52,7 +52,7 @@ init();
 ```tsx
 // App.tsx
 import { useEffect, useState } from 'react';
-import { loadWasmCrypto } from 'kundera-sn/wasm';
+import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
 
 function App() {
   const [ready, setReady] = useState(false);
@@ -74,7 +74,7 @@ function App() {
 'use client';
 
 import { useEffect, useState } from 'react';
-import { loadWasmCrypto } from 'kundera-sn/wasm';
+import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
 
 export default function RootLayout({ children }) {
   const [ready, setReady] = useState(false);
@@ -91,7 +91,7 @@ export default function RootLayout({ children }) {
 ## Checking Status
 
 ```typescript
-import { isWasmAvailable, isWasmLoaded } from 'kundera-sn/wasm';
+import { isWasmAvailable, isWasmLoaded } from '@kundera-sn/kundera-ts/wasm';
 
 // Can WASM be loaded? (checks if WebAssembly exists)
 console.log('WASM available:', isWasmAvailable());

@@ -1,12 +1,12 @@
 import { Effect } from "effect";
-import { Felt252, type Felt252Type } from "kundera-sn/Felt252";
+import { Felt252, type Felt252Type } from "@kundera-sn/kundera-ts/Felt252";
 import {
   serializeU256 as serializeU256Base,
   deserializeU256 as deserializeU256Base,
   serializeArray as serializeArrayBase,
   deserializeArray as deserializeArrayBase,
   serializeByteArray as serializeByteArrayBase
-} from "kundera-sn/serde";
+} from "@kundera-sn/kundera-ts/serde";
 import { SerdeError } from "../errors.js";
 
 const trySerde = <T>(

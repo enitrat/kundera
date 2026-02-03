@@ -1,10 +1,10 @@
-export type { Felt252Type, Felt252Input } from "kundera-sn/Felt252";
-export type { ContractAddressType } from "kundera-sn/ContractAddress";
-export type { ClassHashType } from "kundera-sn/ClassHash";
-export type { StorageKeyType } from "kundera-sn/StorageKey";
-export type { EthAddressType } from "kundera-sn/EthAddress";
+export type { Felt252Type, Felt252Input } from "@kundera-sn/kundera-ts/Felt252";
+export type { ContractAddressType } from "@kundera-sn/kundera-ts/ContractAddress";
+export type { ClassHashType } from "@kundera-sn/kundera-ts/ClassHash";
+export type { StorageKeyType } from "@kundera-sn/kundera-ts/StorageKey";
+export type { EthAddressType } from "@kundera-sn/kundera-ts/EthAddress";
 
-export type { Result, AbiError, AbiErrorCode } from "kundera-sn/abi";
+export type { Result, AbiError, AbiErrorCode } from "@kundera-sn/kundera-ts/abi";
 
 export { PrimitiveError, CryptoError, RpcError, SerdeError, TransportError } from "./errors.js";
 

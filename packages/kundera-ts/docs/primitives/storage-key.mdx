@@ -18,7 +18,7 @@ type StorageKeyType = Brand<Uint8Array, 'StorageKey'> & FeltMethods;
 Create a StorageKey from any Felt252Input.
 
 ```typescript
-import { StorageKey } from 'kundera-sn';
+import { StorageKey } from '@kundera-sn/kundera-ts';
 
 const key = StorageKey('0x0206f38f7e4f15e87567361213c28f235cccdaa1d7fd34c9db1dfe9489c6a091');
 const key2 = StorageKey(123n);
@@ -55,9 +55,9 @@ key.equals(other); // boolean
 In Starknet, storage keys are computed using hashes. For simple storage variables:
 
 ```typescript
-import { pedersen } from 'kundera-sn/crypto';
-import { StorageKey } from 'kundera-sn';
-import { encodeShortString } from 'kundera-sn';
+import { pedersen } from '@kundera-sn/kundera-ts/crypto';
+import { StorageKey } from '@kundera-sn/kundera-ts';
+import { encodeShortString } from '@kundera-sn/kundera-ts';
 
 // Storage variable named "balance"
 const variableName = encodeShortString('balance');
@@ -77,8 +77,8 @@ const storageKey = StorageKey(pedersen(baseKey, addressFelt));
 ### Reading Storage
 
 ```typescript
-import { starknet_getStorageAt } from 'kundera-sn/jsonrpc';
-import { StorageKey, ContractAddress } from 'kundera-sn';
+import { starknet_getStorageAt } from '@kundera-sn/kundera-ts/jsonrpc';
+import { StorageKey, ContractAddress } from '@kundera-sn/kundera-ts';
 
 const value = await starknet_getStorageAt(transport, {
   contract_address: ContractAddress('0x...'),
@@ -102,7 +102,7 @@ const proof = await starknet_getProof(transport, {
 ## Aliases
 
 ```typescript
-import { Storage } from 'kundera-sn';
+import { Storage } from '@kundera-sn/kundera-ts';
 
 // Storage === StorageKey
 const a = Storage('0x123');

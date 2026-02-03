@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import type { JsonRpcRequest, JsonRpcResponse, Transport } from "kundera-sn/transport";
+import type { JsonRpcRequest, JsonRpcResponse, Transport } from "@kundera-sn/kundera-ts/transport";
 import { makeTransportService, TransportService } from "../Transport/TransportService.js";
 import { Provider } from "./Provider.js";
 import { ProviderService } from "./ProviderService.js";

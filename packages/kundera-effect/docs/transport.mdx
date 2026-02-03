@@ -10,7 +10,7 @@ Transport operations return `Effect<T, TransportError>`.
 ## HTTP Transport
 
 ```typescript
-import * as Transport from 'kundera-effect/transport';
+import * as Transport from '@kundera-sn/kundera-effect/transport';
 
 const transport = Transport.httpTransport(
   'https://starknet-mainnet.public.blastapi.io',
@@ -37,7 +37,7 @@ yield* Transport.disconnect(ws);
 
 ```typescript
 import { Effect } from 'effect';
-import * as Transport from 'kundera-effect/transport';
+import * as Transport from '@kundera-sn/kundera-effect/transport';
 
 const program = Effect.gen(function* () {
   // Single request

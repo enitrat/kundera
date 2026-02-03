@@ -10,7 +10,7 @@ import type {
   JsonRpcSuccessResponse,
   JsonRpcErrorResponse,
   JsonRpcError
-} from "kundera-sn/transport";
+} from "@kundera-sn/kundera-ts/transport";
 import {
   JsonRpcErrorCode,
   isJsonRpcError,
@@ -22,7 +22,7 @@ import {
   webSocketTransport,
   type WebSocketTransport,
   type WebSocketTransportOptions
-} from "kundera-sn/transport";
+} from "@kundera-sn/kundera-ts/transport";
 import { TransportError } from "../errors.js";
 
 const tryTransport = <T>(

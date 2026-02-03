@@ -37,7 +37,7 @@ deployContract(classHash, address); // Oops, wrong order!
 **With Kundera:**
 
 ```typescript
-import { ContractAddress, ClassHash } from 'kundera-sn';
+import { ContractAddress, ClassHash } from '@kundera-sn/kundera-ts';
 
 const address = ContractAddress('0x049d36570d4e...');
 const classHash = ClassHash('0x052c7f38c1...');
@@ -55,13 +55,13 @@ Kundera uses a data-first architecture with separate entry points. Import only w
 
 ```typescript
 // Only imports primitives
-import { Felt252, ContractAddress } from 'kundera-sn';
+import { Felt252, ContractAddress } from '@kundera-sn/kundera-ts';
 
 // Only imports crypto
-import { pedersen, poseidon } from 'kundera-sn/crypto';
+import { pedersen, poseidon } from '@kundera-sn/kundera-ts/crypto';
 
 // Only imports one RPC method
-import { starknet_call } from 'kundera-sn/jsonrpc';
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
 ```
 
 Compare to monolithic libraries where importing one function pulls in the entire SDK.

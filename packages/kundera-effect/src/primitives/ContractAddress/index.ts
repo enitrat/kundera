@@ -2,14 +2,14 @@ import {
   ContractAddress,
   type ContractAddressType,
   MAX_CONTRACT_ADDRESS
-} from "kundera-sn/ContractAddress";
-import type { Felt252Input } from "kundera-sn/Felt252";
+} from "@kundera-sn/kundera-ts/ContractAddress";
+import type { Felt252Input } from "@kundera-sn/kundera-ts/Felt252";
 import { tryPrimitive } from "../utils.js";
 
-export type { ContractAddressType } from "kundera-sn/ContractAddress";
-export { MAX_CONTRACT_ADDRESS } from "kundera-sn/ContractAddress";
+export type { ContractAddressType } from "@kundera-sn/kundera-ts/ContractAddress";
+export { MAX_CONTRACT_ADDRESS } from "@kundera-sn/kundera-ts/ContractAddress";
 
-export { ContractAddress } from "kundera-sn/ContractAddress";
+export { ContractAddress } from "@kundera-sn/kundera-ts/ContractAddress";
 
 export const from = (value: Felt252Input) =>
   tryPrimitive(

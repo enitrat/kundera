@@ -15,7 +15,7 @@ import {
   type RequestArguments,
   type RequestOptions,
   type Response
-} from 'kundera-sn/provider';
+} from '@kundera-sn/kundera-ts/provider';
 ```
 
 ## Provider Interface
@@ -72,7 +72,7 @@ for await (const head of ws.events.newHeads()) {
 Use the JSON-RPC request builders with any provider:
 
 ```typescript
-import { Starknet } from 'kundera-sn/jsonrpc';
+import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
 
 const request = Starknet.BlockNumberRequest();
 const blockNumber = await provider.request<string>(request);

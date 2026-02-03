@@ -6,15 +6,15 @@ description: Get up and running with Kundera in 5 minutes.
 ## Installation
 
 ```bash
-npm install kundera-sn
+npm install @kundera-sn/kundera-ts
 ```
 
 Or with other package managers:
 
 ```bash
-pnpm add kundera-sn
-yarn add kundera-sn
-bun add kundera-sn
+pnpm add @kundera-sn/kundera-ts
+yarn add @kundera-sn/kundera-ts
+bun add @kundera-sn/kundera-ts
 ```
 
 ## Choose Your Crypto Backend
@@ -26,7 +26,7 @@ Kundera needs a crypto backend for signing and hashing. Choose based on your env
     Load WASM at app startup:
 
     ```typescript
-    import { loadWasmCrypto } from 'kundera-sn/wasm';
+    import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
 
     // Call once at startup
     await loadWasmCrypto();
@@ -36,7 +36,7 @@ Kundera needs a crypto backend for signing and hashing. Choose based on your env
     Native crypto works out of the box in Bun:
 
     ```typescript
-    import { isNativeAvailable } from 'kundera-sn/native';
+    import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
 
     console.log(isNativeAvailable()); // true
     ```
@@ -51,7 +51,7 @@ Kundera needs a crypto backend for signing and hashing. Choose based on your env
     Then use normally:
 
     ```typescript
-    import { isNativeAvailable } from 'kundera-sn/native';
+    import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
 
     console.log(isNativeAvailable()); // true if ffi-napi installed
     ```
@@ -63,7 +63,7 @@ Kundera needs a crypto backend for signing and hashing. Choose based on your env
 ### Create a Transport
 
 ```typescript
-import { httpTransport } from 'kundera-sn/transport';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
 
 const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 ```
@@ -71,8 +71,8 @@ const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 ### Make RPC Calls
 
 ```typescript
-import { starknet_blockNumber, starknet_call } from 'kundera-sn/jsonrpc';
-import { ContractAddress } from 'kundera-sn';
+import { starknet_blockNumber, starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { ContractAddress } from '@kundera-sn/kundera-ts';
 
 // Get current block
 const blockNumber = await starknet_blockNumber(transport);
@@ -93,7 +93,7 @@ const result = await starknet_call(
 ### Use Branded Types
 
 ```typescript
-import { ContractAddress, ClassHash, Felt252 } from 'kundera-sn';
+import { ContractAddress, ClassHash, Felt252 } from '@kundera-sn/kundera-ts';
 
 // Create typed values
 const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
@@ -108,7 +108,7 @@ const bigint = felt.toBigInt();
 ### Encode/Decode Calldata
 
 ```typescript
-import { encodeCalldata, decodeOutputObject } from 'kundera-sn/abi';
+import { encodeCalldata, decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
 
 // Encode function arguments
 const encoded = encodeCalldata(erc20Abi, 'transfer', [
@@ -133,9 +133,9 @@ const balance = decoded.result;
 Read an ERC-20 token balance:
 
 ```typescript
-import { httpTransport } from 'kundera-sn/transport';
-import { starknet_call } from 'kundera-sn/jsonrpc';
-import { ContractAddress, Felt252 } from 'kundera-sn';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { ContractAddress, Felt252 } from '@kundera-sn/kundera-ts';
 
 // Setup
 const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');

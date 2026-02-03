@@ -16,7 +16,7 @@ Starknet uses ECDSA over the STARK curve for signatures:
 - **Signature**: (r, s) pair
 
 ```typescript
-import { sign, verify, getPublicKey } from 'kundera-sn/crypto';
+import { sign, verify, getPublicKey } from '@kundera-sn/kundera-ts/crypto';
 
 const publicKey = getPublicKey(privateKey);
 const signature = sign(privateKey, messageHash);
@@ -32,7 +32,7 @@ const valid = verify(publicKey, messageHash, signature);
 | **Starknet Keccak** | Function/event selectors |
 
 ```typescript
-import { pedersenHash, poseidonHash, computeSelector } from 'kundera-sn/crypto';
+import { pedersenHash, poseidonHash, computeSelector } from '@kundera-sn/kundera-ts/crypto';
 
 const hash1 = pedersenHash([a, b]);
 const hash2 = poseidonHash([a, b, c]);
@@ -62,7 +62,7 @@ Private keys should NEVER appear in:
 | **Testing** | Devnet accounts (funded test accounts) |
 
 ```typescript
-import { signRaw } from 'kundera-sn/crypto';
+import { signRaw } from '@kundera-sn/kundera-ts/crypto';
 import { connectWalletWithModal } from './skills/wallet-modal';
 
 // ✅ Good: Environment variable
@@ -95,7 +95,7 @@ fn is_valid_signature(hash: felt252, sig: Array<felt252>) -> felt252
 Verify signatures without sending a transaction:
 
 ```typescript
-import { verify, getPublicKey } from 'kundera-sn/crypto';
+import { verify, getPublicKey } from '@kundera-sn/kundera-ts/crypto';
 
 const publicKey = getPublicKey(privateKey);
 const isValid = verify(publicKey, messageHash, signature);
@@ -106,7 +106,7 @@ const isValid = verify(publicKey, messageHash, signature);
 Use typed data to prevent signature replay attacks:
 
 ```typescript
-import { signTypedData, signatureToArray } from 'kundera-sn/crypto';
+import { signTypedData, signatureToArray } from '@kundera-sn/kundera-ts/crypto';
 
 const typedData = {
   types: {
@@ -139,8 +139,8 @@ Always include a unique domain to prevent:
 Always verify transaction details before signing:
 
 ```typescript
-import { encodeCalldata } from 'kundera-sn/abi';
-import { signRaw, signatureToArray } from 'kundera-sn/crypto';
+import { encodeCalldata } from '@kundera-sn/kundera-ts/abi';
+import { signRaw, signatureToArray } from '@kundera-sn/kundera-ts/crypto';
 import { createAccountInvoker } from './skills/account-invoke';
 
 const signTransaction = (hash) => signatureToArray(signRaw(privateKey, hash));
@@ -167,7 +167,7 @@ await account.execute(call);
 Batch operations execute atomically—all succeed or all revert:
 
 ```typescript
-import { encodeCalldata } from 'kundera-sn/abi';
+import { encodeCalldata } from '@kundera-sn/kundera-ts/abi';
 
 const transferA = encodeCalldata(ERC20_ABI, 'transfer', [recipient, amountA]);
 const transferB = encodeCalldata(ERC20_ABI, 'transfer', [recipient, amountB]);
@@ -241,14 +241,14 @@ Kundera exposes explicit crypto entrypoints:
 
 ```typescript
 // Native (Bun/Node with FFI) - preferred for production
-import * as crypto from 'kundera-sn/native';
+import * as crypto from '@kundera-sn/kundera-ts/native';
 
 const hash = crypto.pedersenHash(a, b);
 ```
 
 ```typescript
 // WASM (browser/portable environments)
-import * as crypto from 'kundera-sn/wasm';
+import * as crypto from '@kundera-sn/kundera-ts/wasm';
 
 await crypto.loadWasmCrypto();
 const hash = crypto.pedersenHash(a, b);

@@ -184,8 +184,8 @@ const { result } = decodeEvents(receipt, abi, {
 For RPC queries, compile your filter (skill) and pass to the RPC call:
 
 ```typescript
-import { httpTransport } from 'kundera-sn/transport';
-import { starknet_getEvents } from 'kundera-sn/jsonrpc';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { starknet_getEvents } from '@kundera-sn/kundera-ts/jsonrpc';
 import { compileEventFilter } from './skills/event-filtering';
 
 const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');

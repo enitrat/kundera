@@ -6,7 +6,7 @@ import type {
   BroadcastedTxn,
   FeeEstimate,
   SimulationFlag
-} from "kundera-sn/jsonrpc";
+} from "@kundera-sn/kundera-ts/jsonrpc";
 import type { ResourceBoundsInput } from "../Account/AccountService.js";
 import type { ProviderService } from "../Provider/index.js";
 

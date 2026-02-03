@@ -19,8 +19,8 @@ Use raw transports if you want full control or minimal overhead.
 ## HTTP Provider
 
 ```typescript
-import { HttpProvider } from 'kundera-sn/provider';
-import { Starknet } from 'kundera-sn/jsonrpc';
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
 
 const provider = new HttpProvider({
   url: 'https://api.zan.top/public/starknet-sepolia',
@@ -35,7 +35,7 @@ const chainId = await provider.request<string>(Starknet.ChainIdRequest());
 ## WebSocket Provider
 
 ```typescript
-import { WebSocketProvider } from 'kundera-sn/provider';
+import { WebSocketProvider } from '@kundera-sn/kundera-ts/provider';
 
 const ws = new WebSocketProvider('wss://api.zan.top/public/starknet-sepolia');
 await ws.connect();
@@ -71,8 +71,8 @@ if (response.error) {
 `TypedProvider` helps enforce a schema for `request()`:
 
 ```typescript
-import type { TypedProvider } from 'kundera-sn/provider';
-import type { RpcSchema } from 'kundera-sn/provider';
+import type { TypedProvider } from '@kundera-sn/kundera-ts/provider';
+import type { RpcSchema } from '@kundera-sn/kundera-ts/provider';
 
 const typed: TypedProvider<RpcSchema> = provider;
 ```

@@ -15,7 +15,7 @@ These services mirror Voltaire’s Effect service architecture: small, composabl
 
 ```ts
 import { Effect } from "effect";
-import { Services } from "kundera-effect";
+import { Services } from "@kundera-sn/kundera-effect";
 ```
 
 ## Live Layers
@@ -46,7 +46,7 @@ const program = Effect.gen(function* () {
 Wrap an existing provider instance (for example `HttpProvider`) to get an Effect-friendly API.
 
 ```ts
-import { HttpProvider } from "kundera-sn/provider";
+import { HttpProvider } from "@kundera-sn/kundera-ts/provider";
 
 const provider = new HttpProvider("https://starknet.example.com");
 
@@ -66,7 +66,7 @@ const program = Effect.gen(function* () {
 
 ```ts
 import { Effect } from "effect";
-import { RpcError, TransportError } from "kundera-effect";
+import { RpcError, TransportError } from "@kundera-sn/kundera-effect";
 
 const program = Effect.gen(function* () {
   const provider = yield* Services.Provider.ProviderService;

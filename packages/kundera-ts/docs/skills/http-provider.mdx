@@ -3,7 +3,7 @@ title: "HTTP Provider"
 description: "Lightweight JSON-RPC provider built on transports + rpc methods."
 ---
 
-This skill creates a minimal HTTP provider that wraps `kundera-sn/transport` and `kundera-sn/jsonrpc`.
+This skill creates a minimal HTTP provider that wraps `@kundera-sn/kundera-ts/transport` and `@kundera-sn/kundera-ts/jsonrpc`.
 Copy it into your project and tailor the method surface to your needs.
 
 ## Quick Start
@@ -27,7 +27,7 @@ const block = await provider.blockNumber();
 
 ## Notes
 
-- Methods are thin wrappers around `kundera-sn/jsonrpc`.
+- Methods are thin wrappers around `@kundera-sn/kundera-ts/jsonrpc`.
 - Add/remove methods to match your app's needs.
 - `provider.transport` exposes the low-level transport for custom calls.
 - For batching/retries, use the `http-transport` skill and pass it as `transport`.

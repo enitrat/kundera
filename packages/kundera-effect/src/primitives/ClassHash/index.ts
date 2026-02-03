@@ -1,13 +1,13 @@
 import {
   ClassHash,
   type ClassHashType
-} from "kundera-sn/ClassHash";
-import type { Felt252Input } from "kundera-sn/Felt252";
+} from "@kundera-sn/kundera-ts/ClassHash";
+import type { Felt252Input } from "@kundera-sn/kundera-ts/Felt252";
 import { tryPrimitive } from "../utils.js";
 
-export type { ClassHashType } from "kundera-sn/ClassHash";
+export type { ClassHashType } from "@kundera-sn/kundera-ts/ClassHash";
 
-export { ClassHash } from "kundera-sn/ClassHash";
+export { ClassHash } from "@kundera-sn/kundera-ts/ClassHash";
 
 export const from = (value: Felt252Input) =>
   tryPrimitive(

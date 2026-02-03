@@ -10,7 +10,7 @@ The `Rpc` module provides Effect-wrapped Starknet JSON-RPC methods.
 ## Import
 
 ```typescript
-import * as Rpc from "kundera-effect/jsonrpc";
+import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
 ```
 
 ## Read Methods
@@ -223,8 +223,8 @@ yield* Rpc.starknet_unsubscribe(transport, subId);
 
 ```typescript
 import { Effect } from "effect";
-import * as Rpc from "kundera-effect/jsonrpc";
-import { httpTransport } from "kundera-effect/transport";
+import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
+import { httpTransport } from "@kundera-sn/kundera-effect/transport";
 
 const transport = httpTransport({ url: "https://starknet-mainnet.public.blastapi.io" });
 
@@ -272,5 +272,5 @@ import type {
   TransactionReceipt,
   FeeEstimate,
   // ... many more
-} from "kundera-effect/jsonrpc";
+} from "@kundera-sn/kundera-effect/jsonrpc";
 ```

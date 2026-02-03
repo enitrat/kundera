@@ -20,7 +20,7 @@ type EthAddressType = bigint & { readonly _tag: "EthAddress" }
 Create an EthAddress from a felt input or hex string.
 
 ```typescript
-import * as EthAddress from "kundera-effect/primitives/EthAddress";
+import * as EthAddress from "@kundera-sn/kundera-effect/primitives/EthAddress";
 
 const eth = yield* EthAddress.from("0xd8da6bf26964af9d7eed9e03e53415d37aa96045");
 // Effect<EthAddressType, PrimitiveError>
@@ -30,8 +30,8 @@ const eth = yield* EthAddress.from("0xd8da6bf26964af9d7eed9e03e53415d37aa96045")
 
 ```typescript
 import { Effect } from "effect";
-import * as EthAddress from "kundera-effect/primitives/EthAddress";
-import * as Abi from "kundera-effect/abi";
+import * as EthAddress from "@kundera-sn/kundera-effect/primitives/EthAddress";
+import * as Abi from "@kundera-sn/kundera-effect/abi";
 
 const program = Effect.gen(function* () {
   // Parse an Ethereum address for L1 messaging

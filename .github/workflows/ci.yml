@@ -50,16 +50,16 @@ jobs:
         run: cargo test
 
       - name: Build WASM
-        run: pnpm --filter kundera-sn build:wasm
+        run: pnpm --filter @kundera-sn/kundera-ts build:wasm
 
       - name: JS tests
         run: pnpm -r test:run
 
       - name: Build dist
-        run: pnpm --filter kundera-sn build:dist
+        run: pnpm --filter @kundera-sn/kundera-ts build:dist
 
       - name: Build types
-        run: pnpm --filter kundera-sn build:types
+        run: pnpm --filter @kundera-sn/kundera-ts build:types
 
   zig-tests:
     name: Zig tests (ubuntu)

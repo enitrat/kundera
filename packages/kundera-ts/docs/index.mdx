@@ -11,9 +11,9 @@ Kundera is a TypeScript library for working with Starknet primitives, cryptograp
 - **Tree-shakeable** modules—import only what you use
 
 ```typescript
-import { ContractAddress, ClassHash } from 'kundera-sn';
-import { pedersen } from 'kundera-sn/crypto';
-import { starknet_call } from 'kundera-sn/jsonrpc';
+import { ContractAddress, ClassHash } from '@kundera-sn/kundera-ts';
+import { pedersen } from '@kundera-sn/kundera-ts/crypto';
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
 
 // Type-safe primitives
 const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
@@ -30,14 +30,14 @@ const result = await starknet_call(
 );
 ```
 
-## Featured: kundera-effect
+## Featured: @kundera-sn/kundera-effect
 
-**For production applications, we recommend [kundera-effect](/services)** — Effect-TS integration with typed errors, dependency injection, and composable operations.
+**For production applications, we recommend [@kundera-sn/kundera-effect](/services)** — Effect-TS integration with typed errors, dependency injection, and composable operations.
 
 ```typescript
 import { Effect } from 'effect';
-import * as Abi from 'kundera-effect/abi';
-import * as Rpc from 'kundera-effect/jsonrpc';
+import * as Abi from '@kundera-sn/kundera-effect/abi';
+import * as Rpc from '@kundera-sn/kundera-effect/jsonrpc';
 
 const program = Effect.gen(function* () {
   const calldata = yield* Abi.encodeCalldata(abi, 'transfer', args);
@@ -50,7 +50,7 @@ const program = Effect.gen(function* () {
 );
 ```
 
-[Get started with kundera-effect →](/services)
+[Get started with @kundera-sn/kundera-effect →](/services)
 
 ## Who is Kundera For?
 
@@ -95,10 +95,10 @@ const program = Effect.gen(function* () {
 Read an ERC-20 balance:
 
 ```typescript
-import { HttpProvider } from 'kundera-sn/provider';
-import { Starknet } from 'kundera-sn/jsonrpc';
-import { decodeOutputObject } from 'kundera-sn/abi';
-import { ContractAddress } from 'kundera-sn';
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
+import { decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
+import { ContractAddress } from '@kundera-sn/kundera-ts';
 
 const provider = new HttpProvider({ url: 'https://api.zan.top/public/starknet-sepolia' });
 

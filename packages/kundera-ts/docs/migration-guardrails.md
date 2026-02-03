@@ -56,37 +56,37 @@ The following are **forbidden**:
 
 ## Public API Surface
 
-### kundera-sn (main package)
+### @kundera-sn/kundera-ts (main package)
 
 ```typescript
 // Primitives
-import { Felt252, ContractAddress, ClassHash, StorageKey, EthAddress } from 'kundera-sn';
+import { Felt252, ContractAddress, ClassHash, StorageKey, EthAddress } from '@kundera-sn/kundera-ts';
 
 // Crypto
-import { pedersenHash, poseidonHash, sign, verify } from 'kundera-sn/crypto';
+import { pedersenHash, poseidonHash, sign, verify } from '@kundera-sn/kundera-ts/crypto';
 
 // Serde
-import { serializeU256, deserializeU256, CairoSerde } from 'kundera-sn/serde';
+import { serializeU256, deserializeU256, CairoSerde } from '@kundera-sn/kundera-ts/serde';
 
 // ABI
-import { parseAbi, encodeCalldata, decodeCalldata } from 'kundera-sn/abi';
+import { parseAbi, encodeCalldata, decodeCalldata } from '@kundera-sn/kundera-ts/abi';
 
 // RPC
-import { createHttpTransport } from 'kundera-sn/transport';
-import { starknet_blockNumber } from 'kundera-sn/jsonrpc';
+import { createHttpTransport } from '@kundera-sn/kundera-ts/transport';
+import { starknet_blockNumber } from '@kundera-sn/kundera-ts/jsonrpc';
 ```
 
-### kundera-effect (Effect wrapper)
+### @kundera-sn/kundera-effect (Effect wrapper)
 
 ```typescript
 // Primitives with schemas
-import { Felt252, Felt252Schema } from 'kundera-effect/primitives';
+import { Felt252, Felt252Schema } from '@kundera-sn/kundera-effect/primitives';
 
 // RPC with Effect
-import { getBlockNumber, getBalance } from 'kundera-effect/jsonrpc';
+import { getBlockNumber, getBalance } from '@kundera-sn/kundera-effect/jsonrpc';
 
 // Services
-import { ProviderService, TransportService } from 'kundera-effect/services';
+import { ProviderService, TransportService } from '@kundera-sn/kundera-effect/services';
 ```
 
 ## Validation Checklist

@@ -10,7 +10,7 @@ The `Crypto` module provides all Starknet cryptographic operations: hashing, sig
 ## Import
 
 ```typescript
-import * as Crypto from "kundera-effect/crypto";
+import * as Crypto from "@kundera-sn/kundera-effect/crypto";
 ```
 
 ## Backend Detection
@@ -231,8 +231,8 @@ Crypto.EXECUTE_SELECTOR
 
 ```typescript
 import { Effect } from "effect";
-import * as Crypto from "kundera-effect/crypto";
-import * as Felt252 from "kundera-effect/primitives/Felt252";
+import * as Crypto from "@kundera-sn/kundera-effect/crypto";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
 
 const program = Effect.gen(function* () {
   // Load WASM if needed

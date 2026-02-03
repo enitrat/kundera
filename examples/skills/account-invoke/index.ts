@@ -4,14 +4,14 @@
  * Execute invoke transactions on Starknet.
  */
 
-import type { Transport } from 'kundera-sn/transport';
+import type { Transport } from '@kundera-sn/kundera-ts/transport';
 import {
   starknet_chainId,
   starknet_getNonce,
   starknet_addInvokeTransaction,
   starknet_estimateFee,
-} from 'kundera-sn/jsonrpc';
-import type { AddInvokeTransactionResult, BroadcastedInvokeTxn, FeeEstimate, SimulationFlag } from 'kundera-sn/jsonrpc';
+} from '@kundera-sn/kundera-ts/jsonrpc';
+import type { AddInvokeTransactionResult, BroadcastedInvokeTxn, FeeEstimate, SimulationFlag } from '@kundera-sn/kundera-ts/jsonrpc';
 import {
   computeInvokeV3Hash,
   computeSelector,
@@ -22,8 +22,8 @@ import {
   type InvokeTransactionV3,
   type ResourceBoundsMapping,
   type SignatureArray,
-} from 'kundera-sn/crypto';
-import { Felt252, type Felt252Input } from 'kundera-sn';
+} from '@kundera-sn/kundera-ts/crypto';
+import { Felt252, type Felt252Input } from '@kundera-sn/kundera-ts';
 
 export type SignTransaction = (
   hash: Felt252Input,

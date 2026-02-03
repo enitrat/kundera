@@ -1,4 +1,4 @@
-import type { Felt252Type, Felt252Input } from "kundera-sn/Felt252";
+import type { Felt252Type, Felt252Input } from "@kundera-sn/kundera-ts/Felt252";
 import {
   FIELD_PRIME,
   MAX_ADDRESS,
@@ -41,7 +41,7 @@ import {
   getPublicKey as getPublicKeyBase,
   recover as recoverBase,
   type Signature
-} from "kundera-sn/native";
+} from "@kundera-sn/kundera-ts/native";
 import { tryCrypto, tryCryptoPromise } from "../crypto/utils.js";
 export { CryptoError } from "../errors.js";
 
@@ -73,14 +73,14 @@ export {
   isWasmLoaded
 };
 
-export type { Felt252Type, Felt252Input } from "kundera-sn/Felt252";
+export type { Felt252Type, Felt252Input } from "@kundera-sn/kundera-ts/Felt252";
 export type {
   Signature,
   ContractAddressType,
   ClassHashType,
   StorageKeyType,
   EthAddressType
-} from "kundera-sn/native";
+} from "@kundera-sn/kundera-ts/native";
 
 export const loadWasmCrypto = () =>
   tryCryptoPromise("native.loadWasmCrypto", null, "native runtime", () =>

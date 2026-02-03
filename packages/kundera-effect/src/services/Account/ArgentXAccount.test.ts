@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as Effect from "effect/Effect";
-import { getPublicKey } from "kundera-sn/crypto";
-import { Felt252 } from "kundera-sn/Felt252";
+import { getPublicKey } from "@kundera-sn/kundera-ts/crypto";
+import { Felt252 } from "@kundera-sn/kundera-ts/Felt252";
 import { AccountService } from "./AccountService.js";
 import { ArgentXAccount } from "./ArgentXAccount.js";
 

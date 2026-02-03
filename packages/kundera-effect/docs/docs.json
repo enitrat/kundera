@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "kundera-effect",
+  "name": "@kundera-sn/kundera-effect",
   "colors": {
     "primary": "#7C3AED",
     "light": "#A78BFA",

@@ -5,7 +5,7 @@ description: Error handling patterns with Effect
 
 # Errors
 
-kundera-effect uses Effect's `TaggedError` for type-safe error handling across all modules.
+@kundera-sn/kundera-effect uses Effect's `TaggedError` for type-safe error handling across all modules.
 
 ## Error Types
 
@@ -38,7 +38,7 @@ interface ErrorFields {
 
 ```typescript
 import { Effect } from "effect";
-import * as Felt252 from "kundera-effect/primitives/Felt252";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
 
 const program = Felt252.from("invalid").pipe(
   Effect.catchTag("PrimitiveError", (e) => {
@@ -52,8 +52,8 @@ const program = Felt252.from("invalid").pipe(
 
 ```typescript
 import { Effect } from "effect";
-import * as Abi from "kundera-effect/abi";
-import * as Rpc from "kundera-effect/jsonrpc";
+import * as Abi from "@kundera-sn/kundera-effect/abi";
+import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
 
 const program = Effect.gen(function* () {
   const calldata = yield* Abi.encodeCalldata(abi, "transfer", args);
@@ -158,9 +158,9 @@ if (Either.isLeft(result)) {
 
 ```typescript
 import { Effect, Match } from "effect";
-import * as Primitives from "kundera-effect/primitives";
-import * as Abi from "kundera-effect/abi";
-import * as Rpc from "kundera-effect/jsonrpc";
+import * as Primitives from "@kundera-sn/kundera-effect/primitives";
+import * as Abi from "@kundera-sn/kundera-effect/abi";
+import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
 
 const transfer = (to: string, amount: bigint) =>
   Effect.gen(function* () {

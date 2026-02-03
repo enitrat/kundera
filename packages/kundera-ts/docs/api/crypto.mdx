@@ -9,28 +9,28 @@ Cryptographic primitives for Starknet including hash functions, ECDSA signatures
 
 ```typescript
 // Native (FFI-backed, preferred for servers)
-import * as crypto from 'kundera-sn/native';
+import * as crypto from '@kundera-sn/kundera-ts/native';
 ```
 
 ```typescript
 // WASM (browser/portable)
-import * as crypto from 'kundera-sn/wasm';
+import * as crypto from '@kundera-sn/kundera-ts/wasm';
 await crypto.loadWasmCrypto();
 ```
 
 You can also import named helpers from any entrypoint:
 
 ```typescript
-import { pedersenHash, sign, type Signature } from 'kundera-sn/native';
+import { pedersenHash, sign, type Signature } from '@kundera-sn/kundera-ts/native';
 ```
 
 ## Backend Selection
 
 Kundera exposes explicit crypto entrypoints:
 
-- `kundera-sn/native` for FFI-backed crypto
-- `kundera-sn/wasm` for portable/browser crypto (call `loadWasmCrypto` once)
-- `kundera-sn/crypto` for auto-selection if you want a single import
+- `@kundera-sn/kundera-ts/native` for FFI-backed crypto
+- `@kundera-sn/kundera-ts/wasm` for portable/browser crypto (call `loadWasmCrypto` once)
+- `@kundera-sn/kundera-ts/crypto` for auto-selection if you want a single import
 
 All entrypoints share the same API surface.
 
@@ -68,7 +68,7 @@ async function loadWasmCrypto(): Promise<void>
 
 ```typescript
 // Browser initialization
-import * as crypto from 'kundera-sn/crypto';
+import * as crypto from '@kundera-sn/kundera-ts/crypto';
 
 if (!crypto.isNativeAvailable()) {
   await crypto.loadWasmCrypto();
@@ -79,7 +79,7 @@ const hash = crypto.pedersenHash(a, b);
 ```
 
 <Tip>
-Native crypto is preferred for performance. For browsers, use the `kundera-sn/wasm` entrypoint (or `kundera-sn/crypto` if you want auto-selection).
+Native crypto is preferred for performance. For browsers, use the `@kundera-sn/kundera-ts/wasm` entrypoint (or `@kundera-sn/kundera-ts/crypto` if you want auto-selection).
 </Tip>
 
 ## Hash Functions
@@ -405,8 +405,8 @@ import {
   verify,
   getPublicKey,
   pedersenHash,
-} from 'kundera-sn/crypto';
-import { Felt252 } from 'kundera-sn';
+} from '@kundera-sn/kundera-ts/crypto';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 // Initialize crypto
 if (!isNativeAvailable()) {

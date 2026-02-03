@@ -18,7 +18,7 @@ type ClassHashType = Brand<Uint8Array, 'ClassHash'> & FeltMethods;
 Create a ClassHash from any Felt252Input.
 
 ```typescript
-import { ClassHash } from 'kundera-sn';
+import { ClassHash } from '@kundera-sn/kundera-ts';
 
 const hash = ClassHash('0x052c7f38c1c123456789abcdef...');
 const hash2 = ClassHash(123n);
@@ -57,7 +57,7 @@ hash.equals(other); // boolean
 When declaring a new contract class:
 
 ```typescript
-import { ClassHash } from 'kundera-sn';
+import { ClassHash } from '@kundera-sn/kundera-ts';
 
 const declaredClassHash = ClassHash(declareTxResponse.class_hash);
 ```
@@ -67,7 +67,7 @@ const declaredClassHash = ClassHash(declareTxResponse.class_hash);
 When deploying a contract instance:
 
 ```typescript
-import { ClassHash, ContractAddress } from 'kundera-sn';
+import { ClassHash, ContractAddress } from '@kundera-sn/kundera-ts';
 
 async function deployContract(classHash: ClassHashType): Promise<ContractAddressType> {
   // classHash identifies WHICH contract code to deploy
@@ -88,7 +88,7 @@ function upgrade(newClassHash: ClassHashType) {
 ## Aliases
 
 ```typescript
-import { Class } from 'kundera-sn';
+import { Class } from '@kundera-sn/kundera-ts';
 
 // Class === ClassHash
 const a = Class('0x123');

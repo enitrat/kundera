@@ -31,7 +31,7 @@ const MAX_SHORT_STRING_LENGTH: number
 Create a Felt252 from various input types.
 
 ```typescript
-import * as Felt252 from "kundera-effect/primitives/Felt252";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
 
 const felt = yield* Felt252.from("0x123");
 const felt = yield* Felt252.from(291n);
@@ -119,7 +119,7 @@ const equal = Felt252.equals(a, b);
 
 ```typescript
 import { Effect } from "effect";
-import * as Felt252 from "kundera-effect/primitives/Felt252";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
 
 const program = Effect.gen(function* () {
   // Parse from various formats
@@ -143,7 +143,7 @@ await Effect.runPromise(program);
 
 ```typescript
 import { Effect } from "effect";
-import * as Felt252 from "kundera-effect/primitives/Felt252";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
 
 const program = Felt252.fromHex("invalid").pipe(
   Effect.catchTag("PrimitiveError", (error) => {

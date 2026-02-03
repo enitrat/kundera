@@ -39,7 +39,7 @@ All constructors accept any of these input types.
 Create a Felt252 from any supported input type.
 
 ```typescript
-import { Felt252 } from 'kundera-sn';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 const a = Felt252(123n);           // from bigint
 const b = Felt252('0x7b');         // from hex string
@@ -192,7 +192,7 @@ See [Short Strings](/primitives/short-strings) for details.
 ## Aliases
 
 ```typescript
-import { Felt } from 'kundera-sn';
+import { Felt } from '@kundera-sn/kundera-ts';
 
 // Felt === Felt252
 const a = Felt(123n);

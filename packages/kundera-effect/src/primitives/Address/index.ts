@@ -1,12 +1,12 @@
 import { Effect } from "effect";
-import type { ContractAddressType as AddressType } from "kundera-sn/ContractAddress";
+import type { ContractAddressType as AddressType } from "@kundera-sn/kundera-ts/ContractAddress";
 import {
   ContractAddress,
   type ContractAddressType,
   isValidContractAddress as isValidContractAddressInternal,
   MAX_CONTRACT_ADDRESS
-} from "kundera-sn/ContractAddress";
-import type { Felt252Type } from "kundera-sn/Felt252";
+} from "@kundera-sn/kundera-ts/ContractAddress";
+import type { Felt252Type } from "@kundera-sn/kundera-ts/Felt252";
 import { PrimitiveError } from "../../errors.js";
 
 export type { AddressType };

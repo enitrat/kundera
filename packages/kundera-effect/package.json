@@ -1,5 +1,5 @@
 {
-  "name": "kundera-effect",
+  "name": "@kundera-sn/kundera-effect",
   "version": "0.0.3",
   "description": "Effect-TS integration for Kundera Starknet primitives library",
   "author": "Starknet",
@@ -112,16 +112,16 @@
   },
   "sideEffects": false,
   "peerDependencies": {
-    "kundera-sn": "^0.0.1",
+    "@kundera-sn/kundera-ts": "^0.0.1",
     "effect": "^3.19.0"
   },
   "peerDependenciesMeta": {
-    "kundera-sn": {
+    "@kundera-sn/kundera-ts": {
       "optional": true
     }
   },
   "devDependencies": {
-    "kundera-sn": "workspace:*",
+    "@kundera-sn/kundera-ts": "workspace:*",
     "effect": "^3.19.0",
     "tsup": "^8.4.0",
     "typescript": "^5.9.3",

@@ -27,7 +27,7 @@ const MAX_CONTRACT_ADDRESS: bigint
 Create a ContractAddress from a felt input.
 
 ```typescript
-import * as ContractAddress from "kundera-effect/primitives/ContractAddress";
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
 
 const address = yield* ContractAddress.from("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7");
 // Effect<ContractAddressType, PrimitiveError>
@@ -48,8 +48,8 @@ const valid = ContractAddress.isValid("0x123...");
 
 ```typescript
 import { Effect } from "effect";
-import * as ContractAddress from "kundera-effect/primitives/ContractAddress";
-import * as Abi from "kundera-effect/abi";
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
+import * as Abi from "@kundera-sn/kundera-effect/abi";
 
 const USDC_ADDRESS = "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8";
 
@@ -73,7 +73,7 @@ Contract addresses must be less than 2^251:
 
 ```typescript
 import { Effect } from "effect";
-import * as ContractAddress from "kundera-effect/primitives/ContractAddress";
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
 
 // This will fail - value too large
 const program = ContractAddress.from(2n ** 252n).pipe(

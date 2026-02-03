@@ -20,7 +20,7 @@ Transports handle the raw JSON-RPC communication layer. Providers wrap transport
 The default transport for request/response patterns:
 
 ```typescript
-import { httpTransport, createRequest } from 'kundera-sn/transport';
+import { httpTransport, createRequest } from '@kundera-sn/kundera-ts/transport';
 
 const transport = httpTransport(
   'https://api.zan.top/public/starknet-sepolia',
@@ -56,7 +56,7 @@ const [block, chain] = await Promise.all([
 For real-time subscriptions:
 
 ```typescript
-import { webSocketTransport } from 'kundera-sn/transport';
+import { webSocketTransport } from '@kundera-sn/kundera-ts/transport';
 
 const transport = webSocketTransport({
   url: 'wss://api.zan.top/public/starknet-sepolia',
@@ -75,7 +75,7 @@ transport.subscribe('sub_123', (data) => {
 Implement the `Transport` interface for custom protocols:
 
 ```typescript
-import type { Transport, JsonRpcRequest, JsonRpcResponse } from 'kundera-sn/transport';
+import type { Transport, JsonRpcRequest, JsonRpcResponse } from '@kundera-sn/kundera-ts/transport';
 
 const customTransport: Transport = {
   async request<T>(request: JsonRpcRequest): Promise<T> {

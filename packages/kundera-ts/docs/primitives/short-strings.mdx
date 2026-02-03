@@ -20,7 +20,7 @@ Cairo short strings are ASCII strings of up to 31 characters that fit in a singl
 Encode an ASCII string to a bigint.
 
 ```typescript
-import { encodeShortString } from 'kundera-sn';
+import { encodeShortString } from '@kundera-sn/kundera-ts';
 
 encodeShortString('hello');     // 448378203247n
 encodeShortString('ERC20');     // 4543560n
@@ -36,7 +36,7 @@ encodeShortString('');          // 0n
 Encode an ASCII string to a hex string.
 
 ```typescript
-import { encodeShortStringHex } from 'kundera-sn';
+import { encodeShortStringHex } from '@kundera-sn/kundera-ts';
 
 encodeShortStringHex('hello');  // '0x68656c6c6f'
 encodeShortStringHex('ERC20');  // '0x455243323030'
@@ -50,7 +50,7 @@ encodeShortStringHex('ERC20');  // '0x455243323030'
 Decode a felt back to an ASCII string.
 
 ```typescript
-import { decodeShortString } from 'kundera-sn';
+import { decodeShortString } from '@kundera-sn/kundera-ts';
 
 decodeShortString(448378203247n);       // 'hello'
 decodeShortString('0x68656c6c6f');      // 'hello'
@@ -65,7 +65,7 @@ Accepts `bigint`, hex `string`, or `Felt252Type`.
 These functions are also available on the `Felt252` namespace:
 
 ```typescript
-import { Felt252 } from 'kundera-sn';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 Felt252.encodeShortString('hello');     // 448378203247n
 Felt252.encodeShortStringHex('hello');  // '0x68656c6c6f'
@@ -81,8 +81,8 @@ Felt252.MAX_SHORT_STRING_LENGTH;        // 31
 ERC-20 `name()` and `symbol()` often return short strings:
 
 ```typescript
-import { starknet_call } from 'kundera-sn/jsonrpc';
-import { decodeShortString } from 'kundera-sn';
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { decodeShortString } from '@kundera-sn/kundera-ts';
 
 const result = await starknet_call(transport, {
   contract_address: tokenAddress,
@@ -99,8 +99,8 @@ console.log(name); // 'Ether'
 Cairo storage variables are keyed by their name encoded as short strings:
 
 ```typescript
-import { encodeShortString } from 'kundera-sn';
-import { pedersen } from 'kundera-sn/crypto';
+import { encodeShortString } from '@kundera-sn/kundera-ts';
+import { pedersen } from '@kundera-sn/kundera-ts/crypto';
 
 // Compute storage key for "balance" variable
 const storageKey = pedersen(encodeShortString('balance'), 0n);
@@ -111,7 +111,7 @@ const storageKey = pedersen(encodeShortString('balance'), 0n);
 Event names in Starknet are short string encoded:
 
 ```typescript
-import { encodeShortStringHex } from 'kundera-sn';
+import { encodeShortStringHex } from '@kundera-sn/kundera-ts';
 
 const transferEventKey = encodeShortStringHex('Transfer');
 // Use to filter events
@@ -131,7 +131,7 @@ Packed: 0x68656c6c6f = 448378203247
 ## Error Handling
 
 ```typescript
-import { encodeShortString } from 'kundera-sn';
+import { encodeShortString } from '@kundera-sn/kundera-ts';
 
 // Non-ASCII character
 try {

@@ -10,9 +10,9 @@ The `Transport` module provides HTTP and WebSocket transports for Starknet JSON-
 ## Import
 
 ```typescript
-import * as Transport from "kundera-effect/transport";
+import * as Transport from "@kundera-sn/kundera-effect/transport";
 // Or specific exports
-import { httpTransport, webSocketTransport } from "kundera-effect/transport";
+import { httpTransport, webSocketTransport } from "@kundera-sn/kundera-effect/transport";
 ```
 
 ## HTTP Transport
@@ -189,7 +189,7 @@ const JsonRpcErrorCode = {
 
 ```typescript
 import { Effect } from "effect";
-import * as Transport from "kundera-effect/transport";
+import * as Transport from "@kundera-sn/kundera-effect/transport";
 
 const program = Effect.gen(function* () {
   // Create HTTP transport

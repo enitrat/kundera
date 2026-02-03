@@ -1,6 +1,6 @@
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import type { AddInvokeTransactionResult } from "kundera-sn/jsonrpc";
+import type { AddInvokeTransactionResult } from "@kundera-sn/kundera-ts/jsonrpc";
 import { AccountService } from "../Account/AccountService.js";
 import { ProviderService } from "../Provider/index.js";
 import { NonceManagerService } from "../NonceManager/NonceManagerService.js";

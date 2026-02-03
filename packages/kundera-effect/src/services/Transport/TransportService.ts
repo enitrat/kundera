@@ -11,8 +11,8 @@ import type {
   JsonRpcResponse,
   Transport,
   TransportRequestOptions
-} from "kundera-sn/transport";
-import { isJsonRpcError, matchBatchResponses } from "kundera-sn/transport";
+} from "@kundera-sn/kundera-ts/transport";
+import { isJsonRpcError, matchBatchResponses } from "@kundera-sn/kundera-ts/transport";
 import { RpcError, TransportError } from "../../errors.js";
 
 export type RpcRequest = {

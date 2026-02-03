@@ -8,7 +8,7 @@ import {
   webSocketTransport,
   type WebSocketTransport,
   type WebSocketTransportOptions,
-} from 'kundera-sn/transport';
+} from '@kundera-sn/kundera-ts/transport';
 import {
   starknet_subscribeNewHeads,
   starknet_subscribeEvents,
@@ -16,7 +16,7 @@ import {
   starknet_subscribeNewTransactions,
   starknet_subscribeNewTransactionReceipts,
   starknet_unsubscribe,
-} from 'kundera-sn/jsonrpc';
+} from '@kundera-sn/kundera-ts/jsonrpc';
 import type {
   NewHead,
   EmittedEvent,
@@ -27,7 +27,7 @@ import type {
   NewHeadsSubscriptionParams,
   PendingTransactionsSubscriptionParams,
   TransactionReceiptsSubscriptionParams,
-} from 'kundera-sn/jsonrpc';
+} from '@kundera-sn/kundera-ts/jsonrpc';
 
 export interface WebSocketProviderOptions {
   url: string;

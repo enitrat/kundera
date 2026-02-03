@@ -4,7 +4,7 @@
 
 import * as Context from "effect/Context";
 import type * as Effect from "effect/Effect";
-import type { RequestArguments } from "kundera-sn/provider";
+import type { RequestArguments } from "@kundera-sn/kundera-ts/provider";
 import { RpcError, TransportError } from "../../errors.js";
 
 export type ProviderShape = {

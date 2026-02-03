@@ -18,7 +18,7 @@ type EthAddressType = Brand<Uint8Array, 'EthAddress'> & FeltMethods;
 Create an EthAddress from any Felt252Input.
 
 ```typescript
-import { EthAddress } from 'kundera-sn';
+import { EthAddress } from '@kundera-sn/kundera-ts';
 
 const addr = EthAddress('0x742d35Cc6634C0532925a3b844Bc9e7595f7BABE');
 const addr2 = EthAddress(0x742d35Cc6634C0532925a3b844Bc9e7595f7BABEn);
@@ -75,7 +75,7 @@ addr.equals(other); // boolean
 When sending messages between Ethereum (L1) and Starknet (L2):
 
 ```typescript
-import { EthAddress, ContractAddress } from 'kundera-sn';
+import { EthAddress, ContractAddress } from '@kundera-sn/kundera-ts';
 
 // L1 contract sending message to L2
 const l1Sender = EthAddress('0x742d35Cc6634C0532925a3b844Bc9e7595f7BABE');

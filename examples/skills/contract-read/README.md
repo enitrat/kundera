@@ -5,7 +5,7 @@ Read-only contract calls with ABI encoding/decoding. Copy into your project.
 ## Quick Start
 
 ```ts
-import { httpTransport } from 'kundera-sn/transport';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
 import { readContract } from './skills/contract-read';
 
 const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');

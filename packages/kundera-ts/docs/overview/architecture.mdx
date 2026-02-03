@@ -42,7 +42,7 @@ Kundera is organized into independent, tree-shakeable modules that compose toget
 
 The foundation—types and cryptography with no external dependencies.
 
-### Primitives (`kundera-sn`)
+### Primitives (`@kundera-sn/kundera-ts`)
 
 Branded types for Starknet values:
 
@@ -55,7 +55,7 @@ Branded types for Starknet values:
 
 All types share the same underlying representation (`Uint8Array`) but are distinguished at the type level.
 
-### Crypto (`kundera-sn/crypto`)
+### Crypto (`@kundera-sn/kundera-ts/crypto`)
 
 Cryptographic operations with pluggable backends:
 
@@ -73,12 +73,12 @@ The crypto module auto-selects the fastest available backend (native > WASM > JS
 
 Higher-level modules that compose primitives and crypto.
 
-### Transport (`kundera-sn/transport`)
+### Transport (`@kundera-sn/kundera-ts/transport`)
 
 Network communication with Starknet nodes:
 
 ```typescript
-import { httpTransport } from 'kundera-sn/transport';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
 
 const transport = httpTransport(
   'https://api.zan.top/public/starknet-sepolia',
@@ -91,12 +91,12 @@ Features:
 - JSON-RPC request batching
 - Subscription support over WebSocket
 
-### JSON-RPC (`kundera-sn/jsonrpc`)
+### JSON-RPC (`@kundera-sn/kundera-ts/jsonrpc`)
 
 Tree-shakeable JSON-RPC methods:
 
 ```typescript
-import { starknet_call, starknet_getTransactionReceipt } from 'kundera-sn/jsonrpc';
+import { starknet_call, starknet_getTransactionReceipt } from '@kundera-sn/kundera-ts/jsonrpc';
 
 // Each method is independently importable
 const result = await starknet_call(transport, request);
@@ -104,12 +104,12 @@ const result = await starknet_call(transport, request);
 
 Every Starknet JSON-RPC method is a separate export—import only what you use.
 
-### ABI (`kundera-sn/abi`)
+### ABI (`@kundera-sn/kundera-ts/abi`)
 
 Encode and decode calldata:
 
 ```typescript
-import { encodeCalldata, decodeOutputObject } from 'kundera-sn/abi';
+import { encodeCalldata, decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
 
 const encoded = encodeCalldata(abi, 'transfer', [recipient, amount]);
 if (encoded.error) {
@@ -123,12 +123,12 @@ if (decoded.error) {
 const result = decoded.result;
 ```
 
-### Serde (`kundera-sn/serde`)
+### Serde (`@kundera-sn/kundera-ts/serde`)
 
 Serialize Cairo types to felts:
 
 ```typescript
-import { serialize, deserialize } from 'kundera-sn/serde';
+import { serialize, deserialize } from '@kundera-sn/kundera-ts/serde';
 
 // Cairo struct → felt array
 const felts = serialize(schema, { x: 1n, y: 2n });
@@ -141,26 +141,26 @@ const point = deserialize(schema, felts);
 
 Pluggable backend for cryptographic operations.
 
-### Native (`kundera-sn/native`)
+### Native (`@kundera-sn/kundera-ts/native`)
 
 Uses Rust FFI for maximum performance. Available in:
 - **Bun** (built-in FFI)
 - **Node.js** (requires `ffi-napi`)
 
 ```typescript
-import { isNativeAvailable } from 'kundera-sn/native';
+import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
 
 if (isNativeAvailable()) {
   // Using native crypto
 }
 ```
 
-### WASM (`kundera-sn/wasm`)
+### WASM (`@kundera-sn/kundera-ts/wasm`)
 
 WebAssembly module for browsers and portable environments:
 
 ```typescript
-import { loadWasmCrypto, isWasmLoaded } from 'kundera-sn/wasm';
+import { loadWasmCrypto, isWasmLoaded } from '@kundera-sn/kundera-ts/wasm';
 
 await loadWasmCrypto();
 // Now crypto functions use WASM backend
@@ -216,23 +216,23 @@ Reading an ERC-20 balance:
 ### Minimal (just primitives)
 
 ```typescript
-import { Felt252, ContractAddress } from 'kundera-sn';
+import { Felt252, ContractAddress } from '@kundera-sn/kundera-ts';
 ```
 
 ### Read-only app
 
 ```typescript
-import { ContractAddress } from 'kundera-sn';
-import { starknet_call } from 'kundera-sn/jsonrpc';
-import { httpTransport } from 'kundera-sn/transport';
+import { ContractAddress } from '@kundera-sn/kundera-ts';
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
 ```
 
 ### Full signing capability
 
 ```typescript
-import { ContractAddress } from 'kundera-sn';
-import { sign, pedersen } from 'kundera-sn/crypto';
-import { loadWasmCrypto } from 'kundera-sn/wasm';
+import { ContractAddress } from '@kundera-sn/kundera-ts';
+import { sign, pedersen } from '@kundera-sn/kundera-ts/crypto';
+import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
 ```
 
 ## Related

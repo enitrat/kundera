@@ -5,7 +5,7 @@
  * Uses bun:ffi in Bun, ffi-napi in Node.
  *
  * Usage:
- *   import * as kundera from 'kundera-sn/native';
+ *   import * as kundera from '@kundera-sn/kundera-ts/native';
  *   const hash = kundera.pedersenHash(a, b); // Uses native FFI
  */
 

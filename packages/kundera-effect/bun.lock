@@ -2,20 +2,20 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "kundera-effect",
+      "name": "@kundera-sn/kundera-effect",
       "devDependencies": {
         "effect": "^3.19.0",
-        "kundera-sn": "file:..",
+        "@kundera-sn/kundera-ts": "file:..",
         "tsup": "^8.4.0",
         "typescript": "^5.9.3",
         "vitest": "^2.1.8",
       },
       "peerDependencies": {
         "effect": "^3.19.0",
-        "kundera-sn": "^0.0.1",
+        "@kundera-sn/kundera-ts": "^0.0.1",
       },
       "optionalPeers": [
-        "kundera-sn",
+        "@kundera-sn/kundera-ts",
       ],
     },
   },
@@ -262,7 +262,7 @@
 
     "jsonfile": ["jsonfile@6.2.0", "", { "dependencies": { "universalify": "^2.0.0" }, "optionalDependencies": { "graceful-fs": "^4.1.6" } }, "sha512-FGuPw30AdOIUTRMC2OMRtQV+jkVj2cfPqSeWXv1NEAJ1qZ5zb1X6z1mFhbfOB/iy3ssJCD+3KuZ8r8C3uVFlAg=="],
 
-    "kundera-sn": ["kundera-sn@file:..", { "devDependencies": { "@biomejs/biome": "^1.9.0", "starknet": "6.23.1", "tsup": "^8.0.0", "typescript": "^5.7.0", "vitest": "^2.0.0" }, "optionalDependencies": { "ffi-napi": "^4.0.3", "ref-napi": "^3.0.3" } }],
+    "@kundera-sn/kundera-ts": ["@kundera-sn/kundera-ts@file:..", { "devDependencies": { "@biomejs/biome": "^1.9.0", "starknet": "6.23.1", "tsup": "^8.0.0", "typescript": "^5.7.0", "vitest": "^2.0.0" }, "optionalDependencies": { "ffi-napi": "^4.0.3", "ref-napi": "^3.0.3" } }],
 
     "lilconfig": ["lilconfig@3.1.3", "", {}, ""],
 

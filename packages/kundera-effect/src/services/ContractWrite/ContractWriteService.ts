@@ -1,8 +1,8 @@
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
 import type * as Effect from "effect/Effect";
-import type { Abi, CairoValue } from "kundera-sn/abi";
-import type { AddInvokeTransactionResult } from "kundera-sn/jsonrpc";
+import type { Abi, CairoValue } from "@kundera-sn/kundera-ts/abi";
+import type { AddInvokeTransactionResult } from "@kundera-sn/kundera-ts/jsonrpc";
 import type { ResourceBoundsInput } from "../Account/AccountService.js";
 import type { InvokeParams } from "../Signer/SignerService.js";
 import type { NonceManagerService } from "../NonceManager/NonceManagerService.js";

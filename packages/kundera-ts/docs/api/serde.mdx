@@ -17,7 +17,7 @@ import {
   serializeByteArray,
   // Namespace
   CairoSerde,
-} from 'kundera-sn/serde';
+} from '@kundera-sn/kundera-ts/serde';
 ```
 
 ## u256 Serialization
@@ -113,7 +113,7 @@ const serialized = serializeByteArray(text);
 All functions are also available under a namespace:
 
 ```typescript
-import { CairoSerde } from 'kundera-sn/serde';
+import { CairoSerde } from '@kundera-sn/kundera-ts/serde';
 
 const [low, high] = CairoSerde.serializeU256(1000n);
 const value = CairoSerde.deserializeU256([low, high]);
@@ -123,7 +123,7 @@ const value = CairoSerde.deserializeU256([low, high]);
 
 | Scenario | Recommended API |
 |----------|-----------------|
-| Contract calls | `encodeCalldata` from `kundera-sn/abi` |
+| Contract calls | `encodeCalldata` from `@kundera-sn/kundera-ts/abi` |
 | Manual calldata building | `serializeU256`, `serializeArray` |
 | Custom serialization | Serde functions directly |
 
@@ -134,8 +134,8 @@ For most use cases, the ABI module handles serialization automatically. Use the 
 ## Example: Manual Calldata
 
 ```typescript
-import { serializeU256, serializeArray } from 'kundera-sn/serde';
-import { Felt252 } from 'kundera-sn';
+import { serializeU256, serializeArray } from '@kundera-sn/kundera-ts/serde';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 // Build transfer calldata manually
 const recipient = Felt252('0x123...');
@@ -147,8 +147,8 @@ const calldata = [recipient, amountLow, amountHigh];
 ## Example: Batch Serialization
 
 ```typescript
-import { serializeArray, serializeU256 } from 'kundera-sn/serde';
-import { Felt252 } from 'kundera-sn';
+import { serializeArray, serializeU256 } from '@kundera-sn/kundera-ts/serde';
+import { Felt252 } from '@kundera-sn/kundera-ts';
 
 // Serialize array of u256 values
 const amounts = [100n, 200n, 300n];

@@ -4,8 +4,8 @@
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import type { JsonRpcRequest, JsonRpcResponse } from "kundera-sn/transport";
-import { isJsonRpcError, matchBatchResponses } from "kundera-sn/transport";
+import type { JsonRpcRequest, JsonRpcResponse } from "@kundera-sn/kundera-ts/transport";
+import { isJsonRpcError, matchBatchResponses } from "@kundera-sn/kundera-ts/transport";
 import { RpcError, TransportError } from "../../errors.js";
 import { RpcBatchService } from "./RpcBatchService.js";
 import { TransportService } from "../Transport/TransportService.js";

@@ -4,7 +4,7 @@ import * as Layer from "effect/Layer";
 import { ProviderService } from "../Provider/index.js";
 import { Contract } from "./Contract.js";
 import { ContractService } from "./ContractService.js";
-import type { Abi } from "kundera-sn/abi";
+import type { Abi } from "@kundera-sn/kundera-ts/abi";
 
 const ERC20_ABI: Abi = [
   {

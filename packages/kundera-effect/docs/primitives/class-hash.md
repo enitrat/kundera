@@ -20,7 +20,7 @@ type ClassHashType = bigint & { readonly _tag: "ClassHash" }
 Create a ClassHash from a felt input.
 
 ```typescript
-import * as ClassHash from "kundera-effect/primitives/ClassHash";
+import * as ClassHash from "@kundera-sn/kundera-effect/primitives/ClassHash";
 
 const hash = yield* ClassHash.from("0x07b3e05f48f0c69e4a65ce5e076a66271a527aff2c34ce1083ec6e1526997a69");
 // Effect<ClassHashType, PrimitiveError>
@@ -30,8 +30,8 @@ const hash = yield* ClassHash.from("0x07b3e05f48f0c69e4a65ce5e076a66271a527aff2c
 
 ```typescript
 import { Effect } from "effect";
-import * as ClassHash from "kundera-effect/primitives/ClassHash";
-import * as Crypto from "kundera-effect/crypto";
+import * as ClassHash from "@kundera-sn/kundera-effect/primitives/ClassHash";
+import * as Crypto from "@kundera-sn/kundera-effect/crypto";
 
 const program = Effect.gen(function* () {
   // Compute class hash from Sierra contract

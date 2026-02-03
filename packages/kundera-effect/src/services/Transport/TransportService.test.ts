@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as Effect from "effect/Effect";
 import * as Either from "effect/Either";
-import type { JsonRpcRequest, JsonRpcResponse, Transport } from "kundera-sn/transport";
+import type { JsonRpcRequest, JsonRpcResponse, Transport } from "@kundera-sn/kundera-ts/transport";
 import { makeTransportService } from "./TransportService.js";
 
 describe("TransportService", () => {

@@ -19,7 +19,7 @@ const block = await provider.blockNumber();
 
 ## Notes
 
-- All methods are thin wrappers around `kundera-sn/jsonrpc` functions.
+- All methods are thin wrappers around `@kundera-sn/kundera-ts/jsonrpc` functions.
 - Add/remove methods to match your app's needs.
 - `provider.transport` exposes the low-level transport for custom calls.
 - For batching/retries, use the `http-transport` skill and pass it as `transport`.

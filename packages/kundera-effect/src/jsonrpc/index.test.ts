@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import * as Effect from "effect/Effect";
 import * as Either from "effect/Either";
-import { ContractAddress } from "kundera-sn/ContractAddress";
-import { Felt252 } from "kundera-sn/Felt252";
+import { ContractAddress } from "@kundera-sn/kundera-ts/ContractAddress";
+import { Felt252 } from "@kundera-sn/kundera-ts/Felt252";
 import type {
   JsonRpcRequest,
   JsonRpcResponse,
   Transport,
   TransportRequestOptions
-} from "kundera-sn/transport";
+} from "@kundera-sn/kundera-ts/transport";
 import * as Rpc from "./index.js";
 
 function createMockTransport<T = unknown>(

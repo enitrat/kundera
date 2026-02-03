@@ -22,8 +22,8 @@ All primitive constructors return `Effect<T, PrimitiveError>` for type-safe erro
 
 ```typescript
 import { Effect } from 'effect';
-import * as Felt252 from 'kundera-effect/primitives/Felt252';
-import * as ContractAddress from 'kundera-effect/primitives/ContractAddress';
+import * as Felt252 from '@kundera-sn/kundera-effect/primitives/Felt252';
+import * as ContractAddress from '@kundera-sn/kundera-effect/primitives/ContractAddress';
 
 const program = Effect.gen(function* () {
   // Parse from various formats

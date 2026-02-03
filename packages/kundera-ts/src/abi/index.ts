@@ -5,7 +5,7 @@
  *
  * @example
  * ```ts
- * import { encodeCalldata, decodeEvent } from 'kundera-sn/abi';
+ * import { encodeCalldata, decodeEvent } from '@kundera-sn/kundera-ts/abi';
  *
  * // Encode function calldata
  * const result = encodeCalldata(abi, 'transfer', [recipient, amount]);

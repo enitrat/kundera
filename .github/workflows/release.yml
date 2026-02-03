@@ -48,7 +48,7 @@ jobs:
         run: cargo build --release
 
       - name: Package native
-        run: pnpm --filter kundera-sn package:native
+        run: pnpm --filter @kundera-sn/kundera-ts package:native
 
       - name: Upload native artifact
         uses: actions/upload-artifact@v4
@@ -97,13 +97,13 @@ jobs:
           path: packages/kundera-ts/native
 
       - name: Build dist
-        run: pnpm --filter kundera-sn build:dist
+        run: pnpm --filter @kundera-sn/kundera-ts build:dist
 
       - name: Build types
-        run: pnpm --filter kundera-sn build:types
+        run: pnpm --filter @kundera-sn/kundera-ts build:types
 
       - name: Build WASM
-        run: pnpm --filter kundera-sn build:wasm
+        run: pnpm --filter @kundera-sn/kundera-ts build:wasm
 
       - name: Upload release assets
         if: ${{ github.event_name == 'release' }}
@@ -119,7 +119,8 @@ jobs:
         run: |
           if [ -n "$NPM_TOKEN" ]; then
             npm config set //registry.npmjs.org/:_authToken $NPM_TOKEN
-            pnpm --filter kundera-sn publish --access public --no-git-checks
+            pnpm --filter @kundera-sn/kundera-ts publish --access public --no-git-checks
+            pnpm --filter @kundera-sn/kundera-effect publish --access public --no-git-checks
           else
             echo "NPM_TOKEN not set, skipping publish"
           fi

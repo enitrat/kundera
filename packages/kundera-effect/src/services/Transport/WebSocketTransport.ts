@@ -7,7 +7,7 @@ import {
   webSocketTransport,
   type WebSocketTransportOptions,
   type WebSocketTransport as WebSocketTransportInstance
-} from "kundera-sn/transport";
+} from "@kundera-sn/kundera-ts/transport";
 import {
   makeTransportService,
   type TransportConfig,

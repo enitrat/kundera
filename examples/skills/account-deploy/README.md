@@ -5,8 +5,8 @@ Deploy account contracts with a signer.
 ## Quick Start
 
 ```ts
-import { httpTransport } from 'kundera-sn/transport';
-import { signRaw, signatureToArray } from 'kundera-sn/crypto';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { signRaw, signatureToArray } from '@kundera-sn/kundera-ts/crypto';
 import { createAccountDeployer } from './skills/account-deploy';
 
 const transport = httpTransport('https://starknet-mainnet.public.blastapi.io');

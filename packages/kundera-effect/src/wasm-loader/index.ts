@@ -1,4 +1,4 @@
-import type { Felt252Type } from "kundera-sn/Felt252";
+import type { Felt252Type } from "@kundera-sn/kundera-ts/Felt252";
 import {
   loadWasmCrypto as loadWasmCryptoBase,
   isWasmAvailable as isWasmAvailableBase,
@@ -24,7 +24,7 @@ import {
   ErrorCode,
   type WasmExports,
   type WasmInstance
-} from "kundera-sn/wasm-loader";
+} from "@kundera-sn/kundera-ts/wasm-loader";
 import { tryCrypto, tryCryptoPromise } from "../crypto/utils.js";
 
 export { CryptoError } from "../errors.js";

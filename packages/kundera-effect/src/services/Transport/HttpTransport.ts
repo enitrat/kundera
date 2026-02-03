@@ -3,7 +3,7 @@
  */
 
 import * as Layer from "effect/Layer";
-import { httpTransport, type HttpTransportOptions } from "kundera-sn/transport";
+import { httpTransport, type HttpTransportOptions } from "@kundera-sn/kundera-ts/transport";
 import {
   makeTransportService,
   type TransportConfig,

@@ -34,7 +34,7 @@ deployContract(classHash, address); // TypeScript error!
 Create a ContractAddress from any Felt252Input.
 
 ```typescript
-import { ContractAddress } from 'kundera-sn';
+import { ContractAddress } from '@kundera-sn/kundera-ts';
 
 const addr = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
 const addr2 = ContractAddress(123n);
@@ -91,7 +91,7 @@ addr.equals(other); // boolean
 ## Validation Example
 
 ```typescript
-import { ContractAddress } from 'kundera-sn';
+import { ContractAddress } from '@kundera-sn/kundera-ts';
 
 function getBalance(address: string): bigint {
   // Validate before use
@@ -113,7 +113,7 @@ function getBalanceStrict(address: string): bigint {
 ## Aliases
 
 ```typescript
-import { Address } from 'kundera-sn';
+import { Address } from '@kundera-sn/kundera-ts';
 
 // Address === ContractAddress
 const a = Address('0x123');

@@ -4,13 +4,13 @@
  * Deploy account contracts with a signer.
  */
 
-import type { Transport } from 'kundera-sn/transport';
+import type { Transport } from '@kundera-sn/kundera-ts/transport';
 import {
   starknet_chainId,
   starknet_addDeployAccountTransaction,
   starknet_estimateFee,
-} from 'kundera-sn/jsonrpc';
-import type { AddDeployAccountTransactionResult, BroadcastedDeployAccountTxn, FeeEstimate, SimulationFlag } from 'kundera-sn/jsonrpc';
+} from '@kundera-sn/kundera-ts/jsonrpc';
+import type { AddDeployAccountTransactionResult, BroadcastedDeployAccountTxn, FeeEstimate, SimulationFlag } from '@kundera-sn/kundera-ts/jsonrpc';
 import {
   computeContractAddress,
   computeDeployAccountV3Hash,
@@ -21,8 +21,8 @@ import {
   type ResourceBoundsMapping,
   type SignatureArray,
   type UniversalDetails,
-} from 'kundera-sn/crypto';
-import { Felt252, type Felt252Input } from 'kundera-sn';
+} from '@kundera-sn/kundera-ts/crypto';
+import { Felt252, type Felt252Input } from '@kundera-sn/kundera-ts';
 
 export type SignTransaction = (
   hash: Felt252Input,

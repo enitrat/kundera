@@ -8,8 +8,8 @@ Kundera exposes Starknet JSON-RPC methods as individual, tree-shakeable function
 ## Usage
 
 ```ts
-import { httpTransport } from 'kundera-sn/transport';
-import { starknet_getNonce, starknet_blockNumber } from 'kundera-sn/jsonrpc';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { starknet_getNonce, starknet_blockNumber } from '@kundera-sn/kundera-ts/jsonrpc';
 
 const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 
@@ -22,8 +22,8 @@ const nonce = await starknet_getNonce(transport, '0xabc');
 Use request builders when you want to plug into a provider or custom batching pipeline.
 
 ```ts
-import { HttpProvider } from 'kundera-sn/provider';
-import { Starknet } from 'kundera-sn/jsonrpc';
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
 
 const provider = new HttpProvider('https://api.zan.top/public/starknet-sepolia');
 
@@ -36,8 +36,8 @@ const blockNumber = await provider.request<string>(req);
 All builders return `RequestArguments` compatible with `HttpProvider` and `WebSocketProvider`:
 
 ```ts
-import { WebSocketProvider } from 'kundera-sn/provider';
-import { Starknet } from 'kundera-sn/jsonrpc';
+import { WebSocketProvider } from '@kundera-sn/kundera-ts/provider';
+import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
 
 const ws = new WebSocketProvider('wss://api.zan.top/public/starknet-sepolia');
 const status = await ws.request(
@@ -49,4 +49,4 @@ const status = await ws.request(
 
 - Each `starknet_*` function accepts a `Transport` instance as its first argument.
 - Import only what you use for best tree-shaking.
-- For batching, use `transport.requestBatch` with `createRequest` from `kundera-sn/transport`.
+- For batching, use `transport.requestBatch` with `createRequest` from `@kundera-sn/kundera-ts/transport`.

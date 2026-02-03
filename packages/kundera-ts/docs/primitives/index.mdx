@@ -56,10 +56,10 @@ felt.equals(other); // true/false
 
 ```typescript
 // Import specific types
-import { Felt252, ContractAddress, ClassHash } from 'kundera-sn';
+import { Felt252, ContractAddress, ClassHash } from '@kundera-sn/kundera-ts';
 
 // Import with aliases
-import { Felt, Address, Class, Storage } from 'kundera-sn';
+import { Felt, Address, Class, Storage } from '@kundera-sn/kundera-ts';
 
 // Felt === Felt252
 // Address === ContractAddress
@@ -70,7 +70,7 @@ import { Felt, Address, Class, Storage } from 'kundera-sn';
 ## Constants
 
 ```typescript
-import { FIELD_PRIME, MAX_ADDRESS, MAX_ETH_ADDRESS } from 'kundera-sn';
+import { FIELD_PRIME, MAX_ADDRESS, MAX_ETH_ADDRESS } from '@kundera-sn/kundera-ts';
 
 FIELD_PRIME;      // 2^251 + 17*2^192 + 1
 MAX_ADDRESS;      // 2^251 (for ContractAddress, ClassHash, StorageKey)

@@ -1,8 +1,8 @@
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
 import type * as Effect from "effect/Effect";
-import type { BroadcastedInvokeTxn } from "kundera-sn/jsonrpc";
-import type { ResourceBoundsMapping as RpcResourceBounds } from "kundera-sn/jsonrpc";
+import type { BroadcastedInvokeTxn } from "@kundera-sn/kundera-ts/jsonrpc";
+import type { ResourceBoundsMapping as RpcResourceBounds } from "@kundera-sn/kundera-ts/jsonrpc";
 
 export type ResourceBoundsInput = {
   l1_gas: { max_amount: bigint; max_price_per_unit: bigint };

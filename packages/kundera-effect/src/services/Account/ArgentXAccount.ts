@@ -5,11 +5,11 @@ import {
   computeSelector,
   type InvokeTransactionV3,
   type ResourceBoundsMapping
-} from "kundera-sn/crypto";
-import { getPublicKey } from "kundera-sn/crypto";
-import { signRaw } from "kundera-sn/crypto";
-import { Felt252, type Felt252Type } from "kundera-sn/Felt252";
-import type { BroadcastedInvokeTxn } from "kundera-sn/jsonrpc";
+} from "@kundera-sn/kundera-ts/crypto";
+import { getPublicKey } from "@kundera-sn/kundera-ts/crypto";
+import { signRaw } from "@kundera-sn/kundera-ts/crypto";
+import { Felt252, type Felt252Type } from "@kundera-sn/kundera-ts/Felt252";
+import type { BroadcastedInvokeTxn } from "@kundera-sn/kundera-ts/jsonrpc";
 import { AccountError, AccountService, type InvokeV3Params, type ResourceBoundsInput } from "./AccountService.js";
 
 export type ArgentXAccountConfig = {

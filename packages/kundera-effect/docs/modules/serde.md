@@ -10,7 +10,7 @@ The `Serde` module provides Cairo-compatible serialization and deserialization u
 ## Import
 
 ```typescript
-import * as Serde from "kundera-effect/serde";
+import * as Serde from "@kundera-sn/kundera-effect/serde";
 ```
 
 ## U256 Serialization
@@ -70,7 +70,7 @@ const felts = yield* Serde.serializeByteArray(
 ## Namespace Form
 
 ```typescript
-import { CairoSerde } from "kundera-effect/serde";
+import { CairoSerde } from "@kundera-sn/kundera-effect/serde";
 
 const [low, high] = yield* CairoSerde.serializeU256(value);
 const value = yield* CairoSerde.deserializeU256([low, high]);
@@ -83,8 +83,8 @@ const felts = yield* CairoSerde.serializeByteArray(bytes);
 
 ```typescript
 import { Effect } from "effect";
-import * as Serde from "kundera-effect/serde";
-import * as Felt252 from "kundera-effect/primitives/Felt252";
+import * as Serde from "@kundera-sn/kundera-effect/serde";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
 
 const program = Effect.gen(function* () {
   // Serialize a u256 for contract call
@@ -112,7 +112,7 @@ const program = Effect.gen(function* () {
 
 ```typescript
 import { Effect } from "effect";
-import * as Serde from "kundera-effect/serde";
+import * as Serde from "@kundera-sn/kundera-effect/serde";
 
 const program = Effect.gen(function* () {
   // Response from contract: [3n, 0x1n, 0x2n, 0x3n, lowAmount, highAmount]

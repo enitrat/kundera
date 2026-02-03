@@ -19,7 +19,7 @@ import {
   computeSelector,
   encodeValue,
   decodeEventBySelector,
-} from 'kundera-sn/abi';
+} from '@kundera-sn/kundera-ts/abi';
 
 // ============ ABI Caching ============
 

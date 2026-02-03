@@ -21,7 +21,7 @@ const MAX_SHORT_STRING_LENGTH = 31;
 Create a ShortString from a string.
 
 ```typescript
-import * as ShortString from "kundera-effect/primitives/ShortString";
+import * as ShortString from "@kundera-sn/kundera-effect/primitives/ShortString";
 
 const short = yield* ShortString.from("hello");
 // Effect<Felt252Type, PrimitiveError>
@@ -31,8 +31,8 @@ const short = yield* ShortString.from("hello");
 
 ```typescript
 import { Effect } from "effect";
-import * as ShortString from "kundera-effect/primitives/ShortString";
-import * as Abi from "kundera-effect/abi";
+import * as ShortString from "@kundera-sn/kundera-effect/primitives/ShortString";
+import * as Abi from "@kundera-sn/kundera-effect/abi";
 
 const program = Effect.gen(function* () {
   // Encode a short string
@@ -55,10 +55,10 @@ Short strings must be:
 - ASCII only (code points 0-127)
 - Maximum 31 characters
 
-For longer strings, use `kundera-effect/serde` with `serializeByteArray`:
+For longer strings, use `@kundera-sn/kundera-effect/serde` with `serializeByteArray`:
 
 ```typescript
-import * as Serde from "kundera-effect/serde";
+import * as Serde from "@kundera-sn/kundera-effect/serde";
 
 // For strings > 31 characters
 const felts = yield* Serde.serializeByteArray(

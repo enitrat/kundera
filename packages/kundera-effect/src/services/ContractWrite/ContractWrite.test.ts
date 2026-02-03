@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import type { Abi } from "kundera-sn/abi";
-import { compileCalldata } from "kundera-sn/abi";
+import type { Abi } from "@kundera-sn/kundera-ts/abi";
+import { compileCalldata } from "@kundera-sn/kundera-ts/abi";
 import { SignerService } from "../Signer/SignerService.js";
 import { ContractWrite } from "./ContractWrite.js";
 import { ContractWriteService } from "./ContractWriteService.js";

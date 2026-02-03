@@ -20,7 +20,7 @@ type StorageKeyType = bigint & { readonly _tag: "StorageKey" }
 Create a StorageKey from a felt input.
 
 ```typescript
-import * as StorageKey from "kundera-effect/primitives/StorageKey";
+import * as StorageKey from "@kundera-sn/kundera-effect/primitives/StorageKey";
 
 const key = yield* StorageKey.from("0x123");
 // Effect<StorageKeyType, PrimitiveError>
@@ -30,8 +30,8 @@ const key = yield* StorageKey.from("0x123");
 
 ```typescript
 import { Effect } from "effect";
-import * as StorageKey from "kundera-effect/primitives/StorageKey";
-import * as Rpc from "kundera-effect/jsonrpc";
+import * as StorageKey from "@kundera-sn/kundera-effect/primitives/StorageKey";
+import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
 
 const program = Effect.gen(function* () {
   const key = yield* StorageKey.from("0x110e2f729c9c2b988559994a3daccd838cf52faf88e18101373e67dd061455a");

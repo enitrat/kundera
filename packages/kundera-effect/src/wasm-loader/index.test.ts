@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as Effect from "effect/Effect";
 import * as Either from "effect/Either";
-import { Felt252 } from "kundera-sn/Felt252";
+import { Felt252 } from "@kundera-sn/kundera-ts/Felt252";
 import * as WasmLoader from "./index.js";
 
 describe("wasm-loader effect wrappers", () => {

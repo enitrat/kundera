@@ -10,7 +10,7 @@ Kundera provides type-safe encoding and decoding of Starknet calldata. The ABI m
 Use `encodeCalldata` to encode arguments for a contract function:
 
 ```typescript
-import { encodeCalldata } from 'kundera-sn/abi';
+import { encodeCalldata } from '@kundera-sn/kundera-ts/abi';
 
 const abi = [...]; // Your contract ABI
 
@@ -44,7 +44,7 @@ const { result } = encodeCalldata(abi, 'transfer', {
 Decode encoded calldata back to values:
 
 ```typescript
-import { decodeCalldata } from 'kundera-sn/abi';
+import { decodeCalldata } from '@kundera-sn/kundera-ts/abi';
 
 const calldata = [0xdeadbeefn, 1000n, 0n]; // recipient, amount_low, amount_high
 
@@ -61,7 +61,7 @@ if (!error) {
 Decode return values from contract calls:
 
 ```typescript
-import { decodeOutput } from 'kundera-sn/abi';
+import { decodeOutput } from '@kundera-sn/kundera-ts/abi';
 
 // Raw output from balance_of (u256 = [low, high])
 const rawOutput = [1000n, 0n];
@@ -130,7 +130,7 @@ const { result: r2 } = encodeCalldata(abi, 'process_enum', [
 For fine-grained control, use `encodeValue` and `decodeValue`:
 
 ```typescript
-import { parseAbi, encodeValue, decodeValue } from 'kundera-sn/abi';
+import { parseAbi, encodeValue, decodeValue } from '@kundera-sn/kundera-ts/abi';
 
 const { result: parsedAbi } = parseAbi(abi);
 

@@ -1,4 +1,4 @@
-# kundera-effect Type Errors Report
+# @kundera-sn/kundera-effect Type Errors Report
 
 **Generated**: 2026-02-02
 **Status**: ❌ BLOCKING - Package cannot build
@@ -6,18 +6,18 @@
 
 ## Executive Summary
 
-The `kundera-effect` package has **121+ type errors** preventing compilation. The errors stem from missing exports in the main `kundera-sn` package that `kundera-effect` depends on.
+The `@kundera-sn/kundera-effect` package has **121+ type errors** preventing compilation. The errors stem from missing exports in the main `@kundera-sn/kundera-ts` package that `@kundera-sn/kundera-effect` depends on.
 
-**Root Cause**: `kundera-effect` was developed against a different/incomplete version of the main package API. Many types and functions it expects are either:
-1. Not implemented in `kundera-sn`
+**Root Cause**: `@kundera-sn/kundera-effect` was developed against a different/incomplete version of the main package API. Many types and functions it expects are either:
+1. Not implemented in `@kundera-sn/kundera-ts`
 2. Implemented but not exported
 3. Named differently
 
 ## Error Breakdown by Module
 
-### 1. ABI Module (`kundera-sn/abi`)
+### 1. ABI Module (`@kundera-sn/kundera-ts/abi`)
 
-#### ✅ FOUND - Correctly exported in kundera-sn
+#### ✅ FOUND - Correctly exported in @kundera-sn/kundera-ts
 The following ARE exported from `src/abi/index.ts`:
 - `CompiledSierra`
 - `CompiledSierraCasm`
@@ -36,7 +36,7 @@ Despite being exported, TypeScript cannot find them. This suggests:
 - Export path issue in package.json
 - Module resolution issue
 
-### 2. Crypto Module (`kundera-sn/crypto`)
+### 2. Crypto Module (`@kundera-sn/kundera-ts/crypto`)
 
 #### ❌ MISSING - Expected but not found (40+ exports)
 
@@ -89,9 +89,9 @@ Despite being exported, TypeScript cannot find them. This suggests:
 - `TypedData`
 - `SignatureArray`
 
-**Status**: Main `kundera-sn/crypto` only exports basic hash/sign functions (Pedersen, Poseidon, ECDSA). Transaction-related crypto is NOT implemented.
+**Status**: Main `@kundera-sn/kundera-ts/crypto` only exports basic hash/sign functions (Pedersen, Poseidon, ECDSA). Transaction-related crypto is NOT implemented.
 
-### 3. RPC Module (`kundera-sn/jsonrpc`)
+### 3. RPC Module (`@kundera-sn/kundera-ts/jsonrpc`)
 
 #### ❌ MISSING - Expected but not found (50+ exports)
 
@@ -167,15 +167,15 @@ Despite being exported, TypeScript cannot find them. This suggests:
 
 **Status**: Main RPC module exists but many types are declared internally and not exported.
 
-### 4. Transport Module (`kundera-sn/transport`)
+### 4. Transport Module (`@kundera-sn/kundera-ts/transport`)
 
 #### ❌ COMPLETELY MISSING
 
-**Error**: `Cannot find module 'kundera-sn/transport'`
+**Error**: `Cannot find module '@kundera-sn/kundera-ts/transport'`
 
 The transport module doesn't exist or isn't properly exported in the main package's `package.json` exports.
 
-### 5. Primitives Module (`kundera-sn`)
+### 5. Primitives Module (`@kundera-sn/kundera-ts`)
 
 #### ❌ MISSING
 
@@ -204,12 +204,12 @@ The transport module doesn't exist or isn't properly exported in the main packag
 
 Even for functions that exist, signatures have changed:
 
-**kundera-effect expects:**
+**@kundera-sn/kundera-effect expects:**
 ```typescript
 encodeCalldata(abi, functionName, args): Result<Felt252[], AbiError>
 ```
 
-**kundera-sn provides:**
+**@kundera-sn/kundera-ts provides:**
 ```typescript
 encodeCalldata(abi, functionName, args, resultType?): Result<...>
 ```
@@ -218,7 +218,7 @@ Extra parameter `resultType` breaks compatibility.
 
 ### Declaration vs Export Issues
 
-Some types are **declared** in kundera-sn but not **exported**:
+Some types are **declared** in @kundera-sn/kundera-ts but not **exported**:
 - `FeeEstimate` (line 197)
 - `EmittedEvent` (line 203)
 - `TxnWithHash` (line 205)
@@ -232,7 +232,7 @@ Some types are **declared** in kundera-sn but not **exported**:
 - ❌ Tests: **CANNOT RUN** (won't compile)
 - ❌ npm publish: **WILL FAIL**
 
-### Affected Modules in kundera-effect
+### Affected Modules in @kundera-sn/kundera-effect
 - ❌ `src/abi/index.ts` - 10+ errors
 - ❌ `src/crypto/index.ts` - 40+ errors
 - ❌ `src/jsonrpc/index.ts` - 50+ errors
@@ -258,7 +258,7 @@ Some types are **declared** in kundera-sn but not **exported**:
 4. Fix EthAddress naming inconsistency
 5. Add missing constants
 
-**Pros**: kundera-sn becomes feature-complete
+**Pros**: @kundera-sn/kundera-ts becomes feature-complete
 **Cons**: Significant development work required
 
 ### Option 2: Fix Effect Package (Reduce Dependencies)
@@ -288,10 +288,10 @@ Some types are **declared** in kundera-sn but not **exported**:
 **Effort**: LOW
 **Impact**: MEDIUM
 
-1. Accept that kundera-effect is for a future version
+1. Accept that @kundera-sn/kundera-effect is for a future version
 2. Keep it in the repo but don't publish yet
-3. Focus on completing kundera-sn first
-4. Publish kundera-effect when main package is ready
+3. Focus on completing @kundera-sn/kundera-ts first
+4. Publish @kundera-sn/kundera-effect when main package is ready
 
 **Pros**: No rushed/incomplete releases
 **Cons**: Effect integration delayed
@@ -300,17 +300,17 @@ Some types are **declared** in kundera-sn but not **exported**:
 
 **Short Term (Immediate)**:
 1. ❌ Cancel/delete v0.0.2 release (will fail anyway)
-2. 📝 Document that kundera-effect is WIP
-3. ✅ Focus on kundera-sn stability
+2. 📝 Document that @kundera-sn/kundera-effect is WIP
+3. ✅ Focus on @kundera-sn/kundera-ts stability
 
 **Medium Term (1-2 weeks)**:
-1. Complete missing crypto functions in kundera-sn
+1. Complete missing crypto functions in @kundera-sn/kundera-ts
 2. Export all RPC types properly
 3. Implement transport module
 4. Fix naming inconsistencies
 
 **Long Term**:
-1. Sync kundera-effect with completed API
+1. Sync @kundera-sn/kundera-effect with completed API
 2. Add integration tests between packages
 3. Release both when stable
 
@@ -323,20 +323,20 @@ Some types are **declared** in kundera-sn but not **exported**:
 
 ## Files to Review
 
-**Main Package (`kundera-sn`):**
+**Main Package (`@kundera-sn/kundera-ts`):**
 - `/src/crypto/index.ts` - Missing ~40 exports
 - `/src/jsonrpc/index.ts` - Missing ~50 exports
 - `/src/transport/index.ts` - Module missing or not exported
 - `/src/primitives/index.ts` - EthAddress naming issue
 
-**Effect Package (`kundera-effect`):**
-- `/kundera-effect/src/crypto/index.ts` - Update to match actual API
-- `/kundera-effect/src/jsonrpc/index.ts` - Update to match actual API
-- `/kundera-effect/src/transport/index.ts` - Depends on missing module
+**Effect Package (`@kundera-sn/kundera-effect`):**
+- `/packages/kundera-effect/src/crypto/index.ts` - Update to match actual API
+- `/packages/kundera-effect/src/jsonrpc/index.ts` - Update to match actual API
+- `/packages/kundera-effect/src/transport/index.ts` - Depends on missing module
 
 ---
 
 **Generated by**: Type check analysis
-**Command**: `cd kundera-effect && bun run typecheck`
+**Command**: `cd packages/kundera-effect && bun run typecheck`
 **Total Errors**: 121+
 **Blocking**: YES ❌

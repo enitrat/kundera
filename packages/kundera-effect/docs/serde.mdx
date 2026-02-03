@@ -11,7 +11,7 @@ Cairo serialization operations return `Effect<T, SerdeError>`.
 
 ```typescript
 import { Effect } from 'effect';
-import * as Serde from 'kundera-effect/serde';
+import * as Serde from '@kundera-sn/kundera-effect/serde';
 
 const program = Effect.gen(function* () {
   // Serialize u256 to [low, high] felts
@@ -50,7 +50,7 @@ const felts = yield* Serde.serializeByteArray(
 ## Namespace API
 
 ```typescript
-import { CairoSerde } from 'kundera-effect/serde';
+import { CairoSerde } from '@kundera-sn/kundera-effect/serde';
 
 const [low, high] = yield* CairoSerde.serializeU256(value);
 const value = yield* CairoSerde.deserializeU256([low, high]);

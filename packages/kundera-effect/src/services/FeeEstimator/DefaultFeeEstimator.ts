@@ -1,6 +1,6 @@
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import type { BlockId, BroadcastedTxn, FeeEstimate, SimulationFlag } from "kundera-sn/jsonrpc";
+import type { BlockId, BroadcastedTxn, FeeEstimate, SimulationFlag } from "@kundera-sn/kundera-ts/jsonrpc";
 import type { ResourceBoundsInput } from "../Account/AccountService.js";
 import { ProviderService } from "../Provider/index.js";
 import {

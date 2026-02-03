@@ -1,15 +1,15 @@
 ---
-title: kundera-effect
+title: @kundera-sn/kundera-effect
 description: Effect-TS integration for type-safe, composable Starknet operations
 ---
 
-# kundera-effect
+# @kundera-sn/kundera-effect
 
-**For production applications, we recommend kundera-effect** — Effect-TS integration with typed errors, dependency injection, and composable operations.
+**For production applications, we recommend @kundera-sn/kundera-effect** — Effect-TS integration with typed errors, dependency injection, and composable operations.
 
 ## Why Effect?
 
-| Feature | Plain Kundera | kundera-effect |
+| Feature | Plain Kundera | @kundera-sn/kundera-effect |
 |---------|---------------|----------------|
 | Error handling | try/catch | Typed `Effect<A, E, R>` |
 | Retries | Manual | `Effect.retry({ times: 3 })` |
@@ -21,8 +21,8 @@ description: Effect-TS integration for type-safe, composable Starknet operations
 
 **Plain Kundera:**
 ```typescript
-import { encodeCalldata } from 'kundera-sn/abi';
-import { starknet_call } from 'kundera-sn/jsonrpc';
+import { encodeCalldata } from '@kundera-sn/kundera-ts/abi';
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
 
 try {
   const address = '0x...';
@@ -44,11 +44,11 @@ try {
 }
 ```
 
-**kundera-effect:**
+**@kundera-sn/kundera-effect:**
 ```typescript
 import { Effect } from 'effect';
-import * as Abi from 'kundera-effect/abi';
-import * as Rpc from 'kundera-effect/jsonrpc';
+import * as Abi from '@kundera-sn/kundera-effect/abi';
+import * as Rpc from '@kundera-sn/kundera-effect/jsonrpc';
 
 const program = Effect.gen(function* () {
   const calldata = yield* Abi.encodeCalldata(abi, 'transfer', args);
@@ -64,7 +64,7 @@ const program = Effect.gen(function* () {
 ## Installation
 
 ```bash
-npm install kundera-effect effect kundera-sn
+npm install @kundera-sn/kundera-effect effect @kundera-sn/kundera-ts
 ```
 
 ## Modules
@@ -112,4 +112,4 @@ const program = myOperation.pipe(
 
 ## Full Documentation
 
-See the [kundera-effect package](https://github.com/starknet/kundera/tree/master/packages/kundera-effect/docs) for complete API documentation.
+See the [@kundera-sn/kundera-effect package](https://github.com/starknet/kundera/tree/master/packages/kundera-effect/docs) for complete API documentation.

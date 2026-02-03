@@ -2,12 +2,12 @@ import {
   encodeShortString,
   encodeShortStringHex,
   decodeShortString
-} from "kundera-sn/ShortString";
-import { MAX_SHORT_STRING_LENGTH } from "kundera-sn/Felt252";
-import type { Felt252Type } from "kundera-sn/Felt252";
+} from "@kundera-sn/kundera-ts/ShortString";
+import { MAX_SHORT_STRING_LENGTH } from "@kundera-sn/kundera-ts/Felt252";
+import type { Felt252Type } from "@kundera-sn/kundera-ts/Felt252";
 import { tryPrimitive } from "../utils.js";
 
-export { MAX_SHORT_STRING_LENGTH } from "kundera-sn/Felt252";
+export { MAX_SHORT_STRING_LENGTH } from "@kundera-sn/kundera-ts/Felt252";
 
 export const encode = (value: string) =>
   tryPrimitive(
@@ -33,4 +33,4 @@ export const decode = (value: bigint | string | Felt252Type) =>
     () => decodeShortString(value)
   );
 
-export { encodeShortString, encodeShortStringHex, decodeShortString } from "kundera-sn/ShortString";
+export { encodeShortString, encodeShortStringHex, decodeShortString } from "@kundera-sn/kundera-ts/ShortString";
