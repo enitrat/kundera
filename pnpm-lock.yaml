@@ -41,6 +41,10 @@ importers:
         version: 5.9.3
 
   packages/kundera-effect:
+    dependencies:
+      abi-wan-kanabi:
+        specifier: ^2.2.4
+        version: 2.2.4
     devDependencies:
       '@kundera-sn/kundera-ts':
         specifier: workspace:*
@@ -59,6 +63,10 @@ importers:
         version: 2.1.9(@types/node@22.19.8)
 
   packages/kundera-ts:
+    dependencies:
+      abi-wan-kanabi:
+        specifier: ^2.2.4
+        version: 2.2.4
     optionalDependencies:
       ffi-napi:
         specifier: ^4.0.3
