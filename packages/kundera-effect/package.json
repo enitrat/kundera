@@ -43,6 +43,34 @@
       "types": "./dist/primitives/index.d.ts",
       "import": "./dist/primitives/index.js"
     },
+    "./primitives/Felt252": {
+      "types": "./dist/primitives/Felt252/index.d.ts",
+      "import": "./dist/primitives/Felt252/index.js"
+    },
+    "./primitives/ContractAddress": {
+      "types": "./dist/primitives/ContractAddress/index.d.ts",
+      "import": "./dist/primitives/ContractAddress/index.js"
+    },
+    "./primitives/ClassHash": {
+      "types": "./dist/primitives/ClassHash/index.d.ts",
+      "import": "./dist/primitives/ClassHash/index.js"
+    },
+    "./primitives/Address": {
+      "types": "./dist/primitives/Address/index.d.ts",
+      "import": "./dist/primitives/Address/index.js"
+    },
+    "./primitives/EthAddress": {
+      "types": "./dist/primitives/EthAddress/index.d.ts",
+      "import": "./dist/primitives/EthAddress/index.js"
+    },
+    "./primitives/ShortString": {
+      "types": "./dist/primitives/ShortString/index.d.ts",
+      "import": "./dist/primitives/ShortString/index.js"
+    },
+    "./primitives/StorageKey": {
+      "types": "./dist/primitives/StorageKey/index.d.ts",
+      "import": "./dist/primitives/StorageKey/index.js"
+    },
     "./crypto": {
       "types": "./dist/crypto/index.d.ts",
       "import": "./dist/crypto/index.js"
@@ -83,6 +111,27 @@
       ],
       "primitives": [
         "./dist/primitives/index.d.ts"
+      ],
+      "primitives/Felt252": [
+        "./dist/primitives/Felt252/index.d.ts"
+      ],
+      "primitives/ContractAddress": [
+        "./dist/primitives/ContractAddress/index.d.ts"
+      ],
+      "primitives/ClassHash": [
+        "./dist/primitives/ClassHash/index.d.ts"
+      ],
+      "primitives/Address": [
+        "./dist/primitives/Address/index.d.ts"
+      ],
+      "primitives/EthAddress": [
+        "./dist/primitives/EthAddress/index.d.ts"
+      ],
+      "primitives/ShortString": [
+        "./dist/primitives/ShortString/index.d.ts"
+      ],
+      "primitives/StorageKey": [
+        "./dist/primitives/StorageKey/index.d.ts"
       ],
       "crypto": [
         "./dist/crypto/index.d.ts"

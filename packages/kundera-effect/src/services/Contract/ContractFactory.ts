@@ -10,6 +10,7 @@ import type { ContractAddressType } from "@kundera-sn/kundera-ts/ContractAddress
 import { ContractService } from "./ContractService.js";
 import { ContractError } from "./ContractService.js";
 import { ContractWriteError, ContractWriteService } from "../ContractWrite/ContractWriteService.js";
+import type { NonceManagerService } from "../NonceManager/NonceManagerService.js";
 import type {
   ContractInstance,
   StarknetAbi,
@@ -54,9 +55,10 @@ export const ContractFactory: ContractFactory = <TAbi extends StarknetAbi>(
 
   const read = {} as ContractInstance<TAbi>["read"];
   for (const fn of viewFunctions) {
-    (
-  read as unknown as Record<string, (...args: unknown[]) => Effect.Effect<unknown>>
-    )[fn.name] = (...args: unknown[]) =>
+    (read as unknown as Record<
+      string,
+      (...args: unknown[]) => Effect.Effect<unknown, ContractError, ContractService>
+    >)[fn.name] = (...args: unknown[]) =>
       Effect.gen(function* () {
         const contract = yield* ContractService;
         const output = yield* contract.callRaw({
@@ -85,9 +87,10 @@ export const ContractFactory: ContractFactory = <TAbi extends StarknetAbi>(
 
   const simulate = {} as ContractInstance<TAbi>["simulate"];
   for (const fn of writeFunctions) {
-    (
-  simulate as unknown as Record<string, (...args: unknown[]) => Effect.Effect<unknown>>
-    )[fn.name] = (...args: unknown[]) =>
+    (simulate as unknown as Record<
+      string,
+      (...args: unknown[]) => Effect.Effect<unknown, ContractError, ContractService>
+    >)[fn.name] = (...args: unknown[]) =>
       Effect.gen(function* () {
         const contract = yield* ContractService;
         const output = yield* contract.callRaw({
@@ -117,9 +120,10 @@ export const ContractFactory: ContractFactory = <TAbi extends StarknetAbi>(
   const write = {} as ContractInstance<TAbi>["write"];
   for (const fn of writeFunctions) {
     const inputCount = fn.inputs?.length ?? 0;
-    (
-  write as unknown as Record<string, (...args: unknown[]) => Effect.Effect<unknown>>
-    )[fn.name] = (...argsAndOptions: unknown[]) =>
+    (write as unknown as Record<
+      string,
+      (...args: unknown[]) => Effect.Effect<unknown, ContractWriteError, ContractWriteService | NonceManagerService>
+    >)[fn.name] = (...argsAndOptions: unknown[]) =>
       Effect.gen(function* () {
         const contractWrite = yield* ContractWriteService;
         const lastArg = argsAndOptions[argsAndOptions.length - 1];

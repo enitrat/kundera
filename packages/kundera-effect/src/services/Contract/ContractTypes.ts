@@ -12,6 +12,7 @@ import type { ResourceBoundsInput } from "../Account/AccountService.js";
 import type { AddInvokeTransactionResult } from "@kundera-sn/kundera-ts/jsonrpc";
 import type { ContractError, ContractService } from "./ContractService.js";
 import type { ContractWriteError, ContractWriteService } from "../ContractWrite/ContractWriteService.js";
+import type { NonceManagerService } from "../NonceManager/NonceManagerService.js";
 
 export type StarknetAbi = KanabiAbi;
 
@@ -66,7 +67,7 @@ export type ContractWriteMethods<TAbi extends StarknetAbi> = {
     ? F["name"]
     : never]: (
     ...args: WriteMethodArgs<ExtractArgs<TAbi, F>>
-  ) => Effect.Effect<AddInvokeTransactionResult, ContractWriteError, ContractWriteService>;
+  ) => Effect.Effect<AddInvokeTransactionResult, ContractWriteError, ContractWriteService | NonceManagerService>;
 };
 
 export type ContractSimulateMethods<TAbi extends StarknetAbi> = {

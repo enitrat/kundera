@@ -20,12 +20,17 @@ import { httpTransport, webSocketTransport } from "@kundera-sn/kundera-effect/tr
 ### Create Transport
 
 ```typescript
-const transport = Transport.httpTransport({
-  url: "https://starknet-mainnet.public.blastapi.io",
-  headers: {
-    "Authorization": "Bearer ..."
-  },
-  timeout: 30000
+// Simple usage
+const transport = Transport.httpTransport("https://starknet-mainnet.public.blastapi.io");
+
+// With options
+const transport = Transport.httpTransport("https://starknet-mainnet.public.blastapi.io", {
+  timeout: 30000,
+  fetchOptions: {
+    headers: {
+      "Authorization": "Bearer ..."
+    }
+  }
 });
 ```
 
@@ -33,11 +38,10 @@ const transport = Transport.httpTransport({
 
 ```typescript
 interface HttpTransportOptions {
-  url: string;
-  headers?: Record<string, string>;
+  /** Custom fetch options (headers, credentials, etc.) */
+  fetchOptions?: RequestInit;
+  /** Request timeout in ms (default: 30000) */
   timeout?: number;
-  retries?: number;
-  retryDelay?: number;
 }
 ```
 
@@ -193,9 +197,7 @@ import * as Transport from "@kundera-sn/kundera-effect/transport";
 
 const program = Effect.gen(function* () {
   // Create HTTP transport
-  const http = Transport.httpTransport({
-    url: "https://starknet-mainnet.public.blastapi.io"
-  });
+  const http = Transport.httpTransport("https://starknet-mainnet.public.blastapi.io");
 
   // Make a request
   const blockNumber = yield* Transport.request<number>(

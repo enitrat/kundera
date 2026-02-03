@@ -25,7 +25,7 @@ import * as Abi from "@kundera-sn/kundera-effect/abi";
 import * as JsonRpc from "@kundera-sn/kundera-effect/jsonrpc";
 import { httpTransport } from "@kundera-sn/kundera-effect/transport";
 
-const transport = httpTransport({ url: "https://..." });
+const transport = httpTransport("https://...");
 
 const program = Effect.gen(function* () {
   const calldata = yield* Abi.encodeCalldata(abi, "balanceOf", [userAddress]);

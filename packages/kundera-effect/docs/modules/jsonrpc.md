@@ -49,7 +49,7 @@ const value = yield* Rpc.starknet_getStorageAt(
 );
 
 // Get nonce
-const nonce = yield* Rpc.starknet_getNonce(transport, blockId, address);
+const nonce = yield* Rpc.starknet_getNonce(transport, address, blockId);
 
 // Get storage proof
 const proof = yield* Rpc.starknet_getStorageProof(
@@ -91,7 +91,7 @@ const count = yield* Rpc.starknet_getBlockTransactionCount(transport, blockId);
 const classDef = yield* Rpc.starknet_getClass(transport, blockId, classHash);
 
 // Get class hash at address
-const classHash = yield* Rpc.starknet_getClassHashAt(transport, blockId, address);
+const classHash = yield* Rpc.starknet_getClassHashAt(transport, address, blockId);
 
 // Get class at address
 const classDef = yield* Rpc.starknet_getClassAt(transport, blockId, address);
@@ -226,7 +226,7 @@ import { Effect } from "effect";
 import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
 import { httpTransport } from "@kundera-sn/kundera-effect/transport";
 
-const transport = httpTransport({ url: "https://starknet-mainnet.public.blastapi.io" });
+const transport = httpTransport("https://starknet-mainnet.public.blastapi.io");
 
 const program = Effect.gen(function* () {
   // Get current block
