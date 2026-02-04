@@ -1,69 +1,512 @@
 ---
 title: Effect ABI
-description: ABI encoding and decoding with typed errors
+description: Type-safe ABI encoding and decoding with Effect
 ---
 
 # Effect ABI
 
-All ABI operations return `Effect<T, AbiError>` for type-safe error handling.
+Type-safe encoding and decoding of Starknet contract calldata, outputs, and events.
 
-## Encoding
+## Why Effect ABI?
+
+ABI operations can fail (function not found, type mismatch, invalid data). Effect tracks these failures:
+
+```typescript
+import { Effect } from 'effect';
+import * as Abi from '@kundera-sn/kundera-effect/abi';
+
+// Type: Effect<bigint[], AbiError, never>
+//                ^^^^^^^ Success  ^^^^^^^^^ Error
+const calldata = Abi.encodeCalldata(abi, 'transfer', [recipient, amount]);
+```
+
+**Benefits:**
+- TypeScript knows encoding/decoding can fail
+- Must handle `AbiError` explicitly
+- No silent failures or runtime exceptions
+
+<Info>
+Kundera uses **abi-wan-kanabi** under the hood—a Cairo ABI parser and encoder that handles both legacy and modern ABIs.
+</Info>
+
+## Encoding Calldata
+
+### Basic Function Call
+
+```typescript
+import { Effect } from 'effect';
+import * as Abi from '@kundera-sn/kundera-effect/abi';
+import * as ContractAddress from '@kundera-sn/kundera-effect/primitives/ContractAddress';
+
+const ERC20_ABI = [
+  {
+    type: "function",
+    name: "transfer",
+    inputs: [
+      { name: "recipient", type: "core::starknet::contract_address::ContractAddress" },
+      { name: "amount", type: "core::integer::u256" }
+    ],
+    outputs: [{ type: "core::bool" }],
+    state_mutability: "external",
+  },
+] as const;
+
+const encodeTransfer = (recipientHex: string, amount: bigint) =>
+  Effect.gen(function* () {
+    const recipient = yield* ContractAddress.from(recipientHex);
+
+    // Encode function calldata
+    const calldata = yield* Abi.encodeCalldata(
+      ERC20_ABI,
+      "transfer",
+      [recipient, amount]
+    );
+
+    // Returns array of felts as hex strings
+    return calldata;
+  });
+
+// Usage
+const calldata = await Effect.runPromise(
+  encodeTransfer("0x123...", 1000n)
+);
+// ["0x123...", "0x3e8", "0x0"] // [recipient, amount_low, amount_high]
+```
+
+### Multiple Parameters
+
+```typescript
+const SWAP_ABI = [
+  {
+    type: "function",
+    name: "swapExactTokensForTokens",
+    inputs: [
+      { name: "amountIn", type: "core::integer::u256" },
+      { name: "amountOutMin", type: "core::integer::u256" },
+      { name: "path", type: "core::array::Array<core::starknet::contract_address::ContractAddress>" },
+      { name: "to", type: "core::starknet::contract_address::ContractAddress" },
+      { name: "deadline", type: "core::integer::u64" }
+    ],
+    outputs: [{ type: "core::array::Array<core::integer::u256>" }],
+    state_mutability: "external",
+  },
+] as const;
+
+const encodeSwap = (
+  amountIn: bigint,
+  amountOutMin: bigint,
+  tokenA: string,
+  tokenB: string,
+  recipient: string,
+  deadline: bigint
+) =>
+  Effect.gen(function* () {
+    const [tokenAAddr, tokenBAddr, recipientAddr] = yield* Effect.all([
+      ContractAddress.from(tokenA),
+      ContractAddress.from(tokenB),
+      ContractAddress.from(recipient),
+    ]);
+
+    const calldata = yield* Abi.encodeCalldata(
+      SWAP_ABI,
+      "swapExactTokensForTokens",
+      [
+        amountIn,
+        amountOutMin,
+        [tokenAAddr, tokenBAddr], // Array parameter
+        recipientAddr,
+        deadline,
+      ]
+    );
+
+    return calldata;
+  });
+```
+
+## Decoding Outputs
+
+### Basic Output Decoding
+
+```typescript
+const decodeBalance = (outputFelts: string[]) =>
+  Effect.gen(function* () {
+    const ERC20_ABI = [
+      {
+        type: "function",
+        name: "balanceOf",
+        inputs: [{ name: "account", type: "core::starknet::contract_address::ContractAddress" }],
+        outputs: [{ type: "core::integer::u256" }],
+        state_mutability: "view",
+      },
+    ] as const;
+
+    // Decode output felts to typed value
+    const balance = yield* Abi.decodeOutput(
+      ERC20_ABI,
+      "balanceOf",
+      outputFelts
+    );
+
+    // balance is a bigint (u256)
+    return balance;
+  });
+
+// Usage
+const balance = await Effect.runPromise(
+  decodeBalance(["0x3e8", "0x0"]) // [low, high] = 1000
+);
+// 1000n
+```
+
+### Named Output Decoding
+
+```typescript
+const decodeWithNames = (outputFelts: string[]) =>
+  Effect.gen(function* () {
+    // Decode as object with field names
+    const result = yield* Abi.decodeOutputObject(
+      ERC20_ABI,
+      "getReserves",
+      outputFelts
+    );
+
+    // Access by field name
+    console.log(result.reserve0);
+    console.log(result.reserve1);
+    console.log(result.blockTimestampLast);
+
+    return result;
+  });
+```
+
+## Event Decoding
+
+### Decoding Contract Events
+
+```typescript
+const TRANSFER_EVENT_ABI = [
+  {
+    type: "event",
+    name: "Transfer",
+    keys: [],
+    data: [
+      { name: "from", type: "core::starknet::contract_address::ContractAddress" },
+      { name: "to", type: "core::starknet::contract_address::ContractAddress" },
+      { name: "value", type: "core::integer::u256" }
+    ],
+  },
+] as const;
+
+const decodeTransferEvent = (eventData: string[]) =>
+  Effect.gen(function* () {
+    const event = yield* Abi.decodeEvent(
+      TRANSFER_EVENT_ABI,
+      "Transfer",
+      eventData
+    );
+
+    return {
+      from: event.from,
+      to: event.to,
+      value: event.value,
+    };
+  });
+
+// Usage
+const transfer = await Effect.runPromise(
+  decodeTransferEvent([
+    "0x...from...",
+    "0x...to...",
+    "0x3e8", // value low
+    "0x0"   // value high
+  ])
+);
+```
+
+## Selectors
+
+### Function Selectors
 
 ```typescript
 import { Effect } from 'effect';
 import * as Abi from '@kundera-sn/kundera-effect/abi';
 
 const program = Effect.gen(function* () {
-  // Encode function calldata
-  const calldata = yield* Abi.encodeCalldata(abi, 'transfer', [recipient, amount]);
+  // Get selector as felt
+  const selector = yield* Abi.getFunctionSelector("transfer");
 
-  // Encode a single value
-  const encoded = yield* Abi.encodeValue(value, 'core::integer::u256', parsedAbi);
+  // Get selector as hex string
+  const selectorHex = yield* Abi.getFunctionSelectorHex("transfer");
 
-  return calldata;
+  return { selector, selectorHex };
 });
+
+// Result
+// {
+//   selector: 232670485425082704932579856502088130646006032362877466777181098476241604910n,
+//   selectorHex: "0x83afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e"
+// }
 ```
 
-## Decoding
+### Event Selectors
 
 ```typescript
 const program = Effect.gen(function* () {
-  // Decode function output
-  const result = yield* Abi.decodeOutput(abi, 'balanceOf', outputFelts);
+  const eventSelector = yield* Abi.getEventSelector("Transfer");
+  const eventSelectorHex = yield* Abi.getEventSelectorHex("Transfer");
 
-  // Decode as named object
-  const { balance } = yield* Abi.decodeOutputObject(abi, 'balanceOf', outputFelts);
-
-  // Decode event
-  const event = yield* Abi.decodeEvent(abi, 'Transfer', eventData);
-
-  return { result, balance, event };
+  return { eventSelector, eventSelectorHex };
 });
 ```
 
-## Selectors
+## Class Hashes
+
+### From Sierra Contract
 
 ```typescript
-const selector = yield* Abi.getFunctionSelector('transfer');
-const selectorHex = yield* Abi.getFunctionSelectorHex('transfer');
-const eventSelector = yield* Abi.getEventSelector('Transfer');
+import { Effect } from 'effect';
+import * as Abi from '@kundera-sn/kundera-effect/abi';
+
+const getClassHash = (sierraJson: any) =>
+  Effect.gen(function* () {
+    // Compute class hash from Sierra contract
+    const classHash = yield* Abi.classHashFromSierra(sierraJson);
+
+    return classHash;
+  });
 ```
 
-## Class Hash
+### From Compiled CASM
 
 ```typescript
-const classHash = yield* Abi.classHashFromSierra(sierraContract);
-const compiledHash = yield* Abi.compiledClassHashFromCasm(casmContract);
+const getCompiledClassHash = (casmJson: any) =>
+  Effect.gen(function* () {
+    // Compute compiled class hash from CASM
+    const compiledHash = yield* Abi.compiledClassHashFromCasm(casmJson);
+
+    return compiledHash;
+  });
+```
+
+## Encoding Single Values
+
+For advanced use cases where you need to encode individual values:
+
+```typescript
+const encodeU256 = (value: bigint) =>
+  Effect.gen(function* () {
+    // Encode a single u256 value
+    const encoded = yield* Abi.encodeValue(
+      value,
+      "core::integer::u256",
+      ERC20_ABI // Parsed ABI for type resolution
+    );
+
+    return encoded;
+  });
 ```
 
 ## Error Handling
 
+Handle ABI errors gracefully:
+
 ```typescript
-const program = Abi.encodeCalldata(abi, 'unknownFn', []).pipe(
-  Effect.catchTag('AbiError', (e) => {
-    console.log(e.code);    // "NOT_FOUND"
-    console.log(e.message); // "Function 'unknownFn' not found"
-    return Effect.succeed([]);
-  })
+const safeEncode = (functionName: string, args: any[]) =>
+  Abi.encodeCalldata(abi, functionName, args).pipe(
+    Effect.catchTag("AbiError", (error) => {
+      console.error("ABI error:", error.message);
+      console.error("Code:", error.code);
+      console.error("Function:", functionName);
+
+      // Return empty calldata as fallback
+      return Effect.succeed([]);
+    })
+  );
+```
+
+**AbiError codes:**
+- `NOT_FOUND` - Function or event not in ABI
+- `TYPE_MISMATCH` - Argument type doesn't match ABI
+- `INVALID_DATA` - Malformed input data
+- `DECODING_FAILED` - Cannot decode output
+
+## Complete Example: Token Transfer
+
+```typescript
+import { Effect } from 'effect';
+import * as Abi from '@kundera-sn/kundera-effect/abi';
+import * as ContractAddress from '@kundera-sn/kundera-effect/primitives/ContractAddress';
+import { Services } from '@kundera-sn/kundera-effect';
+
+const ERC20_ABI = [
+  {
+    type: "function",
+    name: "transfer",
+    inputs: [
+      { name: "recipient", type: "core::starknet::contract_address::ContractAddress" },
+      { name: "amount", type: "core::integer::u256" }
+    ],
+    outputs: [{ type: "core::bool" }],
+    state_mutability: "external",
+  },
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [{ name: "account", type: "core::starknet::contract_address::ContractAddress" }],
+    outputs: [{ type: "core::integer::u256" }],
+    state_mutability: "view",
+  },
+] as const;
+
+const transferTokens = (
+  tokenAddress: string,
+  recipientHex: string,
+  amount: bigint
+) =>
+  Effect.gen(function* () {
+    // Parse addresses
+    const [token, recipient] = yield* Effect.all([
+      ContractAddress.from(tokenAddress),
+      ContractAddress.from(recipientHex),
+    ]);
+
+    // Encode transfer calldata
+    const transferCalldata = yield* Abi.encodeCalldata(
+      ERC20_ABI,
+      "transfer",
+      [recipient, amount]
+    );
+
+    // Get function selector
+    const selector = yield* Abi.getFunctionSelectorHex("transfer");
+
+    // Make RPC call
+    const provider = yield* Services.Provider.ProviderService;
+    const result = yield* provider.request({
+      method: "starknet_call",
+      params: {
+        request: {
+          contract_address: ContractAddress.toHex(token),
+          entry_point_selector: selector,
+          calldata: transferCalldata,
+        },
+        block_id: "latest",
+      },
+    });
+
+    // Decode result
+    const success = yield* Abi.decodeOutput(
+      ERC20_ABI,
+      "transfer",
+      result.result
+    );
+
+    return success;
+  }).pipe(
+    Effect.catchTags({
+      PrimitiveError: () => Effect.fail(new Error("Invalid address")),
+      AbiError: () => Effect.fail(new Error("ABI encoding failed")),
+      RpcError: () => Effect.fail(new Error("Contract call failed")),
+    })
+  );
+```
+
+## Type Safety with ABIs
+
+### Type-Safe Contract Calls
+
+```typescript
+// Define ABI with 'as const' for type inference
+const ERC20_ABI = [
+  {
+    type: "function",
+    name: "transfer",
+    inputs: [
+      { name: "recipient", type: "core::starknet::contract_address::ContractAddress" },
+      { name: "amount", type: "core::integer::u256" }
+    ],
+    outputs: [{ type: "core::bool" }],
+    state_mutability: "external",
+  },
+] as const;
+
+// TypeScript infers the correct parameter types
+const calldata = yield* Abi.encodeCalldata(
+  ERC20_ABI,
+  "transfer",
+  [
+    recipient, // Must be ContractAddressType
+    amount,    // Must be bigint
+  ]
+);
+
+// ❌ Type error - wrong parameter types
+const calldata = yield* Abi.encodeCalldata(
+  ERC20_ABI,
+  "transfer",
+  ["not-an-address", "not-a-number"] // Type error!
 );
 ```
+
+## Performance Tips
+
+- **Cache parsed ABIs**: Parse ABIs once, reuse them
+- **Batch encoding**: Use `Effect.all()` to encode multiple calls concurrently
+- **Validate early**: Use `ContractAddress.isValid()` before encoding to fail fast
+
+## Troubleshooting
+
+### "Function 'X' not found in ABI"
+
+```typescript
+// ❌ Function name typo
+yield* Abi.encodeCalldata(abi, "trasnfer", [...]); // Typo!
+
+// ✅ Correct name
+yield* Abi.encodeCalldata(abi, "transfer", [...]);
+```
+
+### "Type mismatch for parameter"
+
+```typescript
+// ❌ Wrong type
+yield* Abi.encodeCalldata(abi, "transfer", [
+  "0x123", // String instead of ContractAddressType
+  1000     // Number instead of bigint
+]);
+
+// ✅ Correct types
+yield* Abi.encodeCalldata(abi, "transfer", [
+  yield* ContractAddress.from("0x123"),
+  1000n
+]);
+```
+
+### "Decoding failed"
+
+Ensure the output felts match the ABI:
+
+```typescript
+// ❌ Wrong number of felts
+yield* Abi.decodeOutput(abi, "balanceOf", ["0x3e8"]); // Missing high part
+
+// ✅ Correct (u256 = 2 felts)
+yield* Abi.decodeOutput(abi, "balanceOf", ["0x3e8", "0x0"]);
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Contract Service" icon="file-contract" href="/effect/services/contract">
+    Use ABI encoding with contract calls
+  </Card>
+  <Card title="ContractRegistry" icon="layer-group" href="/effect/services/contract-registry">
+    Pre-configure contracts with ABIs
+  </Card>
+  <Card title="Primitives" icon="cube" href="/effect/primitives">
+    Understand Starknet primitive types
+  </Card>
+  <Card title="Error Handling" icon="shield-halved" href="/effect/guides/error-handling">
+    Handle AbiError gracefully
+  </Card>
+</CardGroup>

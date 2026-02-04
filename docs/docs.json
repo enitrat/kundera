@@ -31,15 +31,7 @@
             "icon": "rocket",
             "pages": [
               "getting-started/quickstart",
-              "getting-started/effect-intro",
-              "getting-started/installation",
-              {
-                "group": "For TypeScript Users",
-                "pages": [
-                  "getting-started/typescript-quickstart",
-                  "getting-started/typescript-to-effect"
-                ]
-              }
+              "getting-started/typescript-quickstart"
             ]
           },
           {
@@ -91,7 +83,6 @@
                 "group": "Guides",
                 "icon": "compass",
                 "pages": [
-                  "effect/guides/layers",
                   "effect/guides/error-handling",
                   "effect/guides/testing",
                   "effect/guides/react-integration"
@@ -168,8 +159,7 @@
             "pages": [
               "guides/migration-from-starknetjs",
               "guides/typescript-to-effect",
-              "guides/comparisons",
-              "guides/agentic-coding"
+              "guides/comparisons"
             ]
           }
         ]

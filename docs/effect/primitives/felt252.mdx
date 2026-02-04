@@ -1,156 +1,466 @@
 ---
 title: Felt252
-description: Starknet field element type
+description: Starknet field elements with type-safe operations
 ---
 
 # Felt252
 
-The `Felt252` module provides the core Starknet field element type - an integer in the range [0, FIELD_PRIME).
+The fundamental Starknet primitive—a 252-bit field element used for all on-chain values.
 
-## Type Definition
+## What is a Felt252?
 
-```typescript
-type Felt252Type = bigint & { readonly _tag: "Felt252" }
-type Felt252Input = string | bigint | number | Uint8Array
-```
+A **felt** (field element) is an integer in the range **[0, 2^252 - 1]**. In Starknet, felts are used for:
+- Contract addresses
+- Class hashes
+- Storage keys
+- Calldata parameters
+- Return values
+- Hashes
 
-## Constants
+Think of felts as Starknet's native number type.
 
-```typescript
-// The Starknet field prime: 2^251 + 17 * 2^192 + 1
-const FIELD_PRIME: bigint
+## Why Type-Safe Felts?
 
-// Maximum length for short strings (31 characters)
-const MAX_SHORT_STRING_LENGTH: number
-```
-
-## Constructors
-
-### from
-
-Create a Felt252 from various input types.
+### Without Validation (Dangerous)
 
 ```typescript
-import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
+// Just strings - no validation
+const calldata = [
+  "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", // Too large!
+  "not-a-hex-string", // Invalid!
+  "123", // Missing 0x prefix
+];
 
-const felt = yield* Felt252.from("0x123");
-const felt = yield* Felt252.from(291n);
-const felt = yield* Felt252.from(291);
-const felt = yield* Felt252.from(new Uint8Array([0, 1, 2, 3]));
-// Effect<Felt252Type, PrimitiveError>
+// These errors only surface at runtime
+await contract.call(calldata);
 ```
 
-### fromHex
-
-Parse from a 0x-prefixed hex string.
-
-```typescript
-const felt = yield* Felt252.fromHex("0x123abc");
-// Effect<Felt252Type, PrimitiveError>
-```
-
-### fromBigInt
-
-Create from a bigint value.
-
-```typescript
-const felt = yield* Felt252.fromBigInt(12345n);
-// Effect<Felt252Type, PrimitiveError>
-```
-
-### fromBytes
-
-Create from a 32-byte Uint8Array.
-
-```typescript
-const bytes = new Uint8Array(32);
-const felt = yield* Felt252.fromBytes(bytes);
-// Effect<Felt252Type, PrimitiveError>
-```
-
-## Methods
-
-### toHex
-
-Convert to hex string with 0x prefix.
-
-```typescript
-const hex = Felt252.toHex(felt);
-// "0x123"
-```
-
-### toBigInt
-
-Convert to bigint.
-
-```typescript
-const value = Felt252.toBigInt(felt);
-// 291n
-```
-
-### isValid
-
-Check if a felt is valid (in range).
-
-```typescript
-const valid = Felt252.isValid(felt);
-// true
-```
-
-### isZero
-
-Check if a felt is zero.
-
-```typescript
-const zero = Felt252.isZero(felt);
-// false
-```
-
-### equals
-
-Compare two felts for equality.
-
-```typescript
-const equal = Felt252.equals(a, b);
-// true | false
-```
-
-## Example Usage
+### With Kundera (Safe)
 
 ```typescript
 import { Effect } from "effect";
 import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
 
 const program = Effect.gen(function* () {
-  // Parse from various formats
-  const fromHex = yield* Felt252.fromHex("0xdeadbeef");
-  const fromBigInt = yield* Felt252.fromBigInt(3735928559n);
+  // Validation at parse time
+  const values = yield* Effect.all([
+    Felt252.from("0x123"),
+    Felt252.from(456n),
+    Felt252.from(789),
+  ]);
 
-  // They should be equal
-  console.log(Felt252.equals(fromHex, fromBigInt)); // true
-
-  // Convert to different formats
-  console.log(Felt252.toHex(fromHex)); // "0xdeadbeef"
-  console.log(Felt252.toBigInt(fromBigInt)); // 3735928559n
-
-  return fromHex;
+  // TypeScript knows these are valid felts
+  return values;
 });
 
-await Effect.runPromise(program);
+// Errors caught before making RPC calls
 ```
 
-## Error Handling
+## Creating Felts
+
+### from (Multiple Input Types)
 
 ```typescript
 import { Effect } from "effect";
 import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
 
-const program = Felt252.fromHex("invalid").pipe(
-  Effect.catchTag("PrimitiveError", (error) => {
-    console.log(error.operation); // "Felt252.fromHex"
-    console.log(error.input);     // "invalid"
-    console.log(error.expected);  // "0x-prefixed hex string"
-    return Effect.succeed(Felt252.ZERO);
-  })
+const program = Effect.gen(function* () {
+  // From hex string
+  const felt1 = yield* Felt252.from("0x123abc");
+
+  // From bigint
+  const felt2 = yield* Felt252.from(1234567890n);
+
+  // From number (for small values)
+  const felt3 = yield* Felt252.from(42);
+
+  // From 32-byte Uint8Array
+  const bytes = new Uint8Array(32);
+  bytes[31] = 0xFF;
+  const felt4 = yield* Felt252.fromBytes(bytes);
+
+  return [felt1, felt2, felt3, felt4];
+});
+
+// Effect<Felt252Type[], PrimitiveError>
+```
+
+**Validation:**
+- Value must be < 2^252
+- Hex strings must be `0x` prefixed
+- Byte arrays must be exactly 32 bytes
+
+### Specific Constructors
+
+```typescript
+// From hex string specifically
+yield* Felt252.fromHex("0x123abc");
+
+// From bigint specifically
+yield* Felt252.fromBigInt(12345n);
+
+// From bytes specifically
+yield* Felt252.fromBytes(new Uint8Array(32));
+```
+
+## Converting Felts
+
+```typescript
+import { Effect } from "effect";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
+
+const program = Effect.gen(function* () {
+  const felt = yield* Felt252.from("0x123abc");
+
+  // To hex string (lowercase, 0x-prefixed)
+  const hex = Felt252.toHex(felt);
+  // "0x123abc"
+
+  // To bigint
+  const bigint = Felt252.toBigInt(felt);
+  // 1194684n
+
+  // To 32-byte Uint8Array (big-endian)
+  const bytes = Felt252.toBytes(felt);
+  // Uint8Array(32) [0, 0, ..., 0x12, 0x3a, 0xbc]
+
+  return { hex, bigint, bytes };
+});
+```
+
+## Common Operations
+
+### Equality Checks
+
+```typescript
+const program = Effect.gen(function* () {
+  const felt1 = yield* Felt252.from("0x123");
+  const felt2 = yield* Felt252.from(291); // 0x123 in decimal
+
+  // Case-insensitive equality
+  const equal = Felt252.equals(felt1, felt2); // true
+
+  return equal;
+});
+```
+
+### Zero Checks
+
+```typescript
+const program = Effect.gen(function* () {
+  const felt = yield* Felt252.from("0x0");
+
+  if (Felt252.isZero(felt)) {
+    console.log("Felt is zero");
+  }
+
+  // Or compare to constant
+  if (Felt252.equals(felt, Felt252.ZERO)) {
+    console.log("Also zero");
+  }
+});
+```
+
+## Use Cases
+
+### Building Calldata
+
+```typescript
+import { Effect } from "effect";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
+
+const buildCalldata = (recipient: string, amount: bigint) =>
+  Effect.gen(function* () {
+    const calldataValues = yield* Effect.all([
+      Felt252.from(recipient),   // recipient address
+      Felt252.from(amount),      // amount (low)
+      Felt252.from(0n),          // amount (high)
+    ]);
+
+    // Convert to hex for RPC call
+    return calldataValues.map(Felt252.toHex);
+  });
+
+// Usage
+const calldata = await Effect.runPromise(
+  buildCalldata("0x123...", 1000n)
+);
+// ["0x123...", "0x3e8", "0x0"]
+```
+
+### Parsing Return Values
+
+```typescript
+import { Effect } from "effect";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
+
+const parseReturnValue = (hexValues: string[]) =>
+  Effect.gen(function* () {
+    // Parse all returned felts
+    const felts = yield* Effect.all(
+      hexValues.map(hex => Felt252.from(hex))
+    );
+
+    // Extract as bigints for use
+    const numbers = felts.map(Felt252.toBigInt);
+
+    return numbers;
+  });
+
+// Usage
+const result = await Effect.runPromise(
+  parseReturnValue(["0x3e8", "0x0"]) // [1000, 0]
 );
 ```
+
+### Storage Key Generation
+
+```typescript
+import { Effect } from "effect";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
+import { pedersen } from "@kundera-sn/kundera-effect/crypto";
+
+const getStorageKey = (baseKey: string, offset: number) =>
+  Effect.gen(function* () {
+    const base = yield* Felt252.from(baseKey);
+    const off = yield* Felt252.from(offset);
+
+    // Hash to get storage key
+    const storageKey = pedersen(base, off);
+
+    return Felt252.toHex(storageKey);
+  });
+```
+
+### U256 Representation
+
+Starknet represents u256 values as two felts (low, high):
+
+```typescript
+const u256ToFelts = (value: bigint) =>
+  Effect.gen(function* () {
+    // Split into low and high 128 bits
+    const low = value & ((1n << 128n) - 1n);
+    const high = value >> 128n;
+
+    return yield* Effect.all([
+      Felt252.from(low),
+      Felt252.from(high),
+    ]);
+  });
+
+// Usage
+const [low, high] = await Effect.runPromise(
+  u256ToFelts(1000000000000000000000n) // 1e21
+);
+```
+
+## Error Handling
+
+Handle invalid felts gracefully:
+
+```typescript
+import { Effect } from "effect";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
+
+const parseFelt = (input: string) =>
+  Felt252.from(input).pipe(
+    Effect.catchTag("PrimitiveError", (error) => {
+      console.error("Failed to parse felt:", error.message);
+      console.error("Input:", error.input);
+      console.error("Expected:", error.expected);
+
+      // Return fallback value
+      return Effect.succeed(Felt252.ZERO);
+    })
+  );
+
+// Handle various error cases
+const results = await Effect.runPromise(
+  Effect.all([
+    parseFelt("0x123"),       // ✅ Valid
+    parseFelt("INVALID"),     // ❌ Returns ZERO
+    parseFelt("0x" + "F".repeat(100)), // ❌ Too large, returns ZERO
+  ])
+);
+```
+
+**Error types:**
+- Invalid hex format
+- Value exceeds 2^252
+- Invalid byte array length
+- Unexpected input type
+
+## Constants
+
+```typescript
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
+
+// Zero felt
+Felt252.ZERO; // 0n
+
+// One felt
+Felt252.ONE; // 1n
+
+// Maximum valid felt (2^252 - 1)
+Felt252.MAX_FELT; // 3618502788666131213697322783095070105623107215331596699973092056135872020480n
+
+// Starknet field prime (2^251 + 17 * 2^192 + 1)
+Felt252.FIELD_PRIME;
+```
+
+## Integration with Crypto
+
+Felts work seamlessly with cryptographic operations:
+
+```typescript
+import { Effect } from "effect";
+import * as Felt252 from "@kundera-sn/kundera-effect/primitives/Felt252";
+import { pedersen, poseidon } from "@kundera-sn/kundera-effect/crypto";
+
+const hashValues = (a: string, b: string) =>
+  Effect.gen(function* () {
+    const felt1 = yield* Felt252.from(a);
+    const felt2 = yield* Felt252.from(b);
+
+    // Pedersen hash
+    const pedersenHash = pedersen(felt1, felt2);
+
+    // Poseidon hash
+    const poseidonHash = poseidon([felt1, felt2]);
+
+    return {
+      pedersen: Felt252.toHex(pedersenHash),
+      poseidon: Felt252.toHex(poseidonHash),
+    };
+  });
+```
+
+## Performance Considerations
+
+- **Zero-cost abstraction**: Branded types erased at runtime
+- **Efficient storage**: Stored as bigint internally (native JS type)
+- **Fast conversion**: Direct bigint operations, no string parsing overhead
+- **Batch parsing**: Use `Effect.all()` for concurrent validation
+
+## Validation Rules
+
+Felt252 enforces these constraints:
+
+1. **Range**: 0 ≤ value < 2^252
+2. **Hex format**: If string, must be `0x` + valid hex characters
+3. **Byte length**: If Uint8Array, must be exactly 32 bytes
+4. **Type**: Must be string, bigint, number, or Uint8Array
+
+### Why 2^252?
+
+Starknet uses a prime field of size 2^251 + 17 × 2^192 + 1. The practical limit is 2^252 for representation purposes, with values automatically reduced modulo the field prime in cryptographic operations.
+
+## Troubleshooting
+
+### "Value exceeds FIELD_PRIME"
+
+Your value is too large:
+
+```typescript
+// ❌ Too large
+yield* Felt252.from(2n ** 253n);
+```
+
+**Fix:** Ensure value is less than 2^252.
+
+### "Invalid hex string"
+
+Your hex format is wrong:
+
+```typescript
+// ❌ Missing 0x
+yield* Felt252.from("123abc");
+
+// ❌ Invalid characters
+yield* Felt252.from("0xGGG");
+```
+
+**Fix:** Use `"0x"` prefix and valid hex digits (0-9, a-f, A-F).
+
+### "Expected Uint8Array of length 32"
+
+Byte array is wrong size:
+
+```typescript
+// ❌ Wrong size
+yield* Felt252.fromBytes(new Uint8Array(16));
+```
+
+**Fix:** Use exactly 32 bytes. Pad with zeros if needed:
+
+```typescript
+const bytes = new Uint8Array(32);
+bytes.set([0x01, 0x02, 0x03], 29); // Last 3 bytes
+yield* Felt252.fromBytes(bytes);
+```
+
+## Best Practices
+
+### Prefer Specific Types
+
+When you know the semantic meaning, use specific primitives:
+
+```typescript
+// ❌ Too generic
+const address = yield* Felt252.from("0x123...");
+
+// ✅ Semantically clear
+const address = yield* ContractAddress.from("0x123...");
+```
+
+### Batch Validation
+
+Parse multiple felts concurrently:
+
+```typescript
+// ✅ Parallel parsing
+const felts = yield* Effect.all(
+  values.map(v => Felt252.from(v))
+);
+
+// ❌ Sequential parsing
+const felts = [];
+for (const v of values) {
+  felts.push(yield* Felt252.from(v));
+}
+```
+
+### Handle Errors Early
+
+Validate user input before business logic:
+
+```typescript
+// ✅ Validate upfront
+const validateInputs = (inputs: string[]) =>
+  Effect.all(inputs.map(Felt252.from)).pipe(
+    Effect.catchAll(() => Effect.fail(new Error("Invalid inputs")))
+  );
+
+const program = Effect.gen(function* () {
+  const felts = yield* validateInputs(userInputs);
+  // Business logic here with validated felts
+});
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="ContractAddress" icon="location-dot" href="/effect/primitives/contract-address">
+    Addresses with additional constraints
+  </Card>
+  <Card title="ClassHash" icon="fingerprint" href="/effect/primitives/class-hash">
+    Contract class identifiers
+  </Card>
+  <Card title="Crypto Module" icon="lock" href="/effect/modules/crypto">
+    Use felts with Pedersen and Poseidon
+  </Card>
+  <Card title="ABI Encoding" icon="code" href="/effect/modules/abi">
+    Encode felts for contract calls
+  </Card>
+</CardGroup>

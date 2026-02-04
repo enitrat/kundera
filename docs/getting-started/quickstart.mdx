@@ -1,13 +1,15 @@
 ---
-title: Quick Start
+title: Getting Started
 description: Get started with Kundera Effect in 5 minutes
 ---
 
-# Quick Start with Kundera Effect
+# Getting Started with Kundera Effect
 
-Get up and running with Kundera's Effect integration in 5 minutes.
+Build type-safe Starknet applications with Effect-TS integration. This guide takes you from installation to your first contract interaction.
 
 ## Installation
+
+Install Kundera Effect alongside its peer dependencies:
 
 <CodeGroup>
 ```bash npm
@@ -23,65 +25,505 @@ bun add @kundera-sn/kundera-effect effect
 ```
 </CodeGroup>
 
+**Requirements:**
+- Effect 3.x
+- TypeScript 5.0+
+- Node.js 18+ / Bun 1.0+
+
 ## Your First Program
 
-Create a simple program that fetches the latest block number from Starknet:
+Fetch the current block number from Starknet Sepolia:
 
 ```typescript
-import { ProviderService } from "@kundera-sn/kundera-effect/services"
-import { Effect } from "effect"
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+// Create a provider layer for Sepolia testnet
+const ProviderLayer = Services.Presets.createHttpProvider(
+  "https://starknet-sepolia.public.blastapi.io"
+);
 
 // Define your program
 const program = Effect.gen(function* () {
-  // Access the provider service
-  const provider = yield* ProviderService
+  const provider = yield* Services.Provider.ProviderService;
+  const blockNumber = yield* provider.request({
+    method: "starknet_blockNumber",
+    params: []
+  });
+  return blockNumber;
+});
 
-  // Fetch the block number
-  const blockNumber = yield* provider.getBlockNumber()
+// Run it
+const blockNumber = await Effect.runPromise(
+  program.pipe(Effect.provide(ProviderLayer))
+);
 
-  // Log the result
-  yield* Effect.log(`Latest block: ${blockNumber}`)
-
-  return blockNumber
-})
-
-// Run the program with dependencies
-const result = await Effect.runPromise(
-  program.pipe(
-    Effect.provide(
-      ProviderService.layer({
-        url: "https://starknet-sepolia.public.blastapi.io"
-      })
-    )
-  )
-)
-
-console.log(result)
+console.log(`Latest block: ${blockNumber}`);
 ```
 
-## What Just Happened?
+**What's happening:**
+1. **Layer creation** - `createHttpProvider` configures the RPC connection
+2. **Service injection** - `yield* ProviderService` gets the provider from context
+3. **Effect execution** - `Effect.runPromise` runs the program with dependencies
+4. **Type safety** - All errors are tracked in the Effect type signature
 
-1. **Service injection**: `yield* ProviderService` gets the provider from the context
-2. **Error tracking**: All possible errors are tracked at the type level
-3. **Composability**: Operations are composed using `pipe` and Effect combinators
-4. **Dependency provision**: `Effect.provide` supplies the required services
+## Working with Addresses
+
+Kundera uses **branded types** to prevent mixing up addresses, class hashes, and other primitives:
+
+```typescript
+import { Effect } from "effect";
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
+import * as ClassHash from "@kundera-sn/kundera-effect/primitives/ClassHash";
+
+const program = Effect.gen(function* () {
+  // Parse and validate addresses
+  const ethAddress = yield* ContractAddress.from(
+    "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+  );
+
+  const classHash = yield* ClassHash.from(
+    "0x052c7f38c1d48d179e4fd54b0f0e8e7c0f9e0e8e7c0f9e0e8e7c0f9e0e8e7c0f"
+  );
+
+  // TypeScript prevents mixing these up
+  // deployContract(ethAddress, classHash); // ✅ Correct order
+  // deployContract(classHash, ethAddress); // ❌ Type error!
+
+  return { ethAddress, classHash };
+});
+
+// Handle parse errors
+const result = await Effect.runPromise(
+  program.pipe(
+    Effect.catchTag("PrimitiveError", (error) => {
+      console.error(`Invalid input: ${error.message}`);
+      return Effect.succeed(null);
+    })
+  )
+);
+```
+
+**Key benefits:**
+- Compile-time type safety (swap parameters → TypeScript catches it)
+- Runtime validation (invalid hex → immediate error with details)
+- Zero runtime cost (branded types are erased after compilation)
+
+## Contract Interaction
+
+Use `ContractRegistryService` to define contracts once and use them throughout your application:
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+// Define ERC-20 ABI
+const ERC20_ABI = [
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [{ name: "account", type: "core::starknet::contract_address::ContractAddress" }],
+    outputs: [{ type: "core::integer::u256" }],
+    state_mutability: "view",
+  },
+  {
+    type: "function",
+    name: "transfer",
+    inputs: [
+      { name: "recipient", type: "core::starknet::contract_address::ContractAddress" },
+      { name: "amount", type: "core::integer::u256" }
+    ],
+    outputs: [{ type: "core::bool" }],
+    state_mutability: "external",
+  },
+] as const;
+
+// Create a contract registry with pre-configured contracts
+const ContractsLayer = Services.Contract.makeContractRegistry({
+  ETH: {
+    abi: ERC20_ABI,
+    address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+  },
+  STRK: {
+    abi: ERC20_ABI,
+    address: "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"
+  },
+  // Factory pattern - no address, use .at() at runtime
+  ERC20: {
+    abi: ERC20_ABI
+  },
+});
+
+// Use the contracts in your program
+const getBalances = (userAddress: string) =>
+  Effect.gen(function* () {
+    const { ETH, STRK, ERC20 } = yield* Services.Contract.ContractRegistryService;
+
+    // Pre-addressed contracts - use directly
+    const ethBalance = yield* ETH.read.balanceOf(userAddress);
+    const strkBalance = yield* STRK.read.balanceOf(userAddress);
+
+    // Factory pattern - create instance at runtime
+    const customToken = ERC20.at("0x...");
+    const customBalance = yield* customToken.read.balanceOf(userAddress);
+
+    return { ethBalance, strkBalance, customBalance };
+  });
+
+// Provide all layers
+const ProviderLayer = Services.Presets.createHttpProvider(
+  "https://starknet-sepolia.public.blastapi.io"
+);
+
+const program = getBalances(
+  "0x0000000000000000000000000000000000000000000000000000000000000001"
+).pipe(
+  Effect.provide(ContractsLayer),
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(ProviderLayer)
+);
+
+const balances = await Effect.runPromise(program);
+console.log(balances);
+```
+
+**Why this pattern?**
+- **Centralized configuration** - Define contracts once, use everywhere
+- **Full type safety** - Contract methods are typed from the ABI
+- **Clean composition** - No inline contract creation cluttering your Effect.gen blocks
+- **Factory support** - Pre-define ABIs, apply addresses dynamically
+
+## Error Handling
+
+Effect tracks all possible errors at the type level. Handle them explicitly with `catchTag`:
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
+
+const getBalance = (address: string) =>
+  Effect.gen(function* () {
+    const { ETH } = yield* Services.Contract.ContractRegistryService;
+
+    // Parse address - may fail with PrimitiveError
+    const userAddress = yield* ContractAddress.from(address);
+
+    // Call contract - may fail with RpcError or TransportError
+    const balance = yield* ETH.read.balanceOf(userAddress);
+
+    return balance;
+  });
+
+// Handle specific error types
+const program = getBalance("0x123...").pipe(
+  Effect.catchTags({
+    PrimitiveError: (error) => {
+      console.error(`Invalid address: ${error.message}`);
+      return Effect.succeed(0n); // Return fallback value
+    },
+    RpcError: (error) => {
+      console.error(`RPC call failed: ${error.message}`);
+      return Effect.succeed(0n);
+    },
+    TransportError: (error) => {
+      console.error(`Network error: ${error.message}`);
+      return Effect.succeed(0n);
+    },
+  })
+);
+
+const balance = await Effect.runPromise(program);
+```
+
+**Error types you'll encounter:**
+- `PrimitiveError` - Invalid felt, address, or hash
+- `AbiError` - Encoding/decoding failure
+- `CryptoError` - Signing or hashing failure
+- `RpcError` - JSON-RPC method failure
+- `TransportError` - Network or connection failure
+
+<Info>
+See the complete [Error Handling Guide](/effect/guides/error-handling) for advanced patterns.
+</Info>
+
+## Timeouts and Retries
+
+Configure resilience policies using Effect's Schedule API:
+
+```typescript
+import { Effect, Schedule } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+// Single request timeout
+const program = Effect.gen(function* () {
+  const provider = yield* Services.Provider.ProviderService;
+  const blockNumber = yield* provider.request({
+    method: "starknet_blockNumber",
+    params: []
+  });
+  return blockNumber;
+}).pipe(
+  Effect.timeout("5 seconds") // Fail if takes longer than 5s
+);
+
+// Retry with exponential backoff
+const resilientProgram = program.pipe(
+  Effect.retry(
+    Schedule.exponential("500 millis").pipe(
+      Schedule.jittered,                    // Add randomness to prevent thundering herd
+      Schedule.compose(Schedule.recurs(3))  // Max 3 retries
+    )
+  )
+);
+
+// Or configure at transport level
+const ProviderLayer = Services.Presets.createHttpProvider(
+  "https://starknet-sepolia.public.blastapi.io",
+  undefined,
+  {
+    timeoutMs: 10_000,
+    retry: {
+      maxRetries: 3,
+      delayMs: 200
+    },
+    rateLimit: {
+      maxRequests: 10,
+      intervalMs: 1000
+    }
+  }
+);
+```
+
+**Retry strategies:**
+- `Schedule.recurs(n)` - Retry up to n times
+- `Schedule.exponential(base)` - Exponential backoff (500ms, 1s, 2s, 4s...)
+- `Schedule.jittered` - Add randomness to prevent synchronized retries
+- `Schedule.spaced(duration)` - Fixed delay between retries
+
+## Writing Transactions
+
+Sign and submit transactions using `SignerService` with account abstraction:
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+const transfer = Effect.gen(function* () {
+  const { ETH } = yield* Services.Contract.ContractRegistryService;
+  const signer = yield* Services.Signer.SignerService;
+
+  // Build the transaction
+  const tx = yield* signer.invoke({
+    calls: [
+      {
+        contractAddress: ETH.address,
+        entrypoint: "transfer",
+        calldata: [
+          "0x...recipient...",
+          1000n, // amount low
+          0n     // amount high
+        ]
+      }
+    ],
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+    }
+  });
+
+  yield* Effect.log(`Transaction hash: ${tx.transaction_hash}`);
+  return tx;
+});
+
+// Provide account and provider
+const ProviderLayer = Services.Presets.createHttpProvider(
+  "https://starknet-sepolia.public.blastapi.io"
+);
+
+const AccountLayer = Services.Account.OpenZeppelinAccount({
+  address: "0x...your-account...",
+  privateKey: "0x...your-key..."
+});
+
+const program = transfer.pipe(
+  Effect.provide(ContractsLayer),
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(Services.Signer.Signer),
+  Effect.provide(AccountLayer),
+  Effect.provide(ProviderLayer)
+);
+
+await Effect.runPromise(program);
+```
+
+<Warning>
+Never commit private keys to version control. Use environment variables or secure key management.
+</Warning>
 
 ## Next Steps
 
 <CardGroup cols={2}>
-  <Card title="Effect Intro" icon="book" href="/getting-started/effect-intro">
-    Learn Effect fundamentals
+  <Card title="Error Handling Guide" icon="shield-halved" href="/effect/guides/error-handling">
+    Master type-safe error handling patterns with Effect
   </Card>
 
-  <Card title="Services Guide" icon="server" href="/effect/services/provider">
-    Explore all available services
+  <Card title="Services Overview" icon="server" href="/effect/services">
+    Explore all available services and layers
   </Card>
 
-  <Card title="Primitives" icon="cube" href="/effect/primitives/index">
-    Work with Starknet primitives
+  <Card title="Contract Registry" icon="layer-group" href="/effect/services/contract-registry">
+    Deep dive into the ContractRegistry pattern
   </Card>
 
-  <Card title="Examples" icon="code" href="https://github.com/enitrat/kundera/tree/main/examples">
-    Browse example projects
+  <Card title="Testing Guide" icon="flask" href="/effect/guides/testing">
+    Test your Effect programs with dependency injection
   </Card>
 </CardGroup>
+
+## Common Patterns
+
+### Request Batching
+
+Batch multiple RPC calls into a single HTTP request:
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const batch = yield* Services.RpcBatch.RpcBatchService;
+
+  // These will be batched automatically
+  const [chainId, blockNumber, syncStatus] = yield* Effect.all([
+    batch.request("starknet_chainId", []),
+    batch.request("starknet_blockNumber", []),
+    batch.request("starknet_syncing", [])
+  ]);
+
+  return { chainId, blockNumber, syncStatus };
+}).pipe(
+  Effect.provide(
+    Services.Presets.createHttpProviderWithBatch(
+      "https://starknet-sepolia.public.blastapi.io",
+      { maxBatchSize: 20, maxWaitTime: 10 }
+    )
+  )
+);
+```
+
+### Nonce Management
+
+Prevent nonce races when sending concurrent transactions:
+
+```typescript
+const program = Effect.gen(function* () {
+  const signer = yield* Services.Signer.SignerService;
+
+  // Send multiple transactions concurrently
+  const results = yield* Effect.all([
+    signer.invoke({ calls: [call1], resourceBounds }),
+    signer.invoke({ calls: [call2], resourceBounds }),
+    signer.invoke({ calls: [call3], resourceBounds }),
+  ]);
+
+  return results;
+}).pipe(
+  Effect.provide(Services.NonceManager.DefaultNonceManager), // Handles nonce sequencing
+  Effect.provide(AccountLayer),
+  Effect.provide(ProviderLayer)
+);
+```
+
+### Environment-Specific Configuration
+
+Swap implementations without changing code:
+
+```typescript
+// Production
+const ProdProvider = Services.Presets.createHttpProvider(
+  "https://starknet-mainnet.public.blastapi.io"
+);
+
+// Development
+const DevProvider = Services.Presets.createHttpProvider(
+  "https://starknet-sepolia.public.blastapi.io"
+);
+
+// Test (mock)
+const TestProvider = Layer.succeed(
+  Services.Provider.ProviderService,
+  Services.Provider.ProviderService.of({
+    request: () => Effect.succeed({ result: "mock" })
+  })
+);
+
+// Select based on environment
+const ProviderLayer = process.env.NODE_ENV === "production"
+  ? ProdProvider
+  : process.env.NODE_ENV === "test"
+  ? TestProvider
+  : DevProvider;
+
+// Same program works in all environments
+const program = myOperation.pipe(Effect.provide(ProviderLayer));
+```
+
+## Troubleshooting
+
+### "Cannot find module '@kundera-sn/kundera-effect'"
+
+Make sure you've installed both `@kundera-sn/kundera-effect` and `effect`:
+
+```bash
+npm install @kundera-sn/kundera-effect effect
+```
+
+### "Effect\<A, E, R\> is not assignable to Effect\<A, E, never\>"
+
+You have unsatisfied dependencies. Check the `R` type parameter and provide the missing layers:
+
+```typescript
+// Error: missing ProviderService dependency
+const program: Effect.Effect<number, RpcError, never> = getBlockNumber();
+
+// Fix: provide the layer
+const fixed = program.pipe(Effect.provide(ProviderLayer));
+```
+
+### "PrimitiveError: Invalid felt252"
+
+Your hex string is malformed. Felts must be:
+- Valid hex (0x prefix, 0-9, a-f characters)
+- Less than 2^252
+- 32 bytes or less
+
+```typescript
+// ❌ Invalid
+ContractAddress.from("not-a-hex");     // Not hex
+ContractAddress.from("0xFFFFFFFF..."); // Too large (> 2^252)
+
+// ✅ Valid
+ContractAddress.from("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7");
+```
+
+### RPC calls timing out
+
+Increase the timeout or add retries:
+
+```typescript
+const program = myCall.pipe(
+  Effect.timeout("30 seconds"),
+  Effect.retry({ times: 3 })
+);
+```
+
+Or configure at transport level:
+
+```typescript
+const ProviderLayer = Services.Presets.createHttpProvider(
+  "https://starknet-sepolia.public.blastapi.io",
+  undefined,
+  { timeoutMs: 30_000, retry: { maxRetries: 3, delayMs: 500 } }
+);
+```

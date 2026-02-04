@@ -1,210 +1,717 @@
 ---
-title: Migrate from starknet.js
-description: How to migrate from starknet.js to Kundera
+title: Migration from starknet.js
+description: Side-by-side comparison and migration guide from starknet.js to Kundera Effect
 ---
 
 # Migrating from starknet.js
 
-This guide helps you migrate from starknet.js to Kundera Effect.
+This guide shows how to migrate from starknet.js to Kundera Effect with side-by-side code examples.
 
-## Quick Comparison
+## Why Migrate?
 
-| Feature | starknet.js | Kundera Effect |
-|---------|-------------|----------------|
-| **Type Safety** | Basic types | Branded types + Effect |
-| **Error Handling** | try/catch | Type-tracked errors |
-| **Dependencies** | Global instances | Dependency injection |
-| **Resources** | Manual cleanup | Automatic cleanup |
+Kundera Effect adds:
+- **Type-safe errors** - Know exactly what can fail at compile time
+- **Composable operations** - Chain actions without nested try/catch
+- **Dependency injection** - Easy testing with mock implementations
+- **Built-in resilience** - Timeouts, retries, and rate limiting
 
-## Provider
+starknet.js is mature and battle-tested. Migrate when you need better type safety and testability.
+
+## Installation
+
+<CodeGroup>
+```bash Before (starknet.js)
+npm install starknet
+```
+
+```bash After (Kundera Effect)
+npm install @kundera-sn/kundera-effect effect
+```
+</CodeGroup>
+
+## Provider Setup
 
 ### starknet.js
 
 ```typescript
-import { Provider } from "starknet"
+import { RpcProvider } from "starknet";
 
-const provider = new Provider({
+const provider = new RpcProvider({
   nodeUrl: "https://starknet-sepolia.public.blastapi.io"
-})
+});
 
-const blockNumber = await provider.getBlockNumber()
+// Global instance, hard to test
 ```
 
 ### Kundera Effect
 
 ```typescript
-import { ProviderService } from "@kundera-sn/kundera-effect/services"
-import { Effect } from "effect"
+import { Services } from "@kundera-sn/kundera-effect";
 
-const program = Effect.gen(function* () {
-  const provider = yield* ProviderService
-  const blockNumber = yield* provider.getBlockNumber()
-  return blockNumber
-})
+// Create a layer (no instantiation needed)
+const ProviderLayer = Services.Presets.createHttpProvider(
+  "https://starknet-sepolia.public.blastapi.io",
+  undefined,
+  {
+    timeoutMs: 10_000,
+    retry: { maxRetries: 3, delayMs: 200 }
+  }
+);
 
-const result = await Effect.runPromise(
-  program.pipe(
-    Effect.provide(
-      ProviderService.layer({
-        url: "https://starknet-sepolia.public.blastapi.io"
-      })
-    )
-  )
-)
+// Inject at runtime, easy to swap for tests
 ```
 
-## Contract Reads
+**Key differences:**
+- Kundera uses layers instead of instances
+- Configuration is declarative
+- Easy to swap implementations (production vs test)
+
+## Fetching Block Number
 
 ### starknet.js
 
 ```typescript
-import { Provider, Contract } from "starknet"
+import { RpcProvider } from "starknet";
 
-const provider = new Provider({ nodeUrl: "..." })
-const contract = new Contract(abi, address, provider)
+const provider = new RpcProvider({ nodeUrl: "https://..." });
 
 try {
-  const balance = await contract.balanceOf(owner)
-  console.log(balance)
+  const blockNumber = await provider.getBlockNumber();
+  console.log(blockNumber);
 } catch (error) {
-  console.error("Failed:", error)
+  // Untyped error - could be network, RPC, anything
+  console.error("Failed to get block:", error);
 }
 ```
 
 ### Kundera Effect
 
 ```typescript
-import { ContractService } from "@kundera-sn/kundera-effect/services"
-import { Effect } from "effect"
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
 
 const program = Effect.gen(function* () {
-  const contract = yield* ContractService
-
-  const balance = yield* contract.read({
-    address: "0x...",
-    entrypoint: "balanceOf",
-    calldata: [owner]
-  })
-
-  return balance
+  const provider = yield* Services.Provider.ProviderService;
+  const blockNumber = yield* provider.request({
+    method: "starknet_blockNumber",
+    params: []
+  });
+  return blockNumber;
 }).pipe(
-  Effect.catchAll(error =>
-    Effect.logError(`Failed: ${error._tag}`)
-  )
-)
+  Effect.catchTags({
+    RpcError: (e) => {
+      console.error("RPC failed:", e.message);
+      return Effect.fail(e);
+    },
+    TransportError: (e) => {
+      console.error("Network error:", e.message);
+      return Effect.fail(e);
+    }
+  }),
+  Effect.provide(ProviderLayer)
+);
+
+const blockNumber = await Effect.runPromise(program);
 ```
 
-## Account Operations
+**Key differences:**
+- Typed errors (RpcError vs TransportError)
+- Explicit error handling with `catchTags`
+- Dependencies injected via `Effect.provide`
+
+## Contract Calls (Read)
 
 ### starknet.js
 
 ```typescript
-import { Account, Provider } from "starknet"
+import { Contract, RpcProvider } from "starknet";
 
-const account = new Account(provider, address, privateKey)
+const provider = new RpcProvider({ nodeUrl: "https://..." });
+const contract = new Contract(
+  erc20Abi,
+  "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+  provider
+);
 
-const result = await account.execute({
-  contractAddress: tokenAddress,
-  entrypoint: "transfer",
-  calldata: [recipient, amount]
-})
+try {
+  const balance = await contract.balanceOf(
+    "0x0000000000000000000000000000000000000000000000000000000000000001"
+  );
+  console.log(balance);
+} catch (error) {
+  console.error("Contract call failed:", error);
+}
 ```
 
 ### Kundera Effect
 
 ```typescript
-import { AccountService } from "@kundera-sn/kundera-effect/services"
-import { Effect } from "effect"
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+// Define contracts once in a registry
+const ContractsLayer = Services.Contract.makeContractRegistry({
+  ETH: {
+    abi: erc20Abi,
+    address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+  }
+});
 
 const program = Effect.gen(function* () {
-  const account = yield* AccountService
+  const { ETH } = yield* Services.Contract.ContractRegistryService;
 
-  const result = yield* account.execute({
+  const balance = yield* ETH.read.balanceOf(
+    "0x0000000000000000000000000000000000000000000000000000000000000001"
+  );
+
+  return balance;
+}).pipe(
+  Effect.provide(ContractsLayer),
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(ProviderLayer)
+);
+
+const balance = await Effect.runPromise(program);
+console.log(balance);
+```
+
+**Key differences:**
+- ContractRegistry centralizes contract definitions
+- Methods typed from ABI
+- Layer composition for dependencies
+
+## Contract Calls (Write)
+
+### starknet.js
+
+```typescript
+import { Account, Contract, RpcProvider } from "starknet";
+
+const provider = new RpcProvider({ nodeUrl: "https://..." });
+const account = new Account(
+  provider,
+  "0x...account-address...",
+  "0x...private-key..."
+);
+
+const contract = new Contract(erc20Abi, tokenAddress, account);
+
+try {
+  const tx = await contract.transfer(recipientAddress, 1000n);
+  await provider.waitForTransaction(tx.transaction_hash);
+  console.log("Transfer complete:", tx.transaction_hash);
+} catch (error) {
+  console.error("Transfer failed:", error);
+}
+```
+
+### Kundera Effect
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+const ContractsLayer = Services.Contract.makeContractRegistry({
+  ERC20: { abi: erc20Abi }
+});
+
+const AccountLayer = Services.Account.OpenZeppelinAccount({
+  address: "0x...account-address...",
+  privateKey: "0x...private-key..."
+});
+
+const program = Effect.gen(function* () {
+  const { ERC20 } = yield* Services.Contract.ContractRegistryService;
+  const signer = yield* Services.Signer.SignerService;
+
+  const token = ERC20.at(tokenAddress);
+
+  const tx = yield* signer.invoke({
     calls: [{
-      contractAddress: tokenAddress,
+      contractAddress: token.address,
       entrypoint: "transfer",
-      calldata: [recipient, amount]
-    }]
-  })
+      calldata: [recipientAddress, 1000n, 0n]
+    }],
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+    }
+  });
 
-  return result
-})
+  yield* Effect.log(`Transfer complete: ${tx.transaction_hash}`);
+  return tx;
+}).pipe(
+  Effect.provide(ContractsLayer),
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(Services.Signer.Signer),
+  Effect.provide(AccountLayer),
+  Effect.provide(ProviderLayer)
+);
+
+await Effect.runPromise(program);
 ```
 
-## Event Listening
+**Key differences:**
+- Account is a layer, not an instance
+- Explicit signer service for transactions
+- Resource bounds required (Starknet v3 transactions)
+
+## Error Handling
 
 ### starknet.js
 
 ```typescript
-const events = await provider.getEvents({
-  from_block: { block_number: 0 },
-  to_block: { block_number: 1000 },
-  address: contractAddress,
-  keys: [[eventKey]]
-})
+try {
+  const balance = await contract.balanceOf(userAddress);
+  console.log(balance);
+} catch (error) {
+  // Untyped - could be anything
+  if (error.message.includes("Contract not found")) {
+    console.error("Contract doesn't exist");
+  } else if (error.message.includes("timeout")) {
+    console.error("Request timed out");
+  } else {
+    console.error("Unknown error:", error);
+  }
+}
 ```
 
 ### Kundera Effect
 
 ```typescript
-import { ProviderService } from "@kundera-sn/kundera-effect/services"
-import { Effect, Stream } from "effect"
-
-const program = ProviderService.subscribeToEvents({
-  address: contractAddress,
-  keys: [[eventKey]]
-}).pipe(
-  Stream.take(100),
-  Stream.runCollect
-)
+const program = getBalance.pipe(
+  Effect.catchTags({
+    PrimitiveError: (e) => {
+      // Invalid address format
+      console.error("Invalid address:", e.message);
+      return Effect.succeed(0n);
+    },
+    RpcError: (e) => {
+      // Contract call failed
+      console.error("Contract error:", e.message);
+      return Effect.succeed(0n);
+    },
+    TransportError: (e) => {
+      // Network issue
+      console.error("Network error:", e.message);
+      return Effect.succeed(0n);
+    }
+  })
+);
 ```
+
+**Key differences:**
+- TypeScript knows all possible error types
+- `catchTag` provides exhaustive error handling
+- No string matching on error messages
+
+## Retries and Timeouts
+
+### starknet.js
+
+```typescript
+async function getBalanceWithRetry(
+  contract: Contract,
+  address: string,
+  maxRetries = 3
+): Promise<bigint> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const balance = await Promise.race([
+        contract.balanceOf(address),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Timeout")), 5000)
+        )
+      ]);
+      return balance;
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+    }
+  }
+  throw new Error("Max retries exceeded");
+}
+```
+
+### Kundera Effect
+
+```typescript
+import { Schedule } from "effect";
+
+const program = getBalance.pipe(
+  Effect.timeout("5 seconds"),
+  Effect.retry(
+    Schedule.exponential("500 millis").pipe(
+      Schedule.jittered,
+      Schedule.compose(Schedule.recurs(3))
+    )
+  )
+);
+```
+
+**Key differences:**
+- Built-in timeout and retry primitives
+- Declarative schedule configuration
+- Exponential backoff with jitter included
+
+## Testing
+
+### starknet.js
+
+```typescript
+import { RpcProvider, Contract } from "starknet";
+
+// Manual mocking required
+class MockProvider extends RpcProvider {
+  async callContract() {
+    return { result: ["0x64"] }; // Mock response
+  }
+}
+
+describe("getBalance", () => {
+  it("should return balance", async () => {
+    const provider = new MockProvider({ nodeUrl: "https://..." });
+    const contract = new Contract(abi, address, provider);
+    const balance = await contract.balanceOf("0x1");
+    expect(balance).toBe(100n);
+  });
+});
+```
+
+### Kundera Effect
+
+```typescript
+import { Effect, Layer } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+// Create a test layer with mocked provider
+const TestProviderLayer = Layer.succeed(
+  Services.Provider.ProviderService,
+  Services.Provider.ProviderService.of({
+    request: ({ method, params }) => {
+      if (method === "starknet_call") {
+        return Effect.succeed({ result: ["0x64"] });
+      }
+      return Effect.fail(new Error("Unexpected method"));
+    }
+  })
+);
+
+describe("getBalance", () => {
+  it("should return balance", async () => {
+    const balance = await Effect.runPromise(
+      getBalance("0x1").pipe(
+        Effect.provide(TestProviderLayer),
+        Effect.provide(ContractsLayer),
+        Effect.provide(Services.Contract.ContractLayer)
+      )
+    );
+    expect(balance).toBe(100n);
+  });
+});
+```
+
+**Key differences:**
+- No class inheritance needed
+- Swap layers, not instances
+- Same business logic code in prod and test
+
+## Batch Requests
+
+### starknet.js
+
+```typescript
+// Not built-in - manual implementation required
+const [chainId, blockNumber] = await Promise.all([
+  provider.getChainId(),
+  provider.getBlockNumber()
+]);
+```
+
+### Kundera Effect
+
+```typescript
+const program = Effect.gen(function* () {
+  const batch = yield* Services.RpcBatch.RpcBatchService;
+
+  // Automatically batched into single HTTP request
+  const [chainId, blockNumber] = yield* Effect.all([
+    batch.request("starknet_chainId", []),
+    batch.request("starknet_blockNumber", [])
+  ]);
+
+  return { chainId, blockNumber };
+}).pipe(
+  Effect.provide(
+    Services.Presets.createHttpProviderWithBatch(
+      "https://starknet-sepolia.public.blastapi.io",
+      { maxBatchSize: 20, maxWaitTime: 10 }
+    )
+  )
+);
+```
+
+**Key differences:**
+- Built-in request batching
+- Configurable batch size and timing
+- Transparent to application code
+
+## Nonce Management
+
+### starknet.js
+
+```typescript
+// Manual nonce tracking required for concurrent transactions
+let currentNonce = await account.getNonce();
+
+const txs = await Promise.all([
+  account.execute(call1, undefined, { nonce: currentNonce++ }),
+  account.execute(call2, undefined, { nonce: currentNonce++ }),
+  account.execute(call3, undefined, { nonce: currentNonce++ })
+]);
+```
+
+### Kundera Effect
+
+```typescript
+const program = Effect.gen(function* () {
+  const signer = yield* Services.Signer.SignerService;
+
+  // NonceManager automatically sequences nonces
+  const results = yield* Effect.all([
+    signer.invoke({ calls: [call1], resourceBounds }),
+    signer.invoke({ calls: [call2], resourceBounds }),
+    signer.invoke({ calls: [call3], resourceBounds })
+  ]);
+
+  return results;
+}).pipe(
+  Effect.provide(Services.NonceManager.DefaultNonceManager),
+  Effect.provide(Services.Signer.Signer),
+  Effect.provide(AccountLayer),
+  Effect.provide(ProviderLayer)
+);
+```
+
+**Key differences:**
+- Automatic nonce sequencing
+- Safe concurrent transaction submission
+- No manual nonce tracking
 
 ## Migration Strategy
 
-### 1. Start with Vanilla TypeScript
+### 1. Start with New Code
 
-If Effect feels overwhelming, start with `@kundera-sn/kundera-ts`:
+Add Kundera Effect alongside existing starknet.js code:
 
 ```typescript
-import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
+// Keep existing starknet.js code
+import { RpcProvider as StarknetProvider } from "starknet";
+const legacyProvider = new StarknetProvider({ nodeUrl: "..." });
 
-const provider = new HttpProvider({ url: "..." })
-const blockNumber = await provider.getBlockNumber()
+// Add new Kundera Effect code
+import { Services } from "@kundera-sn/kundera-effect";
+const newProviderLayer = Services.Presets.createHttpProvider("...");
 ```
 
-### 2. Gradually Adopt Effect
+### 2. Wrap Existing Calls
 
-Migrate service by service:
+Wrap starknet.js calls in Effect for gradual migration:
 
-1. **Provider** - Start with ProviderService
-2. **Contract reads** - Add ContractService
-3. **Account operations** - Add AccountService
-4. **Complex workflows** - Compose services
+```typescript
+import { Effect } from "effect";
+import { Contract } from "starknet";
 
-### 3. Leverage Type Safety
+const legacyContract = new Contract(abi, address, provider);
 
-Let TypeScript guide your migration:
+// Wrap legacy call
+const getBalanceLegacy = (userAddress: string) =>
+  Effect.tryPromise({
+    try: () => legacyContract.balanceOf(userAddress),
+    catch: (error) => new Error(`Legacy call failed: ${error}`)
+  });
 
-- Branded types prevent primitive mixups
-- Effect tracks all possible errors
-- Missing dependencies caught at compile time
+// Use in Effect composition
+const program = Effect.gen(function* () {
+  const balance = yield* getBalanceLegacy("0x1");
+  // Continue with Effect code...
+  return balance;
+});
+```
 
-## Next Steps
+### 3. Migrate Module by Module
+
+Prioritize high-value modules:
+- Start with read-only contract calls (easiest)
+- Then provider operations
+- Finally write operations and signing
+
+### 4. Update Tests
+
+Migrate tests alongside code to benefit from dependency injection:
+
+```typescript
+// Before: Manual mocking
+const mockProvider = new MockProvider();
+
+// After: Layer-based testing
+const TestLayer = Layer.succeed(ProviderService, mockImplementation);
+```
+
+### 5. Remove starknet.js
+
+Once migration is complete, remove starknet.js dependency:
+
+```bash
+npm uninstall starknet
+```
+
+## Common Patterns
+
+### Pattern: Retry on Specific Errors
+
+starknet.js:
+```typescript
+async function callWithRetry() {
+  try {
+    return await contract.call();
+  } catch (error) {
+    if (error.message.includes("rate limit")) {
+      await sleep(1000);
+      return await contract.call();
+    }
+    throw error;
+  }
+}
+```
+
+Kundera Effect:
+```typescript
+const program = contractCall.pipe(
+  Effect.retry({
+    times: 3,
+    while: (e) => e._tag === "TransportError"
+  })
+);
+```
+
+### Pattern: Fallback Values
+
+starknet.js:
+```typescript
+let balance: bigint;
+try {
+  balance = await contract.balanceOf(user);
+} catch {
+  balance = 0n; // Fallback
+}
+```
+
+Kundera Effect:
+```typescript
+const balance = yield* getBalance(user).pipe(
+  Effect.catchAll(() => Effect.succeed(0n))
+);
+```
+
+### Pattern: Multiple Contracts
+
+starknet.js:
+```typescript
+const eth = new Contract(erc20Abi, ethAddress, provider);
+const strk = new Contract(erc20Abi, strkAddress, provider);
+
+const ethBalance = await eth.balanceOf(user);
+const strkBalance = await strk.balanceOf(user);
+```
+
+Kundera Effect:
+```typescript
+const ContractsLayer = Services.Contract.makeContractRegistry({
+  ETH: { abi: erc20Abi, address: ethAddress },
+  STRK: { abi: erc20Abi, address: strkAddress }
+});
+
+const program = Effect.gen(function* () {
+  const { ETH, STRK } = yield* Services.Contract.ContractRegistryService;
+  const [ethBalance, strkBalance] = yield* Effect.all([
+    ETH.read.balanceOf(user),
+    STRK.read.balanceOf(user)
+  ]);
+  return { ethBalance, strkBalance };
+});
+```
+
+## Troubleshooting
+
+### "Effect\<A, E, R\> is not assignable to Effect\<A, E, never\>"
+
+You have unsatisfied dependencies. Check the `R` parameter and provide the missing layers:
+
+```typescript
+// Error: missing ProviderService
+const program: Effect.Effect<number, RpcError, never> = getBlockNumber();
+
+// Fix: provide the layer
+const fixed = program.pipe(Effect.provide(ProviderLayer));
+```
+
+### "Cannot read property 'read' of undefined"
+
+You forgot to provide the `ContractRegistryService` layer:
+
+```typescript
+const program = Effect.gen(function* () {
+  const { ETH } = yield* Services.Contract.ContractRegistryService;
+  // ...
+}).pipe(
+  Effect.provide(ContractsLayer),           // ✅ Add this
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(ProviderLayer)
+);
+```
+
+### Migrating Account/Signer Logic
+
+starknet.js `Account` combines provider + signer. In Kundera Effect, they're separate:
+
+```typescript
+// starknet.js
+const account = new Account(provider, address, privateKey);
+
+// Kundera Effect - separate layers
+const ProviderLayer = Services.Presets.createHttpProvider("...");
+const AccountLayer = Services.Account.OpenZeppelinAccount({
+  address: "...",
+  privateKey: "..."
+});
+
+// Combine both
+const program = myOperation.pipe(
+  Effect.provide(AccountLayer),
+  Effect.provide(ProviderLayer)
+);
+```
+
+## Further Reading
 
 <CardGroup cols={2}>
-  <Card title="Effect Quickstart" icon="rocket" href="/getting-started/quickstart">
-    Start with Effect
+  <Card title="Getting Started" icon="rocket" href="/getting-started/quickstart">
+    Complete walkthrough from installation to contract interaction
   </Card>
-
-  <Card title="Services Guide" icon="server" href="/effect/services/provider">
-    Learn Effect services
+  <Card title="Effect Overview" icon="sparkles" href="/effect/overview">
+    Why Effect for blockchain development
   </Card>
-
-  <Card title="Comparisons" icon="scale" href="/guides/comparisons">
-    Detailed comparisons
+  <Card title="Error Handling" icon="shield-halved" href="/effect/guides/error-handling">
+    Master type-safe error handling patterns
   </Card>
-
-  <Card title="Examples" icon="code" href="https://github.com/enitrat/kundera/tree/main/examples">
-    See examples
+  <Card title="Testing Guide" icon="flask" href="/effect/guides/testing">
+    Test your Effect programs with dependency injection
   </Card>
 </CardGroup>
+
+## Need Help?
+
+- **GitHub Issues**: [Report bugs or ask questions](https://github.com/enitrat/kundera/issues)
+- **Examples**: [Browse example projects](https://github.com/enitrat/kundera/tree/main/examples)
+- **API Docs**: [Complete API reference](https://github.com/enitrat/kundera/tree/master/packages/kundera-effect/docs)

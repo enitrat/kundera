@@ -1,11 +1,48 @@
 ---
 title: ContractAddress
-description: Starknet contract address type
+description: Type-safe Starknet contract addresses with validation
 ---
 
 # ContractAddress
 
-The `ContractAddress` module provides a type-safe Starknet contract address - a felt252 constrained to be less than 2^251.
+Type-safe contract addresses that prevent parameter mix-ups and runtime errors.
+
+## Why ContractAddress?
+
+Starknet contract addresses are field elements constrained to **less than 2^251** (not the full 2^252 field size). Mixing addresses with other field elements causes runtime errors.
+
+### Without Types (Dangerous)
+
+```typescript
+// Everything is just a string
+const tokenAddress = '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7';
+const userAddress = '0x...';
+const classHash = '0x...';
+
+// No compile-time safety - easy to swap parameters
+transfer(userAddress, tokenAddress, amount); // Bug! Arguments swapped
+```
+
+### With ContractAddress (Safe)
+
+```typescript
+import { Effect } from "effect";
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
+import * as ClassHash from "@kundera-sn/kundera-effect/primitives/ClassHash";
+
+const program = Effect.gen(function* () {
+  const token = yield* ContractAddress.from(
+    '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7'
+  );
+  const user = yield* ContractAddress.from('0x...');
+  const hash = yield* ClassHash.from('0x...');
+
+  // TypeScript catches this at compile time
+  transfer(user, token, amount);       // ✅ Correct
+  transfer(token, user, amount);       // ❌ Type error - arguments swapped
+  deployContract(token, hash);         // ❌ Type error - expected ClassHash first
+});
+```
 
 ## Type Definition
 
@@ -13,73 +50,369 @@ The `ContractAddress` module provides a type-safe Starknet contract address - a 
 type ContractAddressType = bigint & { readonly _tag: "ContractAddress" }
 ```
 
-## Constants
+ContractAddress is a **branded type** - at runtime it's a bigint, but at compile time TypeScript tracks it as distinct from other field elements.
 
-```typescript
-// Maximum valid contract address: 2^251 - 1
-const MAX_CONTRACT_ADDRESS: bigint
-```
-
-## Constructors
+## Creating Addresses
 
 ### from
 
-Create a ContractAddress from a felt input.
+Parse and validate a contract address:
 
 ```typescript
+import { Effect } from "effect";
 import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
 
-const address = yield* ContractAddress.from("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7");
+const program = Effect.gen(function* () {
+  // From hex string
+  const address = yield* ContractAddress.from(
+    "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+  );
+
+  // From bigint
+  const address2 = yield* ContractAddress.from(
+    1234567890123456789012345678901234567890n
+  );
+
+  // From number (small values)
+  const address3 = yield* ContractAddress.from(123);
+
+  return address;
+});
+
 // Effect<ContractAddressType, PrimitiveError>
 ```
 
-## Methods
+**Validation:**
+- Checks value is less than 2^251
+- Validates hex format if string
+- Normalizes to canonical form
 
-### isValid
+### isValid (Sync Check)
 
-Check if a value is a valid contract address.
+Check if a value is valid without creating an Effect:
 
 ```typescript
-const valid = ContractAddress.isValid("0x123...");
-// true | false
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
+
+if (ContractAddress.isValid("0x049d...")) {
+  // Safe to parse
+  const address = await Effect.runPromise(
+    ContractAddress.from("0x049d...")
+  );
+}
 ```
 
-## Example Usage
+**Use when:**
+- Pre-validating user input
+- Checking before parsing
+- Filtering addresses
+
+## Error Handling
+
+Handle invalid addresses gracefully:
 
 ```typescript
 import { Effect } from "effect";
 import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
-import * as Abi from "@kundera-sn/kundera-effect/abi";
 
-const USDC_ADDRESS = "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8";
+const parseAddress = (input: string) =>
+  ContractAddress.from(input).pipe(
+    Effect.catchTag("PrimitiveError", (error) => {
+      console.error("Invalid address:", error.message);
+      console.error("Input:", error.input);
+      console.error("Expected:", error.expected);
 
-const program = Effect.gen(function* () {
-  const address = yield* ContractAddress.from(USDC_ADDRESS);
-
-  // Use with ABI encoding
-  const calldata = yield* Abi.encodeCalldata(
-    erc20Abi,
-    "balanceOf",
-    [address]
+      // Return fallback
+      return Effect.succeed(ContractAddress.ZERO);
+    })
   );
 
-  return calldata;
+// Usage
+const address = await Effect.runPromise(parseAddress("0xINVALID"));
+// Logs error, returns zero address
+```
+
+**Error details:**
+- `message` - "Invalid contract address" or "Value exceeds maximum"
+- `operation` - "ContractAddress.from"
+- `input` - The value you tried to parse
+- `expected` - "felt252 < 2^251"
+
+## Common Use Cases
+
+### ERC-20 Token Interaction
+
+```typescript
+import { Effect } from "effect";
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
+import { Services } from "@kundera-sn/kundera-effect";
+
+const ERC20_ABI = [...] as const;
+
+const ContractsLayer = Services.Contract.makeContractRegistry({
+  USDC: {
+    abi: ERC20_ABI,
+    address: "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8"
+  }
+});
+
+const checkBalance = (userAddressHex: string) =>
+  Effect.gen(function* () {
+    // Parse and validate user address
+    const userAddress = yield* ContractAddress.from(userAddressHex);
+
+    // Use in contract call
+    const { USDC } = yield* Services.Contract.ContractRegistryService;
+    const balance = yield* USDC.read.balanceOf(userAddress);
+
+    return balance;
+  }).pipe(
+    Effect.catchTags({
+      PrimitiveError: () => Effect.succeed(0n), // Invalid address
+      RpcError: () => Effect.succeed(0n),       // Contract call failed
+    })
+  );
+```
+
+### Batch Address Validation
+
+```typescript
+const validateAddresses = (addresses: string[]) =>
+  Effect.all(
+    addresses.map(addr => ContractAddress.from(addr))
+  ).pipe(
+    Effect.catchAll((error) => {
+      // Handle any invalid address
+      return Effect.succeed([]);
+    })
+  );
+
+// Usage
+const validAddresses = await Effect.runPromise(
+  validateAddresses([
+    "0x049d...",
+    "0x123...",
+    "0xINVALID", // This will cause the whole batch to fail
+  ])
+);
+```
+
+### Address Comparison
+
+```typescript
+const program = Effect.gen(function* () {
+  const addr1 = yield* ContractAddress.from("0x123abc");
+  const addr2 = yield* ContractAddress.from("0x123ABC"); // Different case
+
+  // Addresses are normalized - this works correctly
+  const isEqual = ContractAddress.equals(addr1, addr2); // true
+
+  return isEqual;
 });
 ```
 
-## Validation
+### Dynamic Contract Creation
 
-Contract addresses must be less than 2^251:
+```typescript
+const interactWithToken = (tokenAddress: string, userAddress: string) =>
+  Effect.gen(function* () {
+    // Parse both addresses
+    const [token, user] = yield* Effect.all([
+      ContractAddress.from(tokenAddress),
+      ContractAddress.from(userAddress),
+    ]);
+
+    // Create contract instance dynamically
+    const { ERC20 } = yield* Services.Contract.ContractRegistryService;
+    const tokenContract = ERC20.at(token);
+
+    // Get balance
+    const balance = yield* tokenContract.read.balanceOf(user);
+
+    return balance;
+  });
+```
+
+## Converting Formats
 
 ```typescript
 import { Effect } from "effect";
 import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
 
-// This will fail - value too large
-const program = ContractAddress.from(2n ** 252n).pipe(
-  Effect.catchTag("PrimitiveError", (e) => {
-    console.log(e.message); // "Value exceeds maximum contract address"
-    return Effect.fail(e);
-  })
-);
+const program = Effect.gen(function* () {
+  const address = yield* ContractAddress.from(
+    "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+  );
+
+  // To hex string (lowercase, 0x-prefixed)
+  const hex = ContractAddress.toHex(address);
+  // "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+
+  // To bigint
+  const bigint = ContractAddress.toBigInt(address);
+  // 2087021424722619777119509474943472645767659996348769578120564519014510906823n
+
+  // To bytes (32-byte Uint8Array)
+  const bytes = ContractAddress.toBytes(address);
+  // Uint8Array(32) [0, 0, 0, 4, ...]
+
+  return { hex, bigint, bytes };
+});
 ```
+
+## Constants
+
+```typescript
+import * as ContractAddress from "@kundera-sn/kundera-effect/primitives/ContractAddress";
+
+// Zero address (0x0)
+ContractAddress.ZERO;
+
+// Maximum valid contract address (2^251 - 1)
+ContractAddress.MAX_CONTRACT_ADDRESS;
+```
+
+## Validation Rules
+
+ContractAddress enforces these constraints:
+
+1. **Range check**: Value must be < 2^251 (not the full 2^252 field)
+2. **Hex format**: If string input, must be `0x` prefixed with valid hex chars
+3. **Normalization**: Hex strings converted to canonical lowercase form
+
+### Why 2^251?
+
+Starknet reserves the upper bit of the field for system addresses. User contract addresses must be less than 2^251 to avoid conflicts.
+
+```typescript
+// ✅ Valid - less than 2^251
+yield* ContractAddress.from(2n ** 250n);
+
+// ❌ Invalid - exceeds 2^251
+yield* ContractAddress.from(2n ** 251n);
+// PrimitiveError: Value exceeds maximum contract address
+```
+
+## Integration with Services
+
+ContractAddress works seamlessly with all Kundera services:
+
+### With ContractRegistry
+
+```typescript
+const ContractsLayer = Services.Contract.makeContractRegistry({
+  Token: {
+    abi: ERC20_ABI,
+    // Address validated at layer creation time
+    address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+  }
+});
+```
+
+### With Direct RPC Calls
+
+```typescript
+const program = Effect.gen(function* () {
+  const provider = yield* Services.Provider.ProviderService;
+  const address = yield* ContractAddress.from("0x123...");
+
+  const result = yield* provider.request({
+    method: "starknet_call",
+    params: {
+      request: {
+        contract_address: ContractAddress.toHex(address),
+        entry_point_selector: "0x...",
+        calldata: []
+      },
+      block_id: "latest"
+    }
+  });
+
+  return result;
+});
+```
+
+### With Account Signing
+
+```typescript
+const program = Effect.gen(function* () {
+  const signer = yield* Services.Signer.SignerService;
+  const recipient = yield* ContractAddress.from("0x...");
+
+  const tx = yield* signer.invoke({
+    calls: [{
+      contractAddress: ContractAddress.toHex(recipient),
+      entrypoint: "transfer",
+      calldata: ["1000", "0"]
+    }],
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+    }
+  });
+
+  return tx;
+});
+```
+
+## Troubleshooting
+
+### "Value exceeds maximum contract address"
+
+Your address is >= 2^251:
+
+```typescript
+// Too large
+yield* ContractAddress.from(2n ** 252n);
+```
+
+**Fix:** Ensure the value is less than 2^251. System addresses (>= 2^251) are not valid contract addresses.
+
+### "Invalid hex string format"
+
+Your hex string is malformed:
+
+```typescript
+// Missing 0x prefix
+yield* ContractAddress.from("123abc");
+
+// Invalid characters
+yield* ContractAddress.from("0xGGG");
+```
+
+**Fix:** Use proper hex format with `0x` prefix: `"0x123abc"`.
+
+### Type errors with other primitives
+
+```typescript
+const address = yield* ContractAddress.from("0x123...");
+const classHash = yield* ClassHash.from("0x456...");
+
+// ❌ Type error - cannot assign ContractAddress to ClassHash parameter
+deployContract(address, classHash);
+```
+
+**Fix:** Use the correct primitive type for each parameter. The type error is intentional—it prevents bugs.
+
+## Performance Notes
+
+- **Zero cost abstraction**: Branded types are erased at runtime—no performance penalty
+- **Validation once**: Validation happens at creation time, not on every use
+- **Efficient comparison**: Uses bigint equality, not string comparison
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="ClassHash" icon="fingerprint" href="/effect/primitives/class-hash">
+    Contract class identifiers
+  </Card>
+  <Card title="Felt252" icon="cube" href="/effect/primitives/felt252">
+    Generic field elements
+  </Card>
+  <Card title="Contract Calls" icon="file-contract" href="/effect/services/contract">
+    Use addresses in contract interactions
+  </Card>
+  <Card title="Error Handling" icon="shield-halved" href="/effect/guides/error-handling">
+    Handle PrimitiveError gracefully
+  </Card>
+</CardGroup>
