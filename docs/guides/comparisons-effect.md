@@ -617,8 +617,8 @@ yield* Crypto.loadWasmCrypto();
 
 ## See Also
 
-- [Primitives](/primitives) - Felt252, ContractAddress, ClassHash documentation
-- [Crypto](/crypto) - Hashing and signature documentation
-- [ABI](/abi) - Encoding and decoding documentation
-- [Services](/services) - Provider and Contract layers
-- [Branded Types](/concepts/branded-types) - Understanding Kundera's type system
+- [Primitives](/typescript/primitives) - Felt252, ContractAddress, ClassHash documentation
+- [Crypto](/typescript/crypto) - Hashing and signature documentation
+- [ABI](/typescript/abi) - Encoding and decoding documentation
+- [Services](/effect/services) - Provider and Contract layers
+- [Branded Types](/typescript/concepts/branded-types) - Understanding Kundera's type system

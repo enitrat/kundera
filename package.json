@@ -15,8 +15,9 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm build && pnpm -r publish --access public",
-    "docs:dev": "cd docs && mint dev",
-    "docs:build": "cd docs && mint build"
+    "docs:dev": "cd docs && mintlify dev",
+    "docs:build": "cd docs && mintlify build",
+    "docs:verify-links": "bun scripts/verify-docs-links.mjs"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
