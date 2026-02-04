@@ -3,7 +3,7 @@ title: "Contract Read"
 description: "Read-only contract calls with ABI encoding/decoding."
 ---
 
-A minimal read-only contract helper built on `starknet_call`.
+A minimal read-only contract helper built on `starknet_call`. These calls don't modify state and don't require an account.
 
 ## Quick Start
 
@@ -11,7 +11,7 @@ A minimal read-only contract helper built on `starknet_call`.
 cp -r examples/skills/contract-read src/skills/
 ```
 
-## Usage
+## Basic Usage
 
 ```ts
 import { httpTransport } from '@kundera-sn/kundera-ts/transport';
@@ -19,10 +19,176 @@ import { readContract } from './skills/contract-read';
 
 const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 
+// Call balance_of
 const { result, error } = await readContract(transport, {
   abi: ERC20_ABI,
   address: tokenAddress,
   functionName: 'balance_of',
   args: [accountAddress],
 });
+
+if (!error) {
+  console.log('Balance:', result[0]);
+}
+
+// Call multiple read functions
+const [name, symbol, decimals] = await Promise.all([
+  readContract(transport, { abi: ERC20_ABI, address: tokenAddress, functionName: 'name', args: [] }),
+  readContract(transport, { abi: ERC20_ABI, address: tokenAddress, functionName: 'symbol', args: [] }),
+  readContract(transport, { abi: ERC20_ABI, address: tokenAddress, functionName: 'decimals', args: [] }),
+]);
 ```
+
+## How It Works
+
+When you call `readContract`:
+
+1. **Encode** - Arguments are ABI-encoded into Starknet calldata
+2. **Call** - `starknet_call` is sent to the provider
+3. **Decode** - Return data is ABI-decoded to JavaScript types
+
+```ts
+// What happens under the hood:
+const { result } = await readContract(transport, {
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  functionName: 'balance_of',
+  args: [accountAddress],
+});
+
+// Equivalent to:
+import { encodeCalldata, decodeOutput } from '@kundera-sn/kundera-ts/abi';
+import { starknet_call } from '@kundera-sn/kundera-ts/rpc';
+
+const { result: calldata } = encodeCalldata(ERC20_ABI, 'balance_of', [accountAddress]);
+const rawResult = await starknet_call(transport, {
+  contract_address: tokenAddress,
+  entry_point_selector: computeSelector('balance_of'),
+  calldata,
+});
+const decoded = decodeOutput(ERC20_ABI, 'balance_of', rawResult);
+```
+
+## Return Values
+
+Read methods return decoded values as an array:
+
+```ts
+// Single return value
+const { result } = await readContract(transport, {
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  functionName: 'balance_of',
+  args: [accountAddress],
+});
+const balance = result[0]; // bigint
+
+// Multiple return values
+const { result } = await readContract(transport, {
+  abi: PAIR_ABI,
+  address: pairAddress,
+  functionName: 'get_reserves',
+  args: [],
+});
+const [reserve0, reserve1] = result;
+```
+
+## Block Parameter
+
+By default, reads execute against the `pending` block. Override with `blockId`:
+
+```ts
+// Read at specific block number
+const { result } = await readContract(transport, {
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  functionName: 'balance_of',
+  args: [accountAddress],
+  blockId: { block_number: 123456 },
+});
+
+// Read at block hash
+const { result } = await readContract(transport, {
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  functionName: 'balance_of',
+  args: [accountAddress],
+  blockId: { block_hash: '0xabc...' },
+});
+
+// Read latest finalized state
+const { result } = await readContract(transport, {
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  functionName: 'balance_of',
+  args: [accountAddress],
+  blockId: 'latest',
+});
+```
+
+## Error Handling
+
+Read calls can fail for several reasons:
+
+```ts
+const { result, error } = await readContract(transport, {
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  functionName: 'balance_of',
+  args: [accountAddress],
+});
+
+if (error) {
+  switch (error.code) {
+    case 'FUNCTION_NOT_FOUND':
+      console.error('Function does not exist in ABI');
+      break;
+    case 'ENCODE_ERROR':
+      console.error('Failed to encode arguments');
+      break;
+    case 'RPC_ERROR':
+      console.error('RPC call failed:', error.message);
+      break;
+    case 'DECODE_ERROR':
+      console.error('Failed to decode response');
+      break;
+  }
+}
+```
+
+Common failures:
+- **Reverts** - Contract reverted (e.g., assert failed)
+- **Invalid address** - Contract doesn't exist at address
+- **Network errors** - Provider connectivity issues
+
+## Batching Reads
+
+For efficiency, batch multiple reads using `multicallRead`:
+
+```ts
+import { multicallRead } from './skills/contract-multicall';
+
+const results = await multicallRead(transport, [
+  { abi: ERC20_ABI, address: token1, functionName: 'balance_of', args: [account] },
+  { abi: ERC20_ABI, address: token2, functionName: 'balance_of', args: [account] },
+  { abi: ERC20_ABI, address: token3, functionName: 'balance_of', args: [account] },
+]);
+```
+
+<Tip>
+For many reads, use `multicallRead` to batch them into a single RPC request. This reduces latency and RPC rate limiting.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Contract Write" icon="pen" href="/skills/contract-write">
+    State-changing calls using an account.
+  </Card>
+  <Card title="Contract Multicall" icon="layer-group" href="/skills/contract-multicall">
+    Batch multiple read calls.
+  </Card>
+  <Card title="ABI Encode/Decode" icon="code" href="/guides/abi/encode-decode">
+    Manual ABI encoding and decoding.
+  </Card>
+</CardGroup>

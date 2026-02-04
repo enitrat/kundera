@@ -1,14 +1,36 @@
 ---
-title: What is Kundera?
-description: A fast, type-safe Starknet primitives library for TypeScript.
+title: Kundera
+description: Type-safe, high-performance Starknet primitives library for TypeScript
 ---
 
-Kundera is a TypeScript library for working with Starknet primitives, cryptography, and JSON-RPC. It provides:
+<div style={{ textAlign: 'center', padding: '2rem 0 4rem' }}>
+  <h1 style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: '800', lineHeight: '1.1', marginBottom: '1.5rem' }}>
+    <span style={{ background: 'linear-gradient(135deg, #EC796B 0%, #D672EF 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Kundera</span>
+  </h1>
 
-- **Branded types** that catch address/hash mixups at compile time
-- **Native crypto** via Rust FFI for faster signing and hashing
-- **WASM fallback** for browsers and portable environments
-- **Tree-shakeable** modules—import only what you use
+  <p style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.4rem)', color: '#999', maxWidth: '700px', margin: '0 auto 2.5rem', lineHeight: '1.6' }}>
+    <strong>Type-safe Starknet primitives for TypeScript</strong>
+  </p>
+
+  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3rem' }}>
+    <a href="/getting-started/quickstart"
+       style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.75rem 2rem', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', background: 'linear-gradient(135deg, #EC796B 0%, #D672EF 100%)', color: 'white' }}>
+      Get Started
+    </a>
+    <a href="/overview/why-kundera"
+       style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.75rem 2rem', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', background: 'transparent', color: 'currentColor', border: '2px solid rgba(128, 128, 128, 0.3)' }}>
+      Why Kundera?
+    </a>
+    <a href="https://github.com/enitrat/kundera" target="_blank" rel="noopener"
+       style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0.75rem 2rem', borderRadius: '8px', textDecoration: 'none', fontWeight: '600', background: 'transparent', color: 'currentColor', border: '2px solid rgba(128, 128, 128, 0.3)' }}>
+      View on GitHub
+    </a>
+  </div>
+</div>
+
+## What is Kundera?
+
+Kundera is a **low-level primitives library** for Starknet. Think of it as the TypeScript equivalent of Rust's `starknet-crypto` or `starknet-types` - focused on correctness, performance, and tree-shakeability.
 
 ```typescript
 import { ContractAddress, ClassHash } from '@kundera-sn/kundera-ts';
@@ -19,7 +41,7 @@ import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
 const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
 const classHash = ClassHash('0x...');
 
-// Fast cryptography
+// Fast cryptography (Native Rust or WASM)
 const hash = pedersen(a, b);
 
 // Tree-shakeable JSON-RPC
@@ -28,6 +50,74 @@ const result = await starknet_call(
   { contract_address, entry_point_selector, calldata },
   'latest'
 );
+```
+
+## Core Features
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', margin: '2rem 0' }}>
+  <div style={{ padding: '1.5rem', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px' }}>
+    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🛡️</div>
+    <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.5rem' }}>Branded Types</h3>
+    <p style={{ color: '#999', fontSize: '0.9rem' }}>ContractAddress, ClassHash, and Felt252 are distinct types - catch mixups at compile time</p>
+  </div>
+
+  <div style={{ padding: '1.5rem', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px' }}>
+    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚡</div>
+    <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.5rem' }}>High Performance</h3>
+    <p style={{ color: '#999', fontSize: '0.9rem' }}>Native Rust crypto via FFI (Bun/Node) or WASM (browsers) - 5-15x faster than pure JS</p>
+  </div>
+
+  <div style={{ padding: '1.5rem', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px' }}>
+    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🌲</div>
+    <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.5rem' }}>Tree-Shakeable</h3>
+    <p style={{ color: '#999', fontSize: '0.9rem' }}>Import only what you use - data-first modules with zero dependencies on each other</p>
+  </div>
+
+  <div style={{ padding: '1.5rem', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '12px' }}>
+    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🤖</div>
+    <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '0.5rem' }}>AI-Friendly</h3>
+    <p style={{ color: '#999', fontSize: '0.9rem' }}>Mirrors Starknet specs, minimal abstraction - LLMs understand it naturally</p>
+  </div>
+</div>
+
+## Kundera vs starknet.js
+
+| Aspect | Kundera | starknet.js |
+|--------|---------|-------------|
+| **Focus** | Low-level primitives | Full-featured SDK |
+| **Type Safety** | Branded types (ContractAddress ≠ ClassHash) | Plain strings |
+| **Crypto** | Native Rust or WASM (fast) | Pure JS |
+| **Bundle Size** | Tree-shakeable, pay per use | Monolithic |
+| **API Style** | Data-first functions | Classes/OOP |
+| **Maturity** | New | Battle-tested |
+
+<Note>
+**Use Kundera if** you need performance, type safety, or small bundles. **Use starknet.js if** you need ecosystem compatibility or high-level abstractions.
+</Note>
+
+## Quick Example
+
+Read an ERC-20 balance:
+
+```typescript
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
+import { ContractAddress } from '@kundera-sn/kundera-ts';
+
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+
+const call = {
+  contract_address: ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7'),
+  entry_point_selector: 'balanceOf',
+  calldata: [accountAddress]
+};
+
+const result = await starknet_call(transport, call, 'latest');
+const decoded = decodeOutputObject(erc20Abi, 'balanceOf', result.map(BigInt));
+
+if (decoded.error) throw decoded.error;
+console.log('Balance:', decoded.result);
 ```
 
 ## Featured: @kundera-sn/kundera-effect
@@ -52,87 +142,61 @@ const program = Effect.gen(function* () {
 
 [Get started with @kundera-sn/kundera-effect →](/services)
 
-## Who is Kundera For?
-
-| Use Case | Why Kundera |
-|----------|-------------|
-| **Backend services** | Native crypto avoids JS overhead |
-| **Frontend dApps** | WASM works in any browser |
-| **CLI tools** | Small bundle, fast startup |
-| **Libraries** | Tree-shakeable, no bloat for consumers |
-
 ## Core Modules
 
 <CardGroup cols={2}>
   <Card title="Primitives" icon="cube" href="/api/primitives">
-    Felt252, ContractAddress, ClassHash, StorageKey with branded types.
+    Felt252, ContractAddress, ClassHash, StorageKey with branded types
   </Card>
   <Card title="Crypto" icon="lock" href="/api/crypto">
-    Pedersen, Poseidon, ECDSA with native and WASM backends.
+    Pedersen, Poseidon, ECDSA with native Rust and WASM backends
   </Card>
   <Card title="JSON-RPC" icon="network-wired" href="/api/jsonrpc">
-    Tree-shakeable JSON-RPC methods for Starknet.
+    Tree-shakeable JSON-RPC methods for Starknet
   </Card>
   <Card title="Provider" icon="plug" href="/api/provider">
-    Typed HTTP and WebSocket providers with request builders.
+    Typed HTTP and WebSocket providers with request builders
   </Card>
   <Card title="ABI" icon="code" href="/api/abi">
-    Encode and decode calldata using contract ABIs.
+    Encode and decode calldata using contract ABIs
   </Card>
   <Card title="Serde" icon="arrows-rotate" href="/api/serde">
-    Serialize Cairo types to felts and back.
+    Serialize Cairo types to felts and back
   </Card>
   <Card title="Transport" icon="satellite" href="/api/transport">
-    HTTP and WebSocket transports with JSON-RPC batching.
+    HTTP and WebSocket transports with JSON-RPC batching
   </Card>
   <Card title="Utils" icon="toolbox" href="/api/utils">
-    Batching, polling, retries, timeouts, and rate limiting helpers.
+    Batching, polling, retries, timeouts, and rate limiting helpers
   </Card>
 </CardGroup>
-
-## Quick Example
-
-Read an ERC-20 balance:
-
-```typescript
-import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
-import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
-import { decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
-import { ContractAddress } from '@kundera-sn/kundera-ts';
-
-const provider = new HttpProvider({ url: 'https://api.zan.top/public/starknet-sepolia' });
-
-const call = Starknet.CallRequest(
-  {
-    contract_address: ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7'),
-    entry_point_selector: 'balanceOf',
-    calldata: [accountAddress]
-  },
-  'latest'
-);
-const result = await provider.request<string[]>(call);
-
-const decoded = decodeOutputObject(erc20Abi, 'balanceOf', result.map(BigInt));
-if (decoded.error) {
-  throw decoded.error;
-}
-const balance = decoded.result;
-```
 
 ## Next Steps
 
 <CardGroup cols={2}>
   <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
-    Get up and running in 5 minutes.
+    Get up and running in 5 minutes
   </Card>
   <Card title="Why Kundera?" icon="question" href="/overview/why-kundera">
-    See how Kundera compares to alternatives.
+    See how Kundera compares to alternatives
+  </Card>
+  <Card title="Branded Types" icon="tag" href="/getting-started/branded-types">
+    Type safety that catches bugs at compile time
+  </Card>
+  <Card title="Runtime Implementations" icon="bolt" href="/getting-started/runtime-implementations">
+    Choose between Native (Rust) and WASM
+  </Card>
+  <Card title="Agentic Coding" icon="robot" href="/getting-started/agentic-coding">
+    Maximize AI assistant productivity
   </Card>
   <Card title="Architecture" icon="sitemap" href="/overview/architecture">
-    Understand how the modules fit together.
+    Understand how modules fit together
   </Card>
   <Card title="Skills" icon="puzzle-piece" href="/skills/index">
-    Copy-paste patterns for common tasks.
+    Copy-paste patterns for common tasks
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/primitives">
+    Complete API documentation
   </Card>
 </CardGroup>
 

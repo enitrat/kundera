@@ -27,8 +27,9 @@
             "icon": "rocket",
             "pages": [
               "getting-started/quickstart",
-              "getting-started/wasm",
-              "getting-started/native"
+              "getting-started/branded-types",
+              "getting-started/runtime-implementations",
+              "getting-started/agentic-coding"
             ]
           },
           {

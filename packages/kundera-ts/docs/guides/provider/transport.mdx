@@ -1,115 +1,469 @@
 ---
-title: Transport Layer
-description: Low-level transports for HTTP, WebSocket, and custom protocols.
+title: Transport Guide
+description: Understanding the transport layer architecture and patterns.
 ---
 
-Transports handle the raw JSON-RPC communication layer. Providers wrap transports with higher-level APIs.
+# Transport Guide
 
-## Architecture
+The transport layer handles raw JSON-RPC communication between your application and Starknet nodes. This guide explains the architecture, when to use transports directly, and common patterns.
+
+## Architecture Overview
 
 ```
-┌─────────────────┐
-│    Provider     │  High-level API (methods, types)
-├─────────────────┤
-│    Transport    │  Raw JSON-RPC over HTTP/WS
-└─────────────────┘
+┌─────────────────────────────────────────────────┐
+│              Your Application                   │
+├─────────────────────────────────────────────────┤
+│   JSON-RPC Methods (starknet_*)                 │  High-level functions
+├─────────────────────────────────────────────────┤
+│   Provider (optional)                           │  Retries, timeouts, events
+├─────────────────────────────────────────────────┤
+│   Transport Layer                               │  Raw request/response
+│   ┌─────────────────┬─────────────────────┐    │
+│   │   HTTP          │    WebSocket        │    │
+│   │   Transport     │    Transport        │    │
+│   └─────────────────┴─────────────────────┘    │
+├─────────────────────────────────────────────────┤
+│              Starknet Node                      │
+└─────────────────────────────────────────────────┘
 ```
+
+## When to Use Transports
+
+### Use Providers When:
+
+- You want retries and timeouts built-in
+- You need typed convenience methods
+- You want WebSocket subscriptions via async generators
+- You prefer standard `request({ method, params })` API
+
+### Use Transports Directly When:
+
+- You need minimal overhead
+- You want to build custom middleware
+- You need full control over request handling
+- You're building your own provider abstraction
 
 ## HTTP Transport
 
-The default transport for request/response patterns:
+The HTTP transport is stateless and creates a new connection per request (with HTTP keep-alive).
+
+### Basic Usage
 
 ```typescript
-import { httpTransport, createRequest } from '@kundera-sn/kundera-ts/transport';
+import { httpTransport, createRequest, isJsonRpcError } from '@kundera-sn/kundera-ts/transport';
 
-const transport = httpTransport(
-  'https://api.zan.top/public/starknet-sepolia',
-  { timeout: 30000 }
-);
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 
-// Make a raw JSON-RPC request
-const result = await transport.request(
+const response = await transport.request(
   createRequest('starknet_blockNumber', [])
 );
+
+if (isJsonRpcError(response)) {
+  console.error('Error:', response.error.message);
+} else {
+  console.log('Block:', response.result);
+}
 ```
 
-## Request Batching (Skill)
+### Custom Headers
 
-For batching and retries, use the HTTP transport skill:
+```typescript
+const transport = httpTransport('https://...', {
+  timeout: 30000,
+  fetchOptions: {
+    headers: {
+      'X-API-Key': 'your-api-key',
+      'Authorization': 'Bearer token'
+    }
+  }
+});
+```
+
+### Request Flow
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   createRequest │ --> │  transport.     │ --> │   Starknet      │
+│   (method,      │     │  request()      │     │   Node          │
+│    params)      │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+        │                       │                       │
+        │  JsonRpcRequest       │  HTTP POST            │
+        │  {                    │  Content-Type:        │
+        │    jsonrpc: '2.0',    │  application/json     │
+        │    id: 1,             │                       │
+        │    method: '...',     │                       │
+        │    params: [...]      │                       │
+        │  }                    │                       │
+        │                       │                       │
+        │                       │  JsonRpcResponse      │
+        │                       │  {                    │
+        │                       │    jsonrpc: '2.0',    │
+        │                       │    id: 1,             │
+        │                       │    result: ...        │
+        │                       │  }                    │
+        │                       │<----------------------│
+```
+
+## WebSocket Transport
+
+The WebSocket transport maintains a persistent connection for bidirectional communication.
+
+### Basic Usage
+
+```typescript
+import { webSocketTransport, createRequest } from '@kundera-sn/kundera-ts/transport';
+
+const transport = webSocketTransport({
+  url: 'wss://api.zan.top/public/starknet-sepolia'
+});
+
+await transport.connect();
+
+// Regular request
+const response = await transport.request(
+  createRequest('starknet_blockNumber', [])
+);
+
+// Subscribe to notifications
+transport.subscribe('subscription_id', (data) => {
+  console.log('Notification:', data);
+});
+
+// Cleanup
+transport.disconnect();
+```
+
+### Subscription Flow
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   Application   │<--->│   WebSocket     │<--->│   Starknet      │
+│                 │     │   Transport     │     │   Node          │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+        │                       │                       │
+        │  subscribe()          │                       │
+        │---------------------->│  starknet_subscribe  │
+        │                       │---------------------->│
+        │                       │                       │
+        │                       │  subscription_id     │
+        │                       │<----------------------│
+        │  subscription_id      │                       │
+        │<----------------------│                       │
+        │                       │                       │
+        │                       │  Notification        │
+        │                       │<----------------------│
+        │  callback(data)       │                       │
+        │<----------------------│                       │
+        │                       │                       │
+        │                       │  Notification        │
+        │                       │<----------------------│
+        │  callback(data)       │                       │
+        │<----------------------│                       │
+```
+
+## Request Batching
+
+Batching combines multiple requests into a single HTTP call.
+
+### Manual Batching
+
+```typescript
+const responses = await transport.requestBatch([
+  createRequest('starknet_blockNumber', []),
+  createRequest('starknet_chainId', []),
+  createRequest('starknet_getNonce', ['latest', address])
+]);
+
+// Responses are in the same order as requests
+responses.forEach((response, i) => {
+  if (isJsonRpcError(response)) {
+    console.error(`Request ${i} failed:`, response.error.message);
+  } else {
+    console.log(`Request ${i} result:`, response.result);
+  }
+});
+```
+
+### Batch Flow
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   Application   │     │   Transport     │     │   Starknet      │
+│                 │     │                 │     │   Node          │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+        │                       │                       │
+        │  requestBatch([       │                       │
+        │    req1, req2, req3   │                       │
+        │  ])                   │                       │
+        │---------------------->│                       │
+        │                       │  Single HTTP POST    │
+        │                       │  [req1, req2, req3]  │
+        │                       │---------------------->│
+        │                       │                       │
+        │                       │  [res1, res2, res3]  │
+        │                       │<----------------------│
+        │  [res1, res2, res3]   │                       │
+        │<----------------------│                       │
+```
+
+### Auto-Batching (Skill)
+
+The HTTP Transport skill provides automatic batching:
 
 ```typescript
 import { httpTransport } from './skills/http-transport';
 
 const transport = httpTransport('https://...', {
-  batch: { batchWait: 10, batchSize: 100 },
-  retries: 3,
+  batch: {
+    batchWait: 10,   // Wait 10ms to collect concurrent requests
+    batchSize: 50    // Max requests per batch
+  }
 });
 
-const [block, chain] = await Promise.all([
+// These concurrent requests are automatically batched
+const [a, b, c] = await Promise.all([
   transport.request(createRequest('starknet_blockNumber', [])),
   transport.request(createRequest('starknet_chainId', [])),
+  transport.request(createRequest('starknet_getNonce', ['latest', addr]))
 ]);
 ```
 
-## WebSocket Transport
+## Building Custom Transports
 
-For real-time subscriptions:
+### Transport Interface
 
 ```typescript
-import { webSocketTransport } from '@kundera-sn/kundera-ts/transport';
-
-const transport = webSocketTransport({
-  url: 'wss://api.zan.top/public/starknet-sepolia',
-});
-
-await transport.connect();
-
-// Subscribe to notifications
-transport.subscribe('sub_123', (data) => {
-  console.log('Received:', data);
-});
+interface Transport {
+  request<T>(request: JsonRpcRequest): Promise<JsonRpcResponse<T>>;
+  requestBatch<T>(requests: JsonRpcRequest[]): Promise<JsonRpcResponse<T>[]>;
+}
 ```
 
-## Custom Transport
+### Middleware Pattern
 
-Implement the `Transport` interface for custom protocols:
+Wrap transports to add functionality:
 
 ```typescript
-import type { Transport, JsonRpcRequest, JsonRpcResponse } from '@kundera-sn/kundera-ts/transport';
+// Logging middleware
+function withLogging(transport: Transport): Transport {
+  return {
+    async request<T>(req: JsonRpcRequest): Promise<JsonRpcResponse<T>> {
+      console.log('-->', req.method);
+      const start = Date.now();
+      const res = await transport.request<T>(req);
+      console.log('<--', req.method, `${Date.now() - start}ms`);
+      return res;
+    },
 
-const customTransport: Transport = {
-  async request<T>(request: JsonRpcRequest): Promise<T> {
-    // Your custom implementation
-    const response = await myCustomFetch(request);
+    async requestBatch<T>(reqs: JsonRpcRequest[]): Promise<JsonRpcResponse<T>[]> {
+      console.log('--> BATCH', reqs.length, 'requests');
+      const start = Date.now();
+      const res = await transport.requestBatch<T>(reqs);
+      console.log('<-- BATCH', `${Date.now() - start}ms`);
+      return res;
+    }
+  };
+}
+
+// Usage
+const transport = withLogging(httpTransport('https://...'));
+```
+
+### Caching Middleware
+
+```typescript
+function withCache(transport: Transport, ttlMs: number = 5000): Transport {
+  const cache = new Map<string, { data: any; expires: number }>();
+
+  function getCacheKey(req: JsonRpcRequest): string {
+    return `${req.method}:${JSON.stringify(req.params)}`;
+  }
+
+  return {
+    async request<T>(req: JsonRpcRequest): Promise<JsonRpcResponse<T>> {
+      const key = getCacheKey(req);
+      const cached = cache.get(key);
+
+      if (cached && cached.expires > Date.now()) {
+        return { jsonrpc: '2.0', id: req.id ?? 0, result: cached.data };
+      }
+
+      const response = await transport.request<T>(req);
+
+      if (!isJsonRpcError(response)) {
+        cache.set(key, {
+          data: response.result,
+          expires: Date.now() + ttlMs
+        });
+      }
+
+      return response;
+    },
+
+    async requestBatch<T>(reqs: JsonRpcRequest[]): Promise<JsonRpcResponse<T>[]> {
+      // Simple implementation - could be optimized
+      return Promise.all(reqs.map(r => this.request(r)));
+    }
+  };
+}
+```
+
+### Retry Middleware
+
+```typescript
+function withRetry(
+  transport: Transport,
+  options = { retries: 3, delay: 1000 }
+): Transport {
+  return {
+    async request<T>(req: JsonRpcRequest): Promise<JsonRpcResponse<T>> {
+      let lastError: Error | null = null;
+
+      for (let i = 0; i <= options.retries; i++) {
+        try {
+          return await transport.request<T>(req);
+        } catch (error) {
+          lastError = error;
+          if (i < options.retries) {
+            await new Promise(r =>
+              setTimeout(r, options.delay * Math.pow(2, i))
+            );
+          }
+        }
+      }
+
+      throw lastError;
+    },
+
+    async requestBatch<T>(reqs: JsonRpcRequest[]): Promise<JsonRpcResponse<T>[]> {
+      // Retry the entire batch
+      let lastError: Error | null = null;
+
+      for (let i = 0; i <= options.retries; i++) {
+        try {
+          return await transport.requestBatch<T>(reqs);
+        } catch (error) {
+          lastError = error;
+          if (i < options.retries) {
+            await new Promise(r =>
+              setTimeout(r, options.delay * Math.pow(2, i))
+            );
+          }
+        }
+      }
+
+      throw lastError;
+    }
+  };
+}
+```
+
+### Composing Middleware
+
+```typescript
+// Compose multiple middleware
+const transport = withRetry(
+  withCache(
+    withLogging(
+      httpTransport('https://...')
+    )
+  )
+);
+
+// Request flow: retry -> cache -> logging -> http
+```
+
+## Performance Considerations
+
+### HTTP Transport
+
+| Aspect | Consideration |
+|--------|---------------|
+| Latency | ~50-200ms per request (network dependent) |
+| Throughput | Limited by HTTP connection pooling |
+| Batching | Reduces round trips significantly |
+| Caching | Effective for repeated queries |
+
+### WebSocket Transport
+
+| Aspect | Consideration |
+|--------|---------------|
+| Latency | Lower latency after connection established |
+| Throughput | Bidirectional, good for high-frequency |
+| Real-time | Native push notifications |
+| Connection | Single persistent connection |
+
+### Choosing Transport
+
+| Use Case | Recommended |
+|----------|-------------|
+| One-off queries | HTTP |
+| High-frequency polling | HTTP with batching |
+| Real-time subscriptions | WebSocket |
+| Server-side applications | HTTP (simpler) |
+| Client-side dApps | WebSocket (real-time) |
+
+## Error Handling
+
+### Transport-Level Errors
+
+```typescript
+try {
+  const response = await transport.request(request);
+} catch (error) {
+  // Network error, timeout, etc.
+  console.error('Transport error:', error.message);
+}
+```
+
+### JSON-RPC Errors
+
+```typescript
+const response = await transport.request(request);
+
+if (isJsonRpcError(response)) {
+  // Application-level error
+  console.error('RPC error:', response.error.code, response.error.message);
+}
+```
+
+### Error Recovery
+
+```typescript
+async function safeRequest<T>(
+  transport: Transport,
+  request: JsonRpcRequest
+): Promise<T | null> {
+  try {
+    const response = await transport.request<T>(request);
+
+    if (isJsonRpcError(response)) {
+      console.error('RPC error:', response.error.message);
+      return null;
+    }
+
     return response.result;
-  },
-};
+  } catch (error) {
+    console.error('Transport error:', error.message);
+    return null;
+  }
+}
 ```
-
-## Transport Configuration
-
-### HTTP Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `fetchOptions` | `RequestInit` | `{}` | Custom fetch options (headers, credentials, etc.) |
-| `timeout` | `number` | `30000` | Request timeout (ms) |
-
-### WebSocket Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `url` | `string` | required | WebSocket endpoint URL |
-| `reconnect` | `boolean` | `true` | Auto-reconnect |
-| `reconnectDelay` | `number` | `1000` | Reconnect delay (ms) |
 
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="HTTP Provider Skill" icon="plug" href="/skills/http-provider">
-    High-level provider built on HTTP transport.
+  <Card title="Transport API" icon="satellite" href="/api/transport">
+    Complete transport API reference.
   </Card>
-  <Card title="WebSocket Provider Skill" icon="plug" href="/skills/websocket-provider">
-    Subscriptions and streaming over WebSocket.
+  <Card title="Provider Guide" icon="plug" href="/guides/provider/providers">
+    Higher-level provider patterns.
+  </Card>
+  <Card title="HTTP Transport Skill" icon="network-wired" href="/skills/http-transport">
+    Advanced HTTP transport with batching.
+  </Card>
+  <Card title="JSON-RPC API" icon="code" href="/api/jsonrpc">
+    Request builders and method reference.
   </Card>
 </CardGroup>

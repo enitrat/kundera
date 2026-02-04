@@ -1,0 +1,149 @@
+---
+title: Tree-Shakeable API
+description: Minimize bundle size with functional imports
+---
+
+Kundera provides two API styles: a convenient **constructor API** with methods, and a **functional API** for tree-shaking. Both use identical function signatures. **This documentation covers the constructor API**, which is recommended for most use cases--the functional API follows identical signatures with the object as the first parameter.
+
+## The Two APIs
+
+### Constructor API (Recommended)
+
+The `Felt252()` constructor returns instances with prototype methods:
+
+```typescript
+import { Felt252 } from '@kundera-sn/kundera-ts/primitives';
+
+const felt = Felt252('0x123');
+
+// Instance methods
+felt.toHex()        // "0x0000...0123"
+felt.toBigInt()     // 291n
+felt.isZero()       // false
+felt.equals(other)  // boolean
+
+// Static methods (also available)
+Felt252.toHex(felt)
+Felt252.isValid(felt)
+```
+
+**Tradeoff**: Importing `Felt252` brings in all methods. Use this API for applications where developer experience matters more than bundle size.
+
+### Functional API (Tree-Shakeable)
+
+Import individual functions from subpath exports:
+
+```typescript
+import { from, toHex, equals } from '@kundera-sn/kundera-ts/primitives/Felt252';
+
+const felt = from('0x123');
+
+// Same functions, data-first signature
+toHex(felt)          // Only these functions in bundle
+equals(felt, other)
+```
+
+For maximum tree-shaking, import only the functions you need:
+
+```typescript
+import { from } from '@kundera-sn/kundera-ts/primitives/Felt252/from';
+import { fromHex } from '@kundera-sn/kundera-ts/primitives/Felt252/fromHex';
+
+const felt = from('0x123');
+const felt2 = fromHex('0x456');
+```
+
+## How Methods are Written
+
+All Kundera methods are written as standalone functions first, then attached to constructors:
+
+```typescript
+// toHex.ts - Standalone function (tree-shakeable)
+export function toHex(felt: Felt252Type): string {
+  return '0x' + Array.from(felt, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Felt252.ts - Attached to constructor
+Felt252.toHex = (felt: Felt252Type) => felt.toHex();
+```
+
+This means:
+- Instance method: `felt.toHex()`
+- Static method: `Felt252.toHex(felt)`
+- Standalone function: `toHex(felt)`
+
+All three call the same underlying implementation.
+
+## Available Subpath Exports
+
+Each primitive has direct subpath exports:
+
+```typescript
+import { from } from '@kundera-sn/kundera-ts/primitives/Felt252/from';
+import { from } from '@kundera-sn/kundera-ts/primitives/ContractAddress/from';
+import { from } from '@kundera-sn/kundera-ts/primitives/ClassHash/from';
+import { from } from '@kundera-sn/kundera-ts/primitives/StorageKey/from';
+import { from } from '@kundera-sn/kundera-ts/primitives/EthAddress/from';
+```
+
+## Comparison
+
+| Import Style | Bundle Impact | Usage |
+|--------------|---------------|-------|
+| `import { Felt252 }` | Full API with methods | Application code |
+| `import { from, toHex }` | Only specific functions | Libraries, size-critical |
+
+## Converting Between APIs
+
+Converting from constructor API to functional API is mechanical--just move the object to the first parameter:
+
+```typescript
+// Constructor API
+const felt = Felt252('0x123');
+felt.toHex();
+felt.equals(other);
+Felt252.isValid(felt);
+
+// Functional API (same logic)
+const felt = from('0x123');
+toHex(felt);
+equals(felt, other);
+isValid(felt);
+```
+
+## When to Use Each
+
+**Use Constructor API when:**
+- Building applications (DX matters)
+- Bundle size is not critical
+- You want autocomplete on instances
+
+**Use Functional API when:**
+- Building libraries (minimize impact on users)
+- Every KB matters (mobile, embedded)
+- You only need a few functions
+
+## Crypto Dependencies
+
+Crypto functions require explicit backend selection. The functional API exposes separate entrypoints:
+
+```typescript
+// Native (Bun/Node with FFI) - preferred for production
+import { pedersenHash, sign, verify } from '@kundera-sn/kundera-ts/native';
+
+// WASM (browser/portable environments)
+import { pedersenHash, sign, verify } from '@kundera-sn/kundera-ts/wasm';
+```
+
+This means crypto is never accidentally bundled--you must explicitly choose your backend.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Branded Types" icon="tag" href="/concepts/branded-types">
+    Zero-overhead type safety
+  </Card>
+  <Card title="Primitives API" icon="cube" href="/api/primitives">
+    Complete primitives reference
+  </Card>
+</CardGroup>

@@ -3,8 +3,7 @@ title: "HTTP Transport"
 description: "Advanced HTTP JSON-RPC transport with batching and retries."
 ---
 
-This skill provides an HTTP transport with batching and retry support.
-Copy it into your project when you need more than the primitive transport.
+This skill provides an HTTP transport with automatic batching and retry support. Copy it into your project when you need more than the primitive transport.
 
 ## Quick Start
 
@@ -14,17 +13,311 @@ cp -r examples/skills/http-transport src/skills/
 
 ## Usage
 
-```ts
+```typescript
 import { httpTransport } from './skills/http-transport';
+import { createRequest, isJsonRpcError } from '@kundera-sn/kundera-ts/transport';
 
 const transport = httpTransport('https://api.zan.top/public/starknet-sepolia', {
   batch: { batchWait: 10, batchSize: 50 },
   retries: 3,
   timeout: 30000,
 });
+
+// Single request
+const response = await transport.request(
+  createRequest('starknet_blockNumber', [])
+);
+
+// Concurrent requests are automatically batched
+const [block, chain, nonce] = await Promise.all([
+  transport.request(createRequest('starknet_blockNumber', [])),
+  transport.request(createRequest('starknet_chainId', [])),
+  transport.request(createRequest('starknet_getNonce', ['latest', address]))
+]);
+```
+
+## Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `timeout` | `number` | `30000` | Request timeout (ms) |
+| `retries` | `number` | `0` | Number of retry attempts |
+| `retryDelay` | `number` | `500` | Base delay between retries (ms) |
+| `batch.batchWait` | `number` | `10` | Time to wait before sending batch (ms) |
+| `batch.batchSize` | `number` | `100` | Maximum requests per batch |
+| `fetchOptions` | `RequestInit` | `{}` | Custom fetch options |
+
+## Automatic Batching
+
+When batching is enabled, concurrent requests within `batchWait` milliseconds are combined into a single HTTP call:
+
+```typescript
+const transport = httpTransport('https://...', {
+  batch: {
+    batchWait: 10,   // Wait 10ms to collect requests
+    batchSize: 50    // Max 50 requests per batch
+  }
+});
+
+// These 3 concurrent requests become 1 HTTP call
+const results = await Promise.all([
+  transport.request(createRequest('starknet_blockNumber', [])),
+  transport.request(createRequest('starknet_chainId', [])),
+  transport.request(createRequest('starknet_getNonce', ['latest', addr]))
+]);
+```
+
+### Batching Flow
+
+```
+Time: 0ms   - Request 1 arrives, starts 10ms timer
+Time: 2ms   - Request 2 arrives, added to batch
+Time: 5ms   - Request 3 arrives, added to batch
+Time: 10ms  - Timer fires, batch sent as single HTTP request
+Time: 50ms  - Response received, distributed to all 3 callers
+```
+
+### Without Batching
+
+```
+Time: 0ms   - Request 1 sent
+Time: 0ms   - Request 2 sent
+Time: 0ms   - Request 3 sent
+Time: 50ms  - Response 1 received
+Time: 52ms  - Response 2 received
+Time: 55ms  - Response 3 received
+```
+
+**Benefits of batching:**
+- Reduces network round trips
+- Lower server load
+- Better performance for concurrent requests
+
+## Retry Logic
+
+Retries use exponential backoff:
+
+```typescript
+const transport = httpTransport('https://...', {
+  retries: 3,
+  retryDelay: 500  // 500ms, 1000ms, 2000ms
+});
+```
+
+### Retry Flow
+
+```
+Attempt 1: Request fails
+Wait: 500ms
+Attempt 2: Request fails
+Wait: 1000ms
+Attempt 3: Request fails
+Wait: 2000ms
+Attempt 4: Request succeeds (or throws after max retries)
+```
+
+### Non-Retryable Errors
+
+Some errors should not be retried:
+
+```typescript
+// Don't retry invalid params or method not found
+const NON_RETRYABLE_CODES = new Set([
+  -32601,  // Method not found
+  -32602,  // Invalid params
+]);
+
+// In implementation:
+if (NON_RETRYABLE_CODES.has(error.code)) {
+  throw error;  // Don't retry
+}
+```
+
+## Implementation Pattern
+
+```typescript
+export function httpTransport(
+  url: string,
+  options: HttpTransportOptions = {}
+): Transport {
+  const {
+    timeout = 30000,
+    retries = 0,
+    retryDelay = 500,
+    batch,
+    fetchOptions = {}
+  } = options;
+
+  let pendingBatch: {
+    requests: JsonRpcRequest[];
+    resolvers: Array<{
+      resolve: (value: any) => void;
+      reject: (error: any) => void;
+    }>;
+    timer: ReturnType<typeof setTimeout> | null;
+  } | null = null;
+
+  async function sendRequest<T>(
+    request: JsonRpcRequest
+  ): Promise<JsonRpcResponse<T>> {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request),
+      signal: AbortSignal.timeout(timeout),
+      ...fetchOptions
+    });
+
+    return response.json();
+  }
+
+  async function sendBatch<T>(
+    requests: JsonRpcRequest[]
+  ): Promise<JsonRpcResponse<T>[]> {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requests),
+      signal: AbortSignal.timeout(timeout),
+      ...fetchOptions
+    });
+
+    const results = await response.json();
+
+    // Match responses to requests by id
+    const responseMap = new Map(results.map((r: any) => [r.id, r]));
+    return requests.map(req => responseMap.get(req.id));
+  }
+
+  async function requestWithRetry<T>(
+    request: JsonRpcRequest
+  ): Promise<JsonRpcResponse<T>> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        return await sendRequest<T>(request);
+      } catch (error) {
+        lastError = error as Error;
+
+        if (attempt < retries) {
+          await new Promise(r =>
+            setTimeout(r, retryDelay * Math.pow(2, attempt))
+          );
+        }
+      }
+    }
+
+    throw lastError;
+  }
+
+  return {
+    async request<T>(request: JsonRpcRequest): Promise<JsonRpcResponse<T>> {
+      if (!batch) {
+        return requestWithRetry<T>(request);
+      }
+
+      // Auto-batching logic
+      return new Promise((resolve, reject) => {
+        if (!pendingBatch) {
+          pendingBatch = {
+            requests: [],
+            resolvers: [],
+            timer: null
+          };
+        }
+
+        pendingBatch.requests.push(request);
+        pendingBatch.resolvers.push({ resolve, reject });
+
+        // Start timer if this is the first request
+        if (!pendingBatch.timer) {
+          pendingBatch.timer = setTimeout(async () => {
+            const { requests, resolvers } = pendingBatch!;
+            pendingBatch = null;
+
+            try {
+              const responses = await sendBatch(requests);
+              resolvers.forEach((r, i) => r.resolve(responses[i]));
+            } catch (error) {
+              resolvers.forEach(r => r.reject(error));
+            }
+          }, batch.batchWait);
+        }
+
+        // Send immediately if batch is full
+        if (pendingBatch.requests.length >= batch.batchSize) {
+          clearTimeout(pendingBatch.timer!);
+          const { requests, resolvers } = pendingBatch;
+          pendingBatch = null;
+
+          sendBatch(requests)
+            .then(responses => {
+              resolvers.forEach((r, i) => r.resolve(responses[i]));
+            })
+            .catch(error => {
+              resolvers.forEach(r => r.reject(error));
+            });
+        }
+      });
+    },
+
+    async requestBatch<T>(
+      requests: JsonRpcRequest[]
+    ): Promise<JsonRpcResponse<T>[]> {
+      return sendBatch(requests);
+    }
+  };
+}
+```
+
+## Custom Headers
+
+```typescript
+const transport = httpTransport('https://...', {
+  fetchOptions: {
+    headers: {
+      'X-API-Key': 'your-api-key',
+      'Authorization': 'Bearer token'
+    }
+  }
+});
+```
+
+## Usage with Provider
+
+Pass the transport to a provider:
+
+```typescript
+import { createHttpProvider } from './skills/http-provider';
+import { httpTransport } from './skills/http-transport';
+
+const transport = httpTransport('https://...', {
+  batch: { batchWait: 10, batchSize: 50 },
+  retries: 3
+});
+
+// Use transport directly
+const response = await transport.request(createRequest('starknet_blockNumber', []));
+
+// Or wrap in a provider
+const provider = createHttpProvider({ transport });
 ```
 
 ## Notes
 
 - `batch` enables auto-batching for concurrent requests.
 - `retries` uses exponential backoff (`retryDelay * 2^attempt`).
+- Batched requests are matched by `id` - ensure unique IDs with `createRequest`.
+- The batch timer is reset when a new batch starts.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Transport API" icon="satellite" href="/api/transport">
+    Core transport interface.
+  </Card>
+  <Card title="HTTP Provider Skill" icon="server" href="/skills/http-provider">
+    Provider built on transport.
+  </Card>
+</CardGroup>

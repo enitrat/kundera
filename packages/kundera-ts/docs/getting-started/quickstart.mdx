@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Get up and running with Kundera in 5 minutes.
+description: Get up and running with Kundera in 5 minutes
 ---
 
 ## Installation
@@ -42,7 +42,7 @@ Kundera needs a crypto backend for signing and hashing. Choose based on your env
     ```
   </Tab>
   <Tab title="Node.js (Native)">
-    Install the FFI package:
+    Install the FFI package for best performance:
 
     ```bash
     npm install ffi-napi
@@ -57,6 +57,10 @@ Kundera needs a crypto backend for signing and hashing. Choose based on your env
     ```
   </Tab>
 </Tabs>
+
+<Note>
+**Don't need signing?** If you only need read operations (calling contracts, fetching state), you can skip crypto setup entirely.
+</Note>
 
 ## Basic Usage
 
@@ -92,6 +96,8 @@ const result = await starknet_call(
 
 ### Use Branded Types
 
+Kundera uses [branded types](/getting-started/branded-types) to prevent mixing incompatible values:
+
 ```typescript
 import { ContractAddress, ClassHash, Felt252 } from '@kundera-sn/kundera-ts';
 
@@ -99,6 +105,10 @@ import { ContractAddress, ClassHash, Felt252 } from '@kundera-sn/kundera-ts';
 const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
 const classHash = ClassHash('0x...');
 const felt = Felt252(123n);
+
+// TypeScript prevents mixups
+function deployContract(hash: ClassHash, addr: ContractAddress) { }
+deployContract(address, classHash); // Error: wrong order!
 
 // Convert between formats
 const hex = felt.toHex();
@@ -166,19 +176,40 @@ const balance = low + (high << 128n);
 console.log('Balance:', balance);
 ```
 
+## What Makes Kundera Different?
+
+Kundera is a **low-level primitives library**, not a full SDK:
+
+| Feature | Kundera | starknet.js |
+|---------|---------|-------------|
+| **Type Safety** | Branded types prevent mixups | Plain strings |
+| **Bundle Size** | Tree-shakeable, import what you use | Monolithic |
+| **Performance** | Native Rust or WASM crypto | Pure JS |
+| **Philosophy** | Data-first, explicit dependencies | Object-oriented, implicit state |
+
+<Tip>
+**Use Kundera when** you need type safety, performance, or small bundles. **Use starknet.js when** you need high-level abstractions and ecosystem compatibility.
+</Tip>
+
 ## Next Steps
 
 <CardGroup cols={2}>
-  <Card title="WASM Setup" icon="browser" href="/getting-started/wasm">
-    Detailed browser configuration.
+  <Card title="Branded Types" icon="tag" href="/getting-started/branded-types">
+    How type safety prevents bugs
   </Card>
-  <Card title="Native Setup" icon="bolt" href="/getting-started/native">
-    Configure native crypto for servers.
+  <Card title="Runtime Implementations" icon="bolt" href="/getting-started/runtime-implementations">
+    Deep dive on Native vs WASM crypto
   </Card>
-  <Card title="Skills" icon="puzzle-piece" href="/skills/index">
-    Copy-paste patterns for common tasks.
+  <Card title="Agentic Coding" icon="robot" href="/getting-started/agentic-coding">
+    Maximize AI assistant productivity
   </Card>
   <Card title="Architecture" icon="sitemap" href="/overview/architecture">
-    Understand how modules fit together.
+    Understand how modules fit together
+  </Card>
+  <Card title="Skills" icon="puzzle-piece" href="/skills/index">
+    Copy-paste patterns for common tasks
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/primitives">
+    Complete API documentation
   </Card>
 </CardGroup>

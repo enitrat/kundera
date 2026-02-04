@@ -3,7 +3,7 @@ title: "WebSocket Provider"
 description: "Real-time subscriptions using WebSocket transport + RPC methods."
 ---
 
-This skill wraps `webSocketTransport` and the `starknet_subscribe*` RPC methods.
+This skill wraps `webSocketTransport` and the `starknet_subscribe*` RPC methods for real-time blockchain data.
 
 ## Quick Start
 
@@ -13,25 +13,301 @@ cp -r examples/skills/websocket-provider src/skills/
 
 ## Usage
 
-```ts
+```typescript
 import { createWebSocketProvider } from './skills/websocket-provider';
 
 const ws = createWebSocketProvider({
   url: 'wss://api.zan.top/public/starknet-sepolia',
-  transport: { reconnect: true },
+  reconnect: true,
+  reconnectDelay: 1000
 });
 
 await ws.connect();
 
+// Subscribe to new block headers
 const unsubscribe = await ws.subscribeNewHeads(undefined, (head) => {
-  console.log('New head:', head.block_number);
+  console.log('New block:', head.block_number, head.block_hash);
 });
 
+// Later, unsubscribe
 await unsubscribe();
+
+// Cleanup
 ws.close();
+```
+
+## Subscription Types
+
+### New Block Headers
+
+```typescript
+const unsub = await ws.subscribeNewHeads(
+  undefined,  // block_id (optional)
+  (head) => {
+    console.log('Block:', head.block_number);
+    console.log('Hash:', head.block_hash);
+    console.log('Timestamp:', head.timestamp);
+  }
+);
+```
+
+### Contract Events
+
+```typescript
+const unsub = await ws.subscribeEvents(
+  {
+    from_address: contractAddress,
+    keys: [[transferEventKey]],  // Filter by event keys
+    block_id: 'latest'
+  },
+  (event) => {
+    console.log('Event from:', event.from_address);
+    console.log('Keys:', event.keys);
+    console.log('Data:', event.data);
+  }
+);
+```
+
+### Transaction Status
+
+```typescript
+const unsub = await ws.subscribeTransactionStatus(
+  txHash,
+  (status) => {
+    console.log('Status:', status.finality_status);
+    console.log('Execution:', status.execution_status);
+
+    if (status.finality_status === 'ACCEPTED_ON_L2') {
+      console.log('Transaction confirmed!');
+      unsub();  // Unsubscribe when done
+    }
+  }
+);
+```
+
+### Pending Transactions
+
+```typescript
+const unsub = await ws.subscribePendingTransactions(
+  undefined,
+  (tx) => {
+    console.log('Pending tx:', tx.transaction_hash);
+  }
+);
+```
+
+### Transaction Receipts
+
+```typescript
+const unsub = await ws.subscribeNewTransactionReceipts(
+  undefined,
+  (receipt) => {
+    console.log('Receipt:', receipt.transaction_hash);
+    console.log('Status:', receipt.execution_status);
+  }
+);
+```
+
+## Connection Management
+
+```typescript
+const ws = createWebSocketProvider({
+  url: 'wss://...',
+  reconnect: true,
+  reconnectDelay: 1000,
+  maxReconnectAttempts: 5
+});
+
+// Event handlers
+ws.on('connect', () => console.log('Connected'));
+ws.on('disconnect', (error) => console.log('Disconnected:', error?.message));
+ws.on('reconnecting', (attempt) => console.log('Reconnecting:', attempt));
+ws.on('error', (error) => console.error('Error:', error));
+
+// Connect
+await ws.connect();
+
+// Check connection status
+if (ws.isConnected()) {
+  // Safe to subscribe
+}
+
+// Manual reconnect
+await ws.reconnect();
+
+// Cleanup
+ws.close();
+```
+
+## Implementation Pattern
+
+```typescript
+export function createWebSocketProvider(options: WebSocketProviderOptions) {
+  const transport = webSocketTransport({
+    url: options.url,
+    reconnect: options.reconnect ?? true,
+    reconnectDelay: options.reconnectDelay ?? 1000
+  });
+
+  const subscriptions = new Map<string, () => void>();
+
+  return {
+    transport,
+
+    async connect() {
+      await transport.connect();
+    },
+
+    close() {
+      // Unsubscribe all
+      subscriptions.forEach(unsub => unsub());
+      subscriptions.clear();
+      transport.disconnect();
+    },
+
+    isConnected() {
+      return transport.isConnected();
+    },
+
+    on(event: string, listener: (...args: any[]) => void) {
+      transport.on(event, listener);
+    },
+
+    async subscribeNewHeads(
+      blockId: string | undefined,
+      callback: (head: BlockHeader) => void
+    ): Promise<() => Promise<void>> {
+      const response = await transport.request(
+        createRequest('starknet_subscribeNewHeads', blockId ? [blockId] : [])
+      );
+
+      if (isJsonRpcError(response)) {
+        throw response.error;
+      }
+
+      const subscriptionId = response.result;
+      transport.subscribe(subscriptionId, callback);
+      subscriptions.set(subscriptionId, () => transport.unsubscribe(subscriptionId));
+
+      return async () => {
+        await transport.request(
+          createRequest('starknet_unsubscribe', [subscriptionId])
+        );
+        transport.unsubscribe(subscriptionId);
+        subscriptions.delete(subscriptionId);
+      };
+    },
+
+    // Similar implementations for other subscription types...
+  };
+}
+```
+
+## Async Generator Alternative
+
+For use with `for await...of`:
+
+```typescript
+async function* newHeadsGenerator(ws: WebSocketProvider) {
+  const queue: BlockHeader[] = [];
+  let resolve: (() => void) | null = null;
+
+  const unsub = await ws.subscribeNewHeads(undefined, (head) => {
+    queue.push(head);
+    resolve?.();
+  });
+
+  try {
+    while (true) {
+      if (queue.length === 0) {
+        await new Promise<void>(r => { resolve = r; });
+      }
+      yield queue.shift()!;
+    }
+  } finally {
+    await unsub();
+  }
+}
+
+// Usage
+for await (const head of newHeadsGenerator(ws)) {
+  console.log('Block:', head.block_number);
+}
+```
+
+## Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | WebSocket URL |
+| `reconnect` | `boolean` | `true` | Auto-reconnect on disconnect |
+| `reconnectDelay` | `number` | `1000` | Delay between reconnects (ms) |
+| `maxReconnectAttempts` | `number` | `5` | Maximum reconnect attempts |
+
+## Usage Patterns
+
+### Monitor Contract Events
+
+```typescript
+async function monitorTransfers(ws, contractAddress, onTransfer) {
+  await ws.connect();
+
+  const unsub = await ws.subscribeEvents(
+    {
+      from_address: contractAddress,
+      keys: [[TRANSFER_EVENT_KEY]]
+    },
+    (event) => {
+      const [from, to, amount] = event.data;
+      onTransfer({ from, to, amount });
+    }
+  );
+
+  return unsub;
+}
+```
+
+### Wait for Transaction
+
+```typescript
+async function waitForTx(ws, txHash, timeout = 120000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      unsub();
+      reject(new Error('Transaction timeout'));
+    }, timeout);
+
+    let unsub: () => Promise<void>;
+
+    ws.subscribeTransactionStatus(txHash, (status) => {
+      if (status.finality_status === 'ACCEPTED_ON_L2') {
+        clearTimeout(timer);
+        unsub?.();
+        resolve(status);
+      } else if (status.finality_status === 'REJECTED') {
+        clearTimeout(timer);
+        unsub?.();
+        reject(new Error('Transaction rejected'));
+      }
+    }).then(u => { unsub = u; });
+  });
+}
 ```
 
 ## Notes
 
 - You must `connect()` before subscribing.
 - Subscriptions return an async `unsubscribe` function.
+- Auto-reconnect will attempt to restore subscriptions.
+- Call `close()` to clean up all subscriptions and disconnect.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider API" icon="plug" href="/api/provider">
+    WebSocketProvider reference.
+  </Card>
+  <Card title="HTTP Provider Skill" icon="server" href="/skills/http-provider">
+    HTTP-based provider skill.
+  </Card>
+</CardGroup>

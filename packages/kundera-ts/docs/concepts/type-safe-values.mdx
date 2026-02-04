@@ -1,0 +1,154 @@
+---
+title: Type-Safe Starknet Values
+description: Prevent type confusion and mixing with compile-time safety
+---
+
+Kundera uses distinct types for Starknet values that other libraries treat as generic `bigint` or `string`. This prevents bugs that have caused real issues in production.
+
+## The Problem
+
+Consider typical Starknet code:
+
+```typescript
+// Everything is just bigint or string
+const address = '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7';
+const classHash = '0x02a8846878b6ad1f54f6ba46f5f40e11cee755c677f130b2c4b60566c9003f1f';
+
+// Easy to make mistakes
+await deployContract(
+  classHash,  // Oops! Passed class hash where address expected
+  address     // And address where class hash expected
+);
+```
+
+This code compiles and runs. The bug won't be caught until the transaction fails on-chain.
+
+## The Solution
+
+Kundera makes these distinctions a type-level concern:
+
+```typescript
+import { ContractAddress, ClassHash } from '@kundera-sn/kundera-ts/primitives';
+
+const address = ContractAddress.from('0x049d36570d4e...');
+const classHash = ClassHash.from('0x02a8846878b6...');
+
+// Type error: ClassHashType is not assignable to ContractAddressType
+deployContract(classHash, address);
+
+// Correct
+deployContract(address, classHash);
+```
+
+If you have a `ContractAddressType`, you *know* it's a valid contract address. The type system enforces it.
+
+## Starknet Primitives
+
+All values in Starknet are 252-bit field elements, but they serve different purposes:
+
+### Address vs ClassHash vs StorageKey
+
+All are felts. All look similar. But mixing them is always a bug:
+
+```typescript
+import { Felt252, ContractAddress, ClassHash, StorageKey } from '@kundera-sn/kundera-ts/primitives';
+
+const felt = Felt252('0x123');
+const address = ContractAddress.from('0x456');
+const classHash = ClassHash.from('0x789');
+const storageKey = StorageKey.from('0xabc');
+
+// Type errors - cannot mix them
+function transfer(to: ContractAddressType) { /* ... */ }
+transfer(classHash);   // Type error!
+transfer(storageKey);  // Type error!
+transfer(felt);        // Type error!
+```
+
+### Felt252 as the Base Type
+
+`Felt252` is the raw 252-bit field element. Use it when:
+- Working with raw computation
+- The semantic meaning is not yet determined
+- Implementing low-level protocols
+
+```typescript
+import { Felt252 } from '@kundera-sn/kundera-ts/primitives';
+
+const a = Felt252('0x123');
+const b = Felt252('0x456');
+
+// Arithmetic operations work on felts
+const sum = fieldAdd(a, b);  // Returns Felt252Type
+```
+
+### EthAddress for L1 Interop
+
+When working with L1-L2 messaging, Ethereum addresses have their own type:
+
+```typescript
+import { EthAddress, ContractAddress } from '@kundera-sn/kundera-ts/primitives';
+
+const l1Address = EthAddress.from('0x742d35Cc6634C0532925a3b844Bc9e7595f51e3e');
+const l2Address = ContractAddress.from('0x049d36570d4e...');
+
+// Type error: Cannot use L1 address where L2 address expected
+transfer(l1Address);  // Type error!
+```
+
+## Comparison with Other Libraries
+
+| Operation | starknet.js | Kundera |
+|-----------|-------------|---------|
+| Contract address | `string` | `ContractAddressType` |
+| Class hash | `string` | `ClassHashType` |
+| Storage key | `string` | `StorageKeyType` |
+| ETH address | `string` | `EthAddressType` |
+| Raw felt | `BigNumberish` | `Felt252Type` |
+
+The difference: Kundera catches misuse at compile time. Other libraries catch it at runtime (or not at all).
+
+## Parse, Don't Validate
+
+Once you have a typed value, it's guaranteed valid. This enables a powerful pattern:
+
+```typescript
+// Business logic doesn't need validation
+function computeAddressFromHash(
+  classHash: ClassHashType,
+  salt: Felt252Type,
+  constructorCalldata: Felt252Type[]
+): ContractAddressType {
+  // No validation needed - types guarantee valid inputs
+  return computeContractAddress(classHash, salt, constructorCalldata);
+}
+
+// Validation happens at the boundary
+function handleUserInput(input: string): ContractAddressType {
+  // Throws if invalid - validation happens once
+  return ContractAddress.from(input);
+}
+```
+
+This is the "parse, don't validate" philosophy: validate at system boundaries, then work with guaranteed-valid types throughout your code.
+
+## All Typed Values
+
+| Category | Types | Description |
+|----------|-------|-------------|
+| Field Elements | `Felt252Type` | Raw 252-bit field element |
+| Addresses | `ContractAddressType` | Starknet contract address |
+| Classes | `ClassHashType` | Contract class identifier |
+| Storage | `StorageKeyType` | Storage slot address |
+| L1 Interop | `EthAddressType` | Ethereum L1 address |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Branded Types" icon="tag" href="/concepts/branded-types">
+    How the type system implements these guarantees
+  </Card>
+  <Card title="Primitives API" icon="cube" href="/api/primitives">
+    Complete primitives reference
+  </Card>
+</CardGroup>

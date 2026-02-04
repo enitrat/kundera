@@ -1,0 +1,85 @@
+---
+title: Agentic Coding
+description: Get maximum AI productivity with Kundera using local context
+---
+
+## Recommended: Clone the Repo
+
+Top AI engineers get the best results by cloning the entire Kundera repository locally. This provides maximum context for your AI coding assistant.
+
+<Tip>
+**This is the recommended approach.** Having the full source code locally gives AI assistants complete context - they can read implementations, understand patterns, and provide more accurate code.
+</Tip>
+
+```bash
+git clone https://github.com/enitrat/kundera.git
+```
+
+Once cloned, point your AI assistant to the repo when working on Starknet projects. The codebase includes comprehensive inline documentation, tests, and examples.
+
+## API Design for AI
+
+Kundera's API is designed to work well with AI assistants:
+
+**Mirrors Starknet specs** - LLMs trained on Starknet documentation can leverage that knowledge directly. No bespoke abstractions to learn.
+
+**Minimal abstraction** - What you pass to a function is what happens. No hidden retry policies, automatic caching, or magic behavior that confuses debugging.
+
+**Predictable patterns** - Every primitive follows the same conventions: `Type()` constructor, `.toHex()`, `.equals()`, etc.
+
+```typescript
+// Kundera API maps directly to Starknet concepts
+const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+const hash = pedersen(a, b);
+const result = await starknet_call(transport, request);
+```
+
+## Why Local Context Works Best
+
+Having the repo cloned locally provides:
+
+- **Full source code** - AI can read actual implementations, not just docs
+- **Test examples** - Real-world usage patterns in test files
+- **Type definitions** - Complete TypeScript types for accurate suggestions
+- **Build context** - Understanding of how modules connect
+
+Most production teams using AI-assisted development keep frequently-used libraries cloned locally for this reason.
+
+## Data-First = AI-Friendly
+
+Kundera's data-first architecture makes it easier for AI assistants to understand and generate correct code:
+
+```typescript
+// Clear input → output flow
+const transport = httpTransport(url);
+const result = await starknet_call(transport, request);
+const decoded = decodeOutputObject(abi, 'balanceOf', result);
+```
+
+No hidden state, no implicit configuration. Every dependency is explicit.
+
+## Type Safety Helps AI
+
+Branded types help AI assistants self-correct:
+
+```typescript
+// AI assistant attempts to swap arguments
+const call = starknet_call(request, transport);
+//                          ~~~~~~~ Type error!
+
+// TypeScript error guides the AI to fix it
+const call = starknet_call(transport, request); // ✓
+```
+
+Compile errors provide immediate feedback that helps LLMs produce correct code on the next attempt.
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card title="Branded Types" icon="tag" href="/getting-started/branded-types">
+    How branded types prevent bugs
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/overview/architecture">
+    Understanding module structure
+  </Card>
+</CardGroup>
