@@ -1,5 +1,5 @@
 # Kundera - Starknet Primitives Library
-# This Cargo.toml is used for internal Rust crypto dependencies (FFI to Zig)
+# This Cargo.toml is used for Rust crypto FFI (called by TypeScript via bun:ffi/ffi-napi)
 [package]
 name = "kundera"
 version = "0.1.0"

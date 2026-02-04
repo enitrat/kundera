@@ -2,7 +2,7 @@
  * Kundera - Starknet Primitives Library
  *
  * A high-performance library for Starknet types and cryptography.
- * Architecture: TypeScript API → Zig Core → Rust FFI (starknet-crypto)
+ * Architecture: TypeScript API → Rust FFI (starknet-crypto)
  *
  * @packageDocumentation
  */

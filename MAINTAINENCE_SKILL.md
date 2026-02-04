@@ -16,7 +16,6 @@ Entry points (must stay in sync):
 
 Core layers:
 - TypeScript API: packages/kundera-ts/src/* (primitives/crypto/serde/jsonrpc)
-- Zig: primitives + glue (packages/kundera-ts/src/*/*.zig)
 - Rust: cryptography FFI (lib/starknet-crypto-ffi)
 
 Runtime-specific loaders:
@@ -40,16 +39,11 @@ Adding a New Primitive (Type or Utility)
 - Export from packages/kundera-ts/src/index.ts (auto-export if using export * in entrypoints)
 - Add an export entry in packages/kundera-ts/package.json if it is a new primitive
 
-2) Zig
-- Implement in packages/kundera-ts/src/primitives/root.zig
-- Add Zig tests in the same file
-- Wire into build.zig if needed
-
-3) Parity
+2) Parity
 - Update packages/kundera-ts/src/api-interface.ts with the new functions/types
 - Ensure `_api satisfies KunderaAPI` still passes in index/native/wasm
 
-4) WASM / Native
+3) WASM / Native
 - If the primitive is backed by FFI or WASM, see the sections below.
 
 -----------------------------------------------------------------------------
@@ -61,27 +55,22 @@ Adding a New Crypto Function (FFI-backed)
 - Update lib/starknet-crypto-ffi/include/starknet_crypto.h
 - Add Rust tests for the new function
 
-2) Zig FFI (native + wasm)
-- Add extern in packages/kundera-ts/src/crypto/ffi.zig
-- Add wrapper in packages/kundera-ts/src/crypto/root.zig
-- Add Zig tests
-
-3) TypeScript
+2) TypeScript
 - Add API in packages/kundera-ts/src/crypto/index.ts
 - Add tests in packages/kundera-ts/src/crypto/index.test.ts
 
-4) Native FFI loaders
+3) Native FFI loaders
 - Add symbol definitions + wrapper in:
   - packages/kundera-ts/src/native/bun-ffi.ts
   - packages/kundera-ts/src/native/node-ffi.ts
 - Add delegation in packages/kundera-ts/src/native/loader.ts
 
-5) WASM loader
+4) WASM loader
 - Export in packages/kundera-ts/src/wasm-loader/types.ts
 - Add memory marshalling in packages/kundera-ts/src/wasm-loader/loader.ts
 - Add tests in packages/kundera-ts/src/wasm-loader/loader.test.ts
 
-6) Parity
+5) Parity
 - Update packages/kundera-ts/src/api-interface.ts
 - Verify index/native/wasm parity blocks compile
 

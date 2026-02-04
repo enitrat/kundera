@@ -6,13 +6,12 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r build",
-    "build:zig": "zig build",
     "test": "pnpm -r test",
     "test:run": "pnpm -r test:run",
-    "format": "zig build format && pnpm -r format",
+    "format": "pnpm -r format",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "clean": "rm -rf zig-out .zig-cache target && pnpm -r clean",
+    "clean": "rm -rf target && pnpm -r clean",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm build && pnpm -r publish --access public"
