@@ -61,6 +61,50 @@ const program = Effect.gen(function* () {
 );
 ```
 
+## ContractRegistryService Pattern
+
+The recommended way to interact with contracts is using `ContractRegistryService` — pre-configure your contracts in a Layer for cleaner Effect composition:
+
+```typescript
+import { Effect, Layer } from 'effect';
+import { Services } from '@kundera-sn/kundera-effect';
+
+// Define your contracts once
+const ERC20_ABI = [
+  { type: "function", name: "balanceOf", inputs: [...], outputs: [...], state_mutability: "view" },
+  { type: "function", name: "transfer", inputs: [...], outputs: [], state_mutability: "external" },
+] as const;
+
+const ContractsLayer = Services.Contract.makeContractRegistry({
+  ETH: { abi: ERC20_ABI, address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7' },
+  STRK: { abi: ERC20_ABI, address: '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d' },
+  ERC20: { abi: ERC20_ABI }, // Factory - no address, use .at() at runtime
+});
+
+// Clean Effect.gen - no inline contract creation
+const program = Effect.gen(function* () {
+  const { ETH, STRK, ERC20 } = yield* Services.Contract.ContractRegistryService;
+
+  // Pre-addressed: use directly with full type safety
+  const ethBalance = yield* ETH.read.balanceOf(userAddress);
+  const strkBalance = yield* STRK.read.balanceOf(userAddress);
+
+  // Factory: create at runtime address
+  const customToken = ERC20.at(dynamicAddress);
+  const customBalance = yield* customToken.read.balanceOf(userAddress);
+
+  return { ethBalance, strkBalance, customBalance };
+}).pipe(
+  Effect.provide(ContractsLayer),
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(Services.Presets.createHttpProvider('https://starknet.example.com'))
+);
+```
+
+<Info>
+See the [Contract Registry Guide](/effect/services/contract-registry) for complete documentation.
+</Info>
+
 ## Installation
 
 ```bash

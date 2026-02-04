@@ -8,6 +8,7 @@
 import { Config, Context, Effect, Layer, Schema } from "effect";
 import { httpTransport } from "@kundera-sn/kundera-effect/transport";
 import type { Transport } from "@kundera-sn/kundera-ts/transport";
+import { Services } from "@kundera-sn/kundera-effect";
 import { ConfigurationError } from "./errors.js";
 
 // -----------------------------------------------------------------------------
@@ -125,3 +126,86 @@ export const TransportLayerOrDie = (network: Network): Layer.Layer<TransportServ
       return httpTransport(url);
     }).pipe(Effect.orDie)
   );
+
+// -----------------------------------------------------------------------------
+// ERC20 ABI
+// -----------------------------------------------------------------------------
+
+/**
+ * Minimal ERC20 ABI for balance queries.
+ * The `as const` assertion enables abi-wan-kanabi type inference.
+ */
+export const ERC20_ABI = [
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [
+      {
+        name: "account",
+        type: "core::starknet::contract_address::ContractAddress",
+      },
+    ],
+    outputs: [{ type: "core::integer::u256" }],
+    state_mutability: "view",
+  },
+  {
+    type: "function",
+    name: "decimals",
+    inputs: [],
+    outputs: [{ type: "core::integer::u8" }],
+    state_mutability: "view",
+  },
+  {
+    type: "function",
+    name: "symbol",
+    inputs: [],
+    outputs: [{ type: "core::felt252" }],
+    state_mutability: "view",
+  },
+  {
+    type: "function",
+    name: "name",
+    inputs: [],
+    outputs: [{ type: "core::felt252" }],
+    state_mutability: "view",
+  },
+] as const;
+
+// -----------------------------------------------------------------------------
+// Contract Registry Layer
+// -----------------------------------------------------------------------------
+
+/**
+ * Create a contract registry layer for a specific network.
+ *
+ * Pre-configures ETH and STRK token contracts, plus an ERC20 factory
+ * for dynamic token addresses.
+ *
+ * @example
+ * ```typescript
+ * const program = Effect.gen(function* () {
+ *   const { ETH, STRK, ERC20 } = yield* Services.Contract.ContractRegistryService;
+ *
+ *   // Pre-addressed: use directly
+ *   const ethBalance = yield* ETH.read.balanceOf(user);
+ *
+ *   // Factory: create at runtime
+ *   const token = ERC20.at(dynamicAddress);
+ *   const balance = yield* token.read.balanceOf(user);
+ * }).pipe(Effect.provide(ContractsLayer("mainnet")));
+ * ```
+ */
+export const ContractsLayer = (network: Network) =>
+  Services.Contract.makeContractRegistry({
+    ETH: {
+      abi: ERC20_ABI,
+      address: TOKEN_ADDRESSES[network].ETH,
+    },
+    STRK: {
+      abi: ERC20_ABI,
+      address: TOKEN_ADDRESSES[network].STRK,
+    },
+    ERC20: {
+      abi: ERC20_ABI,
+    },
+  });

@@ -7,7 +7,7 @@ description: Transport/Provider/RpcBatch services for @kundera-sn/kundera-effect
 
 @kundera-sn/kundera-effect exposes a minimal services layer similar to Voltaire’s DI model.
 
-## What’s Included
+## What's Included
 
 - `TransportService` + live layers: `HttpTransport`, `WebSocketTransport` (retry/timeout/rate-limit)
 - `ProviderService`: typed `request({ method, params })`
@@ -15,7 +15,8 @@ description: Transport/Provider/RpcBatch services for @kundera-sn/kundera-effect
 - `FeeEstimatorService`: estimate fees + derive resource bounds
 - `RpcBatchService`: request batching with configurable queueing
 - `ContractService`: typed `readContract` + `callRaw`
-- `ContractFactory`: Voltaire-style typed contract instance (`read`/`write`/`simulate`)
+- `ContractFactory`: typed contract instance (`read`/`write`/`simulate`)
+- **`ContractRegistryService`**: pre-configured contracts in a Layer (recommended)
 - `ContractWriteService`: write contract calls with a signer
 - `AccountService`: OpenZeppelin + ArgentX account signing for `INVOKE_V3`
 - `SignerService`: sign + submit invoke transactions
@@ -25,6 +26,9 @@ description: Transport/Provider/RpcBatch services for @kundera-sn/kundera-effect
 ## Service Pages
 
 <CardGroup cols={2}>
+  <Card title="Contract Registry" icon="layer-group" href="/effect/services/contract-registry">
+    Pre-configured contracts in a Layer (recommended).
+  </Card>
   <Card title="Provider" icon="plug" href="/effect/services/provider">
     ProviderService, RawProvider, and presets.
   </Card>
@@ -84,29 +88,49 @@ const program = Effect.gen(function* () {
 await Effect.runPromise(program);
 ```
 
-## Contract Reads
+## Contract Reads (Recommended)
+
+Use `ContractRegistryService` to pre-configure contracts in a Layer:
 
 ```ts
 import { Effect } from "effect";
 import { Services } from "@kundera-sn/kundera-effect";
-import erc20Abi from "./erc20.abi.json";
+
+const ERC20_ABI = [
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [{ name: "account", type: "core::starknet::contract_address::ContractAddress" }],
+    outputs: [{ type: "core::integer::u256" }],
+    state_mutability: "view",
+  },
+] as const;
+
+// Define contracts once in a Layer
+const ContractsLayer = Services.Contract.makeContractRegistry({
+  ETH: { abi: ERC20_ABI, address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7" },
+  STRK: { abi: ERC20_ABI, address: "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d" },
+});
 
 const program = Effect.gen(function* () {
-  const contract = yield* Services.Contract.ContractService;
+  const { ETH, STRK } = yield* Services.Contract.ContractRegistryService;
 
-  return yield* contract.readContract({
-    abi: erc20Abi,
-    address: "0x...",
-    functionName: "balanceOf",
-    args: ["0x..."]
-  });
+  const ethBalance = yield* ETH.read.balanceOf("0x...");
+  const strkBalance = yield* STRK.read.balanceOf("0x...");
+
+  return { ethBalance, strkBalance };
 }).pipe(
-  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
-  Effect.provide(Services.Contract.ContractLayer)
+  Effect.provide(ContractsLayer),
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com"))
 );
 
 await Effect.runPromise(program);
 ```
+
+<Info>
+For low-level contract calls or dynamic addresses, see [ContractService](/effect/services/contract).
+</Info>
 
 ## Sign Invokes (OpenZeppelin Accounts)
 

@@ -51,6 +51,7 @@
                 "group": "Services",
                 "icon": "server",
                 "pages": [
+                  "effect/services/contract-registry",
                   "effect/services/provider",
                   "effect/services/contract",
                   "effect/services/contract-write",

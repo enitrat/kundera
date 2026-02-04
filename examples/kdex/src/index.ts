@@ -3,7 +3,7 @@
  * kdex - A cast-like CLI for Starknet using Kundera Effect
  *
  * Demo project showcasing kundera-effect's best features:
- * - ContractFactory for typed contract calls via abi-wan-kanabi
+ * - ContractRegistryService for pre-configured typed contract instances
  * - Effect.Service pattern for dependency injection
  * - Schema.TaggedError for typed errors
  * - Effect.fn for automatic tracing
@@ -26,6 +26,7 @@ import { storage } from "./commands/storage.js";
 import {
   TransportService,
   TransportLayerOrDie,
+  ContractsLayer,
   isValidNetwork,
   type Network,
   type Token,
@@ -126,11 +127,12 @@ const formatError = (error: unknown): string =>
 
 /**
  * Create the application layer for a given network.
- * Composes transport with ContractLayer for ContractFactory support.
+ * Composes transport, ContractLayer, and ContractsLayer for pre-configured contracts.
  */
 const createAppLayer = (network: Network) =>
   Layer.mergeAll(
     TransportLayerOrDie(network),
+    ContractsLayer(network),
     Services.Contract.ContractLayer.pipe(
       Layer.provide(
         Services.Presets.createHttpProvider(
@@ -146,7 +148,7 @@ const createAppLayer = (network: Network) =>
  * Run an Effect program with proper layer composition and error handling
  */
 const runCommand = <A, E>(
-  program: Effect.Effect<A, E, TransportService | Services.Contract.ContractService>,
+  program: Effect.Effect<A, E, TransportService | Services.Contract.ContractService | Services.Contract.ContractRegistryService>,
   network: Network
 ): Promise<void> => {
   const layer = createAppLayer(network);
@@ -244,12 +246,12 @@ program
     await runSimpleCommand(chainId(), network);
   });
 
-// balance: Get token balance (showcases ContractFactory typed calls)
+// balance: Get token balance (showcases ContractRegistryService)
 program
   .command("balance")
   .description(
     "Get STRK or ETH balance of an address\n" +
-      "(Uses ContractFactory for typed contract calls)"
+      "(Uses ContractRegistryService for pre-configured typed contracts)"
   )
   .argument("<address>", "Contract address to check balance for")
   .option("-t, --token <token>", `Token to check (${TOKENS.join(", ")})`, "STRK")

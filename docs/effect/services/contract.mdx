@@ -3,14 +3,17 @@ title: Contract Service
 description: Read-only contract calls with ABI decoding.
 ---
 
+<Tip>
+**Recommended:** Use [ContractRegistryService](/effect/services/contract-registry) for pre-configured contracts in a Layer. It provides cleaner Effect composition without inline contract creation.
+</Tip>
+
 <Info>
 ContractService focuses on read-only calls. For state changes use `SignerService`.
-If you want a Voltaire-style, ABI-typed API surface, use `ContractFactory`.
 </Info>
 
 # Contract Service
 
-`ContractService` composes `ProviderService` and ABI helpers to build calls and decode outputs.
+`ContractService` composes `ProviderService` and ABI helpers to build calls and decode outputs. For most use cases, prefer `ContractRegistryService` which builds on top of this.
 
 ## Imports
 
@@ -58,11 +61,15 @@ const program = Effect.gen(function* () {
 });
 ```
 
-## Typed Contract Factory (Voltaire-style)
+## Typed Contract Factory
+
+<Info>
+For multiple contracts or known addresses, prefer [ContractRegistryService](/effect/services/contract-registry) which pre-configures contracts in a Layer. Use `ContractFactory` directly for one-off or dynamic contract creation.
+</Info>
 
 `ContractFactory` generates a type-safe API surface from an `as const` ABI, while internally
-keeping runtime encoding flexible. This mirrors Voltaire’s pattern: strict types at the edge,
-`unknown[]` inside. Under the hood we use abi-wan-kanabi for typing only and keep Kundera’s
+keeping runtime encoding flexible. This mirrors Voltaire's pattern: strict types at the edge,
+`unknown[]` inside. Under the hood we use abi-wan-kanabi for typing only and keep Kundera's
 runtime ABI handling for compatibility.
 
 ```ts
@@ -137,8 +144,14 @@ const program = Effect.gen(function* () {
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="Contract Registry" icon="layer-group" href="/effect/services/contract-registry">
+    Pre-configured contract instances in a Layer (recommended).
+  </Card>
   <Card title="Provider" icon="plug" href="/effect/services/provider">
     ProviderService and presets.
+  </Card>
+  <Card title="Contract Write" icon="pen" href="/effect/services/contract-write">
+    Write transactions with a signer.
   </Card>
   <Card title="Signer" icon="signature" href="/effect/services/signer">
     Write transactions with account signatures.

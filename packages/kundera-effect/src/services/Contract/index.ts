@@ -11,3 +11,11 @@ export type {
   WriteOptions
 } from "./ContractTypes.js";
 export type { ContractFactory as ContractFactoryType } from "./ContractFactory.js";
+export { ContractRegistryService, makeContractRegistry } from "./ContractRegistryService.js";
+export type {
+  ContractDef,
+  ContractRegistryConfig,
+  ContractInstanceFactory,
+  ContractRegistryShape,
+  InferContractRegistry
+} from "./ContractRegistryService.js";

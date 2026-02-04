@@ -3,64 +3,23 @@
  *
  * Get STRK or ETH balance of an address using typed contract calls.
  *
- * This command showcases kundera-effect's ContractFactory feature which provides
- * fully typed contract interactions via abi-wan-kanabi integration.
+ * This command showcases kundera-effect's ContractRegistryService feature which
+ * provides pre-configured contract instances in a Layer for cleaner Effect composition.
  */
 
 import { Effect } from "effect";
 import { Services } from "@kundera-sn/kundera-effect";
 import { ContractAddress } from "@kundera-sn/kundera-effect/primitives";
 import {
-  TransportService,
+  ERC20_ABI,
   TOKEN_ADDRESSES,
   type Token,
   type Network,
 } from "../config.js";
-import { AddressValidationError, TokenNotFoundError } from "../errors.js";
+import { AddressValidationError } from "../errors.js";
 
-// -----------------------------------------------------------------------------
-// ERC20 ABI (typed with `as const` for full type inference)
-// -----------------------------------------------------------------------------
-
-/**
- * Minimal ERC20 ABI for balance queries.
- * The `as const` assertion enables abi-wan-kanabi type inference.
- */
-const ERC20_ABI = [
-  {
-    type: "function",
-    name: "balanceOf",
-    inputs: [
-      {
-        name: "account",
-        type: "core::starknet::contract_address::ContractAddress",
-      },
-    ],
-    outputs: [{ type: "core::integer::u256" }],
-    state_mutability: "view",
-  },
-  {
-    type: "function",
-    name: "decimals",
-    inputs: [],
-    outputs: [{ type: "core::integer::u8" }],
-    state_mutability: "view",
-  },
-  {
-    type: "function",
-    name: "symbol",
-    inputs: [],
-    outputs: [{ type: "core::felt252" }],
-    state_mutability: "view",
-  },
-  {
-    type: "function",
-    name: "name",
-    inputs: [],
-    outputs: [{ type: "core::felt252" }],
-    state_mutability: "view",
-  },
-] as const;
+// Type alias for contract instance
+type ERC20Contract = Services.Contract.ContractInstance<typeof ERC20_ABI>;
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -82,29 +41,6 @@ const formatBalance = Effect.fn("kdex.formatBalance")(function* (
     fractionalStr.slice(0, 6).replace(/0+$/, "") || "0";
 
   return `${integerPart}.${truncatedFractional}`;
-});
-
-/**
- * Get token address for network, failing with TokenNotFoundError if not found
- */
-const getTokenAddress = Effect.fn("kdex.getTokenAddress")(function* (
-  token: Token,
-  network: Network
-) {
-  const addresses = TOKEN_ADDRESSES[network];
-  const address = addresses[token];
-
-  if (!address) {
-    return yield* Effect.fail(
-      new TokenNotFoundError({
-        token,
-        network,
-        message: `Token ${token} not configured for network ${network}`,
-      })
-    );
-  }
-
-  return address;
 });
 
 /**
@@ -132,30 +68,28 @@ const parseAddress = Effect.fn("kdex.parseAddress")(function* (
 /**
  * Get token balance for an address.
  *
- * Uses ContractFactory for fully typed contract calls:
- * - token.read.balanceOf() is typed to accept ContractAddress and return bigint
- * - No manual ABI encoding/decoding required
- * - TypeScript enforces correct argument types
+ * Uses ContractRegistryService for pre-configured contract instances:
+ * - Contracts are defined in ContractsLayer (see config.ts)
+ * - No inline contract creation - cleaner Effect.gen
+ * - TypeScript enforces correct argument types via abi-wan-kanabi
  */
-export const balance = (address: string, token: Token, network: Network) =>
+export const balance = (address: string, token: Token, _network: Network) =>
   Effect.gen(function* () {
     // Validate inputs
     const accountAddress = yield* parseAddress(address);
-    const tokenAddress = yield* getTokenAddress(token, network);
 
     yield* Effect.annotateCurrentSpan({
       "kdex.command": "balance",
       "kdex.token": token,
-      "kdex.network": network,
+      "kdex.network": _network,
       "kdex.address": address,
     });
 
-    // Create typed contract instance using ContractFactory
-    // This is the key feature: fully typed read.balanceOf() method
-    const tokenContract = yield* Services.Contract.Contract(
-      tokenAddress,
-      ERC20_ABI
-    );
+    // Get pre-configured contracts from registry
+    const contracts = yield* Services.Contract.ContractRegistryService;
+
+    // Select the token contract (ETH or STRK)
+    const tokenContract = contracts[token] as ERC20Contract;
 
     // Call balanceOf with typed arguments
     // The return type is automatically inferred as bigint from the ABI
@@ -186,7 +120,7 @@ export const balance = (address: string, token: Token, network: Network) =>
 /**
  * Get balance using low-level ContractService.readContract
  *
- * This shows the alternative approach without ContractFactory.
+ * This shows the alternative approach without ContractRegistryService.
  * Useful when you need more control over the call parameters.
  */
 export const balanceLowLevel = (
@@ -196,7 +130,7 @@ export const balanceLowLevel = (
 ) =>
   Effect.gen(function* () {
     const accountAddress = yield* parseAddress(address);
-    const tokenAddress = yield* getTokenAddress(token, network);
+    const tokenAddress = TOKEN_ADDRESSES[network][token];
 
     const contract = yield* Services.Contract.ContractService;
 

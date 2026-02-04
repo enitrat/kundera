@@ -1,0 +1,260 @@
+---
+title: Contract Registry
+description: Pre-configured contract instances in a Layer for cleaner Effect composition.
+---
+
+<Info>
+**Recommended approach** for contract interactions. Use `ContractRegistryService` to define contracts upfront and access them via dependency injection.
+</Info>
+
+# Contract Registry
+
+`ContractRegistryService` enables defining contracts in a Layer, providing pre-configured instances for cleaner Effect composition without inline contract creation.
+
+## Why Use Contract Registry?
+
+| Approach | Code Pattern | When to Use |
+|----------|--------------|-------------|
+| **ContractRegistryService** | Define once, yield and use | Multiple contracts, known addresses |
+| ContractFactory | `yield* Contract(addr, abi)` | Dynamic/one-off contract reads |
+| ContractService.readContract | Low-level call building | Custom call parameters |
+
+## Quick Start
+
+```typescript
+import { Effect, Layer } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+// 1. Define your ABI (as const for type inference)
+const ERC20_ABI = [
+  {
+    type: "function",
+    name: "balanceOf",
+    inputs: [{ name: "account", type: "core::starknet::contract_address::ContractAddress" }],
+    outputs: [{ type: "core::integer::u256" }],
+    state_mutability: "view",
+  },
+  {
+    type: "function",
+    name: "transfer",
+    inputs: [
+      { name: "recipient", type: "core::starknet::contract_address::ContractAddress" },
+      { name: "amount", type: "core::integer::u256" },
+    ],
+    outputs: [],
+    state_mutability: "external",
+  },
+] as const;
+
+// 2. Create a contract registry layer
+const ContractsLayer = Services.Contract.makeContractRegistry({
+  // Pre-addressed: creates ContractInstance directly
+  ETH: {
+    abi: ERC20_ABI,
+    address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+  },
+  STRK: {
+    abi: ERC20_ABI,
+    address: "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+  },
+  // Factory: creates ContractInstanceFactory with .at() method
+  ERC20: {
+    abi: ERC20_ABI,
+  },
+});
+
+// 3. Use in your Effect program
+const program = Effect.gen(function* () {
+  const { ETH, STRK, ERC20 } = yield* Services.Contract.ContractRegistryService;
+
+  // Pre-addressed contracts: use directly
+  const ethBalance = yield* ETH.read.balanceOf(userAddress);
+  const strkBalance = yield* STRK.read.balanceOf(userAddress);
+
+  // Factory contracts: create at runtime
+  const customToken = ERC20.at(dynamicAddress);
+  const customBalance = yield* customToken.read.balanceOf(userAddress);
+
+  return { ethBalance, strkBalance, customBalance };
+}).pipe(
+  Effect.provide(ContractsLayer),
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com"))
+);
+```
+
+## API Reference
+
+### makeContractRegistry
+
+Creates a Layer providing `ContractRegistryService` from a configuration object.
+
+```typescript
+const makeContractRegistry: <TConfig extends ContractRegistryConfig>(
+  config: TConfig
+) => Layer.Layer<ContractRegistryService>
+```
+
+**Configuration:**
+
+```typescript
+interface ContractDef<TAbi extends StarknetAbi> {
+  readonly abi: TAbi;
+  readonly address?: ContractAddressType | string; // Optional
+}
+
+type ContractRegistryConfig = Record<string, ContractDef<StarknetAbi>>;
+```
+
+**Behavior:**
+
+| Config | Result Type | Usage |
+|--------|-------------|-------|
+| `{ abi, address }` | `ContractInstance<TAbi>` | `contract.read.method()` |
+| `{ abi }` | `ContractInstanceFactory<TAbi>` | `contract.at(addr).read.method()` |
+
+### ContractInstance
+
+Full contract instance with typed `read`, `write`, and `simulate` methods.
+
+```typescript
+interface ContractInstance<TAbi extends StarknetAbi> {
+  readonly address: ContractAddressType | string;
+  readonly abi: TAbi;
+  readonly read: ContractReadMethods<TAbi>;
+  readonly write: ContractWriteMethods<TAbi>;
+  readonly simulate: ContractSimulateMethods<TAbi>;
+}
+```
+
+### ContractInstanceFactory
+
+Factory for creating contract instances at runtime addresses.
+
+```typescript
+interface ContractInstanceFactory<TAbi extends StarknetAbi> {
+  readonly abi: TAbi;
+  readonly at: (address: ContractAddressType | string) => ContractInstance<TAbi>;
+}
+```
+
+### InferContractRegistry
+
+Type helper to infer the registry shape from configuration.
+
+```typescript
+const config = {
+  ETH: { abi: ERC20_ABI, address: "0x..." },
+  ERC20: { abi: ERC20_ABI },
+} as const;
+
+type Contracts = InferContractRegistry<typeof config>;
+// { ETH: ContractInstance<...>, ERC20: ContractInstanceFactory<...> }
+```
+
+## Patterns
+
+### Network-Specific Registries
+
+Create different registries per network:
+
+```typescript
+const TOKEN_ADDRESSES = {
+  mainnet: {
+    ETH: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+    STRK: "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+  },
+  sepolia: {
+    ETH: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+    STRK: "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+  },
+} as const;
+
+const ContractsLayer = (network: "mainnet" | "sepolia") =>
+  Services.Contract.makeContractRegistry({
+    ETH: { abi: ERC20_ABI, address: TOKEN_ADDRESSES[network].ETH },
+    STRK: { abi: ERC20_ABI, address: TOKEN_ADDRESSES[network].STRK },
+    ERC20: { abi: ERC20_ABI },
+  });
+```
+
+### Mixed Protocol Contracts
+
+Combine different ABIs in one registry:
+
+```typescript
+const ContractsLayer = Services.Contract.makeContractRegistry({
+  // ERC20 tokens
+  ETH: { abi: ERC20_ABI, address: "0x..." },
+  STRK: { abi: ERC20_ABI, address: "0x..." },
+
+  // AMM pools
+  ETH_STRK_POOL: { abi: AMM_POOL_ABI, address: "0x..." },
+
+  // Factories for dynamic contracts
+  ERC20: { abi: ERC20_ABI },
+  Pool: { abi: AMM_POOL_ABI },
+});
+```
+
+### Write Operations
+
+Use `write` methods for state-changing operations:
+
+```typescript
+const program = Effect.gen(function* () {
+  const { ETH } = yield* Services.Contract.ContractRegistryService;
+
+  const tx = yield* ETH.write.transfer(recipient, amount, {
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+    },
+  });
+
+  return tx;
+}).pipe(
+  Effect.provide(ContractsLayer),
+  Effect.provide(Services.Contract.ContractLayer),
+  Effect.provide(Services.ContractWrite.ContractWrite),
+  Effect.provide(accountLayer)
+);
+```
+
+## Comparison with Other Approaches
+
+### Before: Inline ContractFactory
+
+```typescript
+// ❌ Verbose: contract created inside Effect.gen
+const program = Effect.gen(function* () {
+  const token = yield* Services.Contract.Contract(
+    "0x049d...",
+    ERC20_ABI
+  );
+  const balance = yield* token.read.balanceOf(user);
+  return balance;
+});
+```
+
+### After: ContractRegistryService
+
+```typescript
+// ✅ Clean: contracts pre-configured in Layer
+const program = Effect.gen(function* () {
+  const { ETH } = yield* Services.Contract.ContractRegistryService;
+  const balance = yield* ETH.read.balanceOf(user);
+  return balance;
+}).pipe(Effect.provide(ContractsLayer));
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Contract Service" icon="file-contract" href="/effect/services/contract">
+    Low-level contract calls and ContractFactory.
+  </Card>
+  <Card title="Contract Write" icon="pen" href="/effect/services/contract-write">
+    Write transactions with account signing.
+  </Card>
+</CardGroup>
