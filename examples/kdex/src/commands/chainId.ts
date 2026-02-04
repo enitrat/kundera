@@ -6,11 +6,19 @@
 
 import { Effect } from "effect";
 import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
-import { TransportTag } from "../config.js";
+import { TransportService } from "../config.js";
 
-export const chainId = Effect.gen(function* () {
-  const transport = yield* TransportTag;
+/**
+ * Get the chain ID from the network
+ */
+export const chainId = Effect.fn("kdex.chainId")(function* () {
+  const transport = yield* TransportService;
+
+  yield* Effect.annotateCurrentSpan({ "kdex.command": "chainId" });
+
   const id = yield* Rpc.starknet_chainId(transport);
-  yield* Effect.log(id);
+
+  yield* Effect.log(id, { chainId: id });
+
   return id;
 });

@@ -6,11 +6,19 @@
 
 import { Effect } from "effect";
 import * as Rpc from "@kundera-sn/kundera-effect/jsonrpc";
-import { TransportTag } from "../config.js";
+import { TransportService } from "../config.js";
 
-export const blockNumber = Effect.gen(function* () {
-  const transport = yield* TransportTag;
+/**
+ * Get the current block number from the network
+ */
+export const blockNumber = Effect.fn("kdex.blockNumber")(function* () {
+  const transport = yield* TransportService;
+
+  yield* Effect.annotateCurrentSpan({ "kdex.command": "blockNumber" });
+
   const blockNum = yield* Rpc.starknet_blockNumber(transport);
-  yield* Effect.log(blockNum);
+
+  yield* Effect.log(blockNum, { blockNumber: blockNum });
+
   return blockNum;
 });
