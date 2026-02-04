@@ -2,10 +2,10 @@
  * Starknet Crypto
  *
  * Cryptographic operations for Starknet.
- * Priority: Native FFI (Bun) → WASM → throw
+ * Priority: Native FFI (Bun) -> WASM -> throw
  */
 
-import { Felt252, type Felt252Type } from '../primitives/index.js';
+import type { Felt252Type } from '../primitives/index.js';
 
 // ============ Backend Detection ============
 
@@ -75,6 +75,30 @@ function getWasm(): CryptoState['wasm'] | null {
   return state.wasmLoaded ? w : null;
 }
 
+// ============ Local withCrypto helper ============
+// Uses the local getNative/getWasm which access the global singleton state
+
+/**
+ * Higher-order function that handles native/wasm fallback pattern.
+ * Local version that uses the module's getNative/getWasm functions.
+ */
+function withCrypto<Args extends any[], R>(operation: {
+  native: (impl: NonNullable<ReturnType<typeof getNative>>, ...args: Args) => R;
+  wasm: (impl: NonNullable<ReturnType<typeof getWasm>>, ...args: Args) => R;
+}): (...args: Args) => R {
+  return (...args: Args) => {
+    const n = getNative();
+    if (n) return operation.native(n, ...args);
+
+    const w = getWasm();
+    if (w) return operation.wasm(w, ...args);
+
+    throw new Error('Crypto backend not initialized - call loadWasmCrypto() first or use Bun runtime');
+  };
+}
+
+// ============ Initialization ============
+
 /**
  * Check if native crypto is available
  */
@@ -124,41 +148,26 @@ export async function loadWasmCrypto(): Promise<void> {
 /**
  * Pedersen hash of two felts
  */
-export function pedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.pedersenHash(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmPedersenHash(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const pedersenHash = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.pedersenHash(a, b),
+  wasm: (w, a, b) => w.wasmPedersenHash(a, b),
+});
 
 /**
  * Poseidon hash of two felts
  */
-export function poseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.poseidonHash(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmPoseidonHash(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const poseidonHash = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.poseidonHash(a, b),
+  wasm: (w, a, b) => w.wasmPoseidonHash(a, b),
+});
 
 /**
  * Poseidon hash of multiple felts
  */
-export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.poseidonHashMany(inputs));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmPoseidonHashMany(inputs));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const poseidonHashMany = withCrypto<[Felt252Type[]], Felt252Type>({
+  native: (n, inputs) => n.poseidonHashMany(inputs),
+  wasm: (w, inputs) => w.wasmPoseidonHashMany(inputs),
+});
 
 /**
  * sn_keccak - Truncated Keccak256 (first 250 bits)
@@ -168,121 +177,79 @@ export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
 export function snKeccak(data: Uint8Array | string): Felt252Type {
   // Convert string to bytes if needed
   const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
-
-  const n = getNative();
-  if (n) return Felt252(n.snKeccak(bytes));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmKeccak256(bytes));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+  return snKeccakBytes(bytes);
 }
+
+const snKeccakBytes = withCrypto<[Uint8Array], Felt252Type>({
+  native: (n, bytes) => n.snKeccak(bytes),
+  wasm: (w, bytes) => w.wasmKeccak256(bytes),
+});
 
 // ============ Felt Arithmetic ============
 
 /**
  * Add two felts (a + b mod P)
  */
-export function feltAdd(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltAdd(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltAdd(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltAdd = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.feltAdd(a, b),
+  wasm: (w, a, b) => w.wasmFeltAdd(a, b),
+});
 
 /**
  * Subtract two felts (a - b mod P)
  */
-export function feltSub(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltSub(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltSub(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltSub = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.feltSub(a, b),
+  wasm: (w, a, b) => w.wasmFeltSub(a, b),
+});
 
 /**
  * Multiply two felts (a * b mod P)
  */
-export function feltMul(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltMul(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltMul(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltMul = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.feltMul(a, b),
+  wasm: (w, a, b) => w.wasmFeltMul(a, b),
+});
 
 /**
  * Divide two felts (a / b mod P)
  */
-export function feltDiv(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltDiv(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltDiv(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltDiv = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.feltDiv(a, b),
+  wasm: (w, a, b) => w.wasmFeltDiv(a, b),
+});
 
 /**
  * Negate a felt (-a mod P)
  */
-export function feltNeg(a: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltNeg(a));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltNeg(a));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltNeg = withCrypto<[Felt252Type], Felt252Type>({
+  native: (n, a) => n.feltNeg(a),
+  wasm: (w, a) => w.wasmFeltNeg(a),
+});
 
 /**
  * Multiplicative inverse (1/a mod P)
  */
-export function feltInverse(a: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltInverse(a));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltInverse(a));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltInverse = withCrypto<[Felt252Type], Felt252Type>({
+  native: (n, a) => n.feltInverse(a),
+  wasm: (w, a) => w.wasmFeltInverse(a),
+});
 
 /**
  * Power (base^exp mod P)
  */
-export function feltPow(base: Felt252Type, exp: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltPow(base, exp));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltPow(base, exp));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltPow = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, base, exp) => n.feltPow(base, exp),
+  wasm: (w, base, exp) => w.wasmFeltPow(base, exp),
+});
 
 /**
  * Square root (returns sqrt if exists)
  */
-export function feltSqrt(a: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltSqrt(a));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltSqrt(a));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltSqrt = withCrypto<[Felt252Type], Felt252Type>({
+  native: (n, a) => n.feltSqrt(a),
+  wasm: (w, a) => w.wasmFeltSqrt(a),
+});
 
 // ============ ECDSA ============
 
@@ -297,72 +264,45 @@ export interface Signature {
 /**
  * Sign a message with STARK curve ECDSA
  */
-export function sign(
-  privateKey: Felt252Type,
-  messageHash: Felt252Type
-): Signature {
-  const n = getNative();
-  if (n) {
+export const sign = withCrypto<[Felt252Type, Felt252Type], Signature>({
+  native: (n, privateKey, messageHash) => {
     const sig = n.sign(privateKey, messageHash);
-    return { r: Felt252(sig.r), s: Felt252(sig.s) };
-  }
-
-  const w = getWasm();
-  if (w) {
+    return { r: sig.r, s: sig.s };
+  },
+  wasm: (w, privateKey, messageHash) => {
     const sig = w.wasmSign(privateKey, messageHash);
-    return { r: Felt252(sig.r), s: Felt252(sig.s) };
-  }
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+    return { r: sig.r, s: sig.s };
+  },
+});
 
 /**
  * Verify a STARK curve ECDSA signature
  */
-export function verify(
-  publicKey: Felt252Type,
-  messageHash: Felt252Type,
-  signature: Signature
-): boolean {
-  const n = getNative();
-  if (n) return n.verify(publicKey, messageHash, signature);
-
-  const w = getWasm();
-  if (w) return w.wasmVerify(publicKey, messageHash, signature.r, signature.s);
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const verify = withCrypto<[Felt252Type, Felt252Type, Signature], boolean>({
+  native: (n, publicKey, messageHash, signature) =>
+    n.verify(publicKey, messageHash, signature),
+  wasm: (w, publicKey, messageHash, signature) =>
+    w.wasmVerify(publicKey, messageHash, signature.r, signature.s),
+});
 
 /**
  * Get public key from private key
  */
-export function getPublicKey(privateKey: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.getPublicKey(privateKey));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmGetPublicKey(privateKey));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const getPublicKey = withCrypto<[Felt252Type], Felt252Type>({
+  native: (n, privateKey) => n.getPublicKey(privateKey),
+  wasm: (w, privateKey) => w.wasmGetPublicKey(privateKey),
+});
 
 /**
  * Recover public key from signature
  */
-export function recover(
-  messageHash: Felt252Type,
-  r: Felt252Type,
-  s: Felt252Type,
-  v: Felt252Type
-): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.recover(messageHash, r, s, v));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmRecover(messageHash, r, s, v));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const recover = withCrypto<
+  [Felt252Type, Felt252Type, Felt252Type, Felt252Type],
+  Felt252Type
+>({
+  native: (n, messageHash, r, s, v) => n.recover(messageHash, r, s, v),
+  wasm: (w, messageHash, r, s, v) => w.wasmRecover(messageHash, r, s, v),
+});
 
 // ============ Namespace exports ============
 

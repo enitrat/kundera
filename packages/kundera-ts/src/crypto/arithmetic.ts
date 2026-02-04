@@ -2,109 +2,69 @@
  * Felt Arithmetic Functions
  */
 
-import { Felt252, type Felt252Type } from '../primitives/index.js';
-import { getNative, getWasm } from './state.js';
+import type { Felt252Type } from '../primitives/index.js';
+import { withCrypto } from './helpers.js';
 
 /**
  * Add two felts (a + b mod P)
  */
-export function feltAdd(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltAdd(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltAdd(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltAdd = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.feltAdd(a, b),
+  wasm: (w, a, b) => w.wasmFeltAdd(a, b),
+});
 
 /**
  * Subtract two felts (a - b mod P)
  */
-export function feltSub(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltSub(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltSub(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltSub = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.feltSub(a, b),
+  wasm: (w, a, b) => w.wasmFeltSub(a, b),
+});
 
 /**
  * Multiply two felts (a * b mod P)
  */
-export function feltMul(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltMul(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltMul(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltMul = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.feltMul(a, b),
+  wasm: (w, a, b) => w.wasmFeltMul(a, b),
+});
 
 /**
  * Divide two felts (a / b mod P)
  */
-export function feltDiv(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltDiv(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltDiv(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltDiv = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.feltDiv(a, b),
+  wasm: (w, a, b) => w.wasmFeltDiv(a, b),
+});
 
 /**
  * Negate a felt (-a mod P)
  */
-export function feltNeg(a: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltNeg(a));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltNeg(a));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltNeg = withCrypto<[Felt252Type], Felt252Type>({
+  native: (n, a) => n.feltNeg(a),
+  wasm: (w, a) => w.wasmFeltNeg(a),
+});
 
 /**
  * Multiplicative inverse (1/a mod P)
  */
-export function feltInverse(a: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltInverse(a));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltInverse(a));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltInverse = withCrypto<[Felt252Type], Felt252Type>({
+  native: (n, a) => n.feltInverse(a),
+  wasm: (w, a) => w.wasmFeltInverse(a),
+});
 
 /**
  * Power (base^exp mod P)
  */
-export function feltPow(base: Felt252Type, exp: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltPow(base, exp));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltPow(base, exp));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltPow = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, base, exp) => n.feltPow(base, exp),
+  wasm: (w, base, exp) => w.wasmFeltPow(base, exp),
+});
 
 /**
  * Square root (returns sqrt if exists)
  */
-export function feltSqrt(a: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.feltSqrt(a));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmFeltSqrt(a));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const feltSqrt = withCrypto<[Felt252Type], Felt252Type>({
+  native: (n, a) => n.feltSqrt(a),
+  wasm: (w, a) => w.wasmFeltSqrt(a),
+});

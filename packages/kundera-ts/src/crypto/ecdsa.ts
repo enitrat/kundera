@@ -2,8 +2,8 @@
  * ECDSA Functions
  */
 
-import { Felt252, type Felt252Type } from '../primitives/index.js';
-import { getNative, getWasm } from './state.js';
+import type { Felt252Type } from '../primitives/index.js';
+import { withCrypto } from './helpers.js';
 
 /**
  * STARK curve signature
@@ -16,69 +16,36 @@ export interface Signature {
 /**
  * Sign a message with STARK curve ECDSA
  */
-export function sign(
-  privateKey: Felt252Type,
-  messageHash: Felt252Type
-): Signature {
-  const n = getNative();
-  if (n) {
-    const sig = n.sign(privateKey, messageHash);
-    return { r: Felt252(sig.r), s: Felt252(sig.s) };
-  }
-
-  const w = getWasm();
-  if (w) {
-    const sig = w.wasmSign(privateKey, messageHash);
-    return { r: Felt252(sig.r), s: Felt252(sig.s) };
-  }
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const sign = withCrypto<[Felt252Type, Felt252Type], Signature>({
+  native: (n, privateKey, messageHash) => n.sign(privateKey, messageHash),
+  wasm: (w, privateKey, messageHash) => w.wasmSign(privateKey, messageHash),
+});
 
 /**
  * Verify a STARK curve ECDSA signature
  */
-export function verify(
-  publicKey: Felt252Type,
-  messageHash: Felt252Type,
-  signature: Signature
-): boolean {
-  const n = getNative();
-  if (n) return n.verify(publicKey, messageHash, signature);
-
-  const w = getWasm();
-  if (w) return w.wasmVerify(publicKey, messageHash, signature.r, signature.s);
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const verify = withCrypto<[Felt252Type, Felt252Type, Signature], boolean>({
+  native: (n, publicKey, messageHash, signature) =>
+    n.verify(publicKey, messageHash, signature),
+  wasm: (w, publicKey, messageHash, signature) =>
+    w.wasmVerify(publicKey, messageHash, signature.r, signature.s),
+});
 
 /**
  * Get public key from private key
  */
-export function getPublicKey(privateKey: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.getPublicKey(privateKey));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmGetPublicKey(privateKey));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const getPublicKey = withCrypto<[Felt252Type], Felt252Type>({
+  native: (n, privateKey) => n.getPublicKey(privateKey),
+  wasm: (w, privateKey) => w.wasmGetPublicKey(privateKey),
+});
 
 /**
  * Recover public key from signature
  */
-export function recover(
-  messageHash: Felt252Type,
-  r: Felt252Type,
-  s: Felt252Type,
-  v: Felt252Type
-): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.recover(messageHash, r, s, v));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmRecover(messageHash, r, s, v));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const recover = withCrypto<
+  [Felt252Type, Felt252Type, Felt252Type, Felt252Type],
+  Felt252Type
+>({
+  native: (n, messageHash, r, s, v) => n.recover(messageHash, r, s, v),
+  wasm: (w, messageHash, r, s, v) => w.wasmRecover(messageHash, r, s, v),
+});

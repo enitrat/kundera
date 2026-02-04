@@ -2,47 +2,32 @@
  * Crypto Hashing Functions
  */
 
-import { Felt252, type Felt252Type } from '../primitives/index.js';
-import { getNative, getWasm } from './state.js';
+import type { Felt252Type } from '../primitives/index.js';
+import { withCrypto } from './helpers.js';
 
 /**
  * Pedersen hash of two felts
  */
-export function pedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.pedersenHash(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmPedersenHash(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const pedersenHash = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.pedersenHash(a, b),
+  wasm: (w, a, b) => w.wasmPedersenHash(a, b),
+});
 
 /**
  * Poseidon hash of two felts
  */
-export function poseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.poseidonHash(a, b));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmPoseidonHash(a, b));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const poseidonHash = withCrypto<[Felt252Type, Felt252Type], Felt252Type>({
+  native: (n, a, b) => n.poseidonHash(a, b),
+  wasm: (w, a, b) => w.wasmPoseidonHash(a, b),
+});
 
 /**
  * Poseidon hash of multiple felts
  */
-export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
-  const n = getNative();
-  if (n) return Felt252(n.poseidonHashMany(inputs));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmPoseidonHashMany(inputs));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
-}
+export const poseidonHashMany = withCrypto<[Felt252Type[]], Felt252Type>({
+  native: (n, inputs) => n.poseidonHashMany(inputs),
+  wasm: (w, inputs) => w.wasmPoseidonHashMany(inputs),
+});
 
 /**
  * sn_keccak - Truncated Keccak256 (first 250 bits)
@@ -50,14 +35,14 @@ export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
  * Computes keccak256(data) and masks to 250 bits for use as Starknet selector.
  */
 export function snKeccak(data: Uint8Array | string): Felt252Type {
-  // Convert string to bytes if needed
+  // Convert string to bytes if needed - this preprocessing is needed before calling withCrypto
   const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
 
-  const n = getNative();
-  if (n) return Felt252(n.snKeccak(bytes));
-
-  const w = getWasm();
-  if (w) return Felt252(w.wasmKeccak256(bytes));
-
-  throw new Error('Not implemented - call loadWasmCrypto() first or use Bun runtime');
+  return snKeccakBytes(bytes);
 }
+
+// Internal helper that takes only Uint8Array
+const snKeccakBytes = withCrypto<[Uint8Array], Felt252Type>({
+  native: (n, bytes) => n.snKeccak(bytes),
+  wasm: (w, bytes) => w.wasmKeccak256(bytes),
+});
