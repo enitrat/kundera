@@ -1,6 +1,6 @@
 {
   "name": "@kundera-sn/kundera-effect",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Effect-TS integration for Kundera Starknet primitives library",
   "author": "Starknet",
   "license": "MIT",
