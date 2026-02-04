@@ -117,7 +117,7 @@ export interface CompiledSierraCasm {
  */
 function encodeShortStringHex(str: string): string {
   const value = encodeShortStringPrimitive(str);
-  return '0x' + value.toString(16);
+  return '0x' + value.toBigInt().toString(16);
 }
 
 // ============ JSON Formatting ============

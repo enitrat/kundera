@@ -5,6 +5,8 @@
  */
 
 import { Felt252, type Felt252Type, type Felt252Input } from '../../primitives/index.js';
+import { Uint128 } from '../../primitives/Uint128/index.js';
+import { Uint256 } from '../../primitives/Uint256/index.js';
 import { poseidonHashMany } from '../hash.js';
 import type { TypedData } from '../account-types.js';
 
@@ -125,8 +127,17 @@ function hashValue(
     return Felt252(value ? 1n : 0n);
   }
 
-  if (type === 'u128' || type === 'u256') {
-    return Felt252(BigInt(value as string | number | bigint));
+  // u128: fits in single felt
+  if (type === 'u128') {
+    const uint128 = Uint128.from(BigInt(value as string | number | bigint));
+    return Uint128.toFelt(uint128);
+  }
+
+  // u256: requires TWO felts [low, high] - hash them together
+  if (type === 'u256') {
+    const uint256 = Uint256.from(BigInt(value as string | number | bigint));
+    const [low, high] = Uint256.toFelts(uint256);
+    return poseidonHashMany([low, high]);
   }
 
   // Array types

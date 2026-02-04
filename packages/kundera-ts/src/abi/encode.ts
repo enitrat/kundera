@@ -147,7 +147,7 @@ function encodePrimitive(value: CairoValue, typeName: string): bigint[] {
   // Handle shortstring (felt252 containing ASCII text)
   if (typeName === 'shortstring' || typeName === 'core::shortstring') {
     if (typeof value === 'string') {
-      return [encodeShortString(value)];
+      return [encodeShortString(value).toBigInt()];
     }
     // Already encoded as bigint/number
     const bigVal = toBigIntValue(value);

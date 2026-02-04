@@ -15,7 +15,7 @@ describe('Short String', () => {
     const encoded = encodeShortString('hello');
     // 'h'=0x68, 'e'=0x65, 'l'=0x6c, 'l'=0x6c, 'o'=0x6f
     // = 0x68656c6c6f = 448378203247
-    expect(encoded).toBe(448378203247n);
+    expect(encoded.toBigInt()).toBe(448378203247n);
   });
 
   test('encodeShortStringHex encodes hello', () => {
@@ -41,7 +41,7 @@ describe('Short String', () => {
 
   test('encodeShortString handles empty string', () => {
     const encoded = encodeShortString('');
-    expect(encoded).toBe(0n);
+    expect(encoded.toBigInt()).toBe(0n);
   });
 
   test('decodeShortString handles zero', () => {
@@ -58,13 +58,13 @@ describe('Short String', () => {
 
   test('encodes single character', () => {
     const encoded = encodeShortString('A');
-    expect(encoded).toBe(65n); // 'A' = 0x41 = 65
+    expect(encoded.toBigInt()).toBe(65n); // 'A' = 0x41 = 65
   });
 
   test('encodes max length string (31 chars)', () => {
     const str = 'a'.repeat(31);
     const encoded = encodeShortString(str);
-    expect(typeof encoded).toBe('bigint');
+    expect(encoded.toBigInt).toBeDefined(); // It's a Felt252Type
     expect(decodeShortString(encoded)).toBe(str);
   });
 

@@ -2,16 +2,31 @@
  * Crypto Backend State
  *
  * Manages native FFI and WASM backend detection and loading.
+ *
+ * Uses a global singleton to share state across all module instances.
+ * This fixes the ESM module duplication issue where different imports
+ * would have separate state variables.
  */
 
-// Native FFI (Bun only)
-let native: typeof import('../native/index.js') | null = null;
-let nativeChecked = false;
+// Global singleton to share WASM state across all module instances
+const KUNDERA_CRYPTO_STATE = Symbol.for('kundera-crypto-state');
 
-// WASM loader
-let wasm: typeof import('../wasm-loader/index.js') | null = null;
-let wasmChecked = false;
-let wasmLoaded = false;
+interface CryptoState {
+  native: typeof import('../native/index.js') | null;
+  nativeChecked: boolean;
+  wasm: typeof import('../wasm-loader/index.js') | null;
+  wasmChecked: boolean;
+  wasmLoaded: boolean;
+}
+
+// Initialize or retrieve the global state
+const state: CryptoState = ((globalThis as any)[KUNDERA_CRYPTO_STATE] ??= {
+  native: null,
+  nativeChecked: false,
+  wasm: null,
+  wasmChecked: false,
+  wasmLoaded: false,
+});
 
 function tryRequire(path: string): any | null {
   const req = (globalThis as { require?: (id: string) => any }).require;
@@ -22,53 +37,53 @@ function tryRequire(path: string): any | null {
 /**
  * Check and load native FFI if available (Bun only)
  */
-export function getNative(): typeof native {
-  if (!nativeChecked) {
-    nativeChecked = true;
+export function getNative(): CryptoState['native'] {
+  if (!state.nativeChecked) {
+    state.nativeChecked = true;
     try {
       const hasBun = typeof (globalThis as { Bun?: unknown }).Bun !== 'undefined';
       if (hasBun) {
-        native = tryRequire('../native/index.js');
-        if (!native?.isNativeAvailable()) {
-          native = null;
+        state.native = tryRequire('../native/index.js');
+        if (!state.native?.isNativeAvailable()) {
+          state.native = null;
         }
       }
     } catch {
-      native = null;
+      state.native = null;
     }
   }
-  return native;
+  return state.native;
 }
 
 /**
  * Get WASM module (must be loaded first via loadWasmCrypto)
  */
-export function getWasmModule(): typeof wasm {
-  if (!wasmChecked) {
-    wasmChecked = true;
+export function getWasmModule(): CryptoState['wasm'] {
+  if (!state.wasmChecked) {
+    state.wasmChecked = true;
     try {
-      wasm = tryRequire('../wasm-loader/index.js');
+      state.wasm = tryRequire('../wasm-loader/index.js');
     } catch {
-      wasm = null;
+      state.wasm = null;
     }
   }
-  return wasm;
+  return state.wasm;
 }
 
-export function getWasm(): typeof wasm | null {
+export function getWasm(): CryptoState['wasm'] | null {
   const w = getWasmModule();
-  return wasmLoaded ? w : null;
+  return state.wasmLoaded ? w : null;
 }
 
 export function setWasmLoaded(loaded: boolean): void {
-  wasmLoaded = loaded;
+  state.wasmLoaded = loaded;
 }
 
-export function setWasmModule(w: typeof wasm): void {
-  wasm = w;
-  wasmChecked = true;
+export function setWasmModule(w: CryptoState['wasm']): void {
+  state.wasm = w;
+  state.wasmChecked = true;
 }
 
 export function isWasmLoadedInternal(): boolean {
-  return wasmLoaded;
+  return state.wasmLoaded;
 }

@@ -1,0 +1,70 @@
+---
+session: integer-primitives
+date: 2026-02-04
+status: complete
+outcome: PARTIAL_PLUS
+---
+
+goal: Create Cairo-compatible integer primitives (u8-u256, i8-i128) and fix critical u256 hashing bug
+now: Consider consolidating duplicate signer.ts and signer/hashTypedData.ts files
+test: cd /Users/msaug/workspace/kundera/packages/kundera-ts && npm test
+
+done_this_session:
+  - task: Created unsigned integer primitives (Uint8, Uint16, Uint32, Uint64, Uint128, Uint256)
+    files: [src/primitives/Uint8/, src/primitives/Uint16/, src/primitives/Uint32/, src/primitives/Uint64/, src/primitives/Uint128/, src/primitives/Uint256/]
+  - task: Created signed integer primitives (Int8, Int16, Int32, Int64, Int128)
+    files: [src/primitives/Int8/, src/primitives/Int16/, src/primitives/Int32/, src/primitives/Int64/, src/primitives/Int128/]
+  - task: Fixed critical u256 bug in hashTypedData - was using single felt, now correctly uses [low, high]
+    files: [src/crypto/signer.ts:157-170, src/crypto/signer/hashTypedData.ts:128-141]
+  - task: Exported all new primitives from main index
+    files: [src/primitives/index.ts]
+
+blockers: []
+
+questions:
+  - Should signer.ts and signer/hashTypedData.ts be consolidated into single source of truth?
+
+decisions:
+  - u256_two_felts: "u256 serializes as [low, high] where value = low + high * 2^128, following Cairo struct u256 { low: u128, high: u128 }"
+  - signed_field_encoding: "Signed integers use Cairo field encoding (not two's complement): negative = PRIME + value where PRIME = 2^251 + 17*2^192 + 1"
+  - toFelts_naming: "Named Uint256.toFelts() (plural) to make explicit that u256 returns TWO felts, unlike other types"
+  - minimal_api: "Only from(), toHex(), toBigInt(), toFelt()/toFelts() - no arithmetic operations for now"
+
+findings:
+  - weak_typing_audit: "Found 19 instances of weak typing patterns (value as string | number | bigint) across signer.ts, hashTypedData.ts, encode.ts"
+  - duplicate_code: "signer.ts and signer/hashTypedData.ts contain identical hashValue functions - should consolidate"
+  - cairo_integer_research: "Cairo integers u8-u128 fit in single felt, u256 needs 2 felts, signed use prime field arithmetic"
+
+worked:
+  - "Spawning parallel scout agents for research (weak typing audit + Cairo integer encoding)"
+  - "Spawning parallel kraken agents for implementation (unsigned + signed primitives separately)"
+  - "Using Voltaire pattern as reference for branded types with from/toHex/toFelt interface"
+
+failed:
+  - "First kraken agent for unsigned ints only created test files for Uint128/Uint256, had to implement manually"
+
+next:
+  - "Consolidate duplicate code in signer.ts vs signer/hashTypedData.ts"
+  - "Add more integer types to ABI encode/decode if needed"
+  - "Consider adding fromFelt() to unsigned types for symmetry with signed types"
+  - "Apply similar strong typing patterns to other weak typing locations identified in audit"
+
+files:
+  created:
+    - src/primitives/Uint8/ (types.ts, constants.ts, errors.ts, from.ts, toBigInt.ts, toHex.ts, toFelt.ts, index.ts, Uint8.test.ts)
+    - src/primitives/Uint16/ (same structure)
+    - src/primitives/Uint32/ (same structure)
+    - src/primitives/Uint64/ (same structure)
+    - src/primitives/Uint128/ (same structure)
+    - src/primitives/Uint256/ (same + toFelts.ts, fromFelts.ts)
+    - src/primitives/Int8/ (same + toFelt.ts, fromFelt.ts for Cairo encoding)
+    - src/primitives/Int16/ (same structure)
+    - src/primitives/Int32/ (same structure)
+    - src/primitives/Int64/ (same structure)
+    - src/primitives/Int128/ (same structure)
+  modified:
+    - src/primitives/index.ts (added exports for all new integer types)
+    - src/crypto/signer.ts (fixed u256 bug, added Uint128/Uint256 imports)
+    - src/crypto/signer/hashTypedData.ts (fixed u256 bug, added Uint128/Uint256 imports)
+
+commit: null

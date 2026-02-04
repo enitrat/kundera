@@ -1,538 +1,443 @@
-# Codebase Report: Voltaire Documentation Structure
+# Cairo Integer Types Research Report
 Generated: 2026-02-04
 
 ## Summary
 
-Voltaire uses **Mintlify** as its documentation platform. The documentation is organized as a **monorepo with multiple documentation sites**:
-- **Main site**: `https://voltaire.tevm.sh` (voltaire-ts documentation)
-- **Effect integration**: `https://voltaire-effect.tevm.sh` (voltaire-effect documentation)
-- **Other languages**: C, Go, Python, Rust, Swift, Zig (each has a `docs/` directory)
+Cairo implements unsigned integers (u8, u16, u32, u64, u128, u256) and signed integers (i8, i16, i32, i64, i128) with felt252 as the fundamental serialization format. Unsigned integers up to u128 fit in a single felt252, while u256 uses a struct with two u128 fields (low, high). Signed integers are represented as ranges within the felt252 field and are serialized directly to felt252 without conversion.
 
-Each sub-package has its own Mintlify configuration (`docs.json`) and `.mdx` documentation files. The main site links to sub-packages via external URLs (e.g., `voltaire-effect.tevm.sh`).
-
-## Project Structure
-
-```
-/Users/msaug/workspace/voltaire/
-├── packages/
-│   ├── voltaire-ts/           # Main TypeScript library
-│   │   └── docs/
-│   │       ├── docs.json      # Mintlify config (3272 lines)
-│   │       ├── index.mdx      # Homepage
-│   │       ├── getting-started.mdx
-│   │       ├── concepts/      # Core concepts
-│   │       ├── skills/        # Framework integrations
-│   │       ├── primitives/    # Primitive types docs
-│   │       ├── crypto/        # Cryptography docs
-│   │       ├── contract/      # Contract interactions
-│   │       ├── evm/           # EVM-related
-│   │       └── public/        # Static assets
-│   │
-│   ├── voltaire-effect/       # Effect.ts integration
-│   │   ├── package.json       # Has "docs:dev" and "docs:build" scripts
-│   │   └── docs/
-│   │       ├── docs.json      # Separate Mintlify config
-│   │       ├── index.mdx      # Effect-specific homepage
-│   │       ├── getting-started.mdx
-│   │       ├── concepts/      # Effect concepts
-│   │       ├── services/      # Effect services
-│   │       ├── guides/        # Migration guides
-│   │       ├── primitives/    # Effect wrappers for primitives
-│   │       └── crypto/        # Effect wrappers for crypto
-│   │
-│   ├── voltaire-c/
-│   │   └── docs/
-│   │       └── docs.json      # C library docs
-│   │
-│   ├── voltaire-go/
-│   │   └── docs/              # Go library docs
-│   │
-│   ├── voltaire-py/
-│   │   └── docs/              # Python library docs
-│   │
-│   ├── voltaire-rs/
-│   │   └── docs/              # Rust library docs
-│   │
-│   ├── voltaire-swift/
-│   │   └── docs/              # Swift library docs
-│   │
-│   └── voltaire-zig/
-│       └── docs/              # Zig library docs
-│
-├── apps/
-│   └── playground/            # Interactive playground
-│       ├── package.json       # Builds to /playground/ path
-│       └── vite.config.ts
-│
-└── .github/workflows/
-    └── deploy-playground.yml  # Deploys to Vercel
-
-```
-
-## Documentation Tooling
-
-### Mintlify Configuration
-
-**Tool**: [Mintlify](https://mintlify.com) - Modern documentation platform
-**Config file**: `docs.json` (Mintlify's equivalent to VitePress's `.vitepress/config.js`)
-
-**Key packages** (from `pnpm-lock.yaml`):
-- `mintlify@4.2.255` - CLI tool
-- `@mintlify/cli@4.0.859` - Build and dev server
-- `@mintlify/mdx@3.0.4` - MDX processing
-- `@mintlify/prebuild@1.0.780` - Pre-build processing
-
-### NPM Scripts
-
-```json
-// packages/voltaire-effect/package.json
-{
-  "scripts": {
-    "docs:dev": "cd docs && mintlify dev",
-    "docs:build": "cd docs && mintlify build"
-  }
-}
-
-// packages/voltaire-ts/package.json
-{
-  "devDependencies": {
-    "mintlify": "^4.2.255"
-  }
-}
-```
-
-## Navigation Structure
-
-### voltaire-ts (Main Site) - `https://voltaire.tevm.sh`
-
-**Config**: `/Users/msaug/workspace/voltaire/packages/voltaire-ts/docs/docs.json`
-
-**Top-level navigation**:
-```json
-{
-  "navigation": {
-    "anchors": [
-      {
-        "anchor": "Documentation",
-        "icon": "book-open",
-        "groups": [
-          { "group": "Overview", "pages": ["introduction", "getting-started/branded-types", ...] },
-          { "group": "Getting Started", "pages": ["getting-started", "playground", ...] },
-          { "group": "Core Concepts", "pages": ["concepts/branded-types", ...] },
-          { "group": "Skills", "pages": ["skills/index", ...] },
-          { "group": "Primitives", "pages": [...] },
-          { "group": "Cryptography", "pages": [...] },
-          { "group": "Contract", "pages": [...] },
-          { "group": "EVM", "pages": [...] }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        { "anchor": "GitHub", "href": "https://github.com/evmts/voltaire" },
-        { "anchor": "Twitter", "href": "https://twitter.com/tevmtools" }
-      ]
-    }
-  }
-}
-```
-
-**Theme customization**:
-```json
-{
-  "theme": "mint",
-  "colors": {
-    "primary": "#10B981",
-    "light": "#34D399",
-    "dark": "#059669"
-  },
-  "background": {
-    "color": {
-      "light": "#FDF2E2",
-      "dark": "#0a0a0a"
-    }
-  }
-}
-```
-
-### voltaire-effect - `https://voltaire-effect.tevm.sh`
-
-**Config**: `/Users/msaug/workspace/voltaire/packages/voltaire-effect/docs/docs.json`
-
-**Top-level navigation**:
-```json
-{
-  "name": "voltaire-effect",
-  "colors": {
-    "primary": "#7C3AED",  // Purple (different from main)
-    "light": "#A78BFA",
-    "dark": "#5B21B6"
-  },
-  "navigation": {
-    "anchors": [
-      {
-        "anchor": "Documentation",
-        "groups": [
-          { "group": "Getting Started", "pages": ["index", "why", "getting-started", ...] },
-          { "group": "Concepts", "pages": ["concepts/branded-types", ...] },
-          { "group": "Guides", "pages": ["guides/layers", "guides/react-integration", ...] },
-          { "group": "Core Services", "pages": ["services/provider", "services/signer", ...] },
-          { "group": "Advanced Services", "pages": ["services/contract-registry", ...] }
-        ]
-      }
-    ]
-  }
-}
-```
-
-## How Sub-Packages Link Together
-
-### Cross-linking Pattern
-
-The main site (`voltaire.tevm.sh`) links to sub-package docs via **external URLs**:
-
-**Example** (from `/Users/msaug/workspace/voltaire/packages/voltaire-ts/docs/crypto/keccak256/index.mdx`):
-
-```markdown
-- [Keccak256 (Effect)](https://voltaire-effect.tevm.sh/crypto/keccak256) - Effect.ts integration with Schema validation
-```
-
-**Pattern found in**:
-- `/packages/voltaire-ts/docs/crypto/bn254/index.mdx`
-- `/packages/voltaire-ts/docs/crypto/blake2/index.mdx`
-- `/packages/voltaire-ts/docs/crypto/keccak256/index.mdx`
-- `/packages/voltaire-ts/docs/crypto/keystore/index.mdx`
-- `/packages/voltaire-ts/docs/crypto/aesgcm/index.mdx`
-- And more...
-
-### Subdomain Strategy
-
-Each major package gets its own subdomain:
-- `voltaire.tevm.sh` → voltaire-ts (main)
-- `voltaire-effect.tevm.sh` → voltaire-effect
-- Likely future: `c.voltaire.tevm.sh`, `go.voltaire.tevm.sh`, etc.
-
-This allows:
-1. **Independent deployments** - Each package docs can deploy separately
-2. **Separate branding** - Different color schemes (green for main, purple for effect)
-3. **Focused navigation** - Each site has its own sidebar/navigation
-4. **Cross-linking** - Sites link to each other via external URLs
-
-## Deployment
-
-### Playground Deployment
-
-**Workflow**: `/Users/msaug/workspace/voltaire/.github/workflows/deploy-playground.yml`
-
-```yaml
-- name: Build playground
-  run: pnpm --filter @tevm/playground run build
-
-- name: Deploy to Vercel
-  uses: amondnet/vercel-action@v25
-  with:
-    vercel-token: ${{ secrets.VERCEL_TOKEN }}
-    working-directory: apps/playground
-```
-
-**Build config** (`apps/playground/package.json`):
-```json
-{
-  "scripts": {
-    "build:docs": "vite build --base=/playground/"
-  }
-}
-```
-
-The playground is deployed to `https://voltaire.tevm.sh/playground/`.
-
-### Documentation Deployment (Inferred)
-
-Based on Mintlify patterns, likely deployed via:
-1. **Mintlify Cloud** - Hosting by Mintlify (most common)
-2. **Vercel** - Similar to playground deployment
-3. **GitHub Pages** - Alternative hosting
-
-**Evidence**:
-- Each `docs.json` has `"$schema": "https://mintlify.com/docs.json"`
-- Mintlify typically handles hosting automatically via their cloud
-
-## Key Files Reference
-
-| File | Purpose | Lines |
-|------|---------|-------|
-| `packages/voltaire-ts/docs/docs.json` | Main site navigation & config | 3272 |
-| `packages/voltaire-effect/docs/docs.json` | Effect site navigation & config | ~100+ |
-| `packages/voltaire-c/docs/docs.json` | C library docs config | Unknown |
-| `packages/voltaire-ts/docs/index.mdx` | Main site homepage | Unknown |
-| `packages/voltaire-effect/docs/index.mdx` | Effect homepage | Unknown |
-| `apps/playground/package.json` | Playground build config | 28 |
-
-## Navigation Patterns Discovered
-
-### 1. Hierarchical Groups
-
-Mintlify uses a hierarchical structure with "anchors" and "groups":
-
-```json
-{
-  "navigation": {
-    "anchors": [                    // Top-level sections
-      {
-        "anchor": "Documentation",  // Section title
-        "icon": "book-open",
-        "groups": [                 // Subsections
-          {
-            "group": "Getting Started",
-            "icon": "rocket",
-            "pages": ["getting-started", "playground"]
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### 2. Nested Page Groups
-
-Skills section shows nested groups:
-
-```json
-{
-  "group": "Skills",
-  "pages": [
-    "skills/index",
-    {
-      "group": "Provider Skills",
-      "pages": ["skills/ethers-provider", "skills/viem-publicclient"]
-    },
-    {
-      "group": "Contract Skills",
-      "pages": ["skills/ethers-contract", "skills/viem-contract"]
-    }
-  ]
-}
-```
-
-### 3. External Links in Navigation
-
-Global anchors for external sites:
-
-```json
-{
-  "navigation": {
-    "global": {
-      "anchors": [
-        { "anchor": "GitHub", "href": "https://github.com/evmts/voltaire", "icon": "github" },
-        { "anchor": "Twitter", "href": "https://twitter.com/tevmtools", "icon": "twitter" }
-      ]
-    }
-  }
-}
-```
-
-### 4. Navbar Configuration
-
-```json
-{
-  "navbar": {
-    "links": [
-      { "label": "GitHub", "href": "https://github.com/evmts/voltaire" }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Get Started",
-      "href": "https://voltaire.tevm.sh/getting-started"
-    }
-  }
-}
-```
-
-## Content Organization
-
-### MDX File Structure
-
-**Frontmatter** (YAML):
-```yaml
----
-title: voltaire-effect
-description: Effect.ts integration for Voltaire Ethereum primitives
----
-```
-
-**Content components**:
-- `<Tabs>` / `<Tab>` - Code comparison tabs
-- `<Warning>` - Warning callouts
-- `<Info>` - Info callouts
-- Custom styling via inline `<style>` tags
-
-**Example** (`packages/voltaire-effect/docs/index.mdx`):
-```mdx
----
-title: voltaire-effect
-description: Effect.ts integration for Voltaire Ethereum primitives
 ---
 
-[Effect.ts](https://effect.website) integration for [Voltaire](https://voltaire.tevm.sh)
+## Unsigned Integer Types
 
-<Tabs>
-  <Tab title="voltaire-effect">
-    ```typescript
-    // Code example
-    ```
-  </Tab>
-  <Tab title="viem">
-    ```typescript
-    // Comparison
-    ```
-  </Tab>
-</Tabs>
+### u8, u16, u32, u64 (extern types)
+
+✓ VERIFIED at `/Users/msaug/deps/cairo/corelib/src/integer.cairo`
+
+**Definition:**
+```cairo
+pub extern type u8;    // Line 310
+pub extern type u16;   // Line 466
+pub extern type u32;   // Line 628
+pub extern type u64;   // Line 790
 ```
 
-### Directory Naming
+**Serialization:** Single felt252
+- Each type implements `Serde` via `into_felt252_based::SerdeImpl<T>`
+- Example: `impl U8Serde = crate::serde::into_felt252_based::SerdeImpl<u8>;` (Line 324)
 
-**Convention**: kebab-case for directories and files
-- `getting-started/`
-- `crypto/keccak256/`
-- `primitives/address/`
-
-**File types**:
-- `.mdx` - Documentation pages (MDX = Markdown + JSX)
-- `.json` - Configuration
-- `index.mdx` - Directory index/overview
-
-## How to Access voltaire-effect Docs from Main Site
-
-### Current Implementation
-
-**Direct URL links** in content:
-
-From `packages/voltaire-ts/docs/crypto/keccak256/index.mdx`:
-```markdown
-- [Keccak256 (Effect)](https://voltaire-effect.tevm.sh/crypto/keccak256)
+**Conversion Functions:**
+```cairo
+// u8 example (same pattern for u16, u32, u64)
+extern const fn u8_to_felt252(a: u8) -> felt252 nopanic;
+extern const fn u8_try_from_felt252(a: felt252) -> Option<u8> implicits(RangeCheck) nopanic;
 ```
 
-### Where Users Access It
+**Ranges:**
+- u8: 0 to 255 (2^8 - 1)
+- u16: 0 to 65,535 (2^16 - 1)
+- u32: 0 to 4,294,967,295 (2^32 - 1)
+- u64: 0 to 18,446,744,073,709,551,615 (2^64 - 1)
 
-1. **Via crypto module pages** - Each crypto module has a link to its Effect version
-2. **Via skills page** - `skills/effect-ts.mdx` mentions voltaire-effect (but as unimplemented)
-3. **Direct navigation** - Users go to `voltaire-effect.tevm.sh` directly
+---
 
-### Navigation Flow
+### u128 (extern type)
 
-```
-User on voltaire.tevm.sh
-  ↓
-Reads Keccak256 docs
-  ↓
-Sees "Keccak256 (Effect)" link
-  ↓
-Clicks → redirects to voltaire-effect.tevm.sh/crypto/keccak256
-  ↓
-Browsing voltaire-effect site (separate nav, separate branding)
-```
+✓ VERIFIED at `/Users/msaug/deps/cairo/corelib/src/integer.cairo:87`
 
-## Monorepo Documentation Patterns
-
-### 1. Separate Sites (Voltaire's Approach)
-
-**Pros**:
-- ✅ Independent deployments
-- ✅ Different branding per package
-- ✅ Focused navigation
-- ✅ Easier to maintain separate concerns
-
-**Cons**:
-- ❌ Users must navigate between sites
-- ❌ No unified search across all packages
-- ❌ Separate build/deploy pipelines
-
-### 2. Mintlify-Specific Features
-
-**Subdomain strategy**:
-- Each package gets `<package>.voltaire.tevm.sh`
-- Likely configured via Mintlify cloud settings (not in repo)
-
-**Shared config**:
-- Each `docs.json` is independent
-- No shared navigation or theming between packages
-
-## Open Questions
-
-1. **How are subdomains configured?**
-   - Not visible in repo → likely Mintlify cloud dashboard or DNS configuration
-
-2. **How does search work?**
-   - Mintlify provides built-in search
-   - Unknown if search spans multiple subdomains
-
-3. **Deployment trigger?**
-   - No GitHub Actions workflow found for docs deployment
-   - Likely uses Mintlify's GitHub integration (auto-deploy on push)
-
-4. **Other language docs?**
-   - Found `docs.json` for C, Swift
-   - Unknown if they're deployed yet (no subdomain references found)
-
-## Recommendations for Applying to Kundera
-
-Based on Voltaire's structure:
-
-### If Using Mintlify for Kundera
-
-1. **Main site**: `kundera.tevm.sh` or similar
-   - kundera-ts documentation
-
-2. **Effect integration**: `kundera-effect.tevm.sh`
-   - kundera-effect documentation
-
-3. **Shared patterns**:
-   - Use `docs.json` for navigation config
-   - Use `.mdx` for documentation pages
-   - Cross-link via external URLs
-   - Separate color schemes per package
-
-### Directory structure to create
-
-```
-packages/kundera-ts/docs/
-├── docs.json              # Mintlify config
-├── index.mdx              # Homepage
-├── getting-started.mdx
-├── concepts/
-├── skills/
-└── primitives/
-
-packages/kundera-effect/docs/
-├── docs.json              # Separate config
-├── index.mdx
-├── getting-started.mdx
-├── services/
-└── guides/
+**Definition:**
+```cairo
+pub extern type u128;
+impl u128Copy of Copy<u128>;
+impl u128Drop of Drop<u128>;
+impl NumericLiteralu128 of NumericLiteral<u128>;
 ```
 
-### Key migration tasks
+**Serialization:** Single felt252
+```cairo
+impl U128Serde = crate::serde::into_felt252_based::SerdeImpl<u128>; // Line 94
+```
 
-1. Create `docs.json` for each package (based on Voltaire's structure)
-2. Convert/create `.mdx` files for documentation
-3. Set up Mintlify project (or choose alternative like VitePress)
-4. Configure subdomains (`kundera.tevm.sh`, `kundera-effect.tevm.sh`)
-5. Add cross-links between packages in content
+**Conversion:**
+```cairo
+pub(crate) extern const fn u128_to_felt252(a: u128) -> felt252 nopanic; // Line 113
 
-## Related Files & Directories
+// Conversion from felt252 handles overflow
+enum U128sFromFelt252Result {
+    Narrow: u128,
+    Wide: (u128, u128),
+}
 
-**Main documentation**:
-- `/Users/msaug/workspace/voltaire/packages/voltaire-ts/docs/`
-- `/Users/msaug/workspace/voltaire/packages/voltaire-effect/docs/`
+const fn u128_try_from_felt252(a: felt252) -> Option<u128> implicits(RangeCheck) nopanic {
+    match u128s_from_felt252(a) {
+        U128sFromFelt252Result::Narrow(x) => Some(x),
+        U128sFromFelt252Result::Wide(_x) => None,
+    }
+}
+```
 
-**Configuration**:
-- `/Users/msaug/workspace/voltaire/packages/voltaire-ts/docs/docs.json`
-- `/Users/msaug/workspace/voltaire/packages/voltaire-effect/docs/docs.json`
+**Range:** 0 to 340,282,366,920,938,463,463,374,607,431,768,211,455 (2^128 - 1)
 
-**Deployment**:
-- `/Users/msaug/workspace/voltaire/.github/workflows/deploy-playground.yml`
+**Note:** u128 is the native range check unit in Cairo VM and fits comfortably within felt252's prime field.
 
-**Package configs**:
-- `/Users/msaug/workspace/voltaire/packages/voltaire-ts/package.json`
-- `/Users/msaug/workspace/voltaire/packages/voltaire-effect/package.json`
+---
+
+### u256 (struct type)
+
+✓ VERIFIED at `/Users/msaug/deps/cairo/corelib/src/integer.cairo:953`
+
+**Definition:**
+```cairo
+pub struct u256 {
+    pub low: u128,
+    pub high: u128,
+}
+```
+
+**Serialization:** Two felt252 values (low, high)
+
+The struct derives `Serde`, which serializes as:
+```cairo
+// Serialization example from docs (Line 43-46)
+let value: u256 = u256 { low: 1, high: 2 };
+let mut output: Array<felt252> = array![];
+value.serialize(ref output);
+assert!(output == array![1, 2]); // Two felt252s: low first, then high
+```
+
+**Format:**
+- **First felt252:** `low` (bits 0-127)
+- **Second felt252:** `high` (bits 128-255)
+- **Representation:** `value = low + high * 2^128`
+
+**Range:** 0 to 2^256 - 1
+
+**Operations:**
+u256 arithmetic is implemented using u128 operations with carry handling:
+```cairo
+pub fn u256_overflowing_add(lhs: u256, rhs: u256) -> (u256, bool) {
+    // Add low parts
+    match u128_overflowing_add(lhs.low, rhs.low) {
+        Ok(low) => (u256 { low, high }, overflow),
+        Err(low) => {
+            // Carry to high part
+            match u128_overflowing_add(high, 1_u128) {
+                Ok(high) => (u256 { low, high }, overflow),
+                Err(high) => (u256 { low, high }, true),
+            }
+        },
+    }
+}
+```
+
+---
+
+## Signed Integer Types
+
+### i8, i16, i32, i64, i128 (extern types)
+
+✓ VERIFIED at `/Users/msaug/deps/cairo/corelib/src/integer.cairo`
+
+**Definitions:**
+```cairo
+pub extern type i8;    // Line 1933
+pub extern type i16;   // Line 2023
+pub extern type i32;   // Line 2114
+pub extern type i64;   // Line 2205
+pub extern type i128;  // Line 2296
+```
+
+**Serialization:** Single felt252
+```cairo
+impl I8Serde = crate::serde::into_felt252_based::SerdeImpl<i8>;   // Line 1945
+impl I16Serde = crate::serde::into_felt252_based::SerdeImpl<i16>; // Line 2035
+// ... same pattern for i32, i64, i128
+```
+
+**Conversion Functions:**
+```cairo
+// Pattern for all signed types (i8 example)
+extern const fn i8_try_from_felt252(a: felt252) -> Option<i8> implicits(RangeCheck) nopanic;
+extern const fn i8_to_felt252(a: i8) -> felt252 nopanic;
+```
+
+---
+
+## Signed Integer Encoding Scheme
+
+✓ VERIFIED at `/Users/msaug/deps/cairo/crates/cairo-lang-sierra-to-casm/src/invocations/int/signed.rs`
+
+**Representation:** Signed integers are represented directly in felt252's prime field using **natural range mapping**.
+
+### Key Implementation Details:
+
+From `signed.rs:18-25`:
+```rust
+pub fn build_sint_from_felt252(
+    builder: CompiledInvocationBuilder<'_>,
+    min_value: i128,
+    max_value: i128,
+) -> Result<CompiledInvocation, InvocationError> {
+    assert!(min_value <= 0, "min_value must be non-positive");
+    assert!(max_value > 0, "max_value must be positive");
+    build_felt252_range_reduction(builder, &Range::closed(min_value, max_value), false)
+}
+```
+
+**Encoding Principle:**
+Signed integers use the **lower positive range** of felt252's prime field, not two's complement. Negative values are represented as large positive values near the prime.
+
+### Felt252 Prime Field Context
+
+From `range_reduction.rs`:
+```rust
+let prime: BigInt = Felt252::prime().into();
+// Prime = 2^251 + 17*2^192 + 1
+```
+
+### Ranges (Rust standard ranges):
+
+| Type | Min | Max | Range Size |
+|------|-----|-----|------------|
+| i8 | -128 | 127 | 256 (2^8) |
+| i16 | -32,768 | 32,767 | 65,536 (2^16) |
+| i32 | -2,147,483,648 | 2,147,483,647 | 2^32 |
+| i64 | -2^63 | 2^63 - 1 | 2^64 |
+| i128 | -2^127 | 2^127 - 1 | 2^128 |
+
+### Encoding Scheme:
+
+**For signed integers in felt252:**
+- Positive values: represented directly (0 to max_value)
+- Negative values: represented as `prime + negative_value`
+
+Example for i8:
+```
+  -128 → prime - 128
+  -127 → prime - 127
+  ...
+  -1   → prime - 1
+   0   → 0
+   1   → 1
+  ...
+  127  → 127
+```
+
+This is effectively **modular arithmetic** in the prime field, NOT two's complement.
+
+### Range Checking:
+
+From `signed.rs:32-42`:
+```rust
+pub fn build_sint_overflowing_operation(
+    builder: CompiledInvocationBuilder<'_>,
+    min_value: i128,
+    max_value: i128,
+    op: IntOperator,
+) -> Result<CompiledInvocation, InvocationError> {
+    // Shift the valid range to [0, range_size)
+    let canonical_value = value + positive_range_fixer;
+    // Check if canonical_value < range_size
+    hint TestLessThan {lhs: canonical_value, rhs: range_size} into {dst: is_in_range};
+}
+```
+
+The implementation:
+1. Shifts values by `positive_range_fixer = -min_value` to make range [0, range_size)
+2. Validates using range checks
+3. Handles overflow/underflow by wrapping within the valid range
+
+---
+
+## Serialization Format Summary
+
+### Single felt252 (Direct Conversion)
+
+**Types:** u8, u16, u32, u64, u128, i8, i16, i32, i64, i128
+
+**Implementation:**
+```cairo
+// From serde.cairo:111-134
+pub mod into_felt252_based {
+    pub impl SerdeImpl<T, +Copy<T>, +Into<T, felt252>, +TryInto<felt252, T>> of super::Serde<T> {
+        fn serialize(self: @T, ref output: Array<felt252>) {
+            output.append((*self).into());  // Single append
+        }
+        
+        fn deserialize(ref serialized: Span<felt252>) -> Option<T> {
+            Some((*serialized.pop_front()?).try_into()?)  // Single pop
+        }
+    }
+}
+```
+
+**Format:** `[value_as_felt252]`
+
+---
+
+### Multiple felt252 (Struct Serialization)
+
+**Types:** u256, u512 (and user-defined structs)
+
+**u256 Format:** `[low_u128, high_u128]`
+```cairo
+// Verified at integer.cairo:953-956
+pub struct u256 {
+    pub low: u128,   // Serialized first
+    pub high: u128,  // Serialized second
+}
+```
+
+**u512 Format:** `[limb0, limb1, limb2, limb3]`
+```cairo
+// Line 1173-1179
+#[derive(Copy, Drop, Hash, PartialEq, Serde)]
+pub struct u512 {
+    pub limb0: u128,
+    pub limb1: u128,
+    pub limb2: u128,
+    pub limb3: u128,
+}
+```
+
+---
+
+## Special Cases and Edge Cases
+
+### u128 Wide Multiplication
+```cairo
+// Returns (high, low) as two u128s
+pub fn u128_wide_mul(a: u128, b: u128) -> (u128, u128) nopanic {
+    let (high, low, _) = u128_guarantee_mul(a, b);
+    (high, low)
+}
+```
+
+Result requires u256 to represent: `result = low + high * 2^128`
+
+### Signed Integer Overflow Detection
+
+From `signed.rs:63-82`:
+```rust
+// Overflow detection uses three branches:
+// 1. InRange: value is within [min_value, max_value]
+// 2. Underflow: value < min_value (wraps around field)
+// 3. Overflow: value > max_value
+```
+
+Overflow result type:
+```cairo
+pub(crate) enum SignedIntegerResult<T> {
+    InRange: T,
+    Underflow: T,  // Wrapped value provided
+    Overflow: T,   // Wrapped value provided
+}
+```
+
+### i128 Division Edge Case
+
+From `integer.cairo:2432-2436`:
+```cairo
+// Catching the case for division of i128::MIN by -1, which overflows
+downcast(q).expect('attempt to divide with overflow')
+```
+
+Dividing `i128::MIN (-2^127)` by `-1` would produce `2^127`, which exceeds `i128::MAX (2^127 - 1)`.
+
+---
+
+## Key File Locations
+
+| File | Purpose | Key Lines |
+|------|---------|-----------|
+| `/Users/msaug/deps/cairo/corelib/src/integer.cairo` | Integer type definitions | 87 (u128), 310 (u8), 953 (u256), 1933 (i8) |
+| `/Users/msaug/deps/cairo/corelib/src/serde.cairo` | Serialization trait | 84-108 (Serde trait), 111-134 (felt252-based impl) |
+| `/Users/msaug/deps/cairo/crates/cairo-lang-sierra-to-casm/src/invocations/int/signed.rs` | Signed integer CASM compilation | 18-25 (felt252 conversion), 32-140 (overflow ops) |
+| `/Users/msaug/deps/cairo/crates/cairo-lang-sierra-to-casm/src/invocations/range_reduction.rs` | Range validation | 21-110 (felt252 range reduction) |
+| `/Users/msaug/deps/cairo/crates/cairo-lang-sierra/src/extensions/modules/int/signed.rs` | Signed integer Sierra definitions | 24-35 (SintTraits), 193-220 (Sint8-Sint128) |
+
+---
+
+## Conversion Functions Reference
+
+### Unsigned to felt252
+```cairo
+u8_to_felt252(a: u8) -> felt252
+u16_to_felt252(a: u16) -> felt252
+u32_to_felt252(a: u32) -> felt252
+u64_to_felt252(a: u64) -> felt252
+u128_to_felt252(a: u128) -> felt252
+// u256: No direct conversion (use .low and .high)
+```
+
+### felt252 to Unsigned
+```cairo
+u8_try_from_felt252(a: felt252) -> Option<u8>
+u16_try_from_felt252(a: felt252) -> Option<u16>
+u32_try_from_felt252(a: felt252) -> Option<u32>
+u64_try_from_felt252(a: felt252) -> Option<u64>
+u128_try_from_felt252(a: felt252) -> Option<u128>
+// u256: Construct from two felt252s as u128
+```
+
+### Signed to felt252
+```cairo
+i8_to_felt252(a: i8) -> felt252
+i16_to_felt252(a: i16) -> felt252
+i32_to_felt252(a: i32) -> felt252
+i64_to_felt252(a: i64) -> felt252
+i128_to_felt252(a: i128) -> felt252
+```
+
+### felt252 to Signed
+```cairo
+i8_try_from_felt252(a: felt252) -> Option<i8>
+i16_try_from_felt252(a: felt252) -> Option<i16>
+i32_try_from_felt252(a: felt252) -> Option<i32>
+i64_try_from_felt252(a: felt252) -> Option<i64>
+i128_try_from_felt252(a: felt252) -> Option<i128>
+```
+
+---
+
+## Architecture Insights
+
+### Type Hierarchy
+```
+felt252 (base field element)
+  │
+  ├── u8, u16, u32, u64, u128 (direct mapping)
+  │   └── extern types with Into/TryInto traits
+  │
+  ├── u256 (struct)
+  │   └── { low: u128, high: u128 }
+  │
+  └── i8, i16, i32, i64, i128 (field range mapping)
+      └── extern types with felt252 conversion
+```
+
+### Serialization Pipeline
+```
+Cairo Value → Into<felt252> → Array<felt252> → External World
+External → Span<felt252> → TryInto<T> → Cairo Value
+```
+
+### Safety Guarantees
+- Range checks enforce valid ranges for all integer types
+- Overflow/underflow detection in arithmetic operations
+- Option types for fallible conversions
+- Panic with descriptive messages for overflow (e.g., `'u128_add Overflow'`)
+
+---
+
+## Notes
+
+1. **No Two's Complement:** Cairo signed integers use prime field arithmetic, not two's complement. This is different from most programming languages.
+
+2. **u256 Not Extern:** Unlike smaller integers, u256 is a struct, not an extern type. This means its representation is explicit in Cairo source.
+
+3. **Felt252 Prime:** The prime is approximately 2^251, much larger than any integer type's range, ensuring all values fit uniquely.
+
+4. **Serialization Order:** For multi-felt types like u256, serialization is field-order: low to high.
+
+5. **Performance:** u128 and smaller types have optimized libfuncs, while u256 uses Cairo-level implementations.
+

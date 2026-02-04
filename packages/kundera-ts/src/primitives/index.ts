@@ -30,6 +30,41 @@ export { StorageKey } from './StorageKey/index.js';
 export type { EthAddressType } from './EthAddress/index.js';
 export { EthAddress, MAX_ETH_ADDRESS } from './EthAddress/index.js';
 
+// Unsigned Integers
+export type { Uint8Type } from './Uint8/index.js';
+export { Uint8 } from './Uint8/index.js';
+
+export type { Uint16Type } from './Uint16/index.js';
+export { Uint16 } from './Uint16/index.js';
+
+export type { Uint32Type } from './Uint32/index.js';
+export { Uint32 } from './Uint32/index.js';
+
+export type { Uint64Type } from './Uint64/index.js';
+export { Uint64 } from './Uint64/index.js';
+
+export type { Uint128Type } from './Uint128/index.js';
+export { Uint128 } from './Uint128/index.js';
+
+export type { Uint256Type } from './Uint256/index.js';
+export { Uint256 } from './Uint256/index.js';
+
+// Signed Integers
+export type { Int8Type, Int8Input } from './Int8/index.js';
+export { Int8 } from './Int8/index.js';
+
+export type { Int16Type, Int16Input } from './Int16/index.js';
+export { Int16 } from './Int16/index.js';
+
+export type { Int32Type, Int32Input } from './Int32/index.js';
+export { Int32 } from './Int32/index.js';
+
+export type { Int64Type, Int64Input } from './Int64/index.js';
+export { Int64 } from './Int64/index.js';
+
+export type { Int128Type, Int128Input } from './Int128/index.js';
+export { Int128 } from './Int128/index.js';
+
 // ShortString
 export {
   encodeShortString,

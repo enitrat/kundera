@@ -764,7 +764,7 @@ describeIfCrypto('Short String Encoding/Decoding', () => {
     const result = encodeCalldata(SHORTSTRING_ABI, 'set_name', ['my_token']);
     expect(result.error).toBeNull();
     // Verify it matches the direct encoding
-    const expected = encodeShortString('my_token');
+    const expected = encodeShortString('my_token').toBigInt();
     expect(result.result).toEqual([expected]);
   });
 
@@ -777,7 +777,7 @@ describeIfCrypto('Short String Encoding/Decoding', () => {
 
   it('re-exports encodeShortString/decodeShortString from primitives', () => {
     // Verify the re-exports work
-    expect(encodeShortString('test')).toBe(1952805748n);
+    expect(encodeShortString('test').toBigInt()).toBe(1952805748n);
     expect(decodeShortString(1952805748n)).toBe('test');
   });
 });
