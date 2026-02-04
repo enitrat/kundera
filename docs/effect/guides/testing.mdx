@@ -1,0 +1,207 @@
+---
+title: Testing Effect Programs
+description: Learn how to test Effect-based Starknet applications
+---
+
+# Testing Effect Programs
+
+Effect makes testing Starknet applications easier through dependency injection and mock services.
+
+## Basic Testing Pattern
+
+Use test layers to mock services:
+
+```typescript
+import { ProviderService } from "@kundera-sn/kundera-effect/services"
+import { Effect } from "effect"
+import { describe, it, expect } from "vitest"
+
+describe("getLatestBlock", () => {
+  it("should fetch the latest block number", async () => {
+    // Create a test layer with mocked data
+    const testLayer = ProviderService.test({
+      blockNumber: 12345n
+    })
+
+    const program = Effect.gen(function* () {
+      const provider = yield* ProviderService
+      return yield* provider.getBlockNumber()
+    })
+
+    // Run with test layer
+    const result = await Effect.runPromise(
+      program.pipe(Effect.provide(testLayer))
+    )
+
+    expect(result).toBe(12345n)
+  })
+})
+```
+
+## Testing Error Cases
+
+Test error handling explicitly:
+
+```typescript
+import { NetworkError } from "@kundera-sn/kundera-effect/errors"
+
+it("should handle network errors", async () => {
+  const testLayer = ProviderService.test({
+    // Configure test to return error
+    shouldFail: true,
+    error: new NetworkError({ message: "Connection timeout" })
+  })
+
+  const program = Effect.gen(function* () {
+    const provider = yield* ProviderService
+    return yield* provider.getBlockNumber()
+  })
+
+  const result = await Effect.runPromise(
+    program.pipe(
+      Effect.provide(testLayer),
+      Effect.either // Convert to Either for testing
+    )
+  )
+
+  expect(result._tag).toBe("Left")
+  expect(result.left).toBeInstanceOf(NetworkError)
+})
+```
+
+## Integration Testing
+
+Test with real services for integration tests:
+
+```typescript
+import { Layer } from "effect"
+
+describe("integration tests", () => {
+  const IntegrationLayer = Layer.mergeAll(
+    ProviderService.layer({
+      url: "https://starknet-sepolia.public.blastapi.io"
+    }),
+    AccountService.layer({
+      address: process.env.TEST_ACCOUNT_ADDRESS!,
+      privateKey: process.env.TEST_PRIVATE_KEY!
+    })
+  )
+
+  it("should execute real transactions", async () => {
+    const program = Effect.gen(function* () {
+      const account = yield* AccountService
+      return yield* account.execute({
+        calls: [/* ... */]
+      })
+    })
+
+    const result = await Effect.runPromise(
+      program.pipe(Effect.provide(IntegrationLayer))
+    )
+
+    expect(result.transaction_hash).toBeDefined()
+  })
+})
+```
+
+## Property-Based Testing
+
+Use Effect with property-based testing:
+
+```typescript
+import { fc } from "fast-check"
+
+it("should handle any valid felt252", async () => {
+  await fc.assert(
+    fc.asyncProperty(
+      fc.bigInt({ min: 0n, max: 2n ** 252n - 1n }),
+      async (value) => {
+        const testLayer = ContractService.test({
+          balance: value
+        })
+
+        const program = Effect.gen(function* () {
+          const contract = yield* ContractService
+          return yield* contract.read({
+            address: "0x...",
+            entrypoint: "get_balance"
+          })
+        })
+
+        const result = await Effect.runPromise(
+          program.pipe(Effect.provide(testLayer))
+        )
+
+        expect(result).toBe(value)
+      }
+    )
+  )
+})
+```
+
+## Testing Best Practices
+
+<AccordionGroup>
+  <Accordion title="Use Test Layers">
+    Always provide test layers instead of mocking at the Effect runtime level:
+
+    ```typescript
+    // Good
+    const testLayer = ProviderService.test({ ... })
+    Effect.provide(program, testLayer)
+
+    // Avoid
+    jest.mock("@kundera-sn/kundera-effect/services")
+    ```
+  </Accordion>
+
+  <Accordion title="Test Error Paths">
+    Explicitly test all error cases tracked in your Effect type:
+
+    ```typescript
+    type Program = Effect.Effect<
+      Result,
+      NetworkError | ValidationError,
+      Services
+    >
+
+    // Test both error types
+    it("handles NetworkError", ...)
+    it("handles ValidationError", ...)
+    ```
+  </Accordion>
+
+  <Accordion title="Use Effect.either for Assertions">
+    Convert Effects to Either for easier assertions:
+
+    ```typescript
+    const result = await Effect.runPromise(
+      program.pipe(Effect.either)
+    )
+
+    if (result._tag === "Left") {
+      expect(result.left).toBeInstanceOf(NetworkError)
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Layers" icon="layer-group" href="/effect/guides/layers">
+    Learn about dependency injection
+  </Card>
+
+  <Card title="Error Handling" icon="shield" href="/effect/guides/error-handling">
+    Handle errors properly
+  </Card>
+
+  <Card title="Services" icon="server" href="/effect/services/provider">
+    Explore available services
+  </Card>
+
+  <Card title="Examples" icon="code" href="https://github.com/enitrat/kundera/tree/main/examples">
+    Browse example tests
+  </Card>
+</CardGroup>
