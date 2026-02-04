@@ -1,0 +1,122 @@
+---
+title: StorageKey
+description: Branded type for storage slot addresses.
+---
+
+`StorageKey` is a branded type for Starknet storage slot addresses. Storage keys identify specific storage locations within a contract.
+
+## Type Definition
+
+```typescript
+type StorageKeyType = Brand<Uint8Array, 'StorageKey'> & FeltMethods;
+```
+
+## Constructors
+
+### StorageKey(value)
+
+Create a StorageKey from any Felt252Input.
+
+```typescript
+import { StorageKey } from '@kundera-sn/kundera-ts';
+
+const key = StorageKey('0x0206f38f7e4f15e87567361213c28f235cccdaa1d7fd34c9db1dfe9489c6a091');
+const key2 = StorageKey(123n);
+```
+
+**Throws:**
+- All errors from `Felt252()` constructors
+- `Error: StorageKey must be < 2^251` - if value >= 2^251
+
+### StorageKey.from(value)
+
+Alias for `StorageKey(value)`.
+
+```typescript
+const key = StorageKey.from('0x123');
+```
+
+## Instance Methods
+
+StorageKey inherits all methods from Felt252:
+
+```typescript
+const key = StorageKey('0x123');
+
+key.toHex();       // '0x0000...0123'
+key.toBigInt();    // 291n
+key.isValid();     // true
+key.isZero();      // false
+key.equals(other); // boolean
+```
+
+## Computing Storage Keys
+
+In Starknet, storage keys are computed using hashes. For simple storage variables:
+
+```typescript
+import { pedersen } from '@kundera-sn/kundera-ts/crypto';
+import { StorageKey } from '@kundera-sn/kundera-ts';
+import { encodeShortString } from '@kundera-sn/kundera-ts';
+
+// Storage variable named "balance"
+const variableName = encodeShortString('balance');
+const storageKey = StorageKey(pedersen(variableName, 0n));
+```
+
+For mappings (e.g., `balances[address]`):
+
+```typescript
+// balances mapping at address
+const baseKey = encodeShortString('balances');
+const storageKey = StorageKey(pedersen(baseKey, addressFelt));
+```
+
+## Use Cases
+
+### Reading Storage
+
+```typescript
+import { starknet_getStorageAt } from '@kundera-sn/kundera-ts/jsonrpc';
+import { StorageKey, ContractAddress } from '@kundera-sn/kundera-ts';
+
+const value = await starknet_getStorageAt(transport, {
+  contract_address: ContractAddress('0x...'),
+  key: StorageKey('0x...'),
+  block_id: 'latest',
+});
+```
+
+### Storage Proofs
+
+Storage keys are used in Merkle proofs for state verification:
+
+```typescript
+const proof = await starknet_getProof(transport, {
+  contract_address: address,
+  keys: [StorageKey('0x...')],
+  block_id: 'latest',
+});
+```
+
+## Aliases
+
+```typescript
+import { Storage } from '@kundera-sn/kundera-ts';
+
+// Storage === StorageKey
+const a = Storage('0x123');
+const b = StorageKey('0x123');
+a.equals(b); // true
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="ContractAddress" icon="file-contract" href="/primitives/contract-address">
+    Contract addresses.
+  </Card>
+  <Card title="Crypto API" icon="lock" href="/api/crypto">
+    Hash functions for computing keys.
+  </Card>
+</CardGroup>

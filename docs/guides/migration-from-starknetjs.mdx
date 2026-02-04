@@ -1,0 +1,210 @@
+---
+title: Migrate from starknet.js
+description: How to migrate from starknet.js to Kundera
+---
+
+# Migrating from starknet.js
+
+This guide helps you migrate from starknet.js to Kundera Effect.
+
+## Quick Comparison
+
+| Feature | starknet.js | Kundera Effect |
+|---------|-------------|----------------|
+| **Type Safety** | Basic types | Branded types + Effect |
+| **Error Handling** | try/catch | Type-tracked errors |
+| **Dependencies** | Global instances | Dependency injection |
+| **Resources** | Manual cleanup | Automatic cleanup |
+
+## Provider
+
+### starknet.js
+
+```typescript
+import { Provider } from "starknet"
+
+const provider = new Provider({
+  nodeUrl: "https://starknet-sepolia.public.blastapi.io"
+})
+
+const blockNumber = await provider.getBlockNumber()
+```
+
+### Kundera Effect
+
+```typescript
+import { ProviderService } from "@kundera-sn/kundera-effect/services"
+import { Effect } from "effect"
+
+const program = Effect.gen(function* () {
+  const provider = yield* ProviderService
+  const blockNumber = yield* provider.getBlockNumber()
+  return blockNumber
+})
+
+const result = await Effect.runPromise(
+  program.pipe(
+    Effect.provide(
+      ProviderService.layer({
+        url: "https://starknet-sepolia.public.blastapi.io"
+      })
+    )
+  )
+)
+```
+
+## Contract Reads
+
+### starknet.js
+
+```typescript
+import { Provider, Contract } from "starknet"
+
+const provider = new Provider({ nodeUrl: "..." })
+const contract = new Contract(abi, address, provider)
+
+try {
+  const balance = await contract.balanceOf(owner)
+  console.log(balance)
+} catch (error) {
+  console.error("Failed:", error)
+}
+```
+
+### Kundera Effect
+
+```typescript
+import { ContractService } from "@kundera-sn/kundera-effect/services"
+import { Effect } from "effect"
+
+const program = Effect.gen(function* () {
+  const contract = yield* ContractService
+
+  const balance = yield* contract.read({
+    address: "0x...",
+    entrypoint: "balanceOf",
+    calldata: [owner]
+  })
+
+  return balance
+}).pipe(
+  Effect.catchAll(error =>
+    Effect.logError(`Failed: ${error._tag}`)
+  )
+)
+```
+
+## Account Operations
+
+### starknet.js
+
+```typescript
+import { Account, Provider } from "starknet"
+
+const account = new Account(provider, address, privateKey)
+
+const result = await account.execute({
+  contractAddress: tokenAddress,
+  entrypoint: "transfer",
+  calldata: [recipient, amount]
+})
+```
+
+### Kundera Effect
+
+```typescript
+import { AccountService } from "@kundera-sn/kundera-effect/services"
+import { Effect } from "effect"
+
+const program = Effect.gen(function* () {
+  const account = yield* AccountService
+
+  const result = yield* account.execute({
+    calls: [{
+      contractAddress: tokenAddress,
+      entrypoint: "transfer",
+      calldata: [recipient, amount]
+    }]
+  })
+
+  return result
+})
+```
+
+## Event Listening
+
+### starknet.js
+
+```typescript
+const events = await provider.getEvents({
+  from_block: { block_number: 0 },
+  to_block: { block_number: 1000 },
+  address: contractAddress,
+  keys: [[eventKey]]
+})
+```
+
+### Kundera Effect
+
+```typescript
+import { ProviderService } from "@kundera-sn/kundera-effect/services"
+import { Effect, Stream } from "effect"
+
+const program = ProviderService.subscribeToEvents({
+  address: contractAddress,
+  keys: [[eventKey]]
+}).pipe(
+  Stream.take(100),
+  Stream.runCollect
+)
+```
+
+## Migration Strategy
+
+### 1. Start with Vanilla TypeScript
+
+If Effect feels overwhelming, start with `@kundera-sn/kundera-ts`:
+
+```typescript
+import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
+
+const provider = new HttpProvider({ url: "..." })
+const blockNumber = await provider.getBlockNumber()
+```
+
+### 2. Gradually Adopt Effect
+
+Migrate service by service:
+
+1. **Provider** - Start with ProviderService
+2. **Contract reads** - Add ContractService
+3. **Account operations** - Add AccountService
+4. **Complex workflows** - Compose services
+
+### 3. Leverage Type Safety
+
+Let TypeScript guide your migration:
+
+- Branded types prevent primitive mixups
+- Effect tracks all possible errors
+- Missing dependencies caught at compile time
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Effect Quickstart" icon="rocket" href="/getting-started/quickstart">
+    Start with Effect
+  </Card>
+
+  <Card title="Services Guide" icon="server" href="/effect/services/provider">
+    Learn Effect services
+  </Card>
+
+  <Card title="Comparisons" icon="scale" href="/guides/comparisons">
+    Detailed comparisons
+  </Card>
+
+  <Card title="Examples" icon="code" href="https://github.com/enitrat/kundera/tree/main/examples">
+    See examples
+  </Card>
+</CardGroup>

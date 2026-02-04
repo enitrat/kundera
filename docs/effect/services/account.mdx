@@ -1,0 +1,93 @@
+---
+title: Account Service
+description: Account signing for INVOKE_V3.
+---
+
+<Info>
+Supported account implementations: OpenZeppelin and ArgentX (latest).
+</Info>
+
+# Account Service
+
+`AccountService` signs Starknet invoke transactions. It is used by `SignerService`.
+
+## Imports
+
+```ts
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+```
+
+## OpenZeppelin Account Layer
+
+```ts
+const accountLayer = Services.Account.OpenZeppelinAccount({
+  address: "0x...",
+  privateKey: "0x..."
+});
+```
+
+## ArgentX Account Layer
+
+```ts
+const accountLayer = Services.Account.ArgentXAccount({
+  address: "0x...",
+  privateKey: "0x...",
+  guardianPrivateKey: "0x..." // optional
+});
+```
+
+## Sign an Invoke V3
+
+```ts
+const program = Effect.gen(function* () {
+  const account = yield* Services.Account.AccountService;
+
+  return yield* account.signInvokeV3({
+    calls: [
+      {
+        contractAddress: "0x...",
+        entrypoint: "transfer",
+        calldata: [1n, 2n]
+      }
+    ],
+    nonce: 0n,
+    chainId: 23448594291968334n,
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+    }
+  });
+}).pipe(
+  Effect.provide(accountLayer)
+);
+```
+
+## Resource Bounds
+
+`resourceBounds` uses bigint values and is converted to RPC hex strings under the hood.
+
+```ts
+const bounds = {
+  l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+  l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+};
+```
+
+## Errors
+
+`AccountService` surfaces `AccountError` on signing or input failures.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Signer" icon="signature" href="/services/signer">
+    Sign and submit invoke transactions.
+  </Card>
+  <Card title="ArgentX Account" icon="user-astronaut" href="/services/argentx-account">
+    ArgentX-specific signature format and guardian support.
+  </Card>
+  <Card title="Nonce Manager" icon="hashtag" href="/services/nonce-manager">
+    Avoid nonce races with concurrent txs.
+  </Card>
+</CardGroup>

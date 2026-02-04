@@ -1,0 +1,135 @@
+---
+title: Branded Types
+description: Zero-overhead type safety for Starknet primitives
+---
+
+Kundera uses branded types to prevent common bugs like passing a ClassHash where a ContractAddress is expected. The brand exists only at compile time--at runtime, it's just a `Uint8Array`.
+
+## What is a Branded Type?
+
+A branded type adds a compile-time tag to a base type:
+
+```typescript
+// The brand symbol (shared across all primitives)
+declare const __brand: unique symbol;
+
+// ContractAddressType is a Uint8Array with an invisible brand tag
+type ContractAddressType = Uint8Array & { readonly [__brand]: 'ContractAddress' };
+
+// ClassHashType is also a Uint8Array, but with a different brand
+type ClassHashType = Uint8Array & { readonly [__brand]: 'ClassHash' };
+```
+
+At runtime, both are plain `Uint8Array`. TypeScript prevents you from mixing them up:
+
+```typescript
+import { ContractAddress, ClassHash } from '@kundera-sn/kundera-ts/primitives';
+
+function deployContract(address: ContractAddressType, classHash: ClassHashType) { /* ... */ }
+
+const addr = ContractAddress.from('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+const hash = ClassHash.from('0x02a8846878b6ad1f54f6ba46f5f40e11cee755c677f130b2c4b60566c9003f1f');
+
+deployContract(addr, hash);  // OK
+deployContract(hash, addr);  // Type error: ClassHashType is not assignable to ContractAddressType
+```
+
+## Zero Runtime Overhead
+
+The brand is a phantom type--it exists only in TypeScript's type system:
+
+```typescript
+const addr = ContractAddress.from('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+
+// At runtime, it's just a Uint8Array
+console.log(addr instanceof Uint8Array);  // true
+console.log(addr.length);                  // 32
+console.log(addr[0]);                      // First byte as number
+
+// All Uint8Array methods work
+addr.slice(0, 4);
+addr.subarray(12, 20);
+new DataView(addr.buffer);
+```
+
+## Validation at Construction
+
+Branded types are validated when created. If you have a `ContractAddressType`, it's valid:
+
+```typescript
+// These throw on invalid input
+ContractAddress.from('not_valid');                    // Error: Invalid hex
+ContractAddress.from('0x' + 'f'.repeat(65));          // Error: Exceeds max value
+
+// If construction succeeds, the value is valid
+const addr = ContractAddress.from('0x049d36570d4e...');
+// addr is guaranteed to be a valid Starknet contract address
+```
+
+## Using Branded Types in Function Signatures
+
+Use branded types in your function parameters:
+
+```typescript
+import type { ContractAddressType } from '@kundera-sn/kundera-ts/primitives';
+import type { ClassHashType } from '@kundera-sn/kundera-ts/primitives';
+import type { Felt252Type } from '@kundera-sn/kundera-ts/primitives';
+
+// Type-safe function - cannot swap arguments by accident
+function declareAndDeploy(
+  address: ContractAddressType,
+  classHash: ClassHashType,
+  salt: Felt252Type
+) {
+  // No runtime validation needed - types guarantee validity
+}
+```
+
+## API Documentation Note
+
+All Kundera documentation shows the **recommended API** using constructors like `ContractAddress.from()`, `ClassHash.from()`, etc. These return instances with prototype methods.
+
+For bundle-size optimization, Kundera also provides a [tree-shakeable functional API](/concepts/tree-shakeable-api) with the same method signatures but imported as standalone functions.
+
+## All Branded Types
+
+| Type | Description | Max Value |
+|------|-------------|-----------|
+| [Felt252Type](/api/primitives#felt252) | Raw 252-bit field element | < 2^251 + 17*2^192 + 1 |
+| [ContractAddressType](/api/primitives#contractaddress) | Starknet contract address | < 2^251 |
+| [ClassHashType](/api/primitives#classhash) | Contract class identifier | < 2^251 + 17*2^192 + 1 |
+| [StorageKeyType](/api/primitives#storagekey) | Storage slot address | < 2^251 + 17*2^192 + 1 |
+| [EthAddressType](/api/primitives#ethaddress) | L1 Ethereum address | < 2^160 |
+
+<Warning>
+## Conversion Required for External Data
+
+When receiving data from external sources (RPC responses, user input), you must explicitly convert to branded types:
+
+```typescript
+// RPC returns raw hex strings
+const rawAddress = '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7';
+
+// Explicit conversion required
+const address = ContractAddress.from(rawAddress);
+```
+
+Never assume external data is already branded--always use the `.from()` constructor.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Tree-Shakeable API" icon="leaf" href="/concepts/tree-shakeable-api">
+    Functional API for minimal bundle size
+  </Card>
+  <Card title="Type-Safe Values" icon="lock" href="/concepts/type-safe-values">
+    Prevent type confusion with branded types
+  </Card>
+  <Card title="Primitives API" icon="cube" href="/api/primitives">
+    Full API reference for primitive types
+  </Card>
+  <Card title="Error Handling" icon="shield-check" href="/concepts/error-handling">
+    How validation errors are handled
+  </Card>
+</CardGroup>

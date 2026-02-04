@@ -1,0 +1,274 @@
+---
+title: Security
+description: Cryptographic assumptions, key management, and best practices.
+---
+
+Kundera handles sensitive cryptographic operations. Understanding the security model helps you build safe applications.
+
+## Cryptographic Primitives
+
+### ECDSA (STARK Curve)
+
+Starknet uses ECDSA over the STARK curve for signatures:
+
+- **Curve**: STARK curve (not secp256k1)
+- **Hash**: Pedersen hash for message hashing
+- **Signature**: (r, s) pair
+
+```typescript
+import { sign, verify, getPublicKey } from '@kundera-sn/kundera-ts/crypto';
+
+const publicKey = getPublicKey(privateKey);
+const signature = sign(privateKey, messageHash);
+const valid = verify(publicKey, messageHash, signature);
+```
+
+### Hash Functions
+
+| Function | Use Case |
+|----------|----------|
+| **Pedersen** | Transaction hashes, contract addresses |
+| **Poseidon** | Newer contracts, more efficient |
+| **Starknet Keccak** | Function/event selectors |
+
+```typescript
+import { pedersenHash, poseidonHash, computeSelector } from '@kundera-sn/kundera-ts/crypto';
+
+const hash1 = pedersenHash([a, b]);
+const hash2 = poseidonHash([a, b, c]);
+const selector = computeSelector('transfer');
+```
+
+## Key Management
+
+### Private Key Security
+
+<Warning>
+## Never Expose Private Keys
+
+Private keys should NEVER appear in:
+- Client-side JavaScript
+- Source code (even in tests)
+- Logs or error messages
+- Version control
+</Warning>
+
+### Recommended Approaches
+
+| Environment | Approach |
+|-------------|----------|
+| **Browser** | Use wallet extensions (ArgentX, Braavos) |
+| **Server** | Environment variables or secret managers |
+| **Testing** | Devnet accounts (funded test accounts) |
+
+```typescript
+import { signRaw } from '@kundera-sn/kundera-ts/crypto';
+import { connectWalletWithModal } from './skills/wallet-modal';
+
+// ✅ Good: Environment variable
+const messageHash = computeMessageHash(...);
+const signature = signRaw(process.env.PRIVATE_KEY!, messageHash);
+
+// ❌ Bad: Hardcoded
+const signature = signRaw('0x123...', messageHash);
+
+// ✅ Good: Browser wallet
+const { result } = await connectWalletWithModal();
+if (result) {
+  const { walletProvider, transport, address } = result;
+  // Use the walletProvider with a custom signer or account skill.
+}
+```
+
+## Signature Verification
+
+### On-Chain
+
+Contracts verify signatures in `__validate__`:
+
+```cairo
+fn is_valid_signature(hash: felt252, sig: Array<felt252>) -> felt252
+```
+
+### Off-Chain
+
+Verify signatures without sending a transaction:
+
+```typescript
+import { verify, getPublicKey } from '@kundera-sn/kundera-ts/crypto';
+
+const publicKey = getPublicKey(privateKey);
+const isValid = verify(publicKey, messageHash, signature);
+```
+
+## Typed Data (SNIP-12)
+
+Use typed data to prevent signature replay attacks:
+
+```typescript
+import { signTypedData, signatureToArray } from '@kundera-sn/kundera-ts/crypto';
+
+const typedData = {
+  types: {
+    StarkNetDomain: [...],
+    Message: [...],
+  },
+  primaryType: 'Message',
+  domain: {
+    name: 'MyApp',           // Unique app name
+    version: '1',            // App version
+    chainId: '0x534e5f4d41494e', // SN_MAIN or SN_SEPOLIA
+  },
+  message: { ... },
+};
+
+const signature = signTypedData(privateKey, typedData, accountAddress);
+const signatureArray = signatureToArray(signature);
+```
+
+### Domain Separation
+
+Always include a unique domain to prevent:
+- **Cross-app replay**: Signature from App A used in App B
+- **Cross-chain replay**: Mainnet signature used on Sepolia
+
+## Transaction Security
+
+### Validate Before Signing
+
+Always verify transaction details before signing:
+
+```typescript
+import { encodeCalldata } from '@kundera-sn/kundera-ts/abi';
+import { signRaw, signatureToArray } from '@kundera-sn/kundera-ts/crypto';
+import { createAccountInvoker } from './skills/account-invoke';
+
+const signTransaction = (hash) => signatureToArray(signRaw(privateKey, hash));
+const account = createAccountInvoker({ transport, address, signTransaction });
+const calldata = encodeCalldata(abi, 'transfer', [to, amount]);
+if (calldata.error) throw new Error(calldata.error.message);
+
+const call = {
+  contractAddress: tokenAddress,
+  entrypoint: 'transfer',
+  calldata: calldata.result,
+};
+
+// Estimate fee first
+const fee = await account.estimateFee(call);
+console.log('Fee:', fee.overall_fee);
+
+// Execute only after verification
+await account.execute(call);
+```
+
+### Multicall Atomicity
+
+Batch operations execute atomically—all succeed or all revert:
+
+```typescript
+import { encodeCalldata } from '@kundera-sn/kundera-ts/abi';
+
+const transferA = encodeCalldata(ERC20_ABI, 'transfer', [recipient, amountA]);
+const transferB = encodeCalldata(ERC20_ABI, 'transfer', [recipient, amountB]);
+if (transferA.error || transferB.error) {
+  throw new Error('Failed to encode calldata');
+}
+
+// Atomic: both transfers happen or neither does
+await account.execute([
+  {
+    contractAddress: tokenA,
+    entrypoint: 'transfer',
+    calldata: transferA.result,
+  },
+  {
+    contractAddress: tokenB,
+    entrypoint: 'transfer',
+    calldata: transferB.result,
+  },
+]);
+```
+
+## RPC Security
+
+### HTTPS Only
+
+Always use HTTPS for RPC endpoints:
+
+```typescript
+import { createHttpProvider } from './skills/http-provider';
+
+// ✅ Good
+createHttpProvider({ url: 'https://secure.rpc.io' });
+
+// ❌ Bad
+createHttpProvider({ url: 'http://insecure.rpc.io' });
+```
+
+### API Key Protection
+
+Protect RPC API keys:
+
+```typescript
+import { createHttpProvider } from './skills/http-provider';
+
+// Server-side: Use environment variables
+const provider = createHttpProvider({
+  url: process.env.RPC_URL!,
+  transportOptions: { fetchOptions: { headers: { 'x-api-key': process.env.RPC_KEY! } } },
+});
+
+// Client-side: Use a proxy
+const provider = createHttpProvider({
+  url: '/api/rpc-proxy', // Your backend proxies to RPC
+});
+```
+
+## Common Vulnerabilities
+
+| Vulnerability | Prevention |
+|---------------|------------|
+| **Key exposure** | Use wallets, env vars, never hardcode |
+| **Replay attacks** | Use typed data with domain separation |
+| **Phishing** | Verify contract addresses, use checksums |
+| **Front-running** | Use commit-reveal patterns when needed |
+| **Integer overflow** | Cairo handles this, but validate inputs |
+
+## Crypto Backend Selection
+
+Kundera exposes explicit crypto entrypoints:
+
+```typescript
+// Native (Bun/Node with FFI) - preferred for production
+import * as crypto from '@kundera-sn/kundera-ts/native';
+
+const hash = crypto.pedersenHash(a, b);
+```
+
+```typescript
+// WASM (browser/portable environments)
+import * as crypto from '@kundera-sn/kundera-ts/wasm';
+
+await crypto.loadWasmCrypto();
+const hash = crypto.pedersenHash(a, b);
+```
+
+Native crypto is faster and uses audited libraries. WASM is browser-compatible.
+
+## Security Checklist
+
+- [ ] Private keys stored securely (env vars, secrets manager)
+- [ ] Using HTTPS for all RPC connections
+- [ ] Typed data includes unique domain
+- [ ] Transaction details verified before signing
+- [ ] API keys not exposed in client code
+- [ ] Using wallet extensions for user-facing apps
+
+## Related
+
+<CardGroup cols={1}>
+  <Card title="Crypto API" icon="lock" href="/api/crypto">
+    Cryptographic function reference.
+  </Card>
+</CardGroup>

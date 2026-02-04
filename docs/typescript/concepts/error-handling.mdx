@@ -1,0 +1,171 @@
+---
+title: Error Handling
+description: How Kundera handles validation errors and invalid input
+---
+
+Kundera uses synchronous exceptions for validation errors, following JavaScript's native API patterns (e.g., `JSON.parse`, `new URL`). We recommend wrapping Kundera in error-safe patterns for application code using [neverthrow](https://github.com/supermacro/neverthrow) or [Effect](https://effect.website).
+
+## Using neverthrow
+
+```typescript
+import { Result, ok, err } from 'neverthrow';
+import { ContractAddress } from '@kundera-sn/kundera-ts/primitives';
+import type { ContractAddressType } from '@kundera-sn/kundera-ts/primitives';
+
+function parseAddress(input: string): Result<ContractAddressType, Error> {
+  try {
+    return ok(ContractAddress.from(input));
+  } catch (error) {
+    return err(error as Error);
+  }
+}
+
+// Type-safe error handling
+const result = parseAddress(userInput);
+result.match(
+  (addr) => console.log('Valid:', addr.toHex()),
+  (error) => console.log('Invalid:', error.message)
+);
+```
+
+Apply the same pattern to create wrapper functions for other primitives (`ClassHash`, `Felt252`, etc.).
+
+## Using Effect
+
+```typescript
+import { Effect, pipe } from 'effect';
+import { ContractAddress } from '@kundera-sn/kundera-ts/primitives';
+import type { ContractAddressType } from '@kundera-sn/kundera-ts/primitives';
+
+const parseAddress = (input: string): Effect.Effect<ContractAddressType, Error> =>
+  Effect.try({
+    try: () => ContractAddress.from(input),
+    catch: (error) => error as Error,
+  });
+
+const program = pipe(
+  parseAddress(userInput),
+  Effect.map((addr) => addr.toHex()),
+  Effect.catchAll((error) => Effect.succeed(`Invalid: ${error.message}`))
+);
+
+await Effect.runPromise(program);
+```
+
+## Basic Exception Pattern
+
+Constructors throw when given invalid input:
+
+```typescript
+import { Felt252, ContractAddress } from '@kundera-sn/kundera-ts/primitives';
+
+// Valid input - returns Felt252Type
+const felt = Felt252('0x123');
+
+// Invalid input - throws Error
+Felt252('not-a-hex');           // Error: Invalid hex string
+Felt252('0x' + 'f'.repeat(65)); // Error: Value exceeds field prime
+
+// Invalid address - throws Error
+ContractAddress.from('0x' + 'f'.repeat(65)); // Error: Address exceeds max value
+```
+
+Use try/catch to handle errors:
+
+```typescript
+try {
+  const addr = ContractAddress.from(userInput);
+  // addr is guaranteed valid here
+} catch (error) {
+  console.log(`Invalid address: ${error.message}`);
+}
+```
+
+## Validation Approaches
+
+| Approach | Use Case |
+|----------|----------|
+| **Constructor** (`ContractAddress.from(input)`) | Invalid input is unexpected (programming error) |
+| **isValid** (`ContractAddress.isValid(felt)`) | Branch on validity before construction |
+| **Try/catch** | Handling user input gracefully |
+
+## Error Types
+
+Kundera throws standard JavaScript `Error` objects with descriptive messages:
+
+| Condition | Error Message |
+|-----------|---------------|
+| Invalid hex string | `"Invalid hex string"` |
+| Value too large | `"Felt252 must be less than field prime"` |
+| Wrong byte length | `"Felt252 must be exactly 32 bytes"` |
+| Address overflow | `"Address must be < 2^251"` |
+
+## Crypto Errors
+
+Cryptographic operations throw on invalid signatures or keys. Use try/catch when verifying untrusted input.
+
+## Best Practices
+
+### 1. Validate at Boundaries
+
+Parse external data at system boundaries, then use typed values internally:
+
+```typescript
+// API handler - boundary
+async function handleTransfer(req: Request) {
+  // Validate once at boundary
+  const to = ContractAddress.from(req.body.to);
+  const amount = Felt252(req.body.amount);
+
+  // Internal code uses typed values
+  return executeTransfer(to, amount);
+}
+
+// Internal function - no validation needed
+function executeTransfer(to: ContractAddressType, amount: Felt252Type) {
+  // Types guarantee validity
+}
+```
+
+### 2. Use Result Types in Libraries
+
+If building a library, prefer Result types to let consumers choose error handling:
+
+```typescript
+// Library code
+export function parseAndValidate(input: string): Result<ContractAddressType, Error> {
+  try {
+    const addr = ContractAddress.from(input);
+    // Additional validation...
+    return ok(addr);
+  } catch (error) {
+    return err(error as Error);
+  }
+}
+```
+
+### 3. Fail Fast in Development
+
+In development, let errors throw to catch bugs early:
+
+```typescript
+// Development - fail fast
+const addr = ContractAddress.from(userInput);
+
+// Production - graceful handling
+const result = parseAddress(userInput);
+if (result.isErr()) {
+  return { error: 'Invalid address' };
+}
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Type-Safe Values" icon="lock" href="/concepts/type-safe-values">
+    Prevent errors with typed values
+  </Card>
+  <Card title="Security" icon="shield" href="/concepts/security">
+    Cryptographic error handling
+  </Card>
+</CardGroup>

@@ -1,0 +1,102 @@
+---
+title: Installation
+description: Install Kundera packages in your project
+---
+
+# Installation
+
+Kundera is published as two main packages: `@kundera-sn/kundera-effect` (recommended) and `@kundera-sn/kundera-ts`.
+
+## Effect Integration (Recommended)
+
+For new projects, we recommend the Effect integration:
+
+<CodeGroup>
+```bash npm
+npm install @kundera-sn/kundera-effect effect
+```
+
+```bash pnpm
+pnpm add @kundera-sn/kundera-effect effect
+```
+
+```bash bun
+bun add @kundera-sn/kundera-effect effect
+```
+
+```bash yarn
+yarn add @kundera-sn/kundera-effect effect
+```
+</CodeGroup>
+
+### What's Included
+
+- **Services**: ProviderService, AccountService, ContractService, etc.
+- **Primitives**: Effect-wrapped Felt252, ContractAddress, ClassHash, etc.
+- **Modules**: ABI codec, crypto, JSON-RPC, serde, transport
+
+## TypeScript (Vanilla)
+
+If you prefer vanilla TypeScript without Effect:
+
+<CodeGroup>
+```bash npm
+npm install @kundera-sn/kundera-ts
+```
+
+```bash pnpm
+pnpm add @kundera-sn/kundera-ts
+```
+
+```bash bun
+bun add @kundera-sn/kundera-ts
+```
+
+```bash yarn
+yarn add @kundera-sn/kundera-ts
+```
+</CodeGroup>
+
+### What's Included
+
+- **Primitives**: Felt252, ContractAddress, ClassHash, etc.
+- **Crypto**: Native and WASM cryptography
+- **Provider**: HTTP and WebSocket providers
+- **ABI**: Type-safe encoding/decoding
+- **Utils**: Serialization, validation, formatting
+
+## Runtime Requirements
+
+### Native Crypto (Node.js)
+
+Kundera uses native Rust bindings for cryptography on Node.js (10-100x faster than WASM):
+
+```bash
+npm install ffi-napi ref-napi  # Optional, auto-detected
+```
+
+If these are missing, Kundera falls back to WASM automatically.
+
+### Browser
+
+In browsers, Kundera uses WASM for cryptography (no additional setup needed).
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
+    Build your first program
+  </Card>
+
+  <Card title="Effect Intro" icon="book" href="/getting-started/effect-intro">
+    Learn Effect basics
+  </Card>
+
+  <Card title="TypeScript Quickstart" icon="code" href="/getting-started/typescript-quickstart">
+    Vanilla TypeScript guide
+  </Card>
+
+  <Card title="Examples" icon="code" href="https://github.com/enitrat/kundera/tree/main/examples">
+    Browse examples
+  </Card>
+</CardGroup>

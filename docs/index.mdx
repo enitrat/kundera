@@ -1,0 +1,238 @@
+---
+title: Kundera
+description: Type-safe Starknet primitives and tooling with Effect-TS integration
+---
+
+<img src="/logo.svg" alt="Kundera" width="200" />
+
+# Kundera
+
+**Type-safe Starknet primitives and tooling with Effect-TS integration**
+
+Kundera provides strongly-typed Starknet primitives, cryptography, and RPC tooling with first-class Effect-TS support for composable, error-safe blockchain development.
+
+## Quick Start
+
+<CardGroup cols={2}>
+  <Card title="Effect Integration" icon="sparkles" href="/getting-started/quickstart">
+    **Recommended:** Type-safe, composable services with automatic error handling
+    ```typescript
+    import { ProviderService } from "@kundera-sn/kundera-effect/services"
+    import { Effect } from "effect"
+
+    const program = ProviderService.getBlockNumber().pipe(
+      Effect.flatMap(blockNumber =>
+        Effect.log(`Current block: ${blockNumber}`)
+      )
+    )
+    ```
+  </Card>
+
+  <Card title="TypeScript" icon="code" href="/getting-started/typescript-quickstart">
+    Vanilla TypeScript with branded types and runtime validation
+    ```typescript
+    import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
+
+    const provider = new HttpProvider("https://...")
+    const block = await provider.getBlockNumber()
+    ```
+  </Card>
+</CardGroup>
+
+## Why Effect?
+
+<AccordionGroup>
+  <Accordion title="Type-Safe Error Handling">
+    Effect tracks all possible errors at the type level. No more catching generic errors or missing edge cases:
+
+    ```typescript
+    // Errors are tracked in the type system
+    type Program = Effect.Effect<
+      BlockNumber,  // Success type
+      NetworkError | ValidationError,  // All possible errors
+      ProviderService  // Required dependencies
+    >
+    ```
+  </Accordion>
+
+  <Accordion title="Composable Services">
+    Build complex workflows by composing simple services:
+
+    ```typescript
+    const deployAndVerify = Effect.gen(function* () {
+      const account = yield* AccountService
+      const contract = yield* ContractService
+
+      const deployment = yield* account.deploy(...)
+      const verification = yield* contract.verify(...)
+
+      return { deployment, verification }
+    })
+    ```
+  </Accordion>
+
+  <Accordion title="Dependency Injection">
+    Test and mock services easily with Effect's layer system:
+
+    ```typescript
+    // Production
+    const live = ProviderService.layer({ url: "https://..." })
+
+    // Testing
+    const test = ProviderService.test({ blockNumber: 123n })
+
+    Effect.provide(program, test) // Swap implementations
+    ```
+  </Accordion>
+
+  <Accordion title="Resource Management">
+    Automatic cleanup of connections, subscriptions, and resources:
+
+    ```typescript
+    const stream = ProviderService.subscribeToBlocks().pipe(
+      Stream.take(10),
+      Stream.runCollect
+    ) // Connection auto-closed after 10 blocks
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Features
+
+<CardGroup cols={3}>
+  <Card title="Branded Types" icon="shield-halved" href="/shared/branded-types">
+    Type-safe primitives that prevent mix-ups at compile time
+  </Card>
+
+  <Card title="Native & WASM" icon="gauge-high" href="/shared/runtime-implementations">
+    Fast native crypto with WASM fallback for browsers
+  </Card>
+
+  <Card title="ABI Codec" icon="binary" href="/effect/modules/abi">
+    Type-safe encoding/decoding with abi-wan-kanabi
+  </Card>
+
+  <Card title="RPC Services" icon="server" href="/effect/services/provider">
+    Complete Starknet RPC with Effect services
+  </Card>
+
+  <Card title="Account Abstraction" icon="user-lock" href="/effect/services/account">
+    ArgentX and native account support
+  </Card>
+
+  <Card title="Event Filtering" icon="filter" href="/shared/event-filtering">
+    Type-safe contract event parsing
+  </Card>
+</CardGroup>
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install @kundera-sn/kundera-effect effect
+```
+
+```bash pnpm
+pnpm add @kundera-sn/kundera-effect effect
+```
+
+```bash bun
+bun add @kundera-sn/kundera-effect effect
+```
+</CodeGroup>
+
+<Note>
+  The Effect integration is **recommended** for new projects. If you need vanilla TypeScript, install `@kundera-sn/kundera-ts` instead.
+</Note>
+
+## Comparison with starknet.js
+
+<Tabs>
+  <Tab title="Kundera Effect">
+    ```typescript
+    import { ProviderService, ContractService } from "@kundera-sn/kundera-effect/services"
+    import { Effect } from "effect"
+
+    const program = Effect.gen(function* () {
+      const provider = yield* ProviderService
+      const contract = yield* ContractService
+
+      const balance = yield* contract.read({
+        address: "0x...",
+        entrypoint: "balanceOf",
+        calldata: [owner]
+      })
+
+      return balance
+    }).pipe(
+      Effect.catchAll(error =>
+        Effect.logError(`Failed: ${error._tag}`).pipe(
+          Effect.as(0n)
+        )
+      )
+    )
+
+    // Run with dependencies
+    const result = await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderService.layer))
+    )
+    ```
+  </Tab>
+
+  <Tab title="starknet.js">
+    ```typescript
+    import { Provider, Contract } from "starknet"
+
+    const provider = new Provider({ nodeUrl: "https://..." })
+    const contract = new Contract(abi, address, provider)
+
+    try {
+      const balance = await contract.balanceOf(owner)
+      return balance
+    } catch (error) {
+      console.error("Failed:", error)
+      return 0n
+    }
+    ```
+  </Tab>
+</Tabs>
+
+**Key differences:**
+- ✅ **Type-safe errors** - All error cases tracked at type level
+- ✅ **Dependency injection** - Easy testing and mocking
+- ✅ **Composability** - Chain operations with automatic error propagation
+- ✅ **Resource safety** - Automatic cleanup of connections
+
+[See full comparison →](/guides/comparisons)
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Effect Quickstart" icon="rocket" href="/getting-started/quickstart">
+    Get started with Effect in 5 minutes
+  </Card>
+
+  <Card title="Services Guide" icon="server" href="/effect/services/provider">
+    Learn about Effect services and layers
+  </Card>
+
+  <Card title="Migration Guide" icon="arrow-right-arrow-left" href="/guides/migration-from-starknetjs">
+    Migrate from starknet.js
+  </Card>
+
+  <Card title="Examples" icon="code" href="https://github.com/enitrat/kundera/tree/main/examples">
+    Browse example projects
+  </Card>
+</CardGroup>
+
+## Community
+
+<CardGroup cols={2}>
+  <Card title="GitHub" icon="github" href="https://github.com/enitrat/kundera">
+    Star us on GitHub and contribute
+  </Card>
+
+  <Card title="Issues" icon="bug" href="https://github.com/enitrat/kundera/issues">
+    Report bugs or request features
+  </Card>
+</CardGroup>

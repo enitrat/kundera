@@ -1,0 +1,92 @@
+---
+title: Signer Service
+description: Sign and submit invoke transactions.
+---
+
+<Info>
+SignerService composes AccountService, ProviderService, and optional NonceManagerService.
+</Info>
+
+# Signer Service
+
+`SignerService` signs INVOKE_V3 and submits it via JSON-RPC.
+
+## Imports
+
+```ts
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+```
+
+## Live Layer
+
+- `Services.Signer.Signer` (requires `AccountService` and `ProviderService`)
+
+## Invoke Transaction
+
+```ts
+const program = Effect.gen(function* () {
+  const signer = yield* Services.Signer.SignerService;
+
+  return yield* signer.invoke({
+    calls: [
+      {
+        contractAddress: "0x...",
+        entrypoint: "transfer",
+        calldata: [1n, 2n]
+      }
+    ],
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+    }
+  });
+}).pipe(
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
+  Effect.provide(Services.Account.OpenZeppelinAccount({
+    address: "0x...",
+    privateKey: "0x..."
+  })),
+  Effect.provide(Services.Signer.Signer)
+);
+```
+
+## Nonce Manager Integration
+
+If `NonceManagerService` is provided, `SignerService` consumes nonces locally.
+
+```ts
+const program = Effect.gen(function* () {
+  const signer = yield* Services.Signer.SignerService;
+  return yield* signer.invoke({
+    calls: [{ contractAddress: "0x...", entrypoint: "transfer", calldata: [1n] }],
+    resourceBounds: {
+      l1_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n },
+      l2_gas: { max_amount: 1_000_000n, max_price_per_unit: 1n }
+    }
+  });
+}).pipe(
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
+  Effect.provide(Services.Account.OpenZeppelinAccount({
+    address: "0x...",
+    privateKey: "0x..."
+  })),
+  Effect.provide(Services.NonceManager.DefaultNonceManager),
+  Effect.provide(Services.Signer.Signer)
+);
+```
+
+## Errors
+
+`SignerService` surfaces `SignerError` for signing, nonce, or submission failures.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Account" icon="user-shield" href="/services/account">
+    Account signing configuration.
+  </Card>
+  <Card title="Provider" icon="plug" href="/services/provider">
+    ProviderService and presets.
+  </Card>
+</CardGroup>

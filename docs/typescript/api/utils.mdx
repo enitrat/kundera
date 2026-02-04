@@ -1,0 +1,99 @@
+---
+title: Utils API
+description: Batching, polling, retries, timeouts, and rate limiting helpers.
+---
+
+Utilities are framework-agnostic building blocks for robust Starknet apps.
+
+## Imports
+
+```typescript
+import * as Utils from '@kundera-sn/kundera-ts/utils';
+```
+
+## Batching
+
+### BatchQueue
+
+```typescript
+const queue = new Utils.BatchQueue({
+  maxBatchSize: 20,
+  maxWaitTime: 10,
+  processBatch: async (items) => items.map((x) => x * 2)
+});
+
+const result = await queue.add(2); // 4
+```
+
+### createBatchedFunction
+
+```typescript
+const batched = Utils.createBatchedFunction(
+  async (items) => items.map((x) => x + 1),
+  50,
+  5
+);
+
+const value = await batched(41); // 42
+```
+
+### AsyncQueue
+
+```typescript
+const queue = new Utils.AsyncQueue(
+  async (task: () => Promise<void>) => task(),
+  { concurrency: 4 }
+);
+```
+
+## Polling
+
+```typescript
+const receipt = await Utils.pollForReceipt(
+  txHash,
+  async (hash) => {
+    const response = await provider.starknet_getTransactionReceipt(hash);
+    return response.error ? null : response.result;
+  },
+  { interval: 1000, timeout: 60_000 }
+);
+```
+
+## Retries
+
+```typescript
+const result = await Utils.retryWithBackoff(
+  () => provider.request({ method: 'starknet_blockNumber', params: [] }),
+  { maxRetries: 3, initialDelay: 100 }
+);
+```
+
+## Rate Limiting
+
+```typescript
+const limiter = new Utils.RateLimiter({ maxRequests: 10, interval: 1000 });
+
+const block = await limiter.execute(() =>
+  provider.request({ method: 'starknet_blockNumber', params: [] })
+);
+```
+
+## Timeouts
+
+```typescript
+const result = await Utils.withTimeout(
+  provider.request({ method: 'starknet_chainId', params: [] }),
+  { ms: 5000 }
+);
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider Guide" icon="plug" href="/guides/provider/providers">
+    Use utils with providers and transports.
+  </Card>
+  <Card title="Transport API" icon="satellite" href="/api/transport">
+    Low-level JSON-RPC transport layer.
+  </Card>
+</CardGroup>

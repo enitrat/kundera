@@ -14,11 +14,14 @@
     "clean": "rm -rf target && pnpm -r clean",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "pnpm build && pnpm -r publish --access public"
+    "release": "pnpm build && pnpm -r publish --access public",
+    "docs:dev": "cd docs && mint dev",
+    "docs:build": "cd docs && mint build"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
-    "@changesets/cli": "^2.29.8"
+    "@changesets/cli": "^2.29.8",
+    "mintlify": "^4.2.255"
   },
   "packageManager": "pnpm@10.26.2"
 }

@@ -1,0 +1,251 @@
+---
+title: Runtime Implementations
+description: Choose between Native (Rust FFI) and WASM based on your environment
+---
+
+Kundera provides two crypto backends with **identical APIs**. The same code works with both implementations - just choose based on your deployment environment.
+
+## Two Crypto Backends
+
+| Backend | Runtime | Use Case |
+|---------|---------|----------|
+| **Native** | Bun, Node.js | Backend services, CLI tools (fastest) |
+| **WASM** | Browser, Node, Bun, Deno | Frontend dApps, portable environments |
+
+```typescript
+// Native - Rust FFI (fastest)
+import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+await loadWasmCrypto(); // Load once at startup
+
+// Both use the same crypto functions
+import { pedersen, sign } from '@kundera-sn/kundera-ts/crypto';
+
+const hash = pedersen(a, b);
+const signature = sign(privateKey, messageHash);
+```
+
+<Note>
+Both backends export identical crypto APIs. Switch implementations by changing your initialization - no code changes required.
+</Note>
+
+## Native (Rust FFI)
+
+Direct bindings to Rust via FFI. Maximum performance.
+
+### Bun
+
+Works out of the box in Bun using built-in FFI:
+
+```typescript
+import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
+
+console.log(isNativeAvailable()); // true in Bun
+```
+
+<Tip>
+Bun's FFI is the fastest option. If you're building a backend service, Bun is recommended.
+</Tip>
+
+### Node.js
+
+Requires the `ffi-napi` package:
+
+```bash
+npm install ffi-napi
+```
+
+Then use normally:
+
+```typescript
+import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
+
+console.log(isNativeAvailable()); // true if ffi-napi installed
+```
+
+<Warning>
+## Native Dependencies
+
+`ffi-napi` requires native build tools:
+
+**macOS:**
+```bash
+xcode-select --install
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get install build-essential
+```
+
+**Windows:**
+```bash
+npm install --global windows-build-tools
+```
+</Warning>
+
+### Library Path
+
+Kundera looks for the native library (`libkundera_crypto.dylib`, `.so`, or `.dll`) in:
+
+1. `KUNDERA_NATIVE_LIB` environment variable
+2. Adjacent to the package: `node_modules/@kundera-sn/kundera-ts/native/`
+3. System library paths
+
+To specify a custom path:
+
+```bash
+export KUNDERA_NATIVE_LIB=/path/to/libkundera_crypto.dylib
+```
+
+## WASM
+
+WebAssembly crypto enables Kundera to run in browsers and environments without FFI support.
+
+### Loading WASM
+
+Call `loadWasmCrypto()` once at application startup:
+
+```typescript
+import { loadWasmCrypto, isWasmLoaded } from '@kundera-sn/kundera-ts/wasm';
+
+await loadWasmCrypto();
+console.log('WASM ready:', isWasmLoaded()); // true
+```
+
+<Warning>
+## Load Before Use
+
+Crypto operations will throw if WASM isn't loaded:
+
+```typescript
+import { sign } from '@kundera-sn/kundera-ts/crypto';
+
+// ERROR: throws if WASM not loaded
+const signature = sign(privateKey, messageHash);
+```
+
+Always load WASM at app startup before any signing or hashing.
+</Warning>
+
+### Browser Setup
+
+In browsers, load WASM early in your application:
+
+```typescript
+// main.ts or app initialization
+import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+
+async function init() {
+  await loadWasmCrypto();
+  // Now safe to use Kundera crypto
+}
+
+init();
+```
+
+### With React
+
+```tsx
+// App.tsx
+import { useEffect, useState } from 'react';
+import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+
+function App() {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    loadWasmCrypto().then(() => setReady(true));
+  }, []);
+
+  if (!ready) return <div>Loading crypto...</div>;
+
+  return <YourApp />;
+}
+```
+
+### With Next.js
+
+```typescript
+// pages/_app.tsx or app/layout.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+
+export default function RootLayout({ children }) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    loadWasmCrypto().then(() => setReady(true));
+  }, []);
+
+  if (!ready) return null;
+  return children;
+}
+```
+
+## Performance Considerations
+
+<Warning>
+Performance is nuanced. Native isn't always faster than WASM for all operations.
+</Warning>
+
+**Bridging overhead**: Crossing the JS↔WASM or JS↔FFI boundary has constant overhead (~1-10μs). For cheap operations, this overhead can exceed the operation itself.
+
+**When Native/WASM wins**:
+- Cryptographic operations (pedersen, poseidon, ECDSA) - 5-15x faster
+- Large data encoding/decoding (ABI with big payloads)
+- Batch operations that amortize bridging cost
+
+**When JS wins**:
+- Simple operations (hex encoding, address validation)
+- String/hex formatting helpers
+- Very small, trivial conversions where bridging overhead dominates
+
+| Operation | Native | WASM | Notes |
+|-----------|--------|------|-------|
+| pedersen | ~10x faster | ~5x faster | Cryptography benefits most |
+| poseidon | ~10x faster | ~5x faster | Heavy computation |
+| sign | ~15x faster | ~8x faster | Signature generation |
+| hex encode | ~1.2x | ~1.1x | Simple ops have overhead |
+
+<Tip>
+Benchmark your actual workload. For backend services with heavy crypto, Native is fastest. For browsers, WASM is your only option. For simple operations, overhead may not matter.
+</Tip>
+
+## Checking Status
+
+```typescript
+import { isWasmAvailable, isWasmLoaded } from '@kundera-sn/kundera-ts/wasm';
+import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
+
+// Can WASM be loaded? (checks if WebAssembly exists)
+console.log('WASM available:', isWasmAvailable());
+
+// Is WASM already loaded?
+console.log('WASM loaded:', isWasmLoaded());
+
+// Is native FFI available?
+console.log('Native available:', isNativeAvailable());
+```
+
+## Backend Selection Strategy
+
+| Environment | Recommended | Why |
+|-------------|-------------|-----|
+| **Bun backend** | Native | Built-in FFI, fastest |
+| **Node.js backend** | Native | Best performance with ffi-napi |
+| **Browser** | WASM | Only option |
+| **Next.js SSR** | WASM | Portable, works client + server |
+| **CLI tool** | Native | Fast startup with Bun |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Crypto API" icon="lock" href="/api/crypto">
+    Cryptographic function reference
+  </Card>
+  <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
+    Get up and running in 5 minutes
+  </Card>
+</CardGroup>

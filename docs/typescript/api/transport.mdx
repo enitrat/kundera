@@ -1,0 +1,487 @@
+---
+title: Transport API
+description: Low-level transport interfaces and factories for JSON-RPC communication.
+---
+
+<Info>
+Source: [transport](https://github.com/enitrat/kundera/tree/main/packages/kundera-ts/src/transport)
+
+Tests: [index.test.ts](https://github.com/enitrat/kundera/blob/main/packages/kundera-ts/src/transport/index.test.ts)
+</Info>
+
+# Transport API
+
+Transports handle raw JSON-RPC communication. Providers use transports internally, but you can use transports directly for maximum control.
+
+<Tip>
+For most use cases, use [Providers](/api/provider) instead. Transports are for advanced scenarios requiring custom behavior or minimal overhead.
+</Tip>
+
+## Architecture
+
+```
+┌─────────────────────────────────────┐
+│           Your Application          │
+├─────────────────────────────────────┤
+│     Provider (optional wrapper)     │  Retries, timeouts, convenience
+├─────────────────────────────────────┤
+│          Transport Layer            │  Raw JSON-RPC request/response
+│   ┌─────────────┬─────────────┐    │
+│   │    HTTP     │  WebSocket  │    │
+│   └─────────────┴─────────────┘    │
+├─────────────────────────────────────┤
+│           Starknet Node             │
+└─────────────────────────────────────┘
+```
+
+## Imports
+
+```typescript
+import {
+  // Factories
+  httpTransport,
+  webSocketTransport,
+  // Utilities
+  createRequest,
+  isJsonRpcError,
+  // Types
+  type Transport,
+  type EventTransport,
+  type HttpTransportOptions,
+  type WebSocketTransportOptions,
+  type JsonRpcRequest,
+  type JsonRpcResponse,
+  type JsonRpcError,
+} from '@kundera-sn/kundera-ts/transport';
+```
+
+## HTTP Transport
+
+The default transport for request/response patterns.
+
+### Factory
+
+```typescript
+function httpTransport(url: string, options?: HttpTransportOptions): Transport
+```
+
+### Basic Usage
+
+```typescript
+import { httpTransport, createRequest, isJsonRpcError } from '@kundera-sn/kundera-ts/transport';
+
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+
+const response = await transport.request(
+  createRequest('starknet_blockNumber', [])
+);
+
+if (isJsonRpcError(response)) {
+  throw new Error(response.error.message);
+}
+
+console.log('Block number:', response.result);
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `fetchOptions` | `RequestInit` | `{}` | Custom fetch options (headers, credentials, etc.) |
+| `timeout` | `number` | `30000` | Request timeout (ms) |
+
+```typescript
+const transport = httpTransport(
+  'https://api.zan.top/public/starknet-sepolia',
+  {
+    timeout: 30000,
+    fetchOptions: {
+      headers: {
+        'X-API-Key': 'your-api-key'
+      }
+    }
+  }
+);
+```
+
+## WebSocket Transport
+
+For real-time subscriptions and persistent connections.
+
+### Factory
+
+```typescript
+function webSocketTransport(options: WebSocketTransportOptions): WebSocketTransport
+```
+
+### Basic Usage
+
+```typescript
+import { webSocketTransport, createRequest } from '@kundera-sn/kundera-ts/transport';
+
+const transport = webSocketTransport({
+  url: 'wss://api.zan.top/public/starknet-sepolia',
+});
+
+await transport.connect();
+
+// Make requests
+const response = await transport.request(
+  createRequest('starknet_blockNumber', [])
+);
+
+// Subscribe to notifications
+transport.subscribe('subscription_id', (data) => {
+  console.log('Received:', data);
+});
+
+// Cleanup
+transport.disconnect();
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | WebSocket URL |
+| `reconnect` | `boolean` | `true` | Auto-reconnect on disconnect |
+| `reconnectDelay` | `number` | `1000` | Reconnect delay (ms) |
+
+## Request Batching
+
+Send multiple requests in a single HTTP call.
+
+### Using requestBatch
+
+```typescript
+import { createRequest, isJsonRpcError } from '@kundera-sn/kundera-ts/transport';
+
+const responses = await transport.requestBatch([
+  createRequest('starknet_blockNumber', []),
+  createRequest('starknet_chainId', []),
+  createRequest('starknet_getNonce', ['latest', address])
+]);
+
+// Responses are in the same order as requests
+const [blockRes, chainRes, nonceRes] = responses;
+
+if (!isJsonRpcError(blockRes)) {
+  console.log('Block:', blockRes.result);
+}
+```
+
+### Auto-Batching (Skill)
+
+For automatic batching of concurrent requests, use the HTTP Transport skill:
+
+```typescript
+import { httpTransport } from './skills/http-transport';
+
+const transport = httpTransport('https://...', {
+  batch: {
+    batchWait: 10,   // Wait 10ms to collect requests
+    batchSize: 50    // Max requests per batch
+  },
+  retries: 3,
+  timeout: 30000,
+});
+
+// Concurrent requests are automatically batched
+const [block, chain, nonce] = await Promise.all([
+  transport.request(createRequest('starknet_blockNumber', [])),
+  transport.request(createRequest('starknet_chainId', [])),
+  transport.request(createRequest('starknet_getNonce', ['latest', addr]))
+]);
+```
+
+<Tip>
+Auto-batching reduces network round trips and improves performance when making multiple concurrent requests.
+</Tip>
+
+## Interfaces
+
+### Transport
+
+Base interface for all transports.
+
+```typescript
+interface Transport {
+  request<T>(request: JsonRpcRequest): Promise<JsonRpcResponse<T>>;
+  requestBatch<T>(requests: JsonRpcRequest[]): Promise<JsonRpcResponse<T>[]>;
+}
+```
+
+### EventTransport
+
+Extends `Transport` with subscription support.
+
+```typescript
+interface EventTransport extends Transport {
+  connect(): Promise<void>;
+  disconnect(): void;
+  isConnected(): boolean;
+  subscribe(id: string, callback: (data: unknown) => void): void;
+  unsubscribe(id: string): void;
+}
+```
+
+## Types
+
+### JsonRpcRequest
+
+```typescript
+interface JsonRpcRequest {
+  jsonrpc: '2.0';
+  id?: number | string;
+  method: string;
+  params?: unknown[] | Record<string, unknown>;
+}
+```
+
+### JsonRpcResponse
+
+```typescript
+interface JsonRpcSuccessResponse<T> {
+  jsonrpc: '2.0';
+  id: number | string;
+  result: T;
+}
+
+interface JsonRpcErrorResponse {
+  jsonrpc: '2.0';
+  id: number | string;
+  error: JsonRpcError;
+}
+
+type JsonRpcResponse<T> = JsonRpcSuccessResponse<T> | JsonRpcErrorResponse;
+```
+
+### JsonRpcError
+
+```typescript
+interface JsonRpcError {
+  code: number;
+  message: string;
+  data?: unknown;
+}
+```
+
+## Utilities
+
+### createRequest
+
+Create a JSON-RPC request object with auto-incrementing ID.
+
+```typescript
+import { createRequest } from '@kundera-sn/kundera-ts/transport';
+
+const request = createRequest('starknet_blockNumber', []);
+// { jsonrpc: '2.0', id: 1, method: 'starknet_blockNumber', params: [] }
+
+const request2 = createRequest('starknet_getNonce', ['latest', '0x123']);
+// { jsonrpc: '2.0', id: 2, method: 'starknet_getNonce', params: ['latest', '0x123'] }
+```
+
+### isJsonRpcError
+
+Type guard for error responses.
+
+```typescript
+import { isJsonRpcError } from '@kundera-sn/kundera-ts/transport';
+
+const response = await transport.request(request);
+
+if (isJsonRpcError(response)) {
+  // TypeScript knows response.error exists
+  console.error('Error:', response.error.code, response.error.message);
+} else {
+  // TypeScript knows response.result exists
+  console.log('Result:', response.result);
+}
+```
+
+## Custom Transport
+
+Implement the `Transport` interface for custom protocols:
+
+```typescript
+import type {
+  Transport,
+  JsonRpcRequest,
+  JsonRpcResponse
+} from '@kundera-sn/kundera-ts/transport';
+
+const customTransport: Transport = {
+  async request<T>(request: JsonRpcRequest): Promise<JsonRpcResponse<T>> {
+    // Your custom implementation
+    const response = await myCustomFetch(request);
+    return response;
+  },
+
+  async requestBatch<T>(requests: JsonRpcRequest[]): Promise<JsonRpcResponse<T>[]> {
+    // Batch implementation
+    return Promise.all(requests.map(r => this.request(r)));
+  }
+};
+```
+
+### Example: Caching Transport
+
+```typescript
+const cachingTransport = (inner: Transport, cache: Map<string, any>): Transport => ({
+  async request<T>(request: JsonRpcRequest): Promise<JsonRpcResponse<T>> {
+    const key = `${request.method}:${JSON.stringify(request.params)}`;
+
+    if (cache.has(key)) {
+      return { jsonrpc: '2.0', id: request.id ?? 0, result: cache.get(key) };
+    }
+
+    const response = await inner.request<T>(request);
+
+    if (!isJsonRpcError(response)) {
+      cache.set(key, response.result);
+    }
+
+    return response;
+  },
+
+  async requestBatch<T>(requests: JsonRpcRequest[]): Promise<JsonRpcResponse<T>[]> {
+    return Promise.all(requests.map(r => this.request(r)));
+  }
+});
+```
+
+### Example: Logging Transport
+
+```typescript
+const loggingTransport = (inner: Transport): Transport => ({
+  async request<T>(request: JsonRpcRequest): Promise<JsonRpcResponse<T>> {
+    const start = Date.now();
+    console.log('RPC ->', request.method, request.params);
+
+    const response = await inner.request<T>(request);
+
+    const duration = Date.now() - start;
+    if (isJsonRpcError(response)) {
+      console.log('RPC <- ERROR', response.error.code, `(${duration}ms)`);
+    } else {
+      console.log('RPC <- OK', `(${duration}ms)`);
+    }
+
+    return response;
+  },
+
+  async requestBatch<T>(requests: JsonRpcRequest[]): Promise<JsonRpcResponse<T>[]> {
+    const start = Date.now();
+    console.log('RPC BATCH ->', requests.length, 'requests');
+
+    const responses = await inner.requestBatch<T>(requests);
+
+    const duration = Date.now() - start;
+    console.log('RPC BATCH <-', `(${duration}ms)`);
+
+    return responses;
+  }
+});
+```
+
+## Performance Considerations
+
+### HTTP vs WebSocket
+
+| Transport | Real-time Events | Connection Overhead | Best For |
+|-----------|------------------|---------------------|----------|
+| HTTP | No (polling) | Per-request | One-off requests, stateless apps |
+| WebSocket | Yes (push) | Once (persistent) | Subscriptions, real-time apps |
+
+### Batching Benefits
+
+Batching reduces:
+- Network round trips (1 request instead of N)
+- Connection overhead
+- Server load
+
+Use batching when:
+- Making multiple independent requests
+- Performance is critical
+- Requests happen concurrently
+
+### Caching Strategies
+
+Cache immutable data:
+- Contract class definitions
+- Historical block data
+- Transaction receipts
+
+Don't cache:
+- Latest block number
+- Pending transactions
+- Account nonces
+
+```typescript
+// Only cache historical blocks (immutable)
+if (blockId !== 'latest' && blockId !== 'pending') {
+  cache.set(key, response.result);
+}
+```
+
+## Error Handling
+
+### Common Error Codes
+
+| Code | Description |
+|------|-------------|
+| `-32700` | Parse error - Invalid JSON |
+| `-32600` | Invalid request - Missing required fields |
+| `-32601` | Method not found |
+| `-32602` | Invalid params |
+| `-32603` | Internal error |
+
+### Starknet-Specific Errors
+
+| Code | Description |
+|------|-------------|
+| `20` | Contract not found |
+| `21` | Block not found |
+| `25` | Transaction hash not found |
+| `29` | Contract error |
+| `40` | Contract execution error |
+| `41` | Invalid transaction nonce |
+
+### Handling Errors
+
+```typescript
+const response = await transport.request(request);
+
+if (isJsonRpcError(response)) {
+  switch (response.error.code) {
+    case -32601:
+      throw new Error('Method not supported');
+    case 21:
+      throw new Error('Block not found');
+    case 25:
+      throw new Error('Transaction not found');
+    default:
+      throw new Error(response.error.message);
+  }
+}
+
+return response.result;
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider API" icon="plug" href="/api/provider">
+    Higher-level provider with retries and typed methods.
+  </Card>
+  <Card title="JSON-RPC API" icon="code" href="/api/jsonrpc">
+    Request builders and method reference.
+  </Card>
+  <Card title="HTTP Transport Skill" icon="network-wired" href="/skills/http-transport">
+    Advanced HTTP transport with batching and retries.
+  </Card>
+  <Card title="Transport Guide" icon="layer-group" href="/guides/provider/transport">
+    Concepts and patterns for the transport layer.
+  </Card>
+</CardGroup>

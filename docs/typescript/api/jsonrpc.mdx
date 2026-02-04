@@ -1,0 +1,313 @@
+---
+title: JSON-RPC API
+description: Tree-shakeable Starknet JSON-RPC methods with type-safe request builders.
+---
+
+<Info>
+Source: [jsonrpc](https://github.com/enitrat/kundera/tree/main/packages/kundera-ts/src/jsonrpc)
+
+Tests: [index.test.ts](https://github.com/enitrat/kundera/blob/main/packages/kundera-ts/src/jsonrpc/index.test.ts)
+</Info>
+
+# JSON-RPC API
+
+Kundera exposes Starknet JSON-RPC methods as individual, tree-shakeable functions with full TypeScript support.
+
+<Tip>
+New to Kundera? Start with [Getting Started](/getting-started/quickstart) for installation and your first requests.
+</Tip>
+
+## Overview
+
+Two ways to make JSON-RPC calls:
+
+1. **Direct functions** - Call `starknet_*` functions directly with a transport
+2. **Request builders** - Build requests for use with providers or custom pipelines
+
+```typescript
+// Direct function approach
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { starknet_blockNumber, starknet_getNonce } from '@kundera-sn/kundera-ts/jsonrpc';
+
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+const block = await starknet_blockNumber(transport);
+
+// Request builder approach
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
+
+const provider = new HttpProvider('https://api.zan.top/public/starknet-sepolia');
+const request = Starknet.BlockNumberRequest();
+const blockNumber = await provider.request<string>(request);
+```
+
+## Request Builders
+
+Request builders return `RequestArguments` objects compatible with any provider:
+
+```typescript
+import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
+
+// Build requests
+const blockReq = Starknet.BlockNumberRequest();
+// { method: "starknet_blockNumber", params: [] }
+
+const nonceReq = Starknet.GetNonceRequest('latest', '0x123...');
+// { method: "starknet_getNonce", params: ["latest", "0x123..."] }
+
+// Send through provider
+const blockNumber = await provider.request<string>(blockReq);
+```
+
+### Request Pattern
+
+All request builders follow this signature:
+
+```typescript
+Starknet.MethodNameRequest(params) -> RequestArguments
+```
+
+- **`Starknet.MethodName`** - Request builder (e.g., `BlockNumberRequest`, `GetNonceRequest`)
+- **`params`** - Method-specific parameters
+- **Returns** - `{method: string, params?: unknown[]}` object
+
+## Method Categories
+
+### Read Methods
+
+Query blockchain state without creating transactions.
+
+```typescript
+import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
+
+// Block number
+const blockReq = Starknet.BlockNumberRequest();
+const block = await provider.request<number>(blockReq);
+
+// Nonce
+const nonceReq = Starknet.GetNonceRequest('latest', contractAddress);
+const nonce = await provider.request<string>(nonceReq);
+```
+
+### Block Methods
+
+```typescript
+// Block with transaction hashes
+const blockHashesReq = Starknet.GetBlockWithTxHashesRequest('latest');
+const blockWithHashes = await provider.request(blockHashesReq);
+```
+
+### Transaction Methods
+
+```typescript
+// Get transaction by hash
+const txReq = Starknet.GetTransactionByHashRequest(txHash);
+const tx = await provider.request(txReq);
+
+// Submit invoke transaction
+const invokeReq = Starknet.AddInvokeTransactionRequest(invokeTx);
+const { transaction_hash } = await provider.request(invokeReq);
+```
+
+### Contract Methods
+
+```typescript
+// Call contract (read-only)
+const callReq = Starknet.CallRequest({
+  contract_address: contractAddress,
+  entry_point_selector: selectorHash,
+  calldata: ['0x1', '0x2']
+}, 'latest');
+const result = await provider.request<string[]>(callReq);
+```
+
+### Fee Estimation
+
+```typescript
+const estimateReq = Starknet.EstimateFeeRequest(
+  [invokeTx],
+  [],  // simulation flags
+  'latest'
+);
+const estimates = await provider.request(estimateReq);
+```
+
+### Event Methods
+
+```typescript
+const eventsReq = Starknet.GetEventsRequest({
+  filter: {
+    from_block: { block_number: 100000 },
+    to_block: 'latest',
+    address: contractAddress,
+    keys: [[eventKey]],
+    chunk_size: 100
+  }
+});
+const { events, continuation_token } = await provider.request(eventsReq);
+```
+
+### Trace Methods
+
+```typescript
+const traceReq = Starknet.TraceTransactionRequest(txHash);
+const trace = await provider.request(traceReq);
+```
+
+### Subscription Methods (WebSocket)
+
+Real-time subscriptions require WebSocket transport.
+
+```typescript
+import { WebSocketProvider } from '@kundera-sn/kundera-ts/provider';
+
+const ws = new WebSocketProvider('wss://api.zan.top/public/starknet-sepolia');
+await ws.connect();
+
+// Subscribe to new block headers
+const subReq = Starknet.SubscribeNewHeadsRequest();
+const subscriptionId = await ws.request<string>(subReq);
+```
+
+## Direct Function API
+
+For simpler use cases, call methods directly with a transport:
+
+```typescript
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { starknet_blockNumber, starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+
+const blockNumber = await starknet_blockNumber(transport);
+const result = await starknet_call(transport, {
+  contract_address: contractAddress,
+  entry_point_selector: selector,
+  calldata: []
+}, 'latest');
+```
+
+## Error Handling
+
+All methods can throw JSON-RPC errors:
+
+```typescript
+import { isJsonRpcError } from '@kundera-sn/kundera-ts/transport';
+
+try {
+  const result = await provider.request(Starknet.CallRequest(params, 'latest'));
+} catch (error) {
+  if (isJsonRpcError(error)) {
+    console.error('RPC Error:', error.code, error.message);
+    // Common codes:
+    // -32601: Method not found
+    // -32602: Invalid params
+    // 20: Contract not found
+    // 21: Block not found
+    // 29: Transaction execution error
+  }
+}
+```
+
+## Batching
+
+Use `requestBatch` for multiple independent requests:
+
+```typescript
+import { createRequest } from '@kundera-sn/kundera-ts/transport';
+
+const responses = await transport.requestBatch([
+  createRequest('starknet_blockNumber', []),
+  createRequest('starknet_chainId', []),
+  createRequest('starknet_getNonce', ['latest', address])
+]);
+
+const [blockNumber, chainId, nonce] = responses.map(r =>
+  isJsonRpcError(r) ? null : r.result
+);
+```
+
+For automatic batching, use the HTTP Transport skill:
+
+```typescript
+import { httpTransport } from './skills/http-transport';
+
+const transport = httpTransport('https://...', {
+  batch: { batchWait: 10, batchSize: 50 }
+});
+
+// Concurrent requests are automatically batched
+const [block, chain, nonce] = await Promise.all([
+  starknet_blockNumber(transport),
+  starknet_chainId(transport),
+  starknet_getNonce(transport, 'latest', address)
+]);
+```
+
+## Type Safety
+
+All methods have full TypeScript inference:
+
+```typescript
+import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
+
+// TypeScript knows the return type
+const request = Starknet.GetTransactionReceiptRequest(txHash);
+const receipt = await provider.request(request);
+// receipt: TransactionReceipt
+
+// Method params are type-checked
+const callRequest = Starknet.CallRequest({
+  contract_address: '0x...',  // string
+  entry_point_selector: '0x...',  // string
+  calldata: ['0x1', '0x2']  // string[]
+}, 'latest');
+```
+
+## Complete Method Reference
+
+| Category | Methods |
+|----------|---------|
+| **Read** | `blockNumber`, `blockHashAndNumber`, `chainId`, `specVersion`, `syncing` |
+| **Block** | `getBlockWithTxHashes`, `getBlockWithTxs`, `getBlockWithReceipts`, `getBlockTransactionCount`, `getStateUpdate` |
+| **Transaction** | `getTransactionByHash`, `getTransactionByBlockIdAndIndex`, `getTransactionReceipt`, `getTransactionStatus`, `getMessagesStatus` |
+| **Submit** | `addInvokeTransaction`, `addDeclareTransaction`, `addDeployAccountTransaction` |
+| **Contract** | `call`, `getClass`, `getClassAt`, `getClassHashAt`, `getStorageAt`, `getNonce` |
+| **Fee** | `estimateFee`, `estimateMessageFee` |
+| **Events** | `getEvents` |
+| **Trace** | `traceTransaction`, `traceBlockTransactions`, `simulateTransactions` |
+| **Proof** | `getStorageProof` |
+| **Subscribe** | `subscribeNewHeads`, `subscribeEvents`, `subscribeTransactionStatus`, `subscribeNewTransactions`, `subscribeNewTransactionReceipts`, `unsubscribe` |
+
+## Tree-Shaking
+
+Import only what you need for optimal bundle size:
+
+```typescript
+// Import specific methods
+import { starknet_blockNumber, starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+
+// Or import namespace for request builders
+import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
+```
+
+<Tip>
+Unused methods are excluded from your bundle when using a bundler with tree-shaking support.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider API" icon="plug" href="/api/provider">
+    Higher-level provider interface with typed methods.
+  </Card>
+  <Card title="Transport API" icon="satellite" href="/api/transport">
+    Low-level transport layer for JSON-RPC communication.
+  </Card>
+  <Card title="HTTP Provider Skill" icon="server" href="/skills/http-provider">
+    Copy-paste provider implementation.
+  </Card>
+  <Card title="Contract Multicall" icon="layer-group" href="/skills/contract-multicall">
+    Batch multiple contract reads efficiently.
+  </Card>
+</CardGroup>

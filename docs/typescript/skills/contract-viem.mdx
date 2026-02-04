@@ -1,0 +1,127 @@
+---
+title: Viem-Style Contract
+description: Tree-shakeable contract helpers inspired by viem's API design.
+---
+
+A skill providing viem-style contract interaction wrappers using Kundera transport + RPC primitives.
+Functions follow the `{ result, error }` pattern and work with any Starknet ABI.
+
+## Quick Start
+
+### 1. Copy the Skill
+
+```bash
+cp -r examples/skills/contract-viem src/skills/
+```
+
+### 2. Use It
+
+```ts
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { signRaw, signatureToArray } from '@kundera-sn/kundera-ts/crypto';
+import { createAccountInvoker } from './skills/account-invoke';
+import { readContract, writeContract } from './skills/contract-viem';
+
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+
+// Read (no account needed)
+const { result } = await readContract(transport, {
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  functionName: 'balance_of',
+  args: [accountAddress],
+});
+
+// Write (requires account)
+const signTransaction = (hash) => signatureToArray(signRaw(privateKey, hash));
+const account = createAccountInvoker({ transport, address, signTransaction });
+
+const { result: tx } = await writeContract(transport, {
+  abi: ERC20_ABI,
+  address: tokenAddress,
+  functionName: 'transfer',
+  args: [recipient, amount],
+  account,
+});
+```
+
+## API
+
+### readContract
+
+```ts
+function readContract(
+  transport: Transport,
+  params: ReadContractParams
+): Promise<ContractResult<unknown[]>>
+```
+
+### writeContract
+
+```ts
+function writeContract(
+  transport: Transport,
+  params: WriteContractParams
+): Promise<ContractResult<WriteResult>>
+```
+
+### simulateContract
+
+```ts
+function simulateContract(
+  transport: Transport,
+  params: SimulateContractParams
+): Promise<ContractResult<SimulateResult>>
+```
+
+### estimateContractFee
+
+```ts
+function estimateContractFee(
+  transport: Transport,
+  params: EstimateFeeParams
+): Promise<ContractResult<FeeEstimate>>
+```
+
+### watchContractEvent
+
+```ts
+function watchContractEvent(
+  transport: Transport,
+  params: WatchContractEventParams
+): () => void
+```
+
+### multicallRead
+
+```ts
+function multicallRead(
+  transport: Transport,
+  calls: ReadContractParams[]
+): Promise<ContractResult<unknown[]>[]>
+```
+
+## Notes
+
+<Tip>
+## Tree-Shakeable
+
+Import only the functions you need. Unused functions won't be included in your bundle.
+</Tip>
+
+<Warning>
+## Polling for Events
+
+`watchContractEvent` uses polling, not WebSockets. For real-time events, pair with the WebSocket provider skill.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Account Invoke" icon="bolt" href="/skills/account-invoke">
+    Account executor used by write flows.
+  </Card>
+  <Card title="ABI API" icon="code" href="/api/abi">
+    ABI encoding/decoding reference.
+  </Card>
+</CardGroup>

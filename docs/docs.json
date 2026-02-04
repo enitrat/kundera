@@ -1,0 +1,216 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Kundera",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "colors": {
+    "primary": "#7C3AED",
+    "light": "#A78BFA",
+    "dark": "#5B21B6"
+  },
+  "navigation": {
+    "anchors": [
+      {
+        "anchor": "Documentation",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "Overview",
+            "icon": "house",
+            "pages": [
+              "index",
+              "shared/why-kundera",
+              "shared/architecture"
+            ]
+          },
+          {
+            "group": "Getting Started",
+            "icon": "rocket",
+            "pages": [
+              "getting-started/quickstart",
+              "getting-started/effect-intro",
+              "getting-started/installation",
+              {
+                "group": "For TypeScript Users",
+                "pages": [
+                  "getting-started/typescript-quickstart",
+                  "getting-started/typescript-to-effect"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Effect (Recommended)",
+            "icon": "sparkles",
+            "pages": [
+              "effect/overview",
+              {
+                "group": "Services",
+                "icon": "server",
+                "pages": [
+                  "effect/services/provider",
+                  "effect/services/contract",
+                  "effect/services/contract-write",
+                  "effect/services/account",
+                  "effect/services/argentx-account",
+                  "effect/services/signer",
+                  "effect/services/fee-estimator",
+                  "effect/services/nonce-manager",
+                  "effect/services/rpc-batch"
+                ]
+              },
+              {
+                "group": "Primitives",
+                "icon": "cube",
+                "pages": [
+                  "effect/primitives/index",
+                  "effect/primitives/felt252",
+                  "effect/primitives/contract-address",
+                  "effect/primitives/class-hash",
+                  "effect/primitives/storage-key",
+                  "effect/primitives/eth-address",
+                  "effect/primitives/short-strings"
+                ]
+              },
+              {
+                "group": "Modules",
+                "icon": "box",
+                "pages": [
+                  "effect/modules/abi",
+                  "effect/modules/crypto",
+                  "effect/modules/jsonrpc",
+                  "effect/modules/serde",
+                  "effect/modules/transport"
+                ]
+              },
+              {
+                "group": "Guides",
+                "icon": "compass",
+                "pages": [
+                  "effect/guides/layers",
+                  "effect/guides/error-handling",
+                  "effect/guides/testing",
+                  "effect/guides/react-integration"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "TypeScript",
+            "icon": "code",
+            "pages": [
+              "typescript/overview",
+              {
+                "group": "Primitives",
+                "icon": "cube",
+                "pages": [
+                  "typescript/primitives/index",
+                  "typescript/primitives/felt252",
+                  "typescript/primitives/contract-address",
+                  "typescript/primitives/class-hash",
+                  "typescript/primitives/storage-key",
+                  "typescript/primitives/eth-address",
+                  "typescript/primitives/short-strings"
+                ]
+              },
+              {
+                "group": "Skills",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "typescript/skills/index",
+                  "typescript/skills/http-transport",
+                  "typescript/skills/http-provider",
+                  "typescript/skills/websocket-provider",
+                  "typescript/skills/contract-read",
+                  "typescript/skills/contract-write",
+                  "typescript/skills/contract-multicall",
+                  "typescript/skills/event-filtering",
+                  "typescript/skills/account-invoke",
+                  "typescript/skills/account-declare",
+                  "typescript/skills/account-deploy",
+                  "typescript/skills/wallet-modal",
+                  "typescript/skills/contract-viem"
+                ]
+              },
+              {
+                "group": "API Reference",
+                "icon": "code",
+                "pages": [
+                  "typescript/api/primitives",
+                  "typescript/api/crypto",
+                  "typescript/api/serde",
+                  "typescript/api/transport",
+                  "typescript/api/provider",
+                  "typescript/api/utils",
+                  "typescript/api/jsonrpc",
+                  "typescript/api/abi"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Shared Concepts",
+            "icon": "lightbulb",
+            "pages": [
+              "shared/branded-types",
+              "shared/runtime-implementations",
+              "shared/event-filtering",
+              "shared/security"
+            ]
+          },
+          {
+            "group": "Guides",
+            "icon": "map",
+            "pages": [
+              "guides/migration-from-starknetjs",
+              "guides/typescript-to-effect",
+              "guides/comparisons",
+              "guides/agentic-coding"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "icon": "github",
+          "href": "https://github.com/enitrat/kundera"
+        },
+        {
+          "anchor": "npm (Effect)",
+          "icon": "npm",
+          "href": "https://www.npmjs.com/package/@kundera-sn/kundera-effect"
+        },
+        {
+          "anchor": "npm (TypeScript)",
+          "icon": "npm",
+          "href": "https://www.npmjs.com/package/@kundera-sn/kundera-ts"
+        }
+      ]
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/enitrat/kundera"
+    }
+  ],
+  "primaryTab": {
+    "name": "Documentation"
+  },
+  "tabs": [
+    {
+      "name": "Examples",
+      "url": "https://github.com/enitrat/kundera/tree/main/examples"
+    }
+  ],
+  "footerSocials": {
+    "github": "https://github.com/enitrat/kundera",
+    "twitter": "https://twitter.com/kundera"
+  }
+}

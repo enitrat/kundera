@@ -1,0 +1,115 @@
+---
+title: TypeScript Quick Start
+description: Get started with vanilla TypeScript
+---
+
+# TypeScript Quick Start
+
+Get started with Kundera's vanilla TypeScript API.
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install @kundera-sn/kundera-ts
+```
+
+```bash pnpm
+pnpm add @kundera-sn/kundera-ts
+```
+
+```bash bun
+bun add @kundera-sn/kundera-ts
+```
+</CodeGroup>
+
+## Basic Usage
+
+### Create a Provider
+
+```typescript
+import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
+
+const provider = new HttpProvider({
+  url: "https://starknet-sepolia.public.blastapi.io"
+})
+
+const blockNumber = await provider.getBlockNumber()
+console.log(`Latest block: ${blockNumber}`)
+```
+
+### Work with Primitives
+
+```typescript
+import { ContractAddress, Felt252 } from "@kundera-sn/kundera-ts"
+
+// Create a contract address (validated at construction)
+const address = ContractAddress("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7")
+
+// Work with field elements
+const felt = Felt252("0x123")
+const doubled = felt.mul(Felt252("2"))
+
+console.log(doubled.toString()) // "0x246"
+```
+
+### Read from a Contract
+
+```typescript
+import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
+import { ContractAddress, Felt252 } from "@kundera-sn/kundera-ts"
+
+const provider = new HttpProvider({
+  url: "https://starknet-sepolia.public.blastapi.io"
+})
+
+const balance = await provider.callContract({
+  contractAddress: ContractAddress("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"),
+  entrypoint: "balanceOf",
+  calldata: [
+    Felt252("0x123...") // owner address
+  ]
+})
+
+console.log(`Balance: ${balance[0].toString()}`)
+```
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Branded Types" icon="shield" href="/shared/branded-types">
+    Type-safe primitives
+  </Card>
+
+  <Card title="Native Performance" icon="gauge" href="/shared/runtime-implementations">
+    Fast native crypto
+  </Card>
+
+  <Card title="Skills" icon="puzzle" href="/typescript/skills/index">
+    Provider patterns
+  </Card>
+
+  <Card title="API Reference" icon="code" href="/typescript/api/primitives">
+    Complete API docs
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Primitives" icon="cube" href="/typescript/primitives/index">
+    Learn about primitives
+  </Card>
+
+  <Card title="Skills" icon="puzzle" href="/typescript/skills/index">
+    Provider and contract patterns
+  </Card>
+
+  <Card title="Migrate to Effect" icon="arrow-right" href="/getting-started/typescript-to-effect">
+    Upgrade to Effect
+  </Card>
+
+  <Card title="Examples" icon="code" href="https://github.com/enitrat/kundera/tree/main/examples">
+    Browse examples
+  </Card>
+</CardGroup>

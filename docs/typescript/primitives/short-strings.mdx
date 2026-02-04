@@ -1,0 +1,160 @@
+---
+title: Short Strings
+description: Encode and decode Cairo short strings.
+---
+
+Cairo short strings are ASCII strings of up to 31 characters that fit in a single `felt252`. Kundera provides functions to encode strings to felts and decode felts back to strings.
+
+## Constraints
+
+| Constraint | Value |
+|------------|-------|
+| Maximum length | 31 characters |
+| Character set | ASCII only (0-127) |
+| Encoding | Each character = 1 byte |
+
+## Functions
+
+### encodeShortString(str)
+
+Encode an ASCII string to a bigint.
+
+```typescript
+import { encodeShortString } from '@kundera-sn/kundera-ts';
+
+encodeShortString('hello');     // 448378203247n
+encodeShortString('ERC20');     // 4543560n
+encodeShortString('');          // 0n
+```
+
+**Throws:**
+- `Error: {str} is not an ASCII string` - if string contains non-ASCII characters
+- `Error: {str} is too long for short string (max 31 chars)` - if length > 31
+
+### encodeShortStringHex(str)
+
+Encode an ASCII string to a hex string.
+
+```typescript
+import { encodeShortStringHex } from '@kundera-sn/kundera-ts';
+
+encodeShortStringHex('hello');  // '0x68656c6c6f'
+encodeShortStringHex('ERC20');  // '0x455243323030'
+```
+
+**Throws:**
+- Same errors as `encodeShortString`
+
+### decodeShortString(felt)
+
+Decode a felt back to an ASCII string.
+
+```typescript
+import { decodeShortString } from '@kundera-sn/kundera-ts';
+
+decodeShortString(448378203247n);       // 'hello'
+decodeShortString('0x68656c6c6f');      // 'hello'
+decodeShortString(Felt252('0x68656c6c6f')); // 'hello'
+decodeShortString(0n);                  // ''
+```
+
+Accepts `bigint`, hex `string`, or `Felt252Type`.
+
+## Access via Felt252
+
+These functions are also available on the `Felt252` namespace:
+
+```typescript
+import { Felt252 } from '@kundera-sn/kundera-ts';
+
+Felt252.encodeShortString('hello');     // 448378203247n
+Felt252.encodeShortStringHex('hello');  // '0x68656c6c6f'
+Felt252.decodeShortString(448378203247n); // 'hello'
+
+Felt252.MAX_SHORT_STRING_LENGTH;        // 31
+```
+
+## Use Cases
+
+### Contract Names and Symbols
+
+ERC-20 `name()` and `symbol()` often return short strings:
+
+```typescript
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { decodeShortString } from '@kundera-sn/kundera-ts';
+
+const result = await starknet_call(transport, {
+  contract_address: tokenAddress,
+  entry_point_selector: '0x...', // name()
+  calldata: [],
+});
+
+const name = decodeShortString(result[0]);
+console.log(name); // 'Ether'
+```
+
+### Storage Variable Names
+
+Cairo storage variables are keyed by their name encoded as short strings:
+
+```typescript
+import { encodeShortString } from '@kundera-sn/kundera-ts';
+import { pedersen } from '@kundera-sn/kundera-ts/crypto';
+
+// Compute storage key for "balance" variable
+const storageKey = pedersen(encodeShortString('balance'), 0n);
+```
+
+### Event Keys
+
+Event names in Starknet are short string encoded:
+
+```typescript
+import { encodeShortStringHex } from '@kundera-sn/kundera-ts';
+
+const transferEventKey = encodeShortStringHex('Transfer');
+// Use to filter events
+```
+
+## Encoding Details
+
+Each ASCII character is encoded as its byte value, packed left-to-right:
+
+```
+'hello' (5 chars)
+h=0x68, e=0x65, l=0x6c, l=0x6c, o=0x6f
+
+Packed: 0x68656c6c6f = 448378203247
+```
+
+## Error Handling
+
+```typescript
+import { encodeShortString } from '@kundera-sn/kundera-ts';
+
+// Non-ASCII character
+try {
+  encodeShortString('héllo'); // 'é' is not ASCII
+} catch (e) {
+  console.error(e.message); // 'héllo is not an ASCII string'
+}
+
+// Too long
+try {
+  encodeShortString('this string is way too long for a short string');
+} catch (e) {
+  console.error(e.message); // 'this string is... is too long for short string (max 31 chars)'
+}
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Felt252" icon="cube" href="/primitives/felt252">
+    The underlying type for short strings.
+  </Card>
+  <Card title="ABI Encoding" icon="code" href="/guides/abi/encode-decode">
+    Encoding complex types in calldata.
+  </Card>
+</CardGroup>

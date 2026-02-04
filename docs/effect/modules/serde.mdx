@@ -1,0 +1,57 @@
+---
+title: Effect Serde
+description: Cairo serialization with typed errors
+---
+
+# Effect Serde
+
+Cairo serialization operations return `Effect<T, SerdeError>`.
+
+## U256 Serialization
+
+```typescript
+import { Effect } from 'effect';
+import * as Serde from '@kundera-sn/kundera-effect/serde';
+
+const program = Effect.gen(function* () {
+  // Serialize u256 to [low, high] felts
+  const [low, high] = yield* Serde.serializeU256(12345n);
+
+  // Deserialize back
+  const value = yield* Serde.deserializeU256([low, high]);
+
+  return { low, high, value };
+});
+```
+
+## Array Serialization
+
+```typescript
+const program = Effect.gen(function* () {
+  // Add length prefix
+  const prefixed = yield* Serde.serializeArray(felts);
+  // Result: [length, ...elements]
+
+  // Extract with length prefix
+  const { array, nextOffset } = yield* Serde.deserializeArray(data, 0);
+
+  return { prefixed, array };
+});
+```
+
+## ByteArray
+
+```typescript
+const felts = yield* Serde.serializeByteArray(
+  new TextEncoder().encode('Hello, Starknet!')
+);
+```
+
+## Namespace API
+
+```typescript
+import { CairoSerde } from '@kundera-sn/kundera-effect/serde';
+
+const [low, high] = yield* CairoSerde.serializeU256(value);
+const value = yield* CairoSerde.deserializeU256([low, high]);
+```

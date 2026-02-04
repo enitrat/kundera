@@ -1,0 +1,87 @@
+---
+title: Quick Start
+description: Get started with Kundera Effect in 5 minutes
+---
+
+# Quick Start with Kundera Effect
+
+Get up and running with Kundera's Effect integration in 5 minutes.
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install @kundera-sn/kundera-effect effect
+```
+
+```bash pnpm
+pnpm add @kundera-sn/kundera-effect effect
+```
+
+```bash bun
+bun add @kundera-sn/kundera-effect effect
+```
+</CodeGroup>
+
+## Your First Program
+
+Create a simple program that fetches the latest block number from Starknet:
+
+```typescript
+import { ProviderService } from "@kundera-sn/kundera-effect/services"
+import { Effect } from "effect"
+
+// Define your program
+const program = Effect.gen(function* () {
+  // Access the provider service
+  const provider = yield* ProviderService
+
+  // Fetch the block number
+  const blockNumber = yield* provider.getBlockNumber()
+
+  // Log the result
+  yield* Effect.log(`Latest block: ${blockNumber}`)
+
+  return blockNumber
+})
+
+// Run the program with dependencies
+const result = await Effect.runPromise(
+  program.pipe(
+    Effect.provide(
+      ProviderService.layer({
+        url: "https://starknet-sepolia.public.blastapi.io"
+      })
+    )
+  )
+)
+
+console.log(result)
+```
+
+## What Just Happened?
+
+1. **Service injection**: `yield* ProviderService` gets the provider from the context
+2. **Error tracking**: All possible errors are tracked at the type level
+3. **Composability**: Operations are composed using `pipe` and Effect combinators
+4. **Dependency provision**: `Effect.provide` supplies the required services
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Effect Intro" icon="book" href="/getting-started/effect-intro">
+    Learn Effect fundamentals
+  </Card>
+
+  <Card title="Services Guide" icon="server" href="/effect/services/provider">
+    Explore all available services
+  </Card>
+
+  <Card title="Primitives" icon="cube" href="/effect/primitives/index">
+    Work with Starknet primitives
+  </Card>
+
+  <Card title="Examples" icon="code" href="https://github.com/enitrat/kundera/tree/main/examples">
+    Browse example projects
+  </Card>
+</CardGroup>

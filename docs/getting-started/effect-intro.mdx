@@ -1,0 +1,141 @@
+---
+title: Effect Introduction
+description: Learn the basics of Effect-TS for Starknet development
+---
+
+# Introduction to Effect
+
+Effect is a TypeScript library for building robust, type-safe applications with composable error handling, dependency injection, and resource management.
+
+## Why Effect for Starknet?
+
+Blockchain development has unique challenges that Effect solves elegantly:
+
+### 1. Complex Error Handling
+
+Starknet operations can fail in many ways: network errors, validation errors, contract reverts, insufficient balance, etc.
+
+**Traditional approach:**
+```typescript
+try {
+  const result = await contract.call()
+  return result
+} catch (error) {
+  // What kind of error? We don't know!
+  console.error(error)
+  throw error
+}
+```
+
+**Effect approach:**
+```typescript
+const program = Effect.gen(function* () {
+  const result = yield* contract.call()
+  return result
+}).pipe(
+  Effect.catchTags({
+    NetworkError: (error) => /* handle network issues */,
+    ContractError: (error) => /* handle contract reverts */,
+    ValidationError: (error) => /* handle invalid inputs */,
+  })
+)
+
+// Type: Effect<Result, NetworkError | ContractError | ValidationError, ContractService>
+```
+
+All possible errors are tracked in the type system!
+
+### 2. Dependency Management
+
+Blockchain apps need providers, signers, accounts, contracts—Effect's layer system makes this clean:
+
+```typescript
+const program = Effect.gen(function* () {
+  const provider = yield* ProviderService
+  const account = yield* AccountService
+  const contract = yield* ContractService
+
+  // Use all services together
+})
+
+// Provide all dependencies at once
+Effect.provide(program, Layer.mergeAll(
+  ProviderService.layer,
+  AccountService.layer,
+  ContractService.layer
+))
+```
+
+### 3. Resource Safety
+
+WebSocket connections, event streams, and RPC batching need proper cleanup:
+
+```typescript
+const stream = ProviderService.subscribeToBlocks().pipe(
+  Stream.take(100),
+  Stream.runCollect
+)
+// Connection automatically closed after 100 blocks
+```
+
+## Core Concepts
+
+### Effect<Success, Error, Requirements>
+
+The `Effect` type describes a computation that:
+- Succeeds with type `Success`
+- Can fail with error type `Error`
+- Requires dependencies of type `Requirements`
+
+```typescript
+type GetBalance = Effect.Effect<
+  bigint,              // Success: balance as bigint
+  NetworkError,        // Error: can fail with NetworkError
+  ProviderService      // Requirements: needs ProviderService
+>
+```
+
+### Generators (Effect.gen)
+
+Use generator syntax for imperative-style code:
+
+```typescript
+const program = Effect.gen(function* () {
+  const a = yield* Effect.succeed(1)
+  const b = yield* Effect.succeed(2)
+  return a + b
+})
+```
+
+### Pipe
+
+Compose operations left-to-right:
+
+```typescript
+const program = ProviderService.getBlockNumber().pipe(
+  Effect.flatMap(blockNumber =>
+    Effect.log(`Block: ${blockNumber}`)
+  ),
+  Effect.map(() => "done")
+)
+```
+
+## Learn More
+
+<CardGroup cols={2}>
+  <Card title="Effect Documentation" icon="book" href="https://effect.website">
+    Official Effect-TS docs
+  </Card>
+
+  <Card title="Services Guide" icon="server" href="/effect/services/provider">
+    Kundera Effect services
+  </Card>
+
+  <Card title="Error Handling" icon="shield" href="/effect/guides/error-handling">
+    Handle errors in Kundera
+  </Card>
+
+  <Card title="Testing" icon="flask" href="/effect/guides/testing">
+    Test Effect programs
+  </Card>
+</CardGroup>

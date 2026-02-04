@@ -1,0 +1,104 @@
+---
+title: Fee Estimator Service
+description: Estimate fees and derive resource bounds for INVOKE_V3.
+---
+
+<Info>
+FeeEstimatorService mirrors Voltaire’s “fee estimator” pattern, adapted to Starknet fee estimation.
+</Info>
+
+# Fee Estimator Service
+
+`FeeEstimatorService` wraps `starknet_estimateFee` and provides helpers for adjusting estimates and deriving resource bounds.
+
+## Imports
+
+```ts
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+```
+
+## Live Layer
+
+- `Services.FeeEstimator.DefaultFeeEstimator` (requires `ProviderService`)
+- `Services.FeeEstimator.makeFeeEstimator(multiplier)`
+
+## Estimate Fees
+
+```ts
+const program = Effect.gen(function* () {
+  const estimator = yield* Services.FeeEstimator.FeeEstimatorService;
+  const estimate = yield* estimator.estimateOne(
+    {
+      type: "INVOKE",
+      version: "0x3",
+      sender_address: "0x...",
+      calldata: [],
+      signature: [],
+      nonce: "0x0",
+      resource_bounds: {
+        l1_gas: { max_amount: "0x0", max_price_per_unit: "0x0" },
+        l2_gas: { max_amount: "0x0", max_price_per_unit: "0x0" },
+        l1_data_gas: { max_amount: "0x0", max_price_per_unit: "0x0" }
+      },
+      tip: "0x0",
+      paymaster_data: [],
+      account_deployment_data: [],
+      nonce_data_availability_mode: "L1",
+      fee_data_availability_mode: "L1"
+    },
+    [],
+    "pending"
+  );
+  return estimate;
+}).pipe(
+  Effect.provide(Services.Presets.createHttpProvider("https://starknet.example.com")),
+  Effect.provide(Services.FeeEstimator.DefaultFeeEstimator)
+);
+```
+
+## Apply a Multiplier
+
+```ts
+const program = Effect.gen(function* () {
+  const estimator = yield* Services.FeeEstimator.FeeEstimatorService;
+  const estimate = yield* estimator.estimateOne(tx);
+  const adjusted = estimator.applyMultiplier(estimate, 1.2);
+  return adjusted;
+});
+```
+
+## Convert to Resource Bounds
+
+```ts
+const program = Effect.gen(function* () {
+  const estimator = yield* Services.FeeEstimator.FeeEstimatorService;
+  const estimate = yield* estimator.estimateOne(tx);
+
+  const bounds = estimator.toResourceBounds(estimate, {
+    multiplier: 1.2
+  });
+
+  return bounds;
+});
+```
+
+<Note>
+`toResourceBounds` maps `gas_*` to `l1_gas` and `data_gas_*` to `l1_data_gas`.
+Set `l2Gas` explicitly if your account contract requires it.
+</Note>
+
+## Errors
+
+`FeeEstimatorService` surfaces `FeeEstimationError` on request failures or missing estimates.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Signer" icon="signature" href="/services/signer">
+    Use resource bounds when signing.
+  </Card>
+  <Card title="Provider" icon="plug" href="/services/provider">
+    ProviderService and presets.
+  </Card>
+</CardGroup>

@@ -1,0 +1,215 @@
+---
+title: Quick Start
+description: Get up and running with Kundera in 5 minutes
+---
+
+## Installation
+
+```bash
+npm install @kundera-sn/kundera-ts
+```
+
+Or with other package managers:
+
+```bash
+pnpm add @kundera-sn/kundera-ts
+yarn add @kundera-sn/kundera-ts
+bun add @kundera-sn/kundera-ts
+```
+
+## Choose Your Crypto Backend
+
+Kundera needs a crypto backend for signing and hashing. Choose based on your environment:
+
+<Tabs>
+  <Tab title="Browser (WASM)">
+    Load WASM at app startup:
+
+    ```typescript
+    import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+
+    // Call once at startup
+    await loadWasmCrypto();
+    ```
+  </Tab>
+  <Tab title="Bun (Native)">
+    Native crypto works out of the box in Bun:
+
+    ```typescript
+    import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
+
+    console.log(isNativeAvailable()); // true
+    ```
+  </Tab>
+  <Tab title="Node.js (Native)">
+    Install the FFI package for best performance:
+
+    ```bash
+    npm install ffi-napi
+    ```
+
+    Then use normally:
+
+    ```typescript
+    import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
+
+    console.log(isNativeAvailable()); // true if ffi-napi installed
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+**Don't need signing?** If you only need read operations (calling contracts, fetching state), you can skip crypto setup entirely.
+</Note>
+
+## Basic Usage
+
+### Create a Transport
+
+```typescript
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+```
+
+### Make RPC Calls
+
+```typescript
+import { starknet_blockNumber, starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { ContractAddress } from '@kundera-sn/kundera-ts';
+
+// Get current block
+const blockNumber = await starknet_blockNumber(transport);
+console.log('Block:', blockNumber);
+
+// Call a contract
+const result = await starknet_call(
+  transport,
+  {
+    contract_address: ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7'),
+    entry_point_selector: '0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60', // name()
+    calldata: []
+  },
+  'latest'
+);
+```
+
+### Use Branded Types
+
+Kundera uses [branded types](/getting-started/branded-types) to prevent mixing incompatible values:
+
+```typescript
+import { ContractAddress, ClassHash, Felt252 } from '@kundera-sn/kundera-ts';
+
+// Create typed values
+const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+const classHash = ClassHash('0x...');
+const felt = Felt252(123n);
+
+// TypeScript prevents mixups
+function deployContract(hash: ClassHash, addr: ContractAddress) { }
+deployContract(address, classHash); // Error: wrong order!
+
+// Convert between formats
+const hex = felt.toHex();
+const bigint = felt.toBigInt();
+```
+
+### Encode/Decode Calldata
+
+```typescript
+import { encodeCalldata, decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
+
+// Encode function arguments
+const encoded = encodeCalldata(erc20Abi, 'transfer', [
+  recipientAddress,
+  { low: amountLow, high: amountHigh }
+]);
+if (encoded.error) {
+  throw encoded.error;
+}
+const calldata = encoded.result;
+
+// Decode return values
+const decoded = decodeOutputObject(erc20Abi, 'balanceOf', result.map(BigInt));
+if (decoded.error) {
+  throw decoded.error;
+}
+const balance = decoded.result;
+```
+
+## Complete Example
+
+Read an ERC-20 token balance:
+
+```typescript
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { ContractAddress, Felt252 } from '@kundera-sn/kundera-ts';
+
+// Setup
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+
+// ETH token on Starknet
+const ethToken = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+const account = ContractAddress('0x...');
+
+// balanceOf selector
+const balanceOfSelector = '0x2e4263afad30923c891518314c3c95dbe830a16874e8abc5777a9a20b54c76e';
+
+// Call
+const result = await starknet_call(
+  transport,
+  {
+    contract_address: ethToken,
+    entry_point_selector: balanceOfSelector,
+    calldata: [account.toHex()]
+  },
+  'latest'
+);
+
+// Result is [low, high] for u256
+const low = BigInt(result[0]);
+const high = BigInt(result[1]);
+const balance = low + (high << 128n);
+
+console.log('Balance:', balance);
+```
+
+## What Makes Kundera Different?
+
+Kundera is a **low-level primitives library**, not a full SDK:
+
+| Feature | Kundera | starknet.js |
+|---------|---------|-------------|
+| **Type Safety** | Branded types prevent mixups | Plain strings |
+| **Bundle Size** | Tree-shakeable, import what you use | Monolithic |
+| **Performance** | Native Rust or WASM crypto | Pure JS |
+| **Philosophy** | Data-first, explicit dependencies | Object-oriented, implicit state |
+
+<Tip>
+**Use Kundera when** you need type safety, performance, or small bundles. **Use starknet.js when** you need high-level abstractions and ecosystem compatibility.
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Branded Types" icon="tag" href="/getting-started/branded-types">
+    How type safety prevents bugs
+  </Card>
+  <Card title="Runtime Implementations" icon="bolt" href="/getting-started/runtime-implementations">
+    Deep dive on Native vs WASM crypto
+  </Card>
+  <Card title="Agentic Coding" icon="robot" href="/getting-started/agentic-coding">
+    Maximize AI assistant productivity
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/overview/architecture">
+    Understand how modules fit together
+  </Card>
+  <Card title="Skills" icon="puzzle-piece" href="/skills/index">
+    Copy-paste patterns for common tasks
+  </Card>
+  <Card title="API Reference" icon="book" href="/api/primitives">
+    Complete API documentation
+  </Card>
+</CardGroup>

@@ -1,0 +1,631 @@
+---
+title: Library Comparisons
+description: Side-by-side comparison of common tasks in Kundera and starknet.js
+icon: scale-balanced
+---
+
+Kundera and starknet.js are both TypeScript libraries for Starknet development. This page compares how to perform common operations across both libraries.
+
+## Feature Comparison
+
+| Feature | Kundera | starknet.js |
+|---------|---------|-------------|
+| **Type Safety** | Branded types (compile-time guarantees) | Template literal types |
+| **Runtime** | Native FFI + WASM | Pure JavaScript |
+| **Tree-Shaking** | Full (granular exports) | Partial |
+| **Bundle Size** | ~50KB (tree-shaken) | ~200KB+ |
+| **Primitives** | Uint8Array-based | String-based |
+| **Performance** | Native Rust FFI or WASM | JavaScript only |
+
+## Felt252 / Field Elements
+
+### Creating Field Elements
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { Felt252 } from '@kundera-sn/kundera-ts';
+
+// From bigint
+const a = Felt252(123n);
+
+// From hex string
+const b = Felt252('0x7b');
+
+// From number
+const c = Felt252(123);
+
+// Methods
+a.toBigInt();    // 123n
+a.toHex();       // '0x00000000...7b'
+a.isZero();      // false
+a.equals(b);     // true
+
+// Constants
+Felt252.ZERO;    // Pre-cached zero
+Felt252.ONE;     // Pre-cached one
+Felt252.PRIME;   // Field prime
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { cairo, num } from 'starknet';
+
+// From bigint (manual conversion)
+const a = num.toHex(123n);
+// '0x7b'
+
+// From hex string
+const b = '0x7b';
+
+// Validation
+const isValid = num.isHex(b);
+
+// Conversion
+num.toBigInt('0x7b');    // 123n
+num.toHex(123n);         // '0x7b'
+
+// No built-in constants or type safety
+// Values are plain strings
+```
+
+</Tab>
+</Tabs>
+
+### Type Safety Difference
+
+**Kundera** uses branded types that guarantee validity at compile time:
+
+```typescript
+// Kundera - Type system prevents mixing
+type Felt252Type = Brand<Uint8Array, 'Felt252'> & FeltMethods;
+type ContractAddressType = Brand<Uint8Array, 'ContractAddress'>;
+
+function transfer(to: ContractAddressType, amount: Felt252Type) { }
+
+const felt = Felt252(123n);
+const addr = ContractAddress('0x123...');
+
+transfer(addr, felt);  // OK
+transfer(felt, addr);  // Compile error: types don't match
+```
+
+**starknet.js** uses string types with runtime validation:
+
+```typescript
+// starknet.js - Both are just strings
+const felt: string = '0x7b';
+const addr: string = '0x123...';
+
+function transfer(to: string, amount: string) { }
+
+transfer(addr, felt);  // OK
+transfer(felt, addr);  // No error - both are strings
+```
+
+## Pedersen Hash
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { Felt252 } from '@kundera-sn/kundera-ts';
+import { pedersenHash, loadWasmCrypto, isNativeAvailable } from '@kundera-sn/kundera-ts/crypto';
+
+// Initialize crypto (once)
+if (!isNativeAvailable()) {
+  await loadWasmCrypto();
+}
+
+// Hash two felts
+const hash = pedersenHash(
+  Felt252(123n),
+  Felt252(456n)
+);
+
+hash.toBigInt();  // Result as bigint
+hash.toHex();     // Result as hex
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { hash } from 'starknet';
+
+// Hash two values
+const result = hash.computePedersenHash(
+  '0x7b',   // 123
+  '0x1c8'   // 456
+);
+// Returns hex string
+
+// Or with array
+const arrayHash = hash.computeHashOnElements(['0x1', '0x2', '0x3']);
+```
+
+</Tab>
+</Tabs>
+
+## Poseidon Hash
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { Felt252 } from '@kundera-sn/kundera-ts';
+import { poseidonHash, poseidonHashMany } from '@kundera-sn/kundera-ts/crypto';
+
+// Hash two felts
+const hash = poseidonHash(
+  Felt252(1n),
+  Felt252(2n)
+);
+
+// Hash many felts
+const manyHash = poseidonHashMany([
+  Felt252(1n),
+  Felt252(2n),
+  Felt252(3n),
+]);
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { hash } from 'starknet';
+
+// Hash two values
+const result = hash.computePoseidonHash('0x1', '0x2');
+
+// Hash many values
+const manyResult = hash.computePoseidonHashOnElements(['0x1', '0x2', '0x3']);
+```
+
+</Tab>
+</Tabs>
+
+## Contract Address
+
+### Creating Addresses
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { ContractAddress } from '@kundera-sn/kundera-ts';
+
+// Create from hex
+const addr = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+
+// Validate
+ContractAddress.isValid(addr);  // true
+
+// Methods
+addr.toHex();     // Full hex string
+addr.toBigInt();  // As bigint
+addr.equals(other);  // Compare
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { validateAndParseAddress, getChecksumAddress } from 'starknet';
+
+// Parse and validate
+const addr = validateAndParseAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+// Returns checksummed hex string
+
+// Get checksum
+const checksummed = getChecksumAddress(addr);
+
+// No built-in comparison - compare strings
+const areEqual = addr.toLowerCase() === other.toLowerCase();
+```
+
+</Tab>
+</Tabs>
+
+### Computing Contract Address
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { computeContractAddress } from '@kundera-sn/kundera-ts/crypto';
+
+const address = computeContractAddress(
+  classHash,           // Class hash
+  salt,                // Salt
+  [pubKeyLow, pubKeyHigh],  // Constructor calldata
+  0n                   // Deployer (0 for deploy_account)
+);
+
+address.toHex();  // Contract address
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { hash } from 'starknet';
+
+const address = hash.calculateContractAddressFromHash(
+  salt,
+  classHash,
+  [pubKeyLow, pubKeyHigh],  // Constructor calldata
+  '0x0'  // Deployer address
+);
+// Returns hex string
+```
+
+</Tab>
+</Tabs>
+
+## Cairo Serialization
+
+### U256 Encoding
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { CairoSerde } from '@kundera-sn/kundera-ts/serde';
+
+// Serialize u256 to [low, high] felts
+const [low, high] = CairoSerde.serializeU256(
+  10000000000000000000n  // 10 ETH in wei
+);
+
+low.toBigInt();   // Lower 128 bits
+high.toBigInt();  // Upper 128 bits
+
+// Deserialize back
+const value = CairoSerde.deserializeU256(low, high);
+// 10000000000000000000n
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { uint256, cairo } from 'starknet';
+
+// Create uint256 struct
+const u256 = uint256.bnToUint256(10000000000000000000n);
+// { low: '0x...', high: '0x...' }
+
+// Or use cairo helper
+const calldata = cairo.uint256(10000000000000000000n);
+// Returns array [low, high]
+
+// Convert back
+const value = uint256.uint256ToBN(u256);
+// 10000000000000000000n
+```
+
+</Tab>
+</Tabs>
+
+### Array Encoding
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { CairoSerde } from '@kundera-sn/kundera-ts/serde';
+import { Felt252 } from '@kundera-sn/kundera-ts';
+
+// Serialize array (prepends length)
+const felts = CairoSerde.serializeArray([1n, 2n, 3n]);
+// [Felt252(3), Felt252(1), Felt252(2), Felt252(3)]
+
+// Deserialize
+const { values, consumed } = CairoSerde.deserializeArray(felts);
+// values: [1n, 2n, 3n], consumed: 4
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { CallData } from 'starknet';
+
+// Using CallData.compile with ABI
+const calldata = CallData.compile({
+  arr: [1n, 2n, 3n]
+});
+// Automatically handles array length prefix
+
+// Manual approach
+const manual = ['3', '1', '2', '3'];  // length + elements
+```
+
+</Tab>
+</Tabs>
+
+### Short Strings
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { Felt252 } from '@kundera-sn/kundera-ts';
+
+// Encode short string (max 31 chars)
+const encoded = Felt252.encodeShortString('hello');
+// 448378203247n
+
+const hex = Felt252.encodeShortStringHex('hello');
+// '0x68656c6c6f'
+
+// Decode back
+const decoded = Felt252.decodeShortString(448378203247n);
+// 'hello'
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { shortString } from 'starknet';
+
+// Encode
+const encoded = shortString.encodeShortString('hello');
+// '0x68656c6c6f'
+
+// Decode
+const decoded = shortString.decodeShortString('0x68656c6c6f');
+// 'hello'
+
+// Check if valid short string
+shortString.isShortString('hello');  // true
+shortString.isShortString('this string is way too long for cairo');  // false
+```
+
+</Tab>
+</Tabs>
+
+## Signing
+
+### Raw Message Signing
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { Felt252 } from '@kundera-sn/kundera-ts';
+import { sign, verify, getPublicKey } from '@kundera-sn/kundera-ts/crypto';
+
+const privateKey = Felt252('0x123...');
+const messageHash = Felt252('0xabc...');
+
+// Sign
+const signature = sign(privateKey, messageHash);
+// { r: Felt252Type, s: Felt252Type }
+
+// Get public key
+const publicKey = getPublicKey(privateKey);
+
+// Verify
+const isValid = verify(publicKey, messageHash, signature);
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { ec, encode } from 'starknet';
+
+const privateKey = '0x123...';
+const messageHash = '0xabc...';
+
+// Sign
+const signature = ec.starkCurve.sign(messageHash, privateKey);
+// Signature object
+
+// Get public key
+const publicKey = ec.starkCurve.getStarkKey(privateKey);
+
+// Verify
+const isValid = ec.starkCurve.verify(signature, messageHash, publicKey);
+```
+
+</Tab>
+</Tabs>
+
+### SNIP-12 Typed Data
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { hashTypedData, signTypedData } from '@kundera-sn/kundera-ts/crypto';
+
+const typedData = {
+  types: {
+    StarkNetDomain: [
+      { name: 'name', type: 'felt' },
+      { name: 'version', type: 'felt' },
+      { name: 'chainId', type: 'felt' },
+    ],
+    Transfer: [
+      { name: 'recipient', type: 'felt' },
+      { name: 'amount', type: 'u256' },
+    ],
+  },
+  primaryType: 'Transfer',
+  domain: {
+    name: 'MyDApp',
+    version: '1',
+    chainId: '0x534e5f4d41494e',
+  },
+  message: {
+    recipient: '0x123...',
+    amount: { low: '1000000000000000000', high: '0' },
+  },
+};
+
+// Hash only
+const hash = hashTypedData(typedData, accountAddress);
+
+// Sign directly
+const signature = signTypedData(privateKey, typedData, accountAddress);
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { typedData, Account } from 'starknet';
+
+const data = {
+  types: {
+    StarkNetDomain: [
+      { name: 'name', type: 'felt' },
+      { name: 'version', type: 'felt' },
+      { name: 'chainId', type: 'felt' },
+    ],
+    Transfer: [
+      { name: 'recipient', type: 'felt' },
+      { name: 'amount', type: 'u256' },
+    ],
+  },
+  primaryType: 'Transfer',
+  domain: {
+    name: 'MyDApp',
+    version: '1',
+    chainId: '0x534e5f4d41494e',
+  },
+  message: {
+    recipient: '0x123...',
+    amount: { low: '1000000000000000000', high: '0' },
+  },
+};
+
+// Hash using typedData module
+const hash = typedData.getMessageHash(data, accountAddress);
+
+// Sign via Account
+const account = new Account(provider, address, privateKey);
+const signature = await account.signMessage(data);
+```
+
+</Tab>
+</Tabs>
+
+## Function Selectors
+
+<Tabs>
+<Tab title="Kundera">
+
+```typescript
+import { computeSelector } from '@kundera-sn/kundera-ts/crypto';
+
+// Compute selector from function name
+const selector = computeSelector('transfer');
+
+selector.toHex();  // '0x...'
+```
+
+</Tab>
+<Tab title="starknet.js">
+
+```typescript
+import { hash } from 'starknet';
+
+// Get selector
+const selector = hash.getSelectorFromName('transfer');
+// Returns hex string
+```
+
+</Tab>
+</Tabs>
+
+## Key Differences
+
+### Philosophy
+
+| Aspect | Kundera | starknet.js |
+|--------|---------|-------------|
+| **Design** | Low-level primitives library | Full-featured SDK |
+| **Abstractions** | Minimal, composable | Batteries-included |
+| **Type System** | Branded types with guarantees | Flexible string-based |
+| **Performance** | Rust FFI / WASM acceleration | Pure JavaScript |
+
+### When to Use Kundera
+
+- **Type Safety Critical**: Financial applications where type confusion could be catastrophic
+- **Performance Sensitive**: High-throughput transaction signing or hashing
+- **Bundle Size Matters**: Frontend applications where every KB counts
+- **Low-Level Control**: Building your own abstractions on solid primitives
+- **Server-Side**: Can leverage native Rust FFI for maximum performance
+
+### When to Use starknet.js
+
+- **Rapid Prototyping**: Get something working quickly
+- **Full SDK Needed**: Want providers, accounts, and contracts in one package
+- **Ecosystem Compatibility**: Integrating with existing starknet.js codebases
+- **Familiar API**: Coming from ethers.js/viem patterns
+
+### Migration Path
+
+Kundera is designed to be incrementally adoptable:
+
+```typescript
+// Step 1: Use Kundera for primitives alongside starknet.js
+import { Felt252 } from '@kundera-sn/kundera-ts';
+import { Provider } from 'starknet';
+
+const felt = Felt252(123n);
+const hexForStarknetJs = felt.toHex();
+
+// Step 2: Migrate crypto operations for performance
+import { pedersenHash } from '@kundera-sn/kundera-ts/crypto';
+
+// Step 3: Gradually replace more as needed
+```
+
+## Bundle Size Comparison
+
+| Import | Kundera | starknet.js |
+|--------|---------|-------------|
+| Felt252 only | ~3KB | N/A (no separate import) |
+| Hash functions | ~15KB (WASM) | ~50KB+ |
+| Full crypto | ~50KB | ~100KB+ |
+| Everything | ~80KB | ~200KB+ |
+
+Kundera's granular exports allow importing only what you need:
+
+```typescript
+// Import just Felt252 (~3KB)
+import { Felt252 } from '@kundera-sn/kundera-ts/Felt252';
+
+// Import just hashing (~15KB)
+import { pedersenHash } from '@kundera-sn/kundera-ts/crypto';
+
+// vs starknet.js pulls more
+import { hash } from 'starknet';  // Includes unused code
+```
+
+## See Also
+
+<CardGroup cols={2}>
+  <Card title="Felt252 API" icon="calculator" href="/primitives/felt252">
+    Complete Felt252 documentation.
+  </Card>
+  <Card title="Crypto API" icon="lock" href="/api/crypto">
+    Hashing and signing functions.
+  </Card>
+  <Card title="Serde API" icon="arrows-rotate" href="/api/serde">
+    Cairo serialization utilities.
+  </Card>
+  <Card title="Branded Types" icon="shield" href="/concepts/branded-types">
+    Understanding Kundera's type system.
+  </Card>
+</CardGroup>

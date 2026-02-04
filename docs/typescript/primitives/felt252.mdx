@@ -1,0 +1,212 @@
+---
+title: Felt252
+description: The fundamental 252-bit field element type.
+---
+
+`Felt252` is the fundamental type in Starknet. All values are elements of the finite field F_p where p = 2^251 + 17×2^192 + 1.
+
+## Type Definition
+
+```typescript
+declare const __brand: unique symbol;
+type Brand<T, B extends string> = T & { readonly [__brand]: B };
+
+interface FeltMethods {
+  toHex(): string;
+  toBigInt(): bigint;
+  isValid(): boolean;
+  isZero(): boolean;
+  equals(other: Felt252Type): boolean;
+}
+
+type Felt252Type = Brand<Uint8Array, 'Felt252'> & FeltMethods;
+```
+
+The type is a branded `Uint8Array` (32 bytes) with attached methods. Branding exists only at compile time—there's no runtime overhead.
+
+## Input Types
+
+```typescript
+type Felt252Input = Felt252Type | Uint8Array | string | bigint | number;
+```
+
+All constructors accept any of these input types.
+
+## Constructors
+
+### Felt252(value)
+
+Create a Felt252 from any supported input type.
+
+```typescript
+import { Felt252 } from '@kundera-sn/kundera-ts';
+
+const a = Felt252(123n);           // from bigint
+const b = Felt252('0x7b');         // from hex string
+const c = Felt252(123);            // from number
+const d = Felt252(bytes);          // from Uint8Array (must be 32 bytes)
+```
+
+**Throws:**
+- `Error: Invalid hex string` - if string is not valid hex
+- `Error: Hex string too long for Felt252` - if hex > 64 characters
+- `Error: Felt252 cannot be negative` - if bigint < 0
+- `Error: Value exceeds field prime` - if value >= FIELD_PRIME
+- `Error: Felt252 must be exactly 32 bytes` - if Uint8Array length ≠ 32
+
+### Felt252.from(value)
+
+Alias for `Felt252(value)`.
+
+```typescript
+const felt = Felt252.from('0x123');
+```
+
+### Felt252.fromHex(hex)
+
+Create from a hex string specifically.
+
+```typescript
+const felt = Felt252.fromHex('0x123abc');
+const felt2 = Felt252.fromHex('123abc'); // 0x prefix optional
+```
+
+**Throws:**
+- `Error: Invalid hex string`
+- `Error: Hex string too long for Felt252`
+- `Error: Value exceeds field prime`
+
+### Felt252.fromBigInt(value)
+
+Create from a bigint specifically.
+
+```typescript
+const felt = Felt252.fromBigInt(12345n);
+```
+
+**Throws:**
+- `Error: Felt252 cannot be negative`
+- `Error: Value exceeds field prime`
+
+### Felt252.fromBytes(bytes)
+
+Create from a 32-byte Uint8Array.
+
+```typescript
+const bytes = new Uint8Array(32);
+bytes[31] = 123;
+const felt = Felt252.fromBytes(bytes);
+```
+
+**Throws:**
+- `Error: Felt252 must be exactly 32 bytes`
+
+## Instance Methods
+
+### toHex()
+
+Convert to a 0x-prefixed hex string.
+
+```typescript
+const felt = Felt252(255n);
+felt.toHex(); // '0x00000000000000000000000000000000000000000000000000000000000000ff'
+```
+
+### toBigInt()
+
+Convert to a bigint.
+
+```typescript
+const felt = Felt252('0x7b');
+felt.toBigInt(); // 123n
+```
+
+### isValid()
+
+Check if the value is less than the field prime.
+
+```typescript
+const felt = Felt252(123n);
+felt.isValid(); // true
+```
+
+<Note>
+All values created through constructors are guaranteed valid. This method is useful when working with raw bytes that may have been modified.
+</Note>
+
+### isZero()
+
+Check if the value equals zero.
+
+```typescript
+Felt252(0n).isZero();   // true
+Felt252(1n).isZero();   // false
+```
+
+### equals(other)
+
+Compare with another Felt252.
+
+```typescript
+const a = Felt252(123n);
+const b = Felt252('0x7b');
+const c = Felt252(456n);
+
+a.equals(b); // true (same value)
+a.equals(c); // false
+```
+
+## Static Methods
+
+Static versions of instance methods for functional programming style:
+
+```typescript
+Felt252.isValid(felt);      // felt.isValid()
+Felt252.isZero(felt);       // felt.isZero()
+Felt252.equals(a, b);       // a.equals(b)
+Felt252.toHex(felt);        // felt.toHex()
+Felt252.toBigInt(felt);     // felt.toBigInt()
+```
+
+## Constants
+
+```typescript
+Felt252.ZERO;   // Felt252(0n) - cached
+Felt252.ONE;    // Felt252(1n) - cached
+Felt252.TWO;    // Felt252(2n) - cached
+Felt252.PRIME;  // FIELD_PRIME (2^251 + 17*2^192 + 1)
+```
+
+## Short String Methods
+
+Felt252 includes methods for Cairo short strings (≤31 ASCII characters):
+
+```typescript
+Felt252.encodeShortString('hello');    // 448378203247n
+Felt252.encodeShortStringHex('hello'); // '0x68656c6c6f'
+Felt252.decodeShortString(448378203247n); // 'hello'
+```
+
+See [Short Strings](/primitives/short-strings) for details.
+
+## Aliases
+
+```typescript
+import { Felt } from '@kundera-sn/kundera-ts';
+
+// Felt === Felt252
+const a = Felt(123n);
+const b = Felt252(123n);
+a.equals(b); // true
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="ContractAddress" icon="file-contract" href="/primitives/contract-address">
+    Branded type for contract addresses.
+  </Card>
+  <Card title="Short Strings" icon="text" href="/primitives/short-strings">
+    Encode/decode Cairo short strings.
+  </Card>
+</CardGroup>

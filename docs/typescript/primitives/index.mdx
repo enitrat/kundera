@@ -1,0 +1,110 @@
+---
+title: Primitives Overview
+description: Core types for Starknet values with compile-time safety.
+---
+
+Kundera primitives are branded types that provide compile-time safety for Starknet values. All primitives share the same underlying representation (`Uint8Array`) but are distinguished at the type level to prevent mixing addresses with hashes.
+
+## Available Types
+
+| Type | Description | Constraint |
+|------|-------------|------------|
+| [`Felt252`](/primitives/felt252) | 252-bit field element | `< FIELD_PRIME` |
+| [`ContractAddress`](/primitives/contract-address) | Contract address | `< 2^251` |
+| [`ClassHash`](/primitives/class-hash) | Contract class identifier | `< 2^251` |
+| [`StorageKey`](/primitives/storage-key) | Storage slot address | `< 2^251` |
+| [`EthAddress`](/primitives/eth-address) | L1 Ethereum address | `< 2^160` |
+
+## Type Hierarchy
+
+All branded types extend `Felt252Type` with additional branding:
+
+```typescript
+// Base type
+type Felt252Type = Brand<Uint8Array, 'Felt252'> & FeltMethods;
+
+// Branded subtypes
+type ContractAddressType = Brand<Uint8Array, 'ContractAddress'> & FeltMethods;
+type ClassHashType = Brand<Uint8Array, 'ClassHash'> & FeltMethods;
+type StorageKeyType = Brand<Uint8Array, 'StorageKey'> & FeltMethods;
+type EthAddressType = Brand<Uint8Array, 'EthAddress'> & FeltMethods;
+```
+
+## Common Methods
+
+All primitive types share these instance methods:
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `toHex()` | `string` | Convert to hex string (`0x...`) |
+| `toBigInt()` | `bigint` | Convert to bigint |
+| `isValid()` | `boolean` | Check if value is within valid range |
+| `isZero()` | `boolean` | Check if value equals zero |
+| `equals(other)` | `boolean` | Compare with another value |
+
+```typescript
+const felt = Felt252('0x123');
+
+felt.toHex();      // '0x0000...0123'
+felt.toBigInt();   // 291n
+felt.isValid();    // true
+felt.isZero();     // false
+felt.equals(other); // true/false
+```
+
+## Import Patterns
+
+```typescript
+// Import specific types
+import { Felt252, ContractAddress, ClassHash } from '@kundera-sn/kundera-ts';
+
+// Import with aliases
+import { Felt, Address, Class, Storage } from '@kundera-sn/kundera-ts';
+
+// Felt === Felt252
+// Address === ContractAddress
+// Class === ClassHash
+// Storage === StorageKey
+```
+
+## Constants
+
+```typescript
+import { FIELD_PRIME, MAX_ADDRESS, MAX_ETH_ADDRESS } from '@kundera-sn/kundera-ts';
+
+FIELD_PRIME;      // 2^251 + 17*2^192 + 1
+MAX_ADDRESS;      // 2^251 (for ContractAddress, ClassHash, StorageKey)
+MAX_ETH_ADDRESS;  // 2^160 (for EthAddress)
+```
+
+## Error Handling
+
+All constructors throw on invalid input:
+
+```typescript
+// These throw errors
+Felt252('not-hex');                    // Error: Invalid hex string
+Felt252(-1n);                          // Error: Felt252 cannot be negative
+Felt252(FIELD_PRIME);                  // Error: Value exceeds field prime
+ContractAddress(1n << 251n);           // Error: Contract address must be < 2^251
+EthAddress(1n << 160n);                // Error: EthAddress must be < 2^160
+```
+
+For detailed error messages and validation patterns, see each type's documentation.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Felt252" icon="cube" href="/primitives/felt252">
+    The fundamental field element type.
+  </Card>
+  <Card title="ContractAddress" icon="file-contract" href="/primitives/contract-address">
+    Starknet contract addresses.
+  </Card>
+  <Card title="ClassHash" icon="fingerprint" href="/primitives/class-hash">
+    Contract class identifiers.
+  </Card>
+  <Card title="Short Strings" icon="text" href="/primitives/short-strings">
+    Encode/decode Cairo short strings.
+  </Card>
+</CardGroup>
