@@ -1,0 +1,63 @@
+---
+session: docs-skills-consolidation
+date: 2026-02-05
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Consolidate skills into packages/kundera-ts/docs with automated symlink setup
+now: Implement getContract() reference pattern using exported type utilities
+test: pnpm docs:setup && pnpm --filter kundera-ts test:skills
+
+done_this_session:
+  - task: Moved all skill .mdx docs from docs/typescript/skills/ to packages/kundera-ts/docs/skills/
+    files: [packages/kundera-ts/docs/skills/*.mdx]
+  - task: Moved skill implementations from examples/skills/*/index.ts to packages/kundera-ts/docs/skills/*.ts
+    files: [packages/kundera-ts/docs/skills/*.ts]
+  - task: Removed duplicate test files from docs/typescript/skills/
+    files: []
+  - task: Created symlink docs/typescript/skills → ../../packages/kundera-ts/docs/skills
+    files: [docs/typescript/skills]
+  - task: Created scripts/setup-docs.ts for automated symlink creation and page discovery
+    files: [scripts/setup-docs.ts]
+  - task: Updated docs commands to run setup automatically (docs:dev, docs:build, docs:generate)
+    files: [package.json]
+  - task: Documented symlink pattern and setup workflow in CLAUDE.md
+    files: [CLAUDE.md]
+
+blockers: []
+
+questions: []
+
+decisions:
+  - symlink_pattern: "Mintlify can't reference paths outside docs/ - symlink is cleanest solution"
+  - no_copies: "User explicitly wanted no file duplication - symlink only"
+  - auto_setup: "docs:dev/build/generate all run setup-docs.ts first to ensure symlinks exist"
+
+findings:
+  - "Mintlify docs.json paths must be inside docs/ - ../packages/... paths don't work"
+  - "Git commits symlinks as mode 120000 - preserves the link across clones"
+  - "setup-docs.ts also discovers new pages and updates docs.json navigation automatically"
+
+worked:
+  - "Symlink with relative path from link location: ../../packages/kundera-ts/docs/skills"
+  - "PACKAGE_DOC_SOURCES config in setup-docs.ts for adding new package doc sources"
+
+failed:
+  - "Direct ../packages/... paths in docs.json - Mintlify doesn't follow parent traversal"
+
+next:
+  - "Implement reference getContract() pattern using FunctionRet type utilities"
+  - "Split crypto/account-hash.ts into one-function-per-file per codebase standards"
+  - "Document when .ts vs .js is acceptable (native/wasm backends)"
+
+files:
+  created:
+    - scripts/setup-docs.ts
+    - docs/typescript/skills (symlink)
+    - packages/kundera-ts/docs/skills/*.ts (12 skill implementations)
+  modified:
+    - package.json
+    - docs/docs.json
+    - CLAUDE.md
+    - packages/kundera-ts/docs/skills/*.mdx (updated copy commands)

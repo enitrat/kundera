@@ -1,0 +1,62 @@
+---
+session: kundera-ci-fix
+date: 2026-02-05
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Fix CI test failures by upgrading Vitest and exporting missing crypto functions
+now: Monitor CI run to confirm fix - all local tests pass
+test: pnpm --filter kundera-ts test:run && pnpm --filter kundera-effect test:run && pnpm typecheck
+
+done_this_session:
+  - task: Diagnosed CI failure - Vitest/Vite 5 doesn't resolve .js→.ts imports (Bun does)
+    files: []
+  - task: Upgraded Vitest 2.x → 3.x (uses Vite 6 with native .js→.ts resolution)
+    files: [packages/kundera-effect/package.json, pnpm-lock.yaml]
+  - task: Exported signRaw, signTypedData, hashTypedData from crypto module
+    files: [packages/kundera-ts/src/crypto/index.ts]
+  - task: Added explicit return types to fix declaration emission errors
+    files: [packages/kundera-effect/src/crypto/index.ts]
+  - task: Removed redundant conditional tests from crypto/index.test.ts
+    files: [packages/kundera-ts/src/crypto/index.test.ts]
+  - task: Regenerated API docs
+    files: [docs/generated-api/*]
+
+blockers: []
+
+questions: []
+
+decisions:
+  - vitest_upgrade: "Vite 6 (via Vitest 3) natively resolves .js→.ts - cleaner than custom plugins or workaround index.js files"
+  - export_signRaw: "Export signRaw/signTypedData/hashTypedData from crypto/index.ts rather than creating separate subpath - they're crypto operations"
+  - remove_conditional_tests: "crypto/index.test.ts had redundant tests with cryptoReady() fallback logic - real tests are in backend-specific files"
+
+findings:
+  - "TypeScript recommends .js extensions in ESM imports even for .ts files - TS resolves them correctly"
+  - "Vite 5 doesn't support .js→.ts resolution natively - added in Vite 6 via PR #18889"
+  - "kundera-effect tests failed because Vitest couldn't resolve ../ShortString/index.js when only index.ts existed"
+
+worked:
+  - "Vitest 3.x upgrade fixed module resolution without custom plugins"
+  - "Oracle agent for researching bundler/TS resolution best practices"
+
+failed:
+  - "Creating index.js workaround files - violated codebase pattern where index/types are .ts"
+  - "Vite resolve.extensions config - doesn't apply to explicit .js imports"
+  - "Custom Vite plugin approach - unnecessary with Vitest 3"
+
+next:
+  - "Monitor CI run at https://github.com/enitrat/kundera/actions"
+  - "Consider replacing sha3 crate with keccak-asm for better native FFI performance"
+  - "Integration tests with real Starknet node"
+
+files:
+  created: []
+  modified:
+    - packages/kundera-effect/package.json
+    - packages/kundera-effect/src/crypto/index.ts
+    - packages/kundera-ts/src/crypto/index.ts
+    - packages/kundera-ts/src/crypto/index.test.ts
+    - pnpm-lock.yaml
+    - docs/generated-api/*

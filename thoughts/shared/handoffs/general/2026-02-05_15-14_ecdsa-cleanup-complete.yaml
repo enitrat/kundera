@@ -1,0 +1,73 @@
+---
+session: kundera-crypto-refactoring
+date: 2026-02-05
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Refactor ECDSA to three-backend pattern with working pure JS recover() and real test vectors
+now: ECDSA refactoring complete - all tests pass, docs regenerated, committed and pushed
+test: pnpm --filter kundera-ts test:run
+
+done_this_session:
+  - task: Implemented recover() in pure JS using @scure/starknet Signature.recoverPublicKey
+    files: [src/crypto/ECDSA/recover.js]
+  - task: Created shared utils.js to deduplicate feltToHex64 and hexToBytes
+    files: [src/crypto/ECDSA/utils.js]
+  - task: Refactored all ECDSA files to use shared utils
+    files: [src/crypto/ECDSA/sign.js, src/crypto/ECDSA/verify.js, src/crypto/ECDSA/getPublicKey.js]
+  - task: Fixed verify.js to use toBytes() instead of non-existent toRawBytes
+    files: [src/crypto/ECDSA/verify.js]
+  - task: Added real test vectors from @scure/starknet for Pedersen
+    files: [src/crypto/Pedersen/Pedersen.test.ts]
+  - task: Added real test vectors from @scure/starknet for Poseidon
+    files: [src/crypto/Poseidon/Poseidon.test.ts]
+  - task: Added real signature test vectors for ECDSA
+    files: [src/crypto/ECDSA/ECDSA.test.ts]
+  - task: Regenerated API docs
+    files: [docs/generated-api/]
+
+blockers: []
+
+questions: []
+
+decisions:
+  - recover_pure_js: "Implemented using @scure/starknet Signature.addRecoveryBit().recoverPublicKey() - works in pure JS"
+  - shared_utils: "Created utils.js to eliminate 4 copies of feltToHex64 and 2 copies of hexToBytes"
+  - test_vectors: "Used vectors from @scure/starknet test suite - verified against cairo-lang 0.11"
+
+findings:
+  - "@scure/starknet v2.0.0 has toBytes() not toRawBytes() on recovered points"
+  - "hashMany([x]) returns x (identity), not computeHashOnElements behavior"
+  - "Signature test vectors from @scure/starknet verified with known r,s values"
+
+worked:
+  - "Using @scure/starknet Signature.recoverPublicKey for pure JS recover"
+  - "Deduplicating utilities into shared utils.js"
+  - "Getting test vectors from @scure/starknet GitHub repo via gh CLI"
+
+failed: []
+
+next:
+  - "Consider adding computeHashOnElements as separate function if needed"
+  - "Keccak256 already has proper test vectors - no changes needed"
+  - "ECDSA module complete with three-backend pattern"
+
+files:
+  created:
+    - packages/kundera-ts/src/crypto/ECDSA/utils.js
+    - packages/kundera-ts/src/crypto/ECDSA/recover.js
+    - packages/kundera-ts/src/crypto/ECDSA/sign.js
+    - packages/kundera-ts/src/crypto/ECDSA/verify.js
+    - packages/kundera-ts/src/crypto/ECDSA/getPublicKey.js
+    - packages/kundera-ts/src/crypto/ECDSA/index.ts
+    - packages/kundera-ts/src/crypto/ECDSA/types.ts
+    - packages/kundera-ts/src/crypto/ECDSA/ECDSA.test.ts
+    - packages/kundera-ts/src/crypto/ECDSA/*.native.ts
+    - packages/kundera-ts/src/crypto/ECDSA/*.wasm.ts
+  modified:
+    - packages/kundera-ts/src/crypto/index.ts
+    - packages/kundera-ts/src/crypto/Pedersen/Pedersen.test.ts
+    - packages/kundera-ts/src/crypto/Poseidon/Poseidon.test.ts
+    - packages/kundera-ts/src/crypto/namespaces/StarkCurve.ts
+    - docs/generated-api/*

@@ -1,0 +1,72 @@
+---
+session: skills-typecheck-kanabi
+date: 2026-02-05
+status: partial
+outcome: FAILED
+---
+
+goal: Fix kanabi module augmentation and add skills typechecking
+now: Finish fixing remaining skill type errors (contract-multicall, get-contract, http-provider)
+test: pnpm --filter kundera-ts typecheck
+
+done_this_session:
+  - task: Removed redundant skills (contract-viem, fee-estimation)
+    files: [packages/kundera-ts/docs/skills/]
+  - task: Created get-contract skill with FunctionRet type inference
+    files: [packages/kundera-ts/docs/skills/get-contract.ts, get-contract.mdx, get-contract.test.ts]
+  - task: Fixed kanabi module augmentation (wrong keys, not loaded)
+    files: [packages/kundera-ts/src/abi/kanabi-config.d.ts, packages/kundera-ts/src/abi/index.ts]
+  - task: Added docs/skills to tsconfig include
+    files: [packages/kundera-ts/tsconfig.json]
+  - task: Fixed contract-read.ts and contract-write.ts type errors
+    files: [packages/kundera-ts/docs/skills/contract-read.ts, contract-write.ts]
+
+blockers:
+  - "3+ skills still have type errors: contract-multicall.ts:103, get-contract.ts:108, http-provider.ts:45"
+
+questions:
+  - "Should kundera's Abi type be aligned with kanabi's Abi type to avoid casts everywhere?"
+
+decisions:
+  - kanabi_config_keys: "Kanabi only supports IntType (u8/u16/u32), BigIntType (u64/u128), U256Type - not individual UXXType"
+  - reference_directive: "Use /// <reference path=./kanabi-config.d.ts /> instead of import (d.ts can't be imported at runtime)"
+  - skills_typecheck: "Added docs/**/*.ts to tsconfig include - skills ARE reference code and should typecheck"
+
+findings:
+  - "kanabi ResolvedConfig checks `Config extends { AddressType: infer type }` - augmentation must add this key"
+  - "kundera Abi type (AbiEntry[]) is different from kanabi Abi (readonly (...)[])"
+  - "Tests were excluded from typecheck (**/*.test.ts) - has many pre-existing type errors"
+
+worked:
+  - "Triple-slash reference directive for d.ts inclusion"
+  - "Cast abi as any to force untyped overload in skills that don't need inference"
+
+failed:
+  - "import './kanabi-config.js' - d.ts files can't be imported at runtime"
+  - "Individual UXXType keys in kanabi config - not supported"
+
+next:
+  - "Fix contract-multicall.ts line 103: add `abi as any` cast for decodeOutput"
+  - "Fix get-contract.ts line 108: handle readonly vs mutable Abi cast"
+  - "Fix http-provider.ts line 45: add missing ContractClassResponse export"
+  - "Consider aligning kundera Abi type with kanabi Abi to avoid casts"
+  - "Verify FunctionArgs resolves to ContractAddressType (compile-time type test)"
+
+files:
+  created:
+    - packages/kundera-ts/docs/skills/get-contract.ts
+    - packages/kundera-ts/docs/skills/get-contract.mdx
+    - packages/kundera-ts/docs/skills/get-contract.test.ts
+  modified:
+    - packages/kundera-ts/src/abi/kanabi-config.d.ts
+    - packages/kundera-ts/src/abi/index.ts
+    - packages/kundera-ts/tsconfig.json
+    - packages/kundera-ts/docs/skills/contract-read.ts
+    - packages/kundera-ts/docs/skills/contract-write.ts
+    - packages/kundera-ts/docs/skills/contract-multicall.ts
+    - docs/docs.json
+  deleted:
+    - packages/kundera-ts/docs/skills/contract-viem.ts
+    - packages/kundera-ts/docs/skills/contract-viem.mdx
+    - packages/kundera-ts/docs/skills/contract-viem.test.ts
+    - packages/kundera-ts/docs/skills/fee-estimation.mdx

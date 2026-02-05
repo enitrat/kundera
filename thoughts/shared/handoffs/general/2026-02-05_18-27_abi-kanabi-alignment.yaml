@@ -1,0 +1,79 @@
+---
+session: general
+date: 2026-02-05
+status: complete
+outcome: FAILED
+---
+
+goal: Align kundera ABI types with abi-wan-kanabi for structural compatibility
+now: Consider adding type-level tests (test-d.ts) to prevent future ABI type drift
+test: pnpm --filter kundera-ts typecheck && pnpm --filter kundera-ts test:run
+
+done_this_session:
+  - task: Split AbiEventEntry into discriminated union (AbiEventStructEntry | AbiEventEnumEntry)
+    files: [packages/kundera-ts/src/abi/types.ts]
+  - task: Made all ABI arrays readonly (inputs, outputs, members, variants, items, Abi itself)
+    files: [packages/kundera-ts/src/abi/types.ts]
+  - task: Changed AbiConstructorEntry.name to 'constructor' literal type
+    files: [packages/kundera-ts/src/abi/types.ts]
+  - task: Changed AbiInterfaceEntry.items from AbiEntry[] to readonly AbiFunctionEntry[]
+    files: [packages/kundera-ts/src/abi/types.ts]
+  - task: Added explicit untyped overloads to encodeCalldata, decodeOutput, decodeOutputObject, compileCalldata
+    files: [packages/kundera-ts/src/abi/calldata.ts]
+  - task: Updated encode/decode/events params to readonly AbiMember[]
+    files: [packages/kundera-ts/src/abi/encode.ts, packages/kundera-ts/src/abi/decode.ts, packages/kundera-ts/src/abi/events.ts]
+  - task: Exported AbiEventStructEntry and AbiEventEnumEntry from index
+    files: [packages/kundera-ts/src/abi/index.ts]
+  - task: Removed ALL as-any/as-Abi casts from ABI-related skills
+    files: [packages/kundera-ts/docs/skills/contract-read.ts, packages/kundera-ts/docs/skills/contract-write.ts, packages/kundera-ts/docs/skills/contract-multicall.ts, packages/kundera-ts/docs/skills/get-contract.ts]
+  - task: Fixed get-contract to use ExtractArgs (always-tuple) instead of FunctionArgs (unwraps single)
+    files: [packages/kundera-ts/docs/skills/get-contract.ts, packages/kundera-ts/docs/skills/get-contract.test.ts]
+  - task: Replaced missing ContractClassResponse with unknown in http-provider skill
+    files: [packages/kundera-ts/docs/skills/http-provider.ts]
+
+blockers: []
+
+questions:
+  - "Should we add a type-level test (test-d.ts) asserting Abi extends KanabiAbi to catch future drift?"
+  - "AbiL1HandlerEntry is in AbiEntry but not in kanabi union - Abi is NOT assignable to KanabiAbi. Typed overloads (encodeCalldata<TAbi extends KanabiAbi>) work with const ABIs; untyped overloads work with Abi. Is this acceptable or should we split AbiEntry to exclude L1 handler?"
+
+decisions:
+  - readonly_arrays: "All ABI arrays now readonly matching kanabi. No code mutated them (verified by scout agent)."
+  - event_split: "AbiEventEntry = AbiEventStructEntry | AbiEventEnumEntry discriminated union. Matches kanabi's AbiEventStruct | AbiEventEnum."
+  - extract_args_over_function_args: "get-contract.ts read() uses ExtractArgs (always tuple) not FunctionArgs (unwraps single). Callers always pass arrays: read('fn', [arg1, arg2]). Matches encodeCalldata typed overload directly."
+  - dual_overloads: "calldata.ts functions have typed overload (KanabiAbi + inference) + untyped overload (Abi + CairoValue[]). Skills hit untyped path, const ABIs hit typed path."
+  - l1_handler_in_union: "Kept AbiL1HandlerEntry in AbiEntry. Means Abi != KanabiAbi (L1 handler has type 'l1_handler' not in kanabi). Untyped overloads accept Abi. Typed overloads accept KanabiAbi. Both paths work."
+
+findings:
+  - "kanabi AbiOutput has no name field ({type:string}), kundera AbiMember has name ({name,type}). AbiMember IS assignable to AbiOutput (superset) but NOT vice versa."
+  - "kanabi AbiEventEnum.variants uses AbiEventMember (has kind field), NOT AbiEnumVariant. Updated kundera to match."
+  - "TypeScript overload resolution: implementation signature is NOT callable when overload declarations exist. Must add explicit untyped overload declaration separate from implementation."
+  - "Skills importing from @kundera-sn/kundera-ts/abi resolve through dist/ (package.json exports). Must rebuild dist after src changes for typecheck to pass."
+
+worked:
+  - "Structural type alignment without removing kundera-specific types (AbiL1HandlerEntry)"
+  - "Dual overload pattern: typed for const ABIs, untyped for generic Abi"
+  - "ExtractArgs for get-contract read() - matches typed overload, consistent array API"
+
+failed:
+  - "FunctionArgs for get-contract read() - unwraps single values, doesn't match encodeCalldata typed overload"
+
+next:
+  - "Consider type-level test: type _AssertAbiCompatible = Abi extends KanabiAbi ? true : false (currently false due to L1 handler)"
+  - "Consider splitting AbiEntry into AbiKanabiEntry (kanabi-compatible) | AbiL1HandlerEntry to make Abi assignable to KanabiAbi"
+  - "Add ContractClassResponse type to jsonrpc module (currently replaced with unknown in http-provider skill)"
+
+files:
+  modified:
+    - packages/kundera-ts/src/abi/types.ts
+    - packages/kundera-ts/src/abi/index.ts
+    - packages/kundera-ts/src/abi/calldata.ts
+    - packages/kundera-ts/src/abi/encode.ts
+    - packages/kundera-ts/src/abi/decode.ts
+    - packages/kundera-ts/src/abi/events.ts
+    - packages/kundera-ts/docs/skills/contract-read.ts
+    - packages/kundera-ts/docs/skills/contract-write.ts
+    - packages/kundera-ts/docs/skills/contract-multicall.ts
+    - packages/kundera-ts/docs/skills/get-contract.ts
+    - packages/kundera-ts/docs/skills/get-contract.test.ts
+    - packages/kundera-ts/docs/skills/http-provider.ts

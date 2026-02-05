@@ -1,0 +1,60 @@
+---
+session: typed-abi-inference
+date: 2026-02-05
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Add typed decodeOutput with FunctionRet inference and export type utilities for Level 2 wrapper builders
+now: Consider implementing a reference getContract() pattern in examples using the exported type utilities
+test: pnpm typecheck && pnpm --filter kundera-ts test:run && pnpm --filter kundera-effect test:run
+
+done_this_session:
+  - task: Verified CI passed for Vitest v3 upgrade (all 3 platforms green)
+    files: []
+  - task: Assessed keccak-asm vs sha3 tradeoff - kept sha3 (audited, sufficient perf)
+    files: []
+  - task: Audited codebase architecture for ABI primitives completeness
+    files: []
+  - task: Added typed overloads to decodeOutput/decodeOutputObject with FunctionRet inference
+    files: [packages/kundera-ts/src/abi/calldata.ts]
+  - task: Exported abi-wan-kanabi type utilities for Level 2 wrapper builders
+    files: [packages/kundera-ts/src/abi/index.ts]
+  - task: Fixed kundera-effect type compatibility with untyped base function aliases
+    files: [packages/kundera-effect/src/abi/index.ts]
+  - task: Regenerated API docs
+    files: [docs/generated-api/*]
+
+blockers: []
+
+questions: []
+
+decisions:
+  - return_type_direct: "Use FunctionRet<...> directly instead of [FunctionRet<...>] array - cleaner DX for common single-output case"
+  - keep_sha3: "sha3 crate is audited, keccak-asm is not - security over marginal perf gain"
+  - untyped_aliases: "kundera-effect uses untyped base function aliases to avoid KanabiAbi vs kundera Abi type mismatch"
+
+findings:
+  - "abi-wan-kanabi provides FunctionRet<TAbi, TFunctionName> for return type inference - no need to create ExtractOutputs"
+  - "kundera's Abi type doesn't extend KanabiAbi - requires type assertion for Effect wrappers"
+  - "Typed overloads pattern: signature with generics (no impl) + untyped runtime implementation"
+
+worked:
+  - "Function overload pattern with typed signature first, untyped implementation second"
+  - "Untyped base function aliases for Effect wrappers (encodeCalldataBaseUntyped pattern)"
+
+failed:
+  - "Direct type assertion on abi parameter - TypeScript still tries typed overload first"
+
+next:
+  - "Consider reference getContract() pattern in examples/skills using exported type utilities"
+  - "Split crypto/account-hash.ts into 9 files (one-function-per-file violation)"
+  - "Document when .ts vs .js is acceptable (native/wasm backends appear exempt)"
+
+files:
+  created: []
+  modified:
+    - packages/kundera-ts/src/abi/calldata.ts
+    - packages/kundera-ts/src/abi/index.ts
+    - packages/kundera-effect/src/abi/index.ts
+    - docs/generated-api/*

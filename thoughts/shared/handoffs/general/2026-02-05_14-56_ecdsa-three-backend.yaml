@@ -1,0 +1,94 @@
+---
+session: kundera-crypto-refactoring
+date: 2026-02-05
+status: partial
+outcome: PARTIAL_PLUS
+---
+
+goal: Refactor ECDSA to three-backend pattern (Pure JS / Native / WASM)
+now: Fix 1 remaining test failure in crypto/index.test.ts for recover function
+test: pnpm --filter kundera-ts test:run
+
+done_this_session:
+  - task: Created ECDSA module with three-backend pattern
+    files:
+      - src/crypto/ECDSA/types.ts
+      - src/crypto/ECDSA/sign.js
+      - src/crypto/ECDSA/verify.js
+      - src/crypto/ECDSA/getPublicKey.js
+      - src/crypto/ECDSA/recover.js
+      - src/crypto/ECDSA/index.ts
+      - src/crypto/ECDSA/ECDSA.test.ts
+  - task: Created native/wasm backend files for ECDSA
+    files:
+      - src/crypto/ECDSA/sign.native.ts
+      - src/crypto/ECDSA/sign.wasm.ts
+      - src/crypto/ECDSA/verify.native.ts
+      - src/crypto/ECDSA/verify.wasm.ts
+      - src/crypto/ECDSA/getPublicKey.native.ts
+      - src/crypto/ECDSA/getPublicKey.wasm.ts
+      - src/crypto/ECDSA/recover.native.ts
+      - src/crypto/ECDSA/recover.wasm.ts
+  - task: Updated crypto/index.ts to export from new ECDSA module
+    files: [src/crypto/index.ts]
+  - task: Fixed Keccak256/Pedersen/Poseidon three-backend pattern (from previous session)
+    files:
+      - src/crypto/Keccak256/
+      - src/crypto/Pedersen/
+      - src/crypto/Poseidon/
+
+blockers:
+  - "@scure/starknet version conflict: 1.1.0 vs 2.0.0 in node_modules"
+
+questions:
+  - "Why does cryptoReady() return true in index.test.ts when neither native nor WASM should be loaded?"
+  - "Should we force @scure/starknet@2.0.0 in package.json with exact version?"
+
+decisions:
+  - verify_accepts_both: "Pure JS verify() accepts both full 65-byte pubKey and X-coordinate only - uses signature recovery to match X"
+  - recover_throws_not_implemented: "Pure JS recover() throws 'Not implemented' to match existing test expectations"
+  - store_raw_signature: "sign() returns {r, s, _raw} where _raw is original @scure Signature for verify compatibility"
+
+findings:
+  - "@scure/starknet v1.1.0 has different API than v2.0.0 - recoverPublicKey expects Uint8Array not string"
+  - "Felt252Type is branded Uint8Array, not bigint - need toBigIntInternal() to convert for @scure"
+  - "Two @scure/starknet versions in node_modules causing module resolution issues"
+
+worked:
+  - "Using toBigIntInternal() to convert Felt252Type to bigint for @scure/starknet"
+  - "Trying both recovery values (0,1) for X-coordinate only verification"
+  - "Using hexToBytes() for v1.x recoverPublicKey compatibility"
+
+failed:
+  - "Relying on sig.recovery from sign() - undefined in some module configurations"
+  - "Importing ProjectivePoint from @scure/starknet - not available in all versions"
+
+next:
+  - "Debug why crypto/index.test.ts 'recover works' test fails - cryptoReady() may be true unexpectedly"
+  - "Consider forcing @scure/starknet to exact 2.0.0 version"
+  - "Run full test suite and fix any remaining failures"
+  - "Commit ECDSA refactoring once all tests pass"
+  - "Update docs for ECDSA three-backend pattern"
+
+files:
+  created:
+    - src/crypto/ECDSA/types.ts
+    - src/crypto/ECDSA/sign.js
+    - src/crypto/ECDSA/verify.js
+    - src/crypto/ECDSA/getPublicKey.js
+    - src/crypto/ECDSA/recover.js
+    - src/crypto/ECDSA/index.ts
+    - src/crypto/ECDSA/ECDSA.test.ts
+    - src/crypto/ECDSA/sign.native.ts
+    - src/crypto/ECDSA/sign.wasm.ts
+    - src/crypto/ECDSA/verify.native.ts
+    - src/crypto/ECDSA/verify.wasm.ts
+    - src/crypto/ECDSA/getPublicKey.native.ts
+    - src/crypto/ECDSA/getPublicKey.wasm.ts
+    - src/crypto/ECDSA/recover.native.ts
+    - src/crypto/ECDSA/recover.wasm.ts
+  modified:
+    - src/crypto/index.ts
+    - src/crypto/namespaces/StarkCurve.ts
+    - docs/typescript/getting-started/runtime-implementations.mdx
+    - docs/typescript/getting-started/quickstart.mdx

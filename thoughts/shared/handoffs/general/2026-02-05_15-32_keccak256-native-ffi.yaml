@@ -1,0 +1,58 @@
+---
+session: kundera-crypto-improvements
+date: 2026-02-05
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Add Keccak256 native FFI backend and fix monorepo library detection
+now: All tasks complete - native FFI now works for all crypto modules
+test: pnpm --filter kundera-ts test:run
+
+done_this_session:
+  - task: Fixed native library path detection for monorepo
+    files: [packages/kundera-ts/src/native/platform.ts]
+  - task: Added standard keccak256 FFI function to Rust (full 32 bytes)
+    files: [lib/starknet-crypto-ffi/src/lib.rs]
+  - task: Wired Keccak256 native backend to real FFI
+    files: [packages/kundera-ts/src/crypto/Keccak256/hash.native.ts]
+  - task: Updated FFI bindings for Bun and Node
+    files: [packages/kundera-ts/src/native/bun-ffi.ts, packages/kundera-ts/src/native/node-ffi.ts, packages/kundera-ts/src/native/loader.ts]
+  - task: Regenerated API docs
+    files: [docs/generated-api/*]
+
+blockers: []
+
+questions: []
+
+decisions:
+  - monorepo_path: "Added ../../target/release/ to search paths - tests run from packages/kundera-ts/ but lib builds at repo root"
+  - keccak_separation: "Added separate keccak256 (full 32 bytes) and snKeccak256 (250-bit truncated) functions"
+  - sha3_crate: "Used existing sha3 crate for keccak256 - can swap to keccak-asm later for perf if needed"
+
+findings:
+  - "Native tests were skipping because process.cwd() in packages dir couldn't find lib at repo root"
+  - "Keccak256 native backend was a stub delegating to pure JS - now uses real FFI"
+  - "Both Bun and Node FFI backends needed keccak256 symbol definitions"
+
+worked:
+  - "Adding ../../target/release/ path fixed native lib detection immediately"
+  - "Rust test vectors for keccak256 verify correctness (hello -> 0x1c8aff...)"
+
+failed: []
+
+next:
+  - "Consider replacing sha3 with keccak-asm for better performance"
+  - "Integration tests with real Starknet node"
+  - "Transaction building/signing for full account abstraction"
+
+files:
+  created: []
+  modified:
+    - lib/starknet-crypto-ffi/src/lib.rs
+    - packages/kundera-ts/src/native/platform.ts
+    - packages/kundera-ts/src/native/bun-ffi.ts
+    - packages/kundera-ts/src/native/node-ffi.ts
+    - packages/kundera-ts/src/native/loader.ts
+    - packages/kundera-ts/src/crypto/Keccak256/hash.native.ts
+    - docs/generated-api/*

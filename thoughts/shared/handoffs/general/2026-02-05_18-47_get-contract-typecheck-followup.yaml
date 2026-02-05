@@ -1,0 +1,65 @@
+---
+session: general
+date: 2026-02-05
+status: partial
+outcome: FAILED
+---
+
+goal: Make typecheck reliable again and ensure docs skill tests (especially get-contract) reflect the current ABI typing approach
+now: Temporary workaround added (`bun-types` in `packages/kundera-ts/tsconfig.json`), but this is not stable and masks core typecheck ownership boundaries
+test: pnpm --filter @kundera-sn/kundera-ts typecheck
+
+done_this_session:
+  - task: Re-ran package typecheck to verify current failure mode
+    files: [packages/kundera-ts/tsconfig.json]
+  - task: Confirmed `get-contract` runtime test no longer performs typed call assertions directly
+    files: [packages/kundera-ts/docs/skills/get-contract.test.ts]
+  - task: Captured current blockers after `bun-types` workaround
+    files: [packages/kundera-ts/tsconfig.json]
+
+blockers:
+  - "Main typecheck is now failing in third-party Bun/Node ambient types (`bun-types`, `@types/node`) before it can serve as a reliable guardrail for project typing changes"
+  - "Main typecheck also includes many unrelated `src/**/*.test.ts` failures, so targeted regressions (like docs skill ABI typing drift) are easy to miss"
+  - "Current runtime test file `packages/kundera-ts/docs/skills/get-contract.test.ts` is not validating the ABI type-contract directly"
+
+questions:
+  - "Should `packages/kundera-ts/docs/skills/get-contract.test.ts` stay runtime-only and keep type assertions in `*.typecheck.ts`, or should it move to Vitest `expectTypeOf` checks?"
+  - "Do we want one strict typecheck lane for shipping code (`src` + docs skill source) and a separate lane for tests during the migration?"
+
+decisions:
+  - bun_types_workaround: "Accepted as temporary only; remove after Bun-test to Vitest migration."
+  - migration_direction: "Follow-up required to migrate away from Bun test imports (`bun:test`) toward Vitest-based tests."
+  - typecheck_scope: "Need explicit separation between production/docs-skill typecheck and test-file typecheck."
+
+findings:
+  - "Current path in repo is `packages/kundera-ts/docs/skills/get-contract.test.ts` (not `docs/typescript/skills/...`)."
+  - "With the current `tsconfig.json`, `pnpm --filter @kundera-sn/kundera-ts typecheck` surfaces many unrelated test and ambient-type failures, obscuring targeted regressions."
+  - "The highest-signal failure for this thread is not currently isolated by command structure; commands need to be split by ownership/scope."
+
+worked:
+  - "Handoff format consistency with prior `thoughts/shared/handoffs/general/*.yaml` files."
+  - "Reproduced the exact failing command and captured why it is currently low-signal."
+
+failed:
+  - "Using a single `tsc --noEmit` lane as both production and test/type-ecosystem validation."
+  - "Relying on `bun-types` in the main package tsconfig as anything other than a temporary bridge."
+
+next:
+  - "Create `packages/kundera-ts/tsconfig.typecheck.json` for shipping code only: include `src/**/*.ts` (exclude tests), `docs/skills/**/*.ts` (exclude `*.test.ts`), keep `skipLibCheck: false`."
+  - "Create `packages/kundera-ts/tsconfig.typecheck.tests.json` for test files as a separate lane while migration is in progress."
+  - "Update `packages/kundera-ts/package.json` scripts:
+    1) `typecheck` -> shipping lane only (high signal, must pass)
+    2) `typecheck:tests` -> test lane (can be incremental during migration)."
+  - "Adapt `packages/kundera-ts/docs/skills/get-contract.test.ts` to current ABI approach:
+    1) keep runtime assertions runtime-only
+    2) move/keep type assertions in a dedicated typecheck file or Vitest `expectTypeOf` equivalent."
+  - "Migrate docs + src tests from `bun:test` to Vitest and remove temporary `bun-types` dependency from main tsconfig when complete."
+  - "After lane split, add a focused guard command for skills ABI typing (e.g. dedicated docs-skill typecheck script) so regressions like TS2322 are caught immediately."
+
+files:
+  referenced:
+    - packages/kundera-ts/tsconfig.json
+    - packages/kundera-ts/docs/skills/get-contract.test.ts
+    - packages/kundera-ts/docs/skills/get-contract.typecheck.ts
+  created:
+    - thoughts/shared/handoffs/general/2026-02-05_18-47_get-contract-typecheck-followup.yaml
