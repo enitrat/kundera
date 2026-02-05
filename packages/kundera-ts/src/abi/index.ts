@@ -62,6 +62,18 @@ export type {
 // Result helpers
 export { ok, err, abiError } from './types.js';
 
+// Type utilities for building typed contract wrappers (from abi-wan-kanabi)
+export type {
+  Abi as KanabiAbi,
+  ExtractAbiFunctionNames,
+  ExtractAbiFunction,
+  ExtractArgs,
+  FunctionRet,
+  FunctionArgs,
+  ContractFunctions,
+  StringToPrimitiveType,
+} from 'abi-wan-kanabi/kanabi';
+
 // Parsing
 export {
   parseAbi,

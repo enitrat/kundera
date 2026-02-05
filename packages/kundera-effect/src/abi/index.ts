@@ -97,6 +97,18 @@ const compileCalldataBaseUntyped = compileCalldataBase as (
   args: CairoValue[] | Record<string, CairoValue>
 ) => Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }, AbiError>;
 
+const decodeOutputBaseUntyped = decodeOutputBase as (
+  abi: Abi,
+  fnName: string,
+  output: bigint[]
+) => Result<CairoValue[], AbiError>;
+
+const decodeOutputObjectBaseUntyped = decodeOutputObjectBase as (
+  abi: Abi,
+  fnName: string,
+  output: bigint[]
+) => Result<DecodedStruct, AbiError>;
+
 export type {
   Abi,
   AbiError,
@@ -251,9 +263,9 @@ export const decodeCalldataObject = (
   calldata: bigint[]
 ) => fromResult(decodeCalldataObjectBase(abi, fnName, calldata));
 export const decodeOutput = (abi: Abi, fnName: string, output: bigint[]) =>
-  fromResult(decodeOutputBase(abi, fnName, output));
+  fromResult(decodeOutputBaseUntyped(abi, fnName, output));
 export const decodeOutputObject = (abi: Abi, fnName: string, output: bigint[]) =>
-  fromResult(decodeOutputObjectBase(abi, fnName, output));
+  fromResult(decodeOutputObjectBaseUntyped(abi, fnName, output));
 export function compileCalldata<
   TAbi extends KanabiAbi,
   TFunctionName extends ExtractAbiFunctionNames<TAbi>

@@ -17,6 +17,7 @@ import type {
   ExtractAbiFunction,
   ExtractAbiFunctionNames,
   ExtractArgs,
+  FunctionRet,
 } from 'abi-wan-kanabi/kanabi';
 import { parseAbi, getFunction, computeSelector } from './parse.js';
 import { encodeArgs, encodeArgsObject } from './encode.js';
@@ -173,8 +174,16 @@ export function decodeCalldataObject(
  * @param abi - Contract ABI
  * @param fnName - Function name or selector
  * @param output - Return data to decode
- * @returns Decoded return values as array, or error
+ * @returns Decoded return values, or error
  */
+export function decodeOutput<
+  TAbi extends KanabiAbi,
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+>(
+  abi: TAbi,
+  fnName: TFunctionName,
+  output: bigint[]
+): Result<FunctionRet<TAbi, TFunctionName>>;
 export function decodeOutput(
   abi: Abi,
   fnName: string,
@@ -205,6 +214,14 @@ export function decodeOutput(
  * @param output - Return data to decode
  * @returns Decoded return values as object with output names, or error
  */
+export function decodeOutputObject<
+  TAbi extends KanabiAbi,
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+>(
+  abi: TAbi,
+  fnName: TFunctionName,
+  output: bigint[]
+): Result<{ [key: string]: FunctionRet<TAbi, TFunctionName> }>;
 export function decodeOutputObject(
   abi: Abi,
   fnName: string,
