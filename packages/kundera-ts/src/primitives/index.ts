@@ -72,6 +72,10 @@ export {
   decodeShortString,
 } from './ShortString/index.js';
 
+// ByteArray
+export type { ByteArrayType, ByteArrayInput, ByteArrayData } from './ByteArray/index.js';
+export { ByteArray, BYTES_PER_WORD, BYTE_ARRAY_MAGIC } from './ByteArray/index.js';
+
 // Aliases for API ergonomics
 export const Felt = Felt252;
 export const Address = ContractAddress;
