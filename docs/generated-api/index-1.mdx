@@ -18,9 +18,51 @@ Architecture: TypeScript API → Rust FFI (starknet-crypto)
 
 ## Interfaces
 
+### ByteArrayData
+
+Defined in: [primitives/ByteArray/types.ts:16](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ByteArray/types.ts#L16)
+
+ByteArray - Variable-length byte sequence
+
+Matches Cairo's ByteArray: an array of 31-byte words plus a pending partial word.
+Used for strings and arbitrary byte data in Starknet.
+
+Structure:
+- data: Array of full 31-byte words (as Felt252)
+- pendingWord: Partial word with < 31 bytes (as Felt252)
+- pendingWordLen: Number of bytes in pendingWord (0-30)
+
+#### Properties
+
+##### data
+
+> `readonly` **data**: readonly `bigint`[]
+
+Defined in: [primitives/ByteArray/types.ts:18](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ByteArray/types.ts#L18)
+
+Full 31-byte words, each stored as bigint
+
+##### pendingWord
+
+> `readonly` **pendingWord**: `bigint`
+
+Defined in: [primitives/ByteArray/types.ts:20](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ByteArray/types.ts#L20)
+
+Partial word (< 31 bytes) as bigint
+
+##### pendingWordLen
+
+> `readonly` **pendingWordLen**: `number`
+
+Defined in: [primitives/ByteArray/types.ts:22](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ByteArray/types.ts#L22)
+
+Number of bytes in pendingWord (0-30)
+
+***
+
 ### FeltMethods
 
-Defined in: [primitives/Felt252/types.ts:5](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/types.ts#L5)
+Defined in: [primitives/Felt252/types.ts:5](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/types.ts#L5)
 
 #### Methods
 
@@ -28,7 +70,7 @@ Defined in: [primitives/Felt252/types.ts:5](https://github.com/enitrat/kundera/b
 
 > **equals**(`other`): `boolean`
 
-Defined in: [primitives/Felt252/types.ts:10](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/types.ts#L10)
+Defined in: [primitives/Felt252/types.ts:10](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/types.ts#L10)
 
 ###### Parameters
 
@@ -44,7 +86,7 @@ Defined in: [primitives/Felt252/types.ts:10](https://github.com/enitrat/kundera/
 
 > **isValid**(): `boolean`
 
-Defined in: [primitives/Felt252/types.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/types.ts#L8)
+Defined in: [primitives/Felt252/types.ts:8](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/types.ts#L8)
 
 ###### Returns
 
@@ -54,7 +96,7 @@ Defined in: [primitives/Felt252/types.ts:8](https://github.com/enitrat/kundera/b
 
 > **isZero**(): `boolean`
 
-Defined in: [primitives/Felt252/types.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/types.ts#L9)
+Defined in: [primitives/Felt252/types.ts:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/types.ts#L9)
 
 ###### Returns
 
@@ -64,7 +106,7 @@ Defined in: [primitives/Felt252/types.ts:9](https://github.com/enitrat/kundera/b
 
 > **toBigInt**(): `bigint`
 
-Defined in: [primitives/Felt252/types.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/types.ts#L7)
+Defined in: [primitives/Felt252/types.ts:7](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/types.ts#L7)
 
 ###### Returns
 
@@ -74,7 +116,7 @@ Defined in: [primitives/Felt252/types.ts:7](https://github.com/enitrat/kundera/b
 
 > **toHex**(): `string`
 
-Defined in: [primitives/Felt252/types.ts:6](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/types.ts#L6)
+Defined in: [primitives/Felt252/types.ts:6](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/types.ts#L6)
 
 ###### Returns
 
@@ -82,11 +124,29 @@ Defined in: [primitives/Felt252/types.ts:6](https://github.com/enitrat/kundera/b
 
 ## Type Aliases
 
+### ByteArrayInput
+
+> **ByteArrayInput** = [`ByteArrayType`](#bytearraytype) \| `Uint8Array` \| `string`
+
+Defined in: [primitives/ByteArray/types.ts:30](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ByteArray/types.ts#L30)
+
+Input types that can be converted to ByteArray
+
+***
+
+### ByteArrayType
+
+> **ByteArrayType** = `Brand`\<[`ByteArrayData`](#bytearraydata), `"ByteArray"`\>
+
+Defined in: [primitives/ByteArray/types.ts:25](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ByteArray/types.ts#L25)
+
+***
+
 ### ClassHashType
 
 > **ClassHashType** = `Brand`\<`Uint8Array`, `"ClassHash"`\> & [`FeltMethods`](#feltmethods)
 
-Defined in: [primitives/ClassHash/types.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ClassHash/types.ts#L9)
+Defined in: [primitives/ClassHash/types.ts:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ClassHash/types.ts#L9)
 
 ClassHash - Contract class identifier
 
@@ -96,7 +156,7 @@ ClassHash - Contract class identifier
 
 > **ContractAddressType** = `Brand`\<`Uint8Array`, `"ContractAddress"`\> & [`FeltMethods`](#feltmethods)
 
-Defined in: [primitives/ContractAddress/types.ts:10](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ContractAddress/types.ts#L10)
+Defined in: [primitives/ContractAddress/types.ts:10](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ContractAddress/types.ts#L10)
 
 ContractAddress - Starknet contract address
 Must be < 2^251
@@ -107,7 +167,7 @@ Must be < 2^251
 
 > **EthAddressType** = `Brand`\<`Uint8Array`, `"EthAddress"`\> & [`FeltMethods`](#feltmethods)
 
-Defined in: [primitives/EthAddress/types.ts:10](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/EthAddress/types.ts#L10)
+Defined in: [primitives/EthAddress/types.ts:10](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/EthAddress/types.ts#L10)
 
 EthAddress - L1 Ethereum address used in L1-L2 messaging
 Must be < 2^160
@@ -118,7 +178,7 @@ Must be < 2^160
 
 > **Felt252Input** = [`Felt252Type`](#felt252type) \| `Uint8Array` \| `string` \| `bigint` \| `number`
 
-Defined in: [primitives/Felt252/types.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/types.ts#L24)
+Defined in: [primitives/Felt252/types.ts:24](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/types.ts#L24)
 
 Input types that can be converted to Felt252
 
@@ -128,7 +188,7 @@ Input types that can be converted to Felt252
 
 > **Felt252Type** = `Brand`\<`Uint8Array`, `"Felt252"`\> & [`FeltMethods`](#feltmethods)
 
-Defined in: [primitives/Felt252/types.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/types.ts#L19)
+Defined in: [primitives/Felt252/types.ts:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/types.ts#L19)
 
 Felt252 - 252-bit field element
 
@@ -141,7 +201,7 @@ finite field F_p where p = 2^251 + 17*2^192 + 1.
 
 > **Int128Input** = [`Int128Type`](#int128type) \| `bigint` \| `number` \| `string`
 
-Defined in: [primitives/Int128/types.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/types.ts#L19)
+Defined in: [primitives/Int128/types.ts:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int128/types.ts#L19)
 
 Input types that can be converted to Int128
 
@@ -151,7 +211,7 @@ Input types that can be converted to Int128
 
 > **Int128Type** = `Brand`\<`bigint`, `"Int128"`\>
 
-Defined in: [primitives/Int128/types.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/types.ts#L14)
+Defined in: [primitives/Int128/types.ts:14](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int128/types.ts#L14)
 
 Int128 - 128-bit signed integer
 
@@ -167,7 +227,7 @@ NOT two's complement. Use toFelt() for Cairo-compatible encoding.
 
 > **Int16Input** = [`Int16Type`](#int16type) \| `bigint` \| `number` \| `string`
 
-Defined in: [primitives/Int16/types.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/types.ts#L19)
+Defined in: [primitives/Int16/types.ts:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/types.ts#L19)
 
 Input types that can be converted to Int16
 
@@ -177,7 +237,7 @@ Input types that can be converted to Int16
 
 > **Int16Type** = `Brand`\<`bigint`, `"Int16"`\>
 
-Defined in: [primitives/Int16/types.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/types.ts#L14)
+Defined in: [primitives/Int16/types.ts:14](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/types.ts#L14)
 
 Int16 - 16-bit signed integer
 
@@ -193,7 +253,7 @@ NOT two's complement. Use toFelt() for Cairo-compatible encoding.
 
 > **Int32Input** = [`Int32Type`](#int32type) \| `bigint` \| `number` \| `string`
 
-Defined in: [primitives/Int32/types.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/types.ts#L19)
+Defined in: [primitives/Int32/types.ts:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/types.ts#L19)
 
 Input types that can be converted to Int32
 
@@ -203,7 +263,7 @@ Input types that can be converted to Int32
 
 > **Int32Type** = `Brand`\<`bigint`, `"Int32"`\>
 
-Defined in: [primitives/Int32/types.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/types.ts#L14)
+Defined in: [primitives/Int32/types.ts:14](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/types.ts#L14)
 
 Int32 - 32-bit signed integer
 
@@ -219,7 +279,7 @@ NOT two's complement. Use toFelt() for Cairo-compatible encoding.
 
 > **Int64Input** = [`Int64Type`](#int64type) \| `bigint` \| `number` \| `string`
 
-Defined in: [primitives/Int64/types.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/types.ts#L19)
+Defined in: [primitives/Int64/types.ts:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int64/types.ts#L19)
 
 Input types that can be converted to Int64
 
@@ -229,7 +289,7 @@ Input types that can be converted to Int64
 
 > **Int64Type** = `Brand`\<`bigint`, `"Int64"`\>
 
-Defined in: [primitives/Int64/types.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/types.ts#L14)
+Defined in: [primitives/Int64/types.ts:14](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int64/types.ts#L14)
 
 Int64 - 64-bit signed integer
 
@@ -245,7 +305,7 @@ NOT two's complement. Use toFelt() for Cairo-compatible encoding.
 
 > **Int8Input** = [`Int8Type`](#int8type) \| `bigint` \| `number` \| `string`
 
-Defined in: [primitives/Int8/types.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/types.ts#L19)
+Defined in: [primitives/Int8/types.ts:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int8/types.ts#L19)
 
 Input types that can be converted to Int8
 
@@ -255,7 +315,7 @@ Input types that can be converted to Int8
 
 > **Int8Type** = `Brand`\<`bigint`, `"Int8"`\>
 
-Defined in: [primitives/Int8/types.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/types.ts#L14)
+Defined in: [primitives/Int8/types.ts:14](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int8/types.ts#L14)
 
 Int8 - 8-bit signed integer
 
@@ -271,7 +331,7 @@ NOT two's complement. Use toFelt() for Cairo-compatible encoding.
 
 > **StorageKeyType** = `Brand`\<`Uint8Array`, `"StorageKey"`\> & [`FeltMethods`](#feltmethods)
 
-Defined in: [primitives/StorageKey/types.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/StorageKey/types.ts#L9)
+Defined in: [primitives/StorageKey/types.ts:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/StorageKey/types.ts#L9)
 
 StorageKey - Storage slot address
 
@@ -281,7 +341,7 @@ StorageKey - Storage slot address
 
 > **Uint128Type** = `Brand`\<`bigint`, `"Uint128"`\>
 
-Defined in: [primitives/Uint128/types.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/types.ts#L9)
+Defined in: [primitives/Uint128/types.ts:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Uint128/types.ts#L9)
 
 Uint128 - 128-bit unsigned integer
 Range: 0 to 2^128 - 1
@@ -292,7 +352,7 @@ Range: 0 to 2^128 - 1
 
 > **Uint16Type** = `Brand`\<`bigint`, `"Uint16"`\>
 
-Defined in: [primitives/Uint16/types.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/types.ts#L9)
+Defined in: [primitives/Uint16/types.ts:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Uint16/types.ts#L9)
 
 Uint16 - 16-bit unsigned integer
 Range: 0 to 65535
@@ -303,7 +363,7 @@ Range: 0 to 65535
 
 > **Uint256Type** = `Brand`\<`bigint`, `"Uint256"`\>
 
-Defined in: [primitives/Uint256/types.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/types.ts#L12)
+Defined in: [primitives/Uint256/types.ts:12](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Uint256/types.ts#L12)
 
 Uint256 - 256-bit unsigned integer
 Range: 0 to 2^256 - 1
@@ -317,7 +377,7 @@ where value = low + high * 2^128
 
 > **Uint32Type** = `Brand`\<`bigint`, `"Uint32"`\>
 
-Defined in: [primitives/Uint32/types.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/types.ts#L9)
+Defined in: [primitives/Uint32/types.ts:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Uint32/types.ts#L9)
 
 Uint32 - 32-bit unsigned integer
 Range: 0 to 4294967295
@@ -328,7 +388,7 @@ Range: 0 to 4294967295
 
 > **Uint64Type** = `Brand`\<`bigint`, `"Uint64"`\>
 
-Defined in: [primitives/Uint64/types.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/types.ts#L9)
+Defined in: [primitives/Uint64/types.ts:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Uint64/types.ts#L9)
 
 Uint64 - 64-bit unsigned integer
 Range: 0 to 18446744073709551615
@@ -339,18 +399,150 @@ Range: 0 to 18446744073709551615
 
 > **Uint8Type** = `Brand`\<`bigint`, `"Uint8"`\>
 
-Defined in: [primitives/Uint8/types.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/types.ts#L9)
+Defined in: [primitives/Uint8/types.ts:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Uint8/types.ts#L9)
 
 Uint8 - 8-bit unsigned integer
 Range: 0 to 255
 
 ## Variables
 
+### BYTE\_ARRAY\_MAGIC
+
+> `const` **BYTE\_ARRAY\_MAGIC**: `1997209042069643135709344952807065910992472029923670688473712229447419591075n` = `0x46a6158a16a947e5916b2a2ca68501a45e93d7110e81aa2d6438b1c57c879a3n`
+
+Defined in: [primitives/ByteArray/constants.js:5](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ByteArray/constants.js#L5)
+
+Magic constant for ByteArray serialization (from Cairo)
+
+***
+
+### ByteArray
+
+> `const` **ByteArray**: `object`
+
+Defined in: [primitives/ByteArray/index.ts:32](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ByteArray/index.ts#L32)
+
+ByteArray namespace with all functions
+
+#### Type Declaration
+
+##### BYTE\_ARRAY\_MAGIC
+
+> **BYTE\_ARRAY\_MAGIC**: `1997209042069643135709344952807065910992472029923670688473712229447419591075n`
+
+Magic constant for ByteArray serialization (from Cairo)
+
+##### BYTES\_PER\_WORD
+
+> **BYTES\_PER\_WORD**: `31`
+
+Number of bytes in a full word
+
+##### from()
+
+> `readonly` **from**: (`bytes`) => [`ByteArrayType`](#bytearraytype) = `_from`
+
+Create ByteArray from Uint8Array
+
+Splits the input into 31-byte words and a pending partial word.
+
+###### Parameters
+
+###### bytes
+
+`Uint8Array`\<`ArrayBufferLike`\>
+
+Input bytes
+
+###### Returns
+
+[`ByteArrayType`](#bytearraytype)
+
+##### fromString()
+
+> `readonly` **fromString**: (`str`) => [`ByteArrayType`](#bytearraytype) = `_fromString`
+
+Create ByteArray from UTF-8 string
+
+###### Parameters
+
+###### str
+
+`string`
+
+Input string
+
+###### Returns
+
+[`ByteArrayType`](#bytearraytype)
+
+##### length()
+
+> `readonly` **length**: (`byteArray`) => `number` = `_length`
+
+Get the total byte length of a ByteArray
+
+###### Parameters
+
+###### byteArray
+
+[`ByteArrayType`](#bytearraytype)
+
+###### Returns
+
+`number`
+
+##### toBytes()
+
+> `readonly` **toBytes**: (`byteArray`) => `Uint8Array`\<`ArrayBufferLike`\> = `_toBytes`
+
+Convert ByteArray to Uint8Array
+
+###### Parameters
+
+###### byteArray
+
+[`ByteArrayType`](#bytearraytype)
+
+###### Returns
+
+`Uint8Array`\<`ArrayBufferLike`\>
+
+##### toString()
+
+> `readonly` **toString**: (`byteArray`) => `string` = `_toString`
+
+Convert ByteArray to UTF-8 string
+
+###### Parameters
+
+###### byteArray
+
+[`ByteArrayType`](#bytearraytype)
+
+###### Returns
+
+`string`
+
+***
+
+### BYTES\_PER\_WORD
+
+> `const` **BYTES\_PER\_WORD**: `31` = `31`
+
+Defined in: [primitives/ByteArray/constants.js:2](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ByteArray/constants.js#L2)
+
+Number of bytes in a full word
+
+***
+
 ### ClassHash
 
 > `const` **ClassHash**: (`felt`) => [`ClassHashType`](#classhashtype) & `object`
 
-Defined in: [primitives/ClassHash/ClassHash.ts:3](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ClassHash/ClassHash.ts#L3)
+Defined in: [primitives/ClassHash/ClassHash.js:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ClassHash/ClassHash.js#L9)
+
+ClassHash namespace with constructor
 
 #### Type Declaration
 
@@ -376,7 +568,9 @@ Create a ClassHash from Felt252 (with validation)
 
 > `const` **ContractAddress**: (`felt`) => [`ContractAddressType`](#contractaddresstype) & `object`
 
-Defined in: [primitives/ContractAddress/ContractAddress.ts:5](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ContractAddress/ContractAddress.ts#L5)
+Defined in: [primitives/ContractAddress/ContractAddress.js:13](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ContractAddress/ContractAddress.js#L13)
+
+ContractAddress namespace with constructor and utilities
 
 #### Type Declaration
 
@@ -400,6 +594,8 @@ Create a ContractAddress from Felt252 (with validation)
 
 > **isValid**: (`felt`) => `boolean`
 
+Check if input can be a valid contract address
+
 ###### Parameters
 
 ###### felt
@@ -412,7 +608,7 @@ Create a ContractAddress from Felt252 (with validation)
 
 ##### MAX
 
-> **MAX**: `bigint` = `MAX_CONTRACT_ADDRESS`
+> **MAX**: `bigint`
 
 ***
 
@@ -420,7 +616,9 @@ Create a ContractAddress from Felt252 (with validation)
 
 > `const` **EthAddress**: (`felt`) => [`EthAddressType`](#ethaddresstype) & `object`
 
-Defined in: [primitives/EthAddress/EthAddress.ts:5](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/EthAddress/EthAddress.ts#L5)
+Defined in: [primitives/EthAddress/EthAddress.js:13](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/EthAddress/EthAddress.js#L13)
+
+EthAddress namespace with constructor and utilities
 
 #### Type Declaration
 
@@ -444,6 +642,8 @@ Create an EthAddress from Felt252 (with validation)
 
 > **isValid**: (`felt`) => `boolean`
 
+Check if a value is a valid EthAddress (< 2^160)
+
 ###### Parameters
 
 ###### felt
@@ -456,7 +656,7 @@ Create an EthAddress from Felt252 (with validation)
 
 ##### MAX
 
-> **MAX**: `bigint` = `MAX_ETH_ADDRESS`
+> **MAX**: `bigint`
 
 ***
 
@@ -464,7 +664,7 @@ Create an EthAddress from Felt252 (with validation)
 
 > `const` **Felt252**: (`value`) => [`Felt252Type`](#felt252type) & `object`
 
-Defined in: [primitives/Felt252/Felt252.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/Felt252.ts#L20)
+Defined in: [primitives/Felt252/Felt252.js:38](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/Felt252.js#L38)
 
 Create a Felt252 from various input types
 
@@ -568,6 +768,8 @@ Hex-encoded felt representation (unpadded)
 
 > **from**: (`value`) => [`Felt252Type`](#felt252type)
 
+Create Felt252 from various input types
+
 ###### Parameters
 
 ###### value
@@ -581,6 +783,8 @@ Hex-encoded felt representation (unpadded)
 ##### fromBigInt()
 
 > **fromBigInt**: (`value`) => [`Felt252Type`](#felt252type)
+
+Create Felt252 from bigint
 
 ###### Parameters
 
@@ -596,11 +800,13 @@ Hex-encoded felt representation (unpadded)
 
 > **fromBytes**: (`bytes`) => [`Felt252Type`](#felt252type)
 
+Create Felt252 from Uint8Array bytes
+
 ###### Parameters
 
 ###### bytes
 
-`Uint8Array`
+`Uint8Array`\<`ArrayBufferLike`\>
 
 ###### Returns
 
@@ -609,6 +815,8 @@ Hex-encoded felt representation (unpadded)
 ##### fromHex()
 
 > **fromHex**: (`hex`) => [`Felt252Type`](#felt252type)
+
+Create Felt252 from hex string
 
 ###### Parameters
 
@@ -652,16 +860,13 @@ Hex-encoded felt representation (unpadded)
 
 > **MAX\_SHORT\_STRING\_LENGTH**: `number`
 
-Maximum length for short strings (31 characters)
-Short strings are ASCII strings that fit in a single felt252
-
 ##### ONE
 
-> **ONE**: [`Felt252Type`](#felt252type) = `feltOne`
+> **ONE**: [`Felt252Type`](#felt252type)
 
 ##### PRIME
 
-> **PRIME**: `bigint` = `FIELD_PRIME`
+> **PRIME**: `bigint`
 
 ##### toBigInt()
 
@@ -693,19 +898,19 @@ Short strings are ASCII strings that fit in a single felt252
 
 ##### TWO
 
-> **TWO**: [`Felt252Type`](#felt252type) = `feltTwo`
+> **TWO**: [`Felt252Type`](#felt252type)
 
 ##### ZERO
 
-> **ZERO**: [`Felt252Type`](#felt252type) = `feltZero`
+> **ZERO**: [`Felt252Type`](#felt252type)
 
 ***
 
 ### FIELD\_PRIME
 
-> `const` **FIELD\_PRIME**: `3618502788666131213697322783095070105623107215331596699973092056135872020481n` = `0x800000000000011000000000000000000000000000000000000000000000001n`
+> `const` **FIELD\_PRIME**: `bigint` = `0x800000000000011000000000000000000000000000000000000000000000001n`
 
-Defined in: [primitives/Felt252/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/constants.ts#L4)
+Defined in: [primitives/Felt252/constants.js:5](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/constants.js#L5)
 
 Field prime P = 2^251 + 17*2^192 + 1
 
@@ -715,7 +920,7 @@ Field prime P = 2^251 + 17*2^192 + 1
 
 > `const` **Int128**: (`value`) => [`Int128Type`](#int128type) & `object`
 
-Defined in: [primitives/Int128/Int128.ts:17](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/Int128.ts#L17)
+Defined in: [primitives/Int128/Int128.js:16](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int128/Int128.js#L16)
 
 Utility functions for Int128 signed integers.
 
@@ -763,11 +968,11 @@ A branded Int128Type
 
 ###### Throws
 
-Int128RangeError if value is outside [MIN, MAX]
+if value is outside [MIN, MAX]
 
 ###### Throws
 
-Int128ParseError if string cannot be parsed
+if string cannot be parsed
 
 ##### fromFelt()
 
@@ -798,7 +1003,7 @@ The signed Int128 value
 
 ###### Throws
 
-Int128RangeError if the decoded value is outside Int128 range
+if the decoded value is outside Int128 range
 
 ##### isNegative()
 
@@ -971,7 +1176,7 @@ Hexadecimal string (e.g., "0xff" or "-0x1")
 
 > `const` **Int16**: (`value`) => [`Int16Type`](#int16type) & `object`
 
-Defined in: [primitives/Int16/Int16.ts:17](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/Int16.ts#L17)
+Defined in: [primitives/Int16/Int16.js:16](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/Int16.js#L16)
 
 Utility functions for Int16 signed integers.
 
@@ -1019,11 +1224,11 @@ A branded Int16Type
 
 ###### Throws
 
-Int16RangeError if value is outside [MIN, MAX]
+if value is outside [MIN, MAX]
 
 ###### Throws
 
-Int16ParseError if string cannot be parsed
+if string cannot be parsed
 
 ##### fromFelt()
 
@@ -1054,7 +1259,7 @@ The signed Int16 value
 
 ###### Throws
 
-Int16RangeError if the decoded value is outside Int16 range
+if the decoded value is outside Int16 range
 
 ##### isNegative()
 
@@ -1227,7 +1432,7 @@ Hexadecimal string (e.g., "0xff" or "-0x1")
 
 > `const` **Int32**: (`value`) => [`Int32Type`](#int32type) & `object`
 
-Defined in: [primitives/Int32/Int32.ts:17](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/Int32.ts#L17)
+Defined in: [primitives/Int32/Int32.js:16](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/Int32.js#L16)
 
 Utility functions for Int32 signed integers.
 
@@ -1275,11 +1480,11 @@ A branded Int32Type
 
 ###### Throws
 
-Int32RangeError if value is outside [MIN, MAX]
+if value is outside [MIN, MAX]
 
 ###### Throws
 
-Int32ParseError if string cannot be parsed
+if string cannot be parsed
 
 ##### fromFelt()
 
@@ -1310,7 +1515,7 @@ The signed Int32 value
 
 ###### Throws
 
-Int32RangeError if the decoded value is outside Int32 range
+if the decoded value is outside Int32 range
 
 ##### isNegative()
 
@@ -1483,7 +1688,7 @@ Hexadecimal string (e.g., "0xff" or "-0x1")
 
 > `const` **Int64**: (`value`) => [`Int64Type`](#int64type) & `object`
 
-Defined in: [primitives/Int64/Int64.ts:17](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/Int64.ts#L17)
+Defined in: [primitives/Int64/Int64.js:16](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int64/Int64.js#L16)
 
 Utility functions for Int64 signed integers.
 
@@ -1531,11 +1736,11 @@ A branded Int64Type
 
 ###### Throws
 
-Int64RangeError if value is outside [MIN, MAX]
+if value is outside [MIN, MAX]
 
 ###### Throws
 
-Int64ParseError if string cannot be parsed
+if string cannot be parsed
 
 ##### fromFelt()
 
@@ -1566,7 +1771,7 @@ The signed Int64 value
 
 ###### Throws
 
-Int64RangeError if the decoded value is outside Int64 range
+if the decoded value is outside Int64 range
 
 ##### isNegative()
 
@@ -1739,7 +1944,7 @@ Hexadecimal string (e.g., "0xff" or "-0x1")
 
 > `const` **Int8**: (`value`) => [`Int8Type`](#int8type) & `object`
 
-Defined in: [primitives/Int8/Int8.ts:17](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/Int8.ts#L17)
+Defined in: [primitives/Int8/Int8.js:16](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int8/Int8.js#L16)
 
 Utility functions for Int8 signed integers.
 
@@ -1787,11 +1992,11 @@ A branded Int8Type
 
 ###### Throws
 
-Int8RangeError if value is outside [MIN, MAX]
+if value is outside [MIN, MAX]
 
 ###### Throws
 
-Int8ParseError if string cannot be parsed
+if string cannot be parsed
 
 ##### fromFelt()
 
@@ -1822,7 +2027,7 @@ The signed Int8 value
 
 ###### Throws
 
-Int8RangeError if the decoded value is outside Int8 range
+if the decoded value is outside Int8 range
 
 ##### isNegative()
 
@@ -1995,7 +2200,7 @@ Hexadecimal string (e.g., "0xff" or "-0x1")
 
 > `const` **MAX\_CONTRACT\_ADDRESS**: `bigint`
 
-Defined in: [primitives/ContractAddress/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ContractAddress/constants.ts#L4)
+Defined in: [primitives/ContractAddress/constants.js:5](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ContractAddress/constants.js#L5)
 
 Maximum valid contract address (< 2^251)
 
@@ -2005,7 +2210,7 @@ Maximum valid contract address (< 2^251)
 
 > `const` **MAX\_ETH\_ADDRESS**: `bigint`
 
-Defined in: [primitives/EthAddress/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/EthAddress/constants.ts#L4)
+Defined in: [primitives/EthAddress/constants.js:5](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/EthAddress/constants.js#L5)
 
 Maximum valid ETH address (< 2^160)
 
@@ -2013,9 +2218,9 @@ Maximum valid ETH address (< 2^160)
 
 ### MAX\_SHORT\_STRING\_LENGTH
 
-> `const` **MAX\_SHORT\_STRING\_LENGTH**: `31` = `31`
+> `const` **MAX\_SHORT\_STRING\_LENGTH**: `number` = `31`
 
-Defined in: [primitives/Felt252/constants.ts:11](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Felt252/constants.ts#L11)
+Defined in: [primitives/Felt252/constants.js:13](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Felt252/constants.js#L13)
 
 Maximum length for short strings (31 characters)
 Short strings are ASCII strings that fit in a single felt252
@@ -2026,7 +2231,9 @@ Short strings are ASCII strings that fit in a single felt252
 
 > `const` **StorageKey**: (`felt`) => [`StorageKeyType`](#storagekeytype) & `object`
 
-Defined in: [primitives/StorageKey/StorageKey.ts:3](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/StorageKey/StorageKey.ts#L3)
+Defined in: [primitives/StorageKey/StorageKey.js:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/StorageKey/StorageKey.js#L9)
+
+StorageKey namespace with constructor
 
 #### Type Declaration
 
@@ -2052,7 +2259,7 @@ Create a StorageKey from Felt252 (with validation)
 
 > **decodeShortString**(`felt`): `string`
 
-Defined in: [primitives/ShortString/decodeShortString.ts:15](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ShortString/decodeShortString.ts#L15)
+Defined in: [primitives/ShortString/decodeShortString.js:13](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ShortString/decodeShortString.js#L13)
 
 Decode a short string from felt
 
@@ -2083,7 +2290,7 @@ decodeShortString('0x68656c6c6f') // 'hello'
 
 > **encodeShortString**(`str`): [`Felt252Type`](#felt252type)
 
-Defined in: [primitives/ShortString/encodeShortString.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ShortString/encodeShortString.ts#L26)
+Defined in: [primitives/ShortString/encodeShortString.js:30](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ShortString/encodeShortString.js#L30)
 
 Encode a short string to Felt252
 
@@ -2116,7 +2323,7 @@ encodeShortString('hello') // Felt252(448378203247n)
 
 > **encodeShortStringHex**(`str`): `string`
 
-Defined in: [primitives/ShortString/encodeShortStringHex.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ShortString/encodeShortStringHex.ts#L9)
+Defined in: [primitives/ShortString/encodeShortStringHex.js:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/ShortString/encodeShortStringHex.js#L9)
 
 Encode a short string to hex
 

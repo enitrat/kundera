@@ -15,7 +15,7 @@ description: Auto-generated API documentation
 
 ### Int16ParseError
 
-Defined in: [primitives/Int16/errors.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/errors.ts#L12)
+Defined in: [primitives/Int16/errors.js:15](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/errors.js#L15)
 
 #### Extends
 
@@ -27,7 +27,7 @@ Defined in: [primitives/Int16/errors.ts:12](https://github.com/enitrat/kundera/b
 
 > **new Int16ParseError**(`input`, `reason`): [`Int16ParseError`](#int16parseerror)
 
-Defined in: [primitives/Int16/errors.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/errors.ts#L13)
+Defined in: [primitives/Int16/errors.js:20](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/errors.js#L20)
 
 ###### Parameters
 
@@ -47,11 +47,23 @@ Defined in: [primitives/Int16/errors.ts:13](https://github.com/enitrat/kundera/b
 
 `Error.constructor`
 
+#### Properties
+
+##### name
+
+> **name**: `string`
+
+Defined in: [primitives/Int16/errors.js:22](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/errors.js#L22)
+
+###### Inherited from
+
+`Error.name`
+
 ***
 
 ### Int16RangeError
 
-Defined in: [primitives/Int16/errors.ts:3](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/errors.ts#L3)
+Defined in: [primitives/Int16/errors.js:3](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/errors.js#L3)
 
 #### Extends
 
@@ -63,7 +75,7 @@ Defined in: [primitives/Int16/errors.ts:3](https://github.com/enitrat/kundera/bl
 
 > **new Int16RangeError**(`value`): [`Int16RangeError`](#int16rangeerror)
 
-Defined in: [primitives/Int16/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/errors.ts#L4)
+Defined in: [primitives/Int16/errors.js:7](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/errors.js#L7)
 
 ###### Parameters
 
@@ -79,13 +91,25 @@ Defined in: [primitives/Int16/errors.ts:4](https://github.com/enitrat/kundera/bl
 
 `RangeError.constructor`
 
+#### Properties
+
+##### name
+
+> **name**: `string`
+
+Defined in: [primitives/Int16/errors.js:11](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/errors.js#L11)
+
+###### Inherited from
+
+`RangeError.name`
+
 ## Variables
 
 ### MAX
 
 > `const` **MAX**: `32767n` = `32767n`
 
-Defined in: [primitives/Int16/constants.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/constants.ts#L9)
+Defined in: [primitives/Int16/constants.js:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/constants.js#L9)
 
 Maximum value for Int16: 32767
 
@@ -95,7 +119,7 @@ Maximum value for Int16: 32767
 
 > `const` **MIN**: `-32768n` = `-32768n`
 
-Defined in: [primitives/Int16/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/constants.ts#L4)
+Defined in: [primitives/Int16/constants.js:4](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/constants.js#L4)
 
 Minimum value for Int16: -32768
 
@@ -105,7 +129,7 @@ Minimum value for Int16: -32768
 
 > `const` **PRIME**: `bigint`
 
-Defined in: [primitives/Int16/constants.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/constants.ts#L20)
+Defined in: [primitives/Int16/constants.js:20](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/constants.js#L20)
 
 Stark curve field prime: P = 2^251 + 17*2^192 + 1
 Used for Cairo field encoding of negative values.
@@ -116,17 +140,17 @@ Used for Cairo field encoding of negative values.
 
 > `const` **SIZE**: `16` = `16`
 
-Defined in: [primitives/Int16/constants.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/constants.ts#L14)
+Defined in: [primitives/Int16/constants.js:14](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/constants.js#L14)
 
 Bit size of Int16
 
 ## Functions
 
-### from()
+### \_from()
 
-> **from**(`value`): [`Int16Type`](../index-1.mdx#int16type)
+> **\_from**(`value`): [`Int16Type`](../index-1.mdx#int16type)
 
-Defined in: [primitives/Int16/from.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/from.ts#L13)
+Defined in: [primitives/Int16/from.js:12](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/from.js#L12)
 
 Create an Int16 from various input types.
 
@@ -146,19 +170,19 @@ A branded Int16Type
 
 #### Throws
 
-Int16RangeError if value is outside [MIN, MAX]
+if value is outside [MIN, MAX]
 
 #### Throws
 
-Int16ParseError if string cannot be parsed
+if string cannot be parsed
 
 ***
 
-### fromFelt()
+### \_fromFelt()
 
-> **fromFelt**(`felt`): [`Int16Type`](../index-1.mdx#int16type)
+> **\_fromFelt**(`felt`): [`Int16Type`](../index-1.mdx#int16type)
 
-Defined in: [primitives/Int16/fromFelt.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/fromFelt.ts#L20)
+Defined in: [primitives/Int16/fromFelt.js:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/fromFelt.js#L19)
 
 Decode a Felt252 back to an Int16.
 
@@ -185,7 +209,158 @@ The signed Int16 value
 
 #### Throws
 
-Int16RangeError if the decoded value is outside Int16 range
+if the decoded value is outside Int16 range
+
+***
+
+### \_toBigInt()
+
+> **\_toBigInt**(`value`): `bigint`
+
+Defined in: [primitives/Int16/toBigInt.js:7](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/toBigInt.js#L7)
+
+Convert an Int16 to its bigint value.
+
+#### Parameters
+
+##### value
+
+[`Int16Type`](../index-1.mdx#int16type)
+
+The Int16 to convert
+
+#### Returns
+
+`bigint`
+
+The signed bigint value
+
+***
+
+### \_toFelt()
+
+> **\_toFelt**(`value`): [`Felt252Type`](../index-1.mdx#felt252type)
+
+Defined in: [primitives/Int16/toFelt.js:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/toFelt.js#L19)
+
+Convert an Int16 to a Felt252 using Cairo field encoding.
+
+CRITICAL: Cairo signed integer encoding is NOT two's complement!
+
+Cairo uses prime field arithmetic:
+- Positive values: stored directly (0 to MAX)
+- Negative values: stored as PRIME + negative_value
+
+This is because in modular arithmetic over the field,
+PRIME + x === x (mod PRIME), so PRIME - 1 represents -1.
+
+#### Parameters
+
+##### value
+
+[`Int16Type`](../index-1.mdx#int16type)
+
+The Int16 to convert
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The Felt252 representation for Cairo
+
+***
+
+### \_toHex()
+
+> **\_toHex**(`value`): `string`
+
+Defined in: [primitives/Int16/toHex.js:10](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/toHex.js#L10)
+
+Convert an Int16 to its hexadecimal string representation.
+
+For negative values, returns a string with a minus sign prefix
+followed by 0x and the absolute value in hex.
+
+#### Parameters
+
+##### value
+
+[`Int16Type`](../index-1.mdx#int16type)
+
+The Int16 to convert
+
+#### Returns
+
+`string`
+
+Hexadecimal string (e.g., "0xff" or "-0x1")
+
+***
+
+### from()
+
+> **from**(`value`): [`Int16Type`](../index-1.mdx#int16type)
+
+Defined in: [primitives/Int16/from.js:12](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/from.js#L12)
+
+Create an Int16 from various input types.
+
+#### Parameters
+
+##### value
+
+[`Int16Input`](../index-1.mdx#int16input)
+
+The value to convert (bigint, number, or string)
+
+#### Returns
+
+[`Int16Type`](../index-1.mdx#int16type)
+
+A branded Int16Type
+
+#### Throws
+
+if value is outside [MIN, MAX]
+
+#### Throws
+
+if string cannot be parsed
+
+***
+
+### fromFelt()
+
+> **fromFelt**(`felt`): [`Int16Type`](../index-1.mdx#int16type)
+
+Defined in: [primitives/Int16/fromFelt.js:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/fromFelt.js#L19)
+
+Decode a Felt252 back to an Int16.
+
+CRITICAL: This reverses Cairo's field encoding.
+
+Cairo encodes negative values as PRIME + negative_value.
+To decode:
+- If value <= MAX, it's positive (or zero)
+- If value > MAX, it's a negative number: actual = value - PRIME
+
+#### Parameters
+
+##### felt
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The Felt252 to decode
+
+#### Returns
+
+[`Int16Type`](../index-1.mdx#int16type)
+
+The signed Int16 value
+
+#### Throws
+
+if the decoded value is outside Int16 range
 
 ***
 
@@ -193,7 +368,7 @@ Int16RangeError if the decoded value is outside Int16 range
 
 > **toBigInt**(`value`): `bigint`
 
-Defined in: [primitives/Int16/toBigInt.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/toBigInt.ts#L9)
+Defined in: [primitives/Int16/toBigInt.js:7](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/toBigInt.js#L7)
 
 Convert an Int16 to its bigint value.
 
@@ -217,7 +392,7 @@ The signed bigint value
 
 > **toFelt**(`value`): [`Felt252Type`](../index-1.mdx#felt252type)
 
-Defined in: [primitives/Int16/toFelt.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/toFelt.ts#L20)
+Defined in: [primitives/Int16/toFelt.js:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/toFelt.js#L19)
 
 Convert an Int16 to a Felt252 using Cairo field encoding.
 
@@ -250,7 +425,7 @@ The Felt252 representation for Cairo
 
 > **toHex**(`value`): `string`
 
-Defined in: [primitives/Int16/toHex.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int16/toHex.ts#L12)
+Defined in: [primitives/Int16/toHex.js:10](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int16/toHex.js#L10)
 
 Convert an Int16 to its hexadecimal string representation.
 

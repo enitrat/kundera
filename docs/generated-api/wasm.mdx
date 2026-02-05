@@ -17,7 +17,7 @@ description: Auto-generated API documentation
 
 > `const` **Felt**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type) & `object` & `object`
 
-Defined in: [wasm/index.ts:225](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L225)
+Defined in: [wasm/index.ts:225](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L225)
 
 #### Type Declaration
 
@@ -119,6 +119,8 @@ Hex-encoded felt representation (unpadded)
 
 > **from**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type)
 
+Create Felt252 from various input types
+
 ###### Parameters
 
 ###### value
@@ -132,6 +134,8 @@ Hex-encoded felt representation (unpadded)
 ##### fromBigInt()
 
 > **fromBigInt**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Create Felt252 from bigint
 
 ###### Parameters
 
@@ -147,11 +151,13 @@ Hex-encoded felt representation (unpadded)
 
 > **fromBytes**: (`bytes`) => [`Felt252Type`](index-1.mdx#felt252type)
 
+Create Felt252 from Uint8Array bytes
+
 ###### Parameters
 
 ###### bytes
 
-`Uint8Array`
+`Uint8Array`\<`ArrayBufferLike`\>
 
 ###### Returns
 
@@ -160,6 +166,8 @@ Hex-encoded felt representation (unpadded)
 ##### fromHex()
 
 > **fromHex**: (`hex`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Create Felt252 from hex string
 
 ###### Parameters
 
@@ -203,16 +211,13 @@ Hex-encoded felt representation (unpadded)
 
 > **MAX\_SHORT\_STRING\_LENGTH**: `number`
 
-Maximum length for short strings (31 characters)
-Short strings are ASCII strings that fit in a single felt252
-
 ##### ONE
 
-> **ONE**: [`Felt252Type`](index-1.mdx#felt252type) = `feltOne`
+> **ONE**: [`Felt252Type`](index-1.mdx#felt252type)
 
 ##### PRIME
 
-> **PRIME**: `bigint` = `FIELD_PRIME`
+> **PRIME**: `bigint`
 
 ##### toBigInt()
 
@@ -244,11 +249,11 @@ Short strings are ASCII strings that fit in a single felt252
 
 ##### TWO
 
-> **TWO**: [`Felt252Type`](index-1.mdx#felt252type) = `feltTwo`
+> **TWO**: [`Felt252Type`](index-1.mdx#felt252type)
 
 ##### ZERO
 
-> **ZERO**: [`Felt252Type`](index-1.mdx#felt252type) = `feltZero`
+> **ZERO**: [`Felt252Type`](index-1.mdx#felt252type)
 
 #### Type Declaration
 
@@ -390,7 +395,7 @@ Short strings are ASCII strings that fit in a single felt252
 
 > `const` **Pedersen**: `object`
 
-Defined in: [wasm/index.ts:209](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L209)
+Defined in: [wasm/index.ts:209](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L209)
 
 #### Type Declaration
 
@@ -418,7 +423,7 @@ Defined in: [wasm/index.ts:209](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > `const` **Poseidon**: `object`
 
-Defined in: [wasm/index.ts:213](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L213)
+Defined in: [wasm/index.ts:213](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L213)
 
 #### Type Declaration
 
@@ -460,7 +465,7 @@ Defined in: [wasm/index.ts:213](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > `const` **StarkCurve**: `object`
 
-Defined in: [wasm/index.ts:245](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L245)
+Defined in: [wasm/index.ts:245](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L245)
 
 #### Type Declaration
 
@@ -550,7 +555,7 @@ Defined in: [wasm/index.ts:245](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **feltAdd**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:133](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L133)
+Defined in: [wasm/index.ts:133](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L133)
 
 #### Parameters
 
@@ -572,7 +577,7 @@ Defined in: [wasm/index.ts:133](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **feltDiv**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:148](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L148)
+Defined in: [wasm/index.ts:148](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L148)
 
 #### Parameters
 
@@ -594,7 +599,7 @@ Defined in: [wasm/index.ts:148](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **feltInverse**(`a`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:158](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L158)
+Defined in: [wasm/index.ts:158](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L158)
 
 #### Parameters
 
@@ -612,7 +617,7 @@ Defined in: [wasm/index.ts:158](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **feltMul**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:143](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L143)
+Defined in: [wasm/index.ts:143](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L143)
 
 #### Parameters
 
@@ -634,7 +639,7 @@ Defined in: [wasm/index.ts:143](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **feltNeg**(`a`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:153](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L153)
+Defined in: [wasm/index.ts:153](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L153)
 
 #### Parameters
 
@@ -652,7 +657,7 @@ Defined in: [wasm/index.ts:153](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **feltPow**(`base`, `exp`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:163](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L163)
+Defined in: [wasm/index.ts:163](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L163)
 
 #### Parameters
 
@@ -674,7 +679,7 @@ Defined in: [wasm/index.ts:163](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **feltSqrt**(`a`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:168](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L168)
+Defined in: [wasm/index.ts:168](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L168)
 
 #### Parameters
 
@@ -692,7 +697,7 @@ Defined in: [wasm/index.ts:168](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **feltSub**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:138](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L138)
+Defined in: [wasm/index.ts:138](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L138)
 
 #### Parameters
 
@@ -714,7 +719,7 @@ Defined in: [wasm/index.ts:138](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **getPublicKey**(`privateKey`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:192](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L192)
+Defined in: [wasm/index.ts:192](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L192)
 
 #### Parameters
 
@@ -732,7 +737,7 @@ Defined in: [wasm/index.ts:192](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **getWasmPath**(): `string` \| `null`
 
-Defined in: [wasm-loader/loader.ts:213](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L213)
+Defined in: [wasm-loader/loader.ts:213](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm-loader/loader.ts#L213)
 
 Get path to WASM file (if found)
 
@@ -746,7 +751,7 @@ Get path to WASM file (if found)
 
 > **isNativeAvailable**(): `boolean`
 
-Defined in: [wasm/index.ts:104](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L104)
+Defined in: [wasm/index.ts:104](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L104)
 
 Native is never available in WASM entrypoint
 
@@ -760,7 +765,7 @@ Native is never available in WASM entrypoint
 
 > **isWasmAvailable**(): `boolean`
 
-Defined in: [wasm-loader/loader.ts:205](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L205)
+Defined in: [wasm-loader/loader.ts:205](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm-loader/loader.ts#L205)
 
 Check if WASM crypto is available
 
@@ -774,7 +779,7 @@ Check if WASM crypto is available
 
 > **isWasmLoaded**(): `boolean`
 
-Defined in: [wasm-loader/loader.ts:250](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L250)
+Defined in: [wasm-loader/loader.ts:250](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm-loader/loader.ts#L250)
 
 Check if WASM is loaded
 
@@ -788,7 +793,7 @@ Check if WASM is loaded
 
 > **loadWasmCrypto**(): `Promise`\<`void`\>
 
-Defined in: [wasm-loader/loader.ts:220](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L220)
+Defined in: [wasm-loader/loader.ts:220](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm-loader/loader.ts#L220)
 
 Load the WASM crypto module
 
@@ -802,7 +807,7 @@ Load the WASM crypto module
 
 > **pedersenHash**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:112](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L112)
+Defined in: [wasm/index.ts:112](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L112)
 
 #### Parameters
 
@@ -824,7 +829,7 @@ Defined in: [wasm/index.ts:112](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **poseidonHash**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:117](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L117)
+Defined in: [wasm/index.ts:117](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L117)
 
 #### Parameters
 
@@ -846,7 +851,7 @@ Defined in: [wasm/index.ts:117](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **poseidonHashMany**(`inputs`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:122](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L122)
+Defined in: [wasm/index.ts:122](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L122)
 
 #### Parameters
 
@@ -864,7 +869,7 @@ Defined in: [wasm/index.ts:122](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **recover**(`messageHash`, `r`, `s`, `v`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:197](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L197)
+Defined in: [wasm/index.ts:197](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L197)
 
 #### Parameters
 
@@ -894,7 +899,7 @@ Defined in: [wasm/index.ts:197](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **sign**(`privateKey`, `messageHash`): [`Signature`](native.mdx#signature)
 
-Defined in: [wasm/index.ts:177](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L177)
+Defined in: [wasm/index.ts:177](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L177)
 
 #### Parameters
 
@@ -916,7 +921,7 @@ Defined in: [wasm/index.ts:177](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **snKeccak**(`_data`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [wasm/index.ts:127](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L127)
+Defined in: [wasm/index.ts:127](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L127)
 
 #### Parameters
 
@@ -934,7 +939,7 @@ Defined in: [wasm/index.ts:127](https://github.com/enitrat/kundera/blob/2127a2a9
 
 > **verify**(`publicKey`, `messageHash`, `signature`): `boolean`
 
-Defined in: [wasm/index.ts:183](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm/index.ts#L183)
+Defined in: [wasm/index.ts:183](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/wasm/index.ts#L183)
 
 #### Parameters
 

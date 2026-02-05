@@ -15,7 +15,7 @@ description: Auto-generated API documentation
 
 ### Int32ParseError
 
-Defined in: [primitives/Int32/errors.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/errors.ts#L12)
+Defined in: [primitives/Int32/errors.js:15](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/errors.js#L15)
 
 #### Extends
 
@@ -27,7 +27,7 @@ Defined in: [primitives/Int32/errors.ts:12](https://github.com/enitrat/kundera/b
 
 > **new Int32ParseError**(`input`, `reason`): [`Int32ParseError`](#int32parseerror)
 
-Defined in: [primitives/Int32/errors.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/errors.ts#L13)
+Defined in: [primitives/Int32/errors.js:20](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/errors.js#L20)
 
 ###### Parameters
 
@@ -47,11 +47,23 @@ Defined in: [primitives/Int32/errors.ts:13](https://github.com/enitrat/kundera/b
 
 `Error.constructor`
 
+#### Properties
+
+##### name
+
+> **name**: `string`
+
+Defined in: [primitives/Int32/errors.js:22](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/errors.js#L22)
+
+###### Inherited from
+
+`Error.name`
+
 ***
 
 ### Int32RangeError
 
-Defined in: [primitives/Int32/errors.ts:3](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/errors.ts#L3)
+Defined in: [primitives/Int32/errors.js:3](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/errors.js#L3)
 
 #### Extends
 
@@ -63,7 +75,7 @@ Defined in: [primitives/Int32/errors.ts:3](https://github.com/enitrat/kundera/bl
 
 > **new Int32RangeError**(`value`): [`Int32RangeError`](#int32rangeerror)
 
-Defined in: [primitives/Int32/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/errors.ts#L4)
+Defined in: [primitives/Int32/errors.js:7](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/errors.js#L7)
 
 ###### Parameters
 
@@ -79,13 +91,25 @@ Defined in: [primitives/Int32/errors.ts:4](https://github.com/enitrat/kundera/bl
 
 `RangeError.constructor`
 
+#### Properties
+
+##### name
+
+> **name**: `string`
+
+Defined in: [primitives/Int32/errors.js:11](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/errors.js#L11)
+
+###### Inherited from
+
+`RangeError.name`
+
 ## Variables
 
 ### MAX
 
 > `const` **MAX**: `2147483647n` = `2147483647n`
 
-Defined in: [primitives/Int32/constants.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/constants.ts#L9)
+Defined in: [primitives/Int32/constants.js:9](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/constants.js#L9)
 
 Maximum value for Int32: 2147483647
 
@@ -95,7 +119,7 @@ Maximum value for Int32: 2147483647
 
 > `const` **MIN**: `-2147483648n` = `-2147483648n`
 
-Defined in: [primitives/Int32/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/constants.ts#L4)
+Defined in: [primitives/Int32/constants.js:4](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/constants.js#L4)
 
 Minimum value for Int32: -2147483648
 
@@ -105,7 +129,7 @@ Minimum value for Int32: -2147483648
 
 > `const` **PRIME**: `bigint`
 
-Defined in: [primitives/Int32/constants.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/constants.ts#L20)
+Defined in: [primitives/Int32/constants.js:20](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/constants.js#L20)
 
 Stark curve field prime: P = 2^251 + 17*2^192 + 1
 Used for Cairo field encoding of negative values.
@@ -116,17 +140,17 @@ Used for Cairo field encoding of negative values.
 
 > `const` **SIZE**: `32` = `32`
 
-Defined in: [primitives/Int32/constants.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/constants.ts#L14)
+Defined in: [primitives/Int32/constants.js:14](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/constants.js#L14)
 
 Bit size of Int32
 
 ## Functions
 
-### from()
+### \_from()
 
-> **from**(`value`): [`Int32Type`](../index-1.mdx#int32type)
+> **\_from**(`value`): [`Int32Type`](../index-1.mdx#int32type)
 
-Defined in: [primitives/Int32/from.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/from.ts#L13)
+Defined in: [primitives/Int32/from.js:12](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/from.js#L12)
 
 Create an Int32 from various input types.
 
@@ -146,19 +170,19 @@ A branded Int32Type
 
 #### Throws
 
-Int32RangeError if value is outside [MIN, MAX]
+if value is outside [MIN, MAX]
 
 #### Throws
 
-Int32ParseError if string cannot be parsed
+if string cannot be parsed
 
 ***
 
-### fromFelt()
+### \_fromFelt()
 
-> **fromFelt**(`felt`): [`Int32Type`](../index-1.mdx#int32type)
+> **\_fromFelt**(`felt`): [`Int32Type`](../index-1.mdx#int32type)
 
-Defined in: [primitives/Int32/fromFelt.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/fromFelt.ts#L20)
+Defined in: [primitives/Int32/fromFelt.js:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/fromFelt.js#L19)
 
 Decode a Felt252 back to an Int32.
 
@@ -185,7 +209,158 @@ The signed Int32 value
 
 #### Throws
 
-Int32RangeError if the decoded value is outside Int32 range
+if the decoded value is outside Int32 range
+
+***
+
+### \_toBigInt()
+
+> **\_toBigInt**(`value`): `bigint`
+
+Defined in: [primitives/Int32/toBigInt.js:7](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/toBigInt.js#L7)
+
+Convert an Int32 to its bigint value.
+
+#### Parameters
+
+##### value
+
+[`Int32Type`](../index-1.mdx#int32type)
+
+The Int32 to convert
+
+#### Returns
+
+`bigint`
+
+The signed bigint value
+
+***
+
+### \_toFelt()
+
+> **\_toFelt**(`value`): [`Felt252Type`](../index-1.mdx#felt252type)
+
+Defined in: [primitives/Int32/toFelt.js:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/toFelt.js#L19)
+
+Convert an Int32 to a Felt252 using Cairo field encoding.
+
+CRITICAL: Cairo signed integer encoding is NOT two's complement!
+
+Cairo uses prime field arithmetic:
+- Positive values: stored directly (0 to MAX)
+- Negative values: stored as PRIME + negative_value
+
+This is because in modular arithmetic over the field,
+PRIME + x === x (mod PRIME), so PRIME - 1 represents -1.
+
+#### Parameters
+
+##### value
+
+[`Int32Type`](../index-1.mdx#int32type)
+
+The Int32 to convert
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The Felt252 representation for Cairo
+
+***
+
+### \_toHex()
+
+> **\_toHex**(`value`): `string`
+
+Defined in: [primitives/Int32/toHex.js:10](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/toHex.js#L10)
+
+Convert an Int32 to its hexadecimal string representation.
+
+For negative values, returns a string with a minus sign prefix
+followed by 0x and the absolute value in hex.
+
+#### Parameters
+
+##### value
+
+[`Int32Type`](../index-1.mdx#int32type)
+
+The Int32 to convert
+
+#### Returns
+
+`string`
+
+Hexadecimal string (e.g., "0xff" or "-0x1")
+
+***
+
+### from()
+
+> **from**(`value`): [`Int32Type`](../index-1.mdx#int32type)
+
+Defined in: [primitives/Int32/from.js:12](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/from.js#L12)
+
+Create an Int32 from various input types.
+
+#### Parameters
+
+##### value
+
+[`Int32Input`](../index-1.mdx#int32input)
+
+The value to convert (bigint, number, or string)
+
+#### Returns
+
+[`Int32Type`](../index-1.mdx#int32type)
+
+A branded Int32Type
+
+#### Throws
+
+if value is outside [MIN, MAX]
+
+#### Throws
+
+if string cannot be parsed
+
+***
+
+### fromFelt()
+
+> **fromFelt**(`felt`): [`Int32Type`](../index-1.mdx#int32type)
+
+Defined in: [primitives/Int32/fromFelt.js:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/fromFelt.js#L19)
+
+Decode a Felt252 back to an Int32.
+
+CRITICAL: This reverses Cairo's field encoding.
+
+Cairo encodes negative values as PRIME + negative_value.
+To decode:
+- If value <= MAX, it's positive (or zero)
+- If value > MAX, it's a negative number: actual = value - PRIME
+
+#### Parameters
+
+##### felt
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The Felt252 to decode
+
+#### Returns
+
+[`Int32Type`](../index-1.mdx#int32type)
+
+The signed Int32 value
+
+#### Throws
+
+if the decoded value is outside Int32 range
 
 ***
 
@@ -193,7 +368,7 @@ Int32RangeError if the decoded value is outside Int32 range
 
 > **toBigInt**(`value`): `bigint`
 
-Defined in: [primitives/Int32/toBigInt.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/toBigInt.ts#L9)
+Defined in: [primitives/Int32/toBigInt.js:7](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/toBigInt.js#L7)
 
 Convert an Int32 to its bigint value.
 
@@ -217,7 +392,7 @@ The signed bigint value
 
 > **toFelt**(`value`): [`Felt252Type`](../index-1.mdx#felt252type)
 
-Defined in: [primitives/Int32/toFelt.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/toFelt.ts#L20)
+Defined in: [primitives/Int32/toFelt.js:19](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/toFelt.js#L19)
 
 Convert an Int32 to a Felt252 using Cairo field encoding.
 
@@ -250,7 +425,7 @@ The Felt252 representation for Cairo
 
 > **toHex**(`value`): `string`
 
-Defined in: [primitives/Int32/toHex.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int32/toHex.ts#L12)
+Defined in: [primitives/Int32/toHex.js:10](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/primitives/Int32/toHex.js#L10)
 
 Convert an Int32 to its hexadecimal string representation.
 
