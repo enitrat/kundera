@@ -54,11 +54,8 @@ export function snKeccak(data: Uint8Array | string): Felt252Type {
   return Felt252(result & MASK_250);
 }
 
-// ============ Felt Arithmetic (requires native/wasm) ============
-// These operations need native or wasm backend - no pure JS impl yet.
-// Import from '@kundera-sn/kundera-ts/native' or '@kundera-sn/kundera-ts/wasm' explicitly.
+// ============ Felt Arithmetic ============
 
-// Re-export from legacy module for backward compatibility
 export {
   feltAdd,
   feltSub,
@@ -70,13 +67,12 @@ export {
   feltSqrt,
 } from './arithmetic.js';
 
-// ============ ECDSA (requires native/wasm) ============
-// ECDSA operations need native or wasm backend - no pure JS impl yet.
+// ============ ECDSA ============
 
 export type { Signature } from './ecdsa.js';
 export { sign, verify, getPublicKey, recover } from './ecdsa.js';
 
-// ============ Legacy Initialization (for backward compat) ============
+// ============ Backend Status ============
 
 export {
   loadWasmCrypto,

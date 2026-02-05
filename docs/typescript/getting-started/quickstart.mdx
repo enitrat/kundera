@@ -17,49 +17,18 @@ yarn add @kundera-sn/kundera-ts
 bun add @kundera-sn/kundera-ts
 ```
 
-## Choose Your Crypto Backend
+## Crypto Backend
 
-Kundera needs a crypto backend for signing and hashing. Choose based on your environment:
+Kundera uses pure JS crypto by default - no setup needed:
 
-<Tabs>
-  <Tab title="Browser (WASM)">
-    Load WASM at app startup:
+```typescript
+import { Pedersen, Poseidon, snKeccak } from '@kundera-sn/kundera-ts/crypto';
 
-    ```typescript
-    import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
-
-    // Call once at startup
-    await loadWasmCrypto();
-    ```
-  </Tab>
-  <Tab title="Bun (Native)">
-    Native crypto works out of the box in Bun:
-
-    ```typescript
-    import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
-
-    console.log(isNativeAvailable()); // true
-    ```
-  </Tab>
-  <Tab title="Node.js (Native)">
-    Install the FFI package for best performance:
-
-    ```bash
-    npm install ffi-napi
-    ```
-
-    Then use normally:
-
-    ```typescript
-    import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
-
-    console.log(isNativeAvailable()); // true if ffi-napi installed
-    ```
-  </Tab>
-</Tabs>
+const hash = Pedersen.hash(a, b);  // Just works
+```
 
 <Note>
-**Don't need signing?** If you only need read operations (calling contracts, fetching state), you can skip crypto setup entirely.
+For performance-critical applications, Native FFI and WASM backends are available. See [Runtime Implementations](/typescript/getting-started/runtime-implementations) for details.
 </Note>
 
 ## Basic Usage

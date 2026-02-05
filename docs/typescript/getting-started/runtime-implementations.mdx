@@ -1,49 +1,96 @@
 ---
 title: Runtime Implementations
-description: Choose between Native (Rust FFI) and WASM based on your environment
+description: Three crypto backends - Pure JS (default), Native FFI, or WASM
 ---
 
-Kundera provides two crypto backends with **identical APIs**. The same code works with both implementations - just choose based on your deployment environment.
+Kundera provides three crypto backends with **identical APIs**. The same code works with all implementations - choose based on your deployment environment and performance needs.
 
-## Two Crypto Backends
+## Three Crypto Backends
 
-| Backend | Runtime | Use Case |
-|---------|---------|----------|
-| **Native** | Bun, Node.js | Backend services, CLI tools (fastest) |
-| **WASM** | Browser, Node, Bun, Deno | Frontend dApps, portable environments |
+| Backend | Import | Use Case | Loading |
+|---------|--------|----------|---------|
+| **Pure JS** | Default | Works everywhere | None (sync) |
+| **Native FFI** | `@kundera-sn/kundera-ts/native` | Backend services, CLI tools | `ensureLoaded()` |
+| **WASM** | `@kundera-sn/kundera-ts/wasm` | Browsers, portable | `ensureLoaded()` |
 
 ```typescript
-// Native - Rust FFI (fastest)
-import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
-await loadWasmCrypto(); // Load once at startup
+// Pure JS (default) - works immediately, no setup
+import { Pedersen, Poseidon, Keccak256 } from '@kundera-sn/kundera-ts/crypto';
 
-// Both use the same crypto functions
-import { pedersen, sign } from '@kundera-sn/kundera-ts/crypto';
+const hash = Pedersen.hash(a, b);  // Just works
 
-const hash = pedersen(a, b);
-const signature = sign(privateKey, messageHash);
+// Native/WASM - explicit import, async load
+import { Pedersen } from '@kundera-sn/kundera-ts/crypto/Pedersen/hash.native';
+await Pedersen.ensureLoaded();
+const fastHash = Pedersen.hash(a, b);
 ```
 
 <Note>
-Both backends export identical crypto APIs. Switch implementations by changing your initialization - no code changes required.
+The default import uses pure JS implementations from `@noble/hashes` and `@scure/starknet`. These are battle-tested, audited libraries that work synchronously in any environment.
 </Note>
 
-## Native (Rust FFI)
+## Pure JS (Default)
 
-Direct bindings to Rust via FFI. Maximum performance.
+The default import provides synchronous pure JavaScript implementations. No loading, no setup - just import and use.
+
+```typescript
+import {
+  Pedersen,
+  Poseidon,
+  Keccak256,
+  pedersenHash,
+  poseidonHash,
+  snKeccak
+} from '@kundera-sn/kundera-ts/crypto';
+
+// Namespace style
+const h1 = Pedersen.hash(a, b);
+const h2 = Poseidon.hash(a, b);
+const h3 = Keccak256.hash(data);
+
+// Function style
+const h4 = pedersenHash(a, b);
+const h5 = poseidonHash(a, b);
+const h6 = snKeccak('transfer'); // Starknet selector
+```
+
+**Libraries used:**
+- `@noble/hashes` - Keccak256
+- `@scure/starknet` - Pedersen, Poseidon
+
+<Tip>
+Pure JS is recommended for most use cases. It's fast enough for typical workloads and eliminates async complexity. Only switch to Native/WASM if you've measured a bottleneck.
+</Tip>
+
+## Native FFI
+
+Direct bindings to Rust via FFI. Maximum performance for compute-heavy workloads.
+
+### Usage Pattern
+
+```typescript
+import { Pedersen } from '@kundera-sn/kundera-ts/crypto/Pedersen/hash.native';
+
+// Load once at startup
+await Pedersen.ensureLoaded();
+
+// Now use (throws if not loaded)
+const hash = Pedersen.hash(a, b);
+```
 
 ### Bun
 
-Works out of the box in Bun using built-in FFI:
+Works out of the box using Bun's built-in FFI:
 
 ```typescript
-import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
+import { Pedersen } from '@kundera-sn/kundera-ts/crypto/Pedersen/hash.native';
 
-console.log(isNativeAvailable()); // true in Bun
+await Pedersen.ensureLoaded();
+console.log('Native ready');
 ```
 
 <Tip>
-Bun's FFI is the fastest option. If you're building a backend service, Bun is recommended.
+Bun's FFI is the fastest option. If you're building a backend service with heavy crypto load, Bun is recommended.
 </Tip>
 
 ### Node.js
@@ -52,14 +99,6 @@ Requires the `ffi-napi` package:
 
 ```bash
 npm install ffi-napi
-```
-
-Then use normally:
-
-```typescript
-import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
-
-console.log(isNativeAvailable()); // true if ffi-napi installed
 ```
 
 <Warning>
@@ -91,53 +130,56 @@ Kundera looks for the native library (`libkundera_crypto.dylib`, `.so`, or `.dll
 2. Adjacent to the package: `node_modules/@kundera-sn/kundera-ts/native/`
 3. System library paths
 
-To specify a custom path:
-
 ```bash
 export KUNDERA_NATIVE_LIB=/path/to/libkundera_crypto.dylib
 ```
 
 ## WASM
 
-WebAssembly crypto enables Kundera to run in browsers and environments without FFI support.
+WebAssembly enables fast crypto in browsers and environments without FFI support.
 
-### Loading WASM
-
-Call `loadWasmCrypto()` once at application startup:
+### Usage Pattern
 
 ```typescript
-import { loadWasmCrypto, isWasmLoaded } from '@kundera-sn/kundera-ts/wasm';
+import { Pedersen } from '@kundera-sn/kundera-ts/crypto/Pedersen/hash.wasm';
 
-await loadWasmCrypto();
-console.log('WASM ready:', isWasmLoaded()); // true
+// Load once at startup
+await Pedersen.ensureLoaded();
+
+// Now use
+const hash = Pedersen.hash(a, b);
 ```
 
 <Warning>
 ## Load Before Use
 
-Crypto operations will throw if WASM isn't loaded:
+Operations throw if WASM isn't loaded:
 
 ```typescript
-import { sign } from '@kundera-sn/kundera-ts/crypto';
+import { Pedersen } from '@kundera-sn/kundera-ts/crypto/Pedersen/hash.wasm';
 
-// ERROR: throws if WASM not loaded
-const signature = sign(privateKey, messageHash);
+// ERROR: throws "WASM not loaded"
+const hash = Pedersen.hash(a, b);
+
+// FIX: load first
+await Pedersen.ensureLoaded();
+const hash = Pedersen.hash(a, b); // Works
 ```
-
-Always load WASM at app startup before any signing or hashing.
 </Warning>
 
 ### Browser Setup
 
-In browsers, load WASM early in your application:
-
 ```typescript
 // main.ts or app initialization
-import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+import { Pedersen } from '@kundera-sn/kundera-ts/crypto/Pedersen/hash.wasm';
+import { Poseidon } from '@kundera-sn/kundera-ts/crypto/Poseidon/hash.wasm';
 
 async function init() {
-  await loadWasmCrypto();
-  // Now safe to use Kundera crypto
+  await Promise.all([
+    Pedersen.ensureLoaded(),
+    Poseidon.ensureLoaded(),
+  ]);
+  // Now safe to use
 }
 
 init();
@@ -146,37 +188,34 @@ init();
 ### With React
 
 ```tsx
-// App.tsx
 import { useEffect, useState } from 'react';
-import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+import { Pedersen } from '@kundera-sn/kundera-ts/crypto/Pedersen/hash.wasm';
 
 function App() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    loadWasmCrypto().then(() => setReady(true));
+    Pedersen.ensureLoaded().then(() => setReady(true));
   }, []);
 
   if (!ready) return <div>Loading crypto...</div>;
-
   return <YourApp />;
 }
 ```
 
 ### With Next.js
 
-```typescript
-// pages/_app.tsx or app/layout.tsx
+```tsx
 'use client';
 
 import { useEffect, useState } from 'react';
-import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+import { Pedersen } from '@kundera-sn/kundera-ts/crypto/Pedersen/hash.wasm';
 
 export default function RootLayout({ children }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    loadWasmCrypto().then(() => setReady(true));
+    Pedersen.ensureLoaded().then(() => setReady(true));
   }, []);
 
   if (!ready) return null;
@@ -184,60 +223,44 @@ export default function RootLayout({ children }) {
 }
 ```
 
-## Performance Considerations
+## Performance Comparison
 
 <Warning>
-Performance is nuanced. Native isn't always faster than WASM for all operations.
+Performance is nuanced. Native/WASM isn't always faster than Pure JS for all operations.
 </Warning>
 
 **Bridging overhead**: Crossing the JS↔WASM or JS↔FFI boundary has constant overhead (~1-10μs). For cheap operations, this overhead can exceed the operation itself.
 
-**When Native/WASM wins**:
-- Cryptographic operations (pedersen, poseidon, ECDSA) - 5-15x faster
-- Large data encoding/decoding (ABI with big payloads)
-- Batch operations that amortize bridging cost
+| Operation | Pure JS | WASM | Native | Notes |
+|-----------|---------|------|--------|-------|
+| pedersen(a, b) | ~50μs | ~10μs | ~5μs | Heavy computation |
+| poseidon(a, b) | ~30μs | ~8μs | ~4μs | Heavy computation |
+| keccak256 | ~5μs | ~3μs | ~2μs | Moderate gain |
+| hex encode | ~0.5μs | ~0.8μs | ~0.6μs | Bridging overhead dominates |
 
-**When JS wins**:
-- Simple operations (hex encoding, address validation)
-- String/hex formatting helpers
-- Very small, trivial conversions where bridging overhead dominates
+**When to use Native/WASM:**
+- Cryptographic operations in hot paths
+- Batch operations (amortizes loading cost)
+- Backend services with heavy crypto workload
 
-| Operation | Native | WASM | Notes |
-|-----------|--------|------|-------|
-| pedersen | ~10x faster | ~5x faster | Cryptography benefits most |
-| poseidon | ~10x faster | ~5x faster | Heavy computation |
-| sign | ~15x faster | ~8x faster | Signature generation |
-| hex encode | ~1.2x | ~1.1x | Simple ops have overhead |
+**When Pure JS is fine:**
+- Typical dApp operations (a few hashes per tx)
+- Simple operations where bridging overhead dominates
+- When simplicity matters more than microseconds
 
 <Tip>
-Benchmark your actual workload. For backend services with heavy crypto, Native is fastest. For browsers, WASM is your only option. For simple operations, overhead may not matter.
+Benchmark your actual workload. Most applications don't need Native/WASM performance.
 </Tip>
 
-## Checking Status
-
-```typescript
-import { isWasmAvailable, isWasmLoaded } from '@kundera-sn/kundera-ts/wasm';
-import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
-
-// Can WASM be loaded? (checks if WebAssembly exists)
-console.log('WASM available:', isWasmAvailable());
-
-// Is WASM already loaded?
-console.log('WASM loaded:', isWasmLoaded());
-
-// Is native FFI available?
-console.log('Native available:', isNativeAvailable());
-```
-
-## Backend Selection Strategy
+## Backend Selection Guide
 
 | Environment | Recommended | Why |
 |-------------|-------------|-----|
+| **Browser dApp** | Pure JS or WASM | Pure JS for simplicity, WASM if perf critical |
 | **Bun backend** | Native | Built-in FFI, fastest |
 | **Node.js backend** | Native | Best performance with ffi-napi |
-| **Browser** | WASM | Only option |
-| **Next.js SSR** | WASM | Portable, works client + server |
-| **CLI tool** | Native | Fast startup with Bun |
+| **Next.js SSR** | Pure JS | Simplest, works everywhere |
+| **CLI tool** | Pure JS or Native | Pure JS for quick scripts, Native for heavy crypto |
 
 ## Related
 
@@ -246,6 +269,6 @@ console.log('Native available:', isNativeAvailable());
     Cryptographic function reference
   </Card>
   <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
-    Get up and running in 5 minutes
+    Get up and running quickly
   </Card>
 </CardGroup>

@@ -11,285 +11,56 @@ description: Auto-generated API documentation
 
 # crypto/account
 
-## Variables
+## References
+
+### computeContractAddress
+
+Re-exports [computeContractAddress](../crypto.mdx#computecontractaddress)
+
+***
+
+### computeDeclareV3Hash
+
+Re-exports [computeDeclareV3Hash](../crypto.mdx#computedeclarev3hash)
+
+***
+
+### computeDeployAccountV3Hash
+
+Re-exports [computeDeployAccountV3Hash](../crypto.mdx#computedeployaccountv3hash)
+
+***
+
+### computeInvokeV3Hash
+
+Re-exports [computeInvokeV3Hash](../crypto.mdx#computeinvokev3hash)
+
+***
+
+### computeSelector
+
+Re-exports [computeSelector](../crypto.mdx#computeselector)
+
+***
+
+### encodeDAModes
+
+Re-exports [encodeDAModes](../crypto.mdx#encodedamodes)
+
+***
 
 ### EXECUTE\_SELECTOR
 
-> `const` **EXECUTE\_SELECTOR**: [`Felt252Type`](../index-1.mdx#felt252type)
-
-Defined in: [crypto/account/computeSelector.ts:45](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/account/computeSelector.ts#L45)
-
-Standard selectors (precomputed)
-
-## Functions
-
-### computeContractAddress()
-
-> **computeContractAddress**(`classHash`, `salt`, `constructorCalldata`, `deployerAddress`): [`Felt252Type`](../index-1.mdx#felt252type)
-
-Defined in: [crypto/account/computeContractAddress.ts:24](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/account/computeContractAddress.ts#L24)
-
-Compute contract address for DEPLOY_ACCOUNT
-
-address = pedersen(
-  "STARKNET_CONTRACT_ADDRESS",
-  0, // deployer_address (0 for deploy_account)
-  salt,
-  class_hash,
-  pedersen(constructor_calldata)
-) mod 2^251
-
-Note: Uses Pedersen, not Poseidon (per spec)
-
-#### Parameters
-
-##### classHash
-
-[`Felt252Input`](../index-1.mdx#felt252input)
-
-##### salt
-
-[`Felt252Input`](../index-1.mdx#felt252input)
-
-##### constructorCalldata
-
-`bigint`[]
-
-##### deployerAddress
-
-[`Felt252Input`](../index-1.mdx#felt252input) = `0n`
-
-#### Returns
-
-[`Felt252Type`](../index-1.mdx#felt252type)
+Re-exports [EXECUTE_SELECTOR](../crypto.mdx#execute_selector)
 
 ***
 
-### computeDeclareV3Hash()
+### hashCalldata
 
-> **computeDeclareV3Hash**(`tx`, `chainId`): [`Felt252Type`](../index-1.mdx#felt252type)
-
-Defined in: [crypto/account/computeDeclareV3Hash.ts:32](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/account/computeDeclareV3Hash.ts#L32)
-
-Compute transaction hash for DECLARE_V3
-
-Hash structure (Poseidon) per starknet-specs v0.10.0:
-[
-  "declare" prefix,
-  version,
-  sender_address,
-  h(tip, l1_gas_bounds, l2_gas_bounds),  // Note: L1_DATA omitted per starknet.js v6
-  h(paymaster_data),
-  chain_id,
-  nonce,
-  da_modes,
-  h(account_deployment_data),
-  class_hash,
-  compiled_class_hash
-]
-
-#### Parameters
-
-##### tx
-
-[`DeclareTransactionV3`](../crypto.mdx#declaretransactionv3)
-
-##### chainId
-
-[`Felt252Input`](../index-1.mdx#felt252input)
-
-#### Returns
-
-[`Felt252Type`](../index-1.mdx#felt252type)
+Re-exports [hashCalldata](../crypto.mdx#hashcalldata)
 
 ***
 
-### computeDeployAccountV3Hash()
+### hashTipAndResourceBounds
 
-> **computeDeployAccountV3Hash**(`tx`, `contractAddress`, `chainId`): [`Felt252Type`](../index-1.mdx#felt252type)
-
-Defined in: [crypto/account/computeDeployAccountV3Hash.ts:32](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/account/computeDeployAccountV3Hash.ts#L32)
-
-Compute transaction hash for DEPLOY_ACCOUNT_V3
-
-Hash structure (Poseidon) per starknet-specs v0.10.0:
-[
-  "deploy_account" prefix,
-  version,
-  contract_address (computed from class_hash, salt, constructor_calldata),
-  h(tip, l1_gas_bounds, l2_gas_bounds),  // Note: L1_DATA omitted per starknet.js v6
-  h(paymaster_data),
-  chain_id,
-  nonce,
-  da_modes,
-  h(constructor_calldata),
-  class_hash,
-  contract_address_salt
-]
-
-#### Parameters
-
-##### tx
-
-[`DeployAccountTransactionV3`](../crypto.mdx#deployaccounttransactionv3)
-
-##### contractAddress
-
-[`Felt252Input`](../index-1.mdx#felt252input)
-
-##### chainId
-
-[`Felt252Input`](../index-1.mdx#felt252input)
-
-#### Returns
-
-[`Felt252Type`](../index-1.mdx#felt252type)
-
-***
-
-### computeInvokeV3Hash()
-
-> **computeInvokeV3Hash**(`tx`, `chainId`): [`Felt252Type`](../index-1.mdx#felt252type)
-
-Defined in: [crypto/account/computeInvokeV3Hash.ts:31](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/account/computeInvokeV3Hash.ts#L31)
-
-Compute transaction hash for INVOKE_V3
-
-Hash structure (Poseidon) per starknet-specs v0.10.0:
-[
-  "invoke" prefix,
-  version,
-  sender_address,
-  h(tip, l1_gas_bounds, l2_gas_bounds),  // Note: L1_DATA omitted per starknet.js v6
-  h(paymaster_data),
-  chain_id,
-  nonce,
-  da_modes,
-  h(account_deployment_data),
-  h(calldata)
-]
-
-#### Parameters
-
-##### tx
-
-[`InvokeTransactionV3`](../crypto.mdx#invoketransactionv3)
-
-##### chainId
-
-[`Felt252Input`](../index-1.mdx#felt252input)
-
-#### Returns
-
-[`Felt252Type`](../index-1.mdx#felt252type)
-
-***
-
-### computeSelector()
-
-> **computeSelector**(`name`): [`Felt252Type`](../index-1.mdx#felt252type)
-
-Defined in: [crypto/account/computeSelector.ts:22](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/account/computeSelector.ts#L22)
-
-Compute entry point selector from function name
-selector = starknet_keccak(name) mod 2^250
-
-For P0, uses precomputed values for known selectors.
-Custom selectors require snKeccak implementation (P1).
-
-#### Parameters
-
-##### name
-
-`string`
-
-Function name (e.g., "transfer", "__execute__")
-
-#### Returns
-
-[`Felt252Type`](../index-1.mdx#felt252type)
-
-Selector as Felt252
-
-#### Throws
-
-Error if selector not in KNOWN_SELECTORS and snKeccak not implemented
-
-***
-
-### encodeDAModes()
-
-> **encodeDAModes**(`nonceDAMode`, `feeDAMode`): `bigint`
-
-Defined in: [crypto/account/encodeDAModes.ts:16](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/account/encodeDAModes.ts#L16)
-
-Encode data availability modes into a single felt
-Layout per spec:
-  - bits 0-31: fee_data_availability_mode
-  - bits 32-63: nonce_data_availability_mode
-(both currently 0 for L1 mode)
-
-#### Parameters
-
-##### nonceDAMode
-
-`0`
-
-##### feeDAMode
-
-`0`
-
-#### Returns
-
-`bigint`
-
-***
-
-### hashCalldata()
-
-> **hashCalldata**(`calldata`): [`Felt252Type`](../index-1.mdx#felt252type)
-
-Defined in: [crypto/account/hashCalldata.ts:15](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/account/hashCalldata.ts#L15)
-
-Hash calldata array using Poseidon
-Note: Empty arrays still go through poseidon (matching starknet.js behavior)
-
-#### Parameters
-
-##### calldata
-
-`bigint`[]
-
-#### Returns
-
-[`Felt252Type`](../index-1.mdx#felt252type)
-
-***
-
-### hashTipAndResourceBounds()
-
-> **hashTipAndResourceBounds**(`tip`, `resourceBounds`): [`Felt252Type`](../index-1.mdx#felt252type)
-
-Defined in: [crypto/account/hashTipAndResourceBounds.ts:58](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/account/hashTipAndResourceBounds.ts#L58)
-
-Hash tip and resource bounds together for V3 transactions
-Per starknet.js v6: h(tip, l1_gas_bounds, l2_gas_bounds)
-Note: L1_DATA is NOT included in the fee field hash per current implementations
-
-#### Parameters
-
-##### tip
-
-`bigint`
-
-Transaction tip
-
-##### resourceBounds
-
-[`ResourceBoundsMapping`](../crypto.mdx#resourceboundsmapping)
-
-Resource bounds mapping
-
-#### Returns
-
-[`Felt252Type`](../index-1.mdx#felt252type)
+Re-exports [hashTipAndResourceBounds](../crypto.mdx#hashtipandresourcebounds)

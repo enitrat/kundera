@@ -20,7 +20,7 @@ Transports handle communication; providers handle the API layer.
 
 ### EventTransport
 
-Defined in: [transport/types.ts:202](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L202)
+Defined in: [transport/types.ts:202](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L202)
 
 Transport with event emitter capabilities
 
@@ -46,7 +46,7 @@ Type of message payload (default: unknown for raw transport)
 
 > `readonly` **type**: `"http"` \| `"websocket"` \| `"fallback"` \| `"custom"`
 
-Defined in: [transport/types.ts:144](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L144)
+Defined in: [transport/types.ts:144](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L144)
 
 Transport type identifier
 
@@ -60,7 +60,7 @@ Transport type identifier
 
 > `optional` **close**(): `void` \| `Promise`\<`void`\>
 
-Defined in: [transport/types.ts:176](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L176)
+Defined in: [transport/types.ts:176](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L176)
 
 Close the transport connection (if applicable)
 
@@ -76,7 +76,7 @@ Close the transport connection (if applicable)
 
 > **off**\<`E`\>(`event`, `listener`): `this`
 
-Defined in: [transport/types.ts:210](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L210)
+Defined in: [transport/types.ts:210](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L210)
 
 Remove event listener
 
@@ -104,7 +104,7 @@ Remove event listener
 
 > **on**\<`E`\>(`event`, `listener`): `this`
 
-Defined in: [transport/types.ts:204](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L204)
+Defined in: [transport/types.ts:204](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L204)
 
 Listen for transport events
 
@@ -132,7 +132,7 @@ Listen for transport events
 
 > **request**\<`T`\>(`request`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>\>
 
-Defined in: [transport/types.ts:153](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L153)
+Defined in: [transport/types.ts:153](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L153)
 
 Send a single JSON-RPC request
 
@@ -170,7 +170,7 @@ JSON-RPC response
 
 > **requestBatch**\<`T`\>(`requests`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]\>
 
-Defined in: [transport/types.ts:168](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L168)
+Defined in: [transport/types.ts:168](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L168)
 
 Send a batch of JSON-RPC requests
 
@@ -211,7 +211,7 @@ Array of JSON-RPC responses (matched by id)
 
 ### HttpTransportOptions
 
-Defined in: [transport/http.ts:24](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/http.ts#L24)
+Defined in: [transport/http.ts:24](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/http.ts#L24)
 
 HTTP transport configuration
 
@@ -221,7 +221,7 @@ HTTP transport configuration
 
 > `optional` **fetchOptions**: `RequestInit`
 
-Defined in: [transport/http.ts:26](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/http.ts#L26)
+Defined in: [transport/http.ts:26](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/http.ts#L26)
 
 Custom fetch options (headers, credentials, etc.)
 
@@ -229,7 +229,7 @@ Custom fetch options (headers, credentials, etc.)
 
 > `optional` **timeout**: `number`
 
-Defined in: [transport/http.ts:28](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/http.ts#L28)
+Defined in: [transport/http.ts:28](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/http.ts#L28)
 
 Request timeout in ms (default: 30000)
 
@@ -237,7 +237,7 @@ Request timeout in ms (default: 30000)
 
 ### JsonRpcError
 
-Defined in: [transport/types.ts:40](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L40)
+Defined in: [transport/types.ts:40](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L40)
 
 JSON-RPC 2.0 error object
 
@@ -247,7 +247,7 @@ JSON-RPC 2.0 error object
 
 > **code**: `number`
 
-Defined in: [transport/types.ts:42](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L42)
+Defined in: [transport/types.ts:42](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L42)
 
 Error code
 
@@ -255,7 +255,7 @@ Error code
 
 > `optional` **data**: `unknown`
 
-Defined in: [transport/types.ts:46](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L46)
+Defined in: [transport/types.ts:46](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L46)
 
 Optional error data
 
@@ -263,7 +263,7 @@ Optional error data
 
 > **message**: `string`
 
-Defined in: [transport/types.ts:44](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L44)
+Defined in: [transport/types.ts:44](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L44)
 
 Human-readable error message
 
@@ -271,7 +271,7 @@ Human-readable error message
 
 ### JsonRpcErrorResponse
 
-Defined in: [transport/types.ts:52](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L52)
+Defined in: [transport/types.ts:52](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L52)
 
 JSON-RPC 2.0 error response
 
@@ -281,7 +281,7 @@ JSON-RPC 2.0 error response
 
 > **error**: [`JsonRpcError`](#jsonrpcerror)
 
-Defined in: [transport/types.ts:58](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L58)
+Defined in: [transport/types.ts:58](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L58)
 
 Error object
 
@@ -289,7 +289,7 @@ Error object
 
 > **id**: `string` \| `number` \| `null`
 
-Defined in: [transport/types.ts:56](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L56)
+Defined in: [transport/types.ts:56](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L56)
 
 Request identifier (matches request, null for parse errors)
 
@@ -297,7 +297,7 @@ Request identifier (matches request, null for parse errors)
 
 > **jsonrpc**: `"2.0"`
 
-Defined in: [transport/types.ts:54](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L54)
+Defined in: [transport/types.ts:54](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L54)
 
 JSON-RPC version
 
@@ -305,7 +305,7 @@ JSON-RPC version
 
 ### JsonRpcRequest
 
-Defined in: [transport/types.ts:14](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L14)
+Defined in: [transport/types.ts:14](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L14)
 
 JSON-RPC 2.0 request object
 
@@ -315,7 +315,7 @@ JSON-RPC 2.0 request object
 
 > `optional` **id**: `string` \| `number`
 
-Defined in: [transport/types.ts:18](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L18)
+Defined in: [transport/types.ts:18](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L18)
 
 Request identifier (omit for notifications)
 
@@ -323,7 +323,7 @@ Request identifier (omit for notifications)
 
 > **jsonrpc**: `"2.0"`
 
-Defined in: [transport/types.ts:16](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L16)
+Defined in: [transport/types.ts:16](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L16)
 
 JSON-RPC version (always "2.0")
 
@@ -331,7 +331,7 @@ JSON-RPC version (always "2.0")
 
 > **method**: `string`
 
-Defined in: [transport/types.ts:20](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L20)
+Defined in: [transport/types.ts:20](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L20)
 
 Method name
 
@@ -339,7 +339,7 @@ Method name
 
 > `optional` **params**: `Record`\<`string`, `unknown`\> \| `unknown`[]
 
-Defined in: [transport/types.ts:22](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L22)
+Defined in: [transport/types.ts:22](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L22)
 
 Method parameters
 
@@ -347,7 +347,7 @@ Method parameters
 
 ### JsonRpcSuccessResponse
 
-Defined in: [transport/types.ts:28](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L28)
+Defined in: [transport/types.ts:28](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L28)
 
 JSON-RPC 2.0 success response
 
@@ -363,7 +363,7 @@ JSON-RPC 2.0 success response
 
 > **id**: `string` \| `number` \| `null`
 
-Defined in: [transport/types.ts:32](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L32)
+Defined in: [transport/types.ts:32](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L32)
 
 Request identifier (matches request)
 
@@ -371,7 +371,7 @@ Request identifier (matches request)
 
 > **jsonrpc**: `"2.0"`
 
-Defined in: [transport/types.ts:30](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L30)
+Defined in: [transport/types.ts:30](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L30)
 
 JSON-RPC version
 
@@ -379,7 +379,7 @@ JSON-RPC version
 
 > **result**: `T`
 
-Defined in: [transport/types.ts:34](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L34)
+Defined in: [transport/types.ts:34](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L34)
 
 Result data
 
@@ -387,7 +387,7 @@ Result data
 
 ### Transport
 
-Defined in: [transport/types.ts:142](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L142)
+Defined in: [transport/types.ts:142](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L142)
 
 Transport interface for JSON-RPC communication
 
@@ -429,7 +429,7 @@ const responses = await transport.requestBatch([
 
 > `readonly` **type**: `"http"` \| `"websocket"` \| `"fallback"` \| `"custom"`
 
-Defined in: [transport/types.ts:144](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L144)
+Defined in: [transport/types.ts:144](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L144)
 
 Transport type identifier
 
@@ -439,7 +439,7 @@ Transport type identifier
 
 > `optional` **close**(): `void` \| `Promise`\<`void`\>
 
-Defined in: [transport/types.ts:176](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L176)
+Defined in: [transport/types.ts:176](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L176)
 
 Close the transport connection (if applicable)
 
@@ -451,7 +451,7 @@ Close the transport connection (if applicable)
 
 > **request**\<`T`\>(`request`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>\>
 
-Defined in: [transport/types.ts:153](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L153)
+Defined in: [transport/types.ts:153](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L153)
 
 Send a single JSON-RPC request
 
@@ -485,7 +485,7 @@ JSON-RPC response
 
 > **requestBatch**\<`T`\>(`requests`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]\>
 
-Defined in: [transport/types.ts:168](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L168)
+Defined in: [transport/types.ts:168](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L168)
 
 Send a batch of JSON-RPC requests
 
@@ -522,7 +522,7 @@ Array of JSON-RPC responses (matched by id)
 
 ### TransportConfig
 
-Defined in: [transport/types.ts:99](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L99)
+Defined in: [transport/types.ts:99](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L99)
 
 Transport configuration options
 
@@ -536,7 +536,7 @@ Transport configuration options
 
 > `optional` **timeout**: `number`
 
-Defined in: [transport/types.ts:101](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L101)
+Defined in: [transport/types.ts:101](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L101)
 
 Request timeout in ms (default: 30000)
 
@@ -544,7 +544,7 @@ Request timeout in ms (default: 30000)
 
 ### TransportEvents
 
-Defined in: [transport/types.ts:186](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L186)
+Defined in: [transport/types.ts:186](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L186)
 
 Transport event types
 
@@ -562,7 +562,7 @@ Type of message payload (default: unknown for raw transport)
 
 > **connect**: \[\]
 
-Defined in: [transport/types.ts:188](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L188)
+Defined in: [transport/types.ts:188](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L188)
 
 Connection established
 
@@ -570,7 +570,7 @@ Connection established
 
 > **disconnect**: \[`Error`\]
 
-Defined in: [transport/types.ts:190](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L190)
+Defined in: [transport/types.ts:190](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L190)
 
 Connection closed
 
@@ -578,7 +578,7 @@ Connection closed
 
 > **error**: \[`Error`\]
 
-Defined in: [transport/types.ts:192](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L192)
+Defined in: [transport/types.ts:192](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L192)
 
 Error occurred
 
@@ -586,7 +586,7 @@ Error occurred
 
 > **message**: \[`TMessage`\]
 
-Defined in: [transport/types.ts:194](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L194)
+Defined in: [transport/types.ts:194](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L194)
 
 Message received (for subscriptions)
 
@@ -594,7 +594,7 @@ Message received (for subscriptions)
 
 ### TransportRequestOptions
 
-Defined in: [transport/types.ts:107](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L107)
+Defined in: [transport/types.ts:107](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L107)
 
 Transport request options (per-request overrides)
 
@@ -608,7 +608,7 @@ Transport request options (per-request overrides)
 
 > `optional` **signal**: `AbortSignal`
 
-Defined in: [transport/types.ts:109](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L109)
+Defined in: [transport/types.ts:109](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L109)
 
 Signal for request cancellation
 
@@ -616,7 +616,7 @@ Signal for request cancellation
 
 > `optional` **timeout**: `number`
 
-Defined in: [transport/types.ts:101](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L101)
+Defined in: [transport/types.ts:101](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L101)
 
 Request timeout in ms (default: 30000)
 
@@ -628,7 +628,7 @@ Request timeout in ms (default: 30000)
 
 ### WebSocketTransport
 
-Defined in: [transport/websocket.ts:412](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L412)
+Defined in: [transport/websocket.ts:412](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L412)
 
 WebSocket transport with additional connection methods
 
@@ -642,7 +642,7 @@ WebSocket transport with additional connection methods
 
 > `readonly` **connected**: `boolean`
 
-Defined in: [transport/websocket.ts:414](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L414)
+Defined in: [transport/websocket.ts:414](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L414)
 
 Whether the transport is currently connected
 
@@ -650,7 +650,7 @@ Whether the transport is currently connected
 
 > `readonly` **type**: `"http"` \| `"websocket"` \| `"fallback"` \| `"custom"`
 
-Defined in: [transport/types.ts:144](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L144)
+Defined in: [transport/types.ts:144](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L144)
 
 Transport type identifier
 
@@ -664,7 +664,7 @@ Transport type identifier
 
 > **close**(): `void`
 
-Defined in: [transport/websocket.ts:420](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L420)
+Defined in: [transport/websocket.ts:420](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L420)
 
 Close the connection
 
@@ -680,7 +680,7 @@ Close the connection
 
 > **connect**(): `Promise`\<`void`\>
 
-Defined in: [transport/websocket.ts:417](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L417)
+Defined in: [transport/websocket.ts:417](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L417)
 
 Connect to the WebSocket server
 
@@ -692,7 +692,7 @@ Connect to the WebSocket server
 
 > **off**\<`E`\>(`event`, `listener`): `this`
 
-Defined in: [transport/types.ts:210](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L210)
+Defined in: [transport/types.ts:210](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L210)
 
 Remove event listener
 
@@ -724,7 +724,7 @@ Remove event listener
 
 > **on**\<`E`\>(`event`, `listener`): `this`
 
-Defined in: [transport/types.ts:204](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L204)
+Defined in: [transport/types.ts:204](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L204)
 
 Listen for transport events
 
@@ -756,7 +756,7 @@ Listen for transport events
 
 > **request**\<`T`\>(`request`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>\>
 
-Defined in: [transport/types.ts:153](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L153)
+Defined in: [transport/types.ts:153](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L153)
 
 Send a single JSON-RPC request
 
@@ -794,7 +794,7 @@ JSON-RPC response
 
 > **requestBatch**\<`T`\>(`requests`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]\>
 
-Defined in: [transport/types.ts:168](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L168)
+Defined in: [transport/types.ts:168](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L168)
 
 Send a batch of JSON-RPC requests
 
@@ -835,7 +835,7 @@ Array of JSON-RPC responses (matched by id)
 
 > **subscribe**(`subscriptionId`, `callback`): `void`
 
-Defined in: [transport/websocket.ts:426](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L426)
+Defined in: [transport/websocket.ts:426](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L426)
 
 Register a subscription callback
 Called when subscription notification is received
@@ -858,7 +858,7 @@ Called when subscription notification is received
 
 > **unsubscribe**(`subscriptionId`, `callback?`): `void`
 
-Defined in: [transport/websocket.ts:431](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L431)
+Defined in: [transport/websocket.ts:431](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L431)
 
 Unregister a subscription callback
 
@@ -880,7 +880,7 @@ Unregister a subscription callback
 
 ### WebSocketTransportOptions
 
-Defined in: [transport/websocket.ts:25](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L25)
+Defined in: [transport/websocket.ts:25](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L25)
 
 WebSocket transport configuration
 
@@ -894,7 +894,7 @@ WebSocket transport configuration
 
 > `optional` **keepAlive**: `number`
 
-Defined in: [transport/websocket.ts:35](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L35)
+Defined in: [transport/websocket.ts:35](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L35)
 
 Keep-alive interval in ms, 0 = disabled (default: 30000)
 
@@ -902,7 +902,7 @@ Keep-alive interval in ms, 0 = disabled (default: 30000)
 
 > `optional` **maxReconnectAttempts**: `number`
 
-Defined in: [transport/websocket.ts:33](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L33)
+Defined in: [transport/websocket.ts:33](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L33)
 
 Max reconnect attempts, 0 = infinite (default: 0)
 
@@ -910,7 +910,7 @@ Max reconnect attempts, 0 = infinite (default: 0)
 
 > `optional` **protocols**: `string` \| `string`[]
 
-Defined in: [transport/websocket.ts:27](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L27)
+Defined in: [transport/websocket.ts:27](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L27)
 
 WebSocket protocols
 
@@ -918,7 +918,7 @@ WebSocket protocols
 
 > `optional` **reconnect**: `boolean`
 
-Defined in: [transport/websocket.ts:29](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L29)
+Defined in: [transport/websocket.ts:29](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L29)
 
 Auto-reconnect on disconnect (default: true)
 
@@ -926,7 +926,7 @@ Auto-reconnect on disconnect (default: true)
 
 > `optional` **reconnectDelay**: `number`
 
-Defined in: [transport/websocket.ts:31](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L31)
+Defined in: [transport/websocket.ts:31](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L31)
 
 Reconnect delay in ms (default: 1000)
 
@@ -934,7 +934,7 @@ Reconnect delay in ms (default: 1000)
 
 > `optional` **timeout**: `number`
 
-Defined in: [transport/websocket.ts:37](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L37)
+Defined in: [transport/websocket.ts:37](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L37)
 
 Request timeout in ms (default: 30000)
 
@@ -944,7 +944,7 @@ Request timeout in ms (default: 30000)
 
 > **JsonRpcResponse**\<`T`\> = [`JsonRpcSuccessResponse`](#jsonrpcsuccessresponse)\<`T`\> \| [`JsonRpcErrorResponse`](#jsonrpcerrorresponse)
 
-Defined in: [transport/types.ts:64](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L64)
+Defined in: [transport/types.ts:64](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L64)
 
 JSON-RPC 2.0 response (success or error)
 
@@ -960,7 +960,7 @@ JSON-RPC 2.0 response (success or error)
 
 > `const` **JsonRpcErrorCode**: `object`
 
-Defined in: [transport/types.ts:79](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L79)
+Defined in: [transport/types.ts:79](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L79)
 
 #### Type Declaration
 
@@ -1006,7 +1006,7 @@ Server error (reserved range: -32000 to -32099)
 
 > **createErrorResponse**(`id`, `code`, `message`, `data?`): [`JsonRpcErrorResponse`](#jsonrpcerrorresponse)
 
-Defined in: [transport/types.ts:242](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L242)
+Defined in: [transport/types.ts:242](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L242)
 
 Create a JSON-RPC error response
 
@@ -1038,7 +1038,7 @@ Create a JSON-RPC error response
 
 > **createRequest**(`method`, `params?`, `id?`): [`JsonRpcRequest`](#jsonrpcrequest)
 
-Defined in: [transport/types.ts:221](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L221)
+Defined in: [transport/types.ts:221](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L221)
 
 Create a JSON-RPC request object
 
@@ -1066,7 +1066,7 @@ Create a JSON-RPC request object
 
 > **httpTransport**(`url`, `options`): [`Transport`](#transport)
 
-Defined in: [transport/http.ts:41](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/http.ts#L41)
+Defined in: [transport/http.ts:41](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/http.ts#L41)
 
 Create an HTTP transport for JSON-RPC communication
 
@@ -1096,7 +1096,7 @@ const transport = httpTransport('https://starknet.example.com');
 
 > **isJsonRpcError**\<`T`\>(`response`): `response is JsonRpcErrorResponse`
 
-Defined in: [transport/types.ts:71](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L71)
+Defined in: [transport/types.ts:71](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L71)
 
 Check if response is an error response
 
@@ -1122,7 +1122,7 @@ Check if response is an error response
 
 > **matchBatchResponses**\<`T`\>(`requests`, `responses`): [`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]
 
-Defined in: [transport/types.ts:265](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/types.ts#L265)
+Defined in: [transport/types.ts:265](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/types.ts#L265)
 
 Match batch responses to requests by id
 
@@ -1155,7 +1155,7 @@ This function reorders responses to match request order.
 
 > **webSocketTransport**(`url`, `options`): [`WebSocketTransport`](#websockettransport)
 
-Defined in: [transport/websocket.ts:77](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/transport/websocket.ts#L77)
+Defined in: [transport/websocket.ts:77](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/transport/websocket.ts#L77)
 
 Create a WebSocket transport for JSON-RPC communication
 

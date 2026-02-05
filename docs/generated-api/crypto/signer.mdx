@@ -17,7 +17,7 @@ description: Auto-generated API documentation
 
 > **hashTypedData**(`typedData`, `accountAddress`): [`Felt252Type`](../index-1.mdx#felt252type)
 
-Defined in: [crypto/signer/hashTypedData.ts:25](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/signer/hashTypedData.ts#L25)
+Defined in: [crypto/signer/hashTypedData.ts:25](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/crypto/signer/hashTypedData.ts#L25)
 
 Compute typed data hash following SNIP-12
 
@@ -41,9 +41,9 @@ hash = poseidon(prefix, domain_hash, account, message_hash)
 
 ### signRaw()
 
-> **signRaw**(`privateKey`, `hash`): `Signature`
+> **signRaw**(`privateKey`, `hash`): [`Signature`](../index-1.mdx#signature)
 
-Defined in: [crypto/signer/signRaw.ts:13](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/signer/signRaw.ts#L13)
+Defined in: [crypto/signer/signRaw.ts:13](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/crypto/signer/signRaw.ts#L13)
 
 Sign a raw message hash with a private key.
 
@@ -59,15 +59,15 @@ Sign a raw message hash with a private key.
 
 #### Returns
 
-`Signature`
+[`Signature`](../index-1.mdx#signature)
 
 ***
 
 ### signTypedData()
 
-> **signTypedData**(`privateKey`, `typedData`, `accountAddress`): `Signature`
+> **signTypedData**(`privateKey`, `typedData`, `accountAddress`): [`Signature`](../index-1.mdx#signature)
 
-Defined in: [crypto/signer/signTypedData.ts:16](https://github.com/enitrat/kundera/blob/053164ed6e8047da6cd5d7814bb922d3bcc620d3/packages/kundera-ts/src/crypto/signer/signTypedData.ts#L16)
+Defined in: [crypto/signer/signTypedData.ts:16](https://github.com/enitrat/kundera/blob/dff2c2d2cced3adcc854595eaa952860ca31e413/packages/kundera-ts/src/crypto/signer/signTypedData.ts#L16)
 
 Sign typed data (SNIP-12 / EIP-712 style) with a private key.
 
@@ -87,4 +87,4 @@ Sign typed data (SNIP-12 / EIP-712 style) with a private key.
 
 #### Returns
 
-`Signature`
+[`Signature`](../index-1.mdx#signature)
