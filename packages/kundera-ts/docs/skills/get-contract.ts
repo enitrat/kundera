@@ -10,11 +10,14 @@ import {
   decodeOutput,
   getFunctionSelectorHex,
   type KanabiAbi,
+  type AbiLike,
+  type CairoValue,
   type Result,
   type ExtractAbiFunctionNames,
   type ExtractAbiFunction,
+  type ExtractArgs,
+  type FunctionRet,
 } from '@kundera-sn/kundera-ts/abi';
-import type { ExtractArgs, FunctionRet } from 'abi-wan-kanabi/kanabi';
 import { Felt252 } from '@kundera-sn/kundera-ts';
 import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { BlockId, FunctionCall } from '@kundera-sn/kundera-ts/jsonrpc';
@@ -102,8 +105,12 @@ export function getContract<TAbi extends KanabiAbi>(
       args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>,
       options?: ReadOptions
     ): Promise<ContractResult<FunctionRet<TAbi, TFunctionName>>> {
-      // Encode calldata
-      const calldataResult = encodeCalldata(abi, functionName, args);
+      // Use untyped overload at runtime — type safety is at the read() signature.
+      const calldataResult = encodeCalldata(
+        abi as AbiLike,
+        functionName as string,
+        args as CairoValue[]
+      );
       if (calldataResult.error) {
         return err('ENCODE_ERROR', calldataResult.error.message);
       }
@@ -127,13 +134,16 @@ export function getContract<TAbi extends KanabiAbi>(
         )) as string[];
         const outputFelts = output.map((v) => BigInt(v));
 
-        // Decode with type inference
-        const decoded = decodeOutput(abi, functionName, outputFelts);
+        const decoded = decodeOutput(
+          abi as AbiLike,
+          functionName as string,
+          outputFelts
+        );
         if (decoded.error) {
           return err('DECODE_ERROR', decoded.error.message);
         }
 
-        return ok(decoded.result);
+        return ok(decoded.result as FunctionRet<TAbi, TFunctionName>);
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
         return err('RPC_ERROR', message);
