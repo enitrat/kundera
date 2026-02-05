@@ -22,13 +22,16 @@ export enum StarkResult {
   NoSquareRoot = 6,
 }
 
-// Types for ffi-napi (loaded dynamically)
-type FFI = typeof import('ffi-napi');
-type Ref = typeof import('ref-napi');
+type FFI = {
+  Library: (
+    path: string,
+    definitions: Record<string, [string, string[]]>
+  ) => Record<string, (...args: unknown[]) => number>;
+};
 
 // Lazily loaded FFI modules
 let ffi: FFI | null = null;
-let ref: Ref | null = null;
+let ref: unknown = null;
 let ffiChecked = false;
 
 // Loaded library instance
@@ -43,7 +46,7 @@ function loadFfiModules(): boolean {
   ffiChecked = true;
 
   try {
-    ffi = require('ffi-napi');
+    ffi = require('ffi-napi') as FFI;
     ref = require('ref-napi');
     return true;
   } catch {
