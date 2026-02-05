@@ -21,7 +21,8 @@ import { ContractAddress } from '../../primitives/ContractAddress/index.js';
 import { ClassHash } from '../../primitives/ClassHash/index.js';
 import { encodeShortString } from '../../primitives/ShortString/index.js';
 import { poseidonHashMany, snKeccak } from '../hash.js';
-import { hashType } from './hashType.js';
+// hashType imported for future use in complex type encoding
+import { hashType as _hashType } from './hashType.js';
 import { Snip12EncodingError } from './errors.js';
 import type { TypeDefinitions, MessageValue } from './types.js';
 

@@ -25,7 +25,7 @@ export interface FeltConstructor {
   equals: (a: Felt252Type, b: Felt252Type) => boolean;
   toHex: (felt: Felt252Type) => string;
   toBigInt: (felt: Felt252Type) => bigint;
-  encodeShortString: (str: string) => bigint;
+  encodeShortString: (str: string) => Felt252Type;
   encodeShortStringHex: (str: string) => string;
   decodeShortString: (felt: bigint | string | Felt252Type) => string;
   ZERO: Felt252Type;

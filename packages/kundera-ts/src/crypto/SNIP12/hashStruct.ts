@@ -9,7 +9,7 @@ import { poseidonHashMany } from '../hash.js';
 import { hashType } from './hashType.js';
 import { EncodeValue } from './encodeValue.js';
 import { Snip12InvalidMessageError } from './errors.js';
-import type { TypeDefinitions, MessageValue, Message } from './types.js';
+import type { TypeDefinitions, Message } from './types.js';
 
 /**
  * Hash a struct according to SNIP-12

@@ -6,6 +6,8 @@
     "lib": ["ES2022", "DOM"],
     "types": ["node", "bun"],
     "strict": true,
+    "allowJs": true,
+    "checkJs": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -32,6 +34,6 @@
       "kundera/*": ["./src/*/index.ts"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "examples/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.d.ts", "examples/**/*.ts"],
   "exclude": ["node_modules", "dist", "types", "**/*.test.ts", "**/*.test-d.ts"]
 }

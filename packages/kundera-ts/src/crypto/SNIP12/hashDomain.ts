@@ -12,12 +12,6 @@ import type { Domain, TypeDefinitions, TypeProperty } from './types.js';
 /**
  * StarknetDomain type definition (revision 1)
  */
-const STARKNET_DOMAIN_TYPE: readonly TypeProperty[] = [
-  { name: 'name', type: 'shortstring' },
-  { name: 'version', type: 'shortstring' },
-  { name: 'chainId', type: 'shortstring' },
-  { name: 'revision', type: 'shortstring' },
-];
 
 /**
  * Hash the domain separator
@@ -35,19 +29,19 @@ export function hashDomain(domain: Domain): Felt252Type {
 
   if (domain.name !== undefined) {
     typeProps.push({ name: 'name', type: 'shortstring' });
-    domainData.name = domain.name;
+    domainData['name'] = domain.name;
   }
   if (domain.version !== undefined) {
     typeProps.push({ name: 'version', type: 'shortstring' });
-    domainData.version = domain.version;
+    domainData['version'] = domain.version;
   }
   if (domain.chainId !== undefined) {
     typeProps.push({ name: 'chainId', type: 'shortstring' });
-    domainData.chainId = domain.chainId;
+    domainData['chainId'] = domain.chainId;
   }
   if (domain.revision !== undefined) {
     typeProps.push({ name: 'revision', type: 'shortstring' });
-    domainData.revision = domain.revision;
+    domainData['revision'] = domain.revision;
   }
 
   // Create types with the dynamic domain type
