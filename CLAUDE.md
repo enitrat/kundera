@@ -290,13 +290,49 @@ Self-contained, fix failures immediately, evidence-based debug. **No output = pa
 - **Format**: MDX (Markdown + JSX) with YAML frontmatter
 - **Structure**: getting-started/, guides/, typescript/, effect/
 
+### Skills (Symlink Pattern)
+
+Skills live in `packages/kundera-ts/docs/skills/` but Mintlify requires files inside `docs/`. We use a symlink:
+
+```
+docs/typescript/skills → ../../packages/kundera-ts/docs/skills
+```
+
+**Why symlink?** Mintlify can't reference paths outside `docs/` (no `../packages/...`). Symlink lets us:
+- Keep skills colocated with package (tests + implementations + docs together)
+- Avoid file duplication
+- Keep `docs.json` paths unchanged (`typescript/skills/*`)
+
+**Structure**:
+```
+packages/kundera-ts/docs/skills/
+├── *.mdx          # Documentation
+├── *.ts           # Skill implementations
+└── *.test.ts      # Pattern validation tests
+```
+
 ### Commands
 
 ```bash
-pnpm docs:dev         # Dev server (localhost:3000)
-pnpm docs:build       # Build docs
+pnpm docs:setup       # Create symlinks + discover pages (runs automatically)
+pnpm docs:dev         # Dev server (runs setup first)
+pnpm docs:build       # Build docs (runs setup first)
+pnpm docs:generate    # TypeDoc + frontmatter + navigation + setup
 pnpm docs:verify-links # Verify links
 ```
+
+### Adding Package Docs
+
+To add docs from a new package, edit `scripts/setup-docs.ts`:
+
+```typescript
+const PACKAGE_DOC_SOURCES: Record<string, string> = {
+  "typescript/skills": "packages/kundera-ts/docs/skills",
+  "effect/skills": "packages/kundera-effect/docs/skills",  // Add new sources here
+};
+```
+
+Then run `pnpm docs:setup` - symlinks are created and docs.json is updated.
 
 ## WASM
 

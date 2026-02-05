@@ -15,10 +15,11 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "pnpm build && pnpm -r publish --access public",
-    "docs:dev": "cd docs && mintlify dev",
-    "docs:build": "cd docs && mintlify build",
+    "docs:setup": "tsx scripts/setup-docs.ts",
+    "docs:dev": "pnpm docs:setup && cd docs && mintlify dev",
+    "docs:build": "pnpm docs:setup && cd docs && mintlify build",
     "docs:verify-links": "bun scripts/verify-docs-links.mjs",
-    "docs:generate": "typedoc && tsx scripts/add-typedoc-frontmatter.ts && tsx scripts/update-docs-navigation.ts"
+    "docs:generate": "typedoc && tsx scripts/add-typedoc-frontmatter.ts && tsx scripts/update-docs-navigation.ts && pnpm docs:setup"
   },
   "devDependencies": {
     "typedoc": "^0.28.0",
