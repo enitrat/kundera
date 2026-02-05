@@ -125,9 +125,8 @@ describe('Integer Types - ABI Integration', () => {
     const result = decodeOutput(TEST_ABI, 'test_all_integers', outputData);
     expect(result.error).toBeNull();
     expect(result.result).toBeDefined();
-    // decodeOutput returns an array with the single u256 value
-    expect(Array.isArray(result.result)).toBe(true);
-    expect(Uint256.toBigInt(result.result![0])).toBe(1000000000000000000n);
+    // decodeOutput unwraps single output to scalar
+    expect(Uint256.toBigInt(result.result!)).toBe(1000000000000000000n);
   });
 
   it('should handle edge cases', () => {

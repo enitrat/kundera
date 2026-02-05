@@ -332,20 +332,20 @@ describeIfCrypto('Calldata Decoding', () => {
 // ============ Output Decoding Tests ============
 
 describeIfCrypto('Output Decoding', () => {
-  it('should decode balance_of output (u256)', () => {
+  it('should decode balance_of output (u256) — unwraps single output to scalar', () => {
     const output = [1000n, 0n]; // low, high
 
     const result = decodeOutput(ERC20_ABI, 'balance_of', output);
     expect(result.error).toBeNull();
-    expect(result.result).toEqual([1000n]);
+    expect(result.result).toBe(1000n);
   });
 
-  it('should decode transfer output (bool)', () => {
+  it('should decode transfer output (bool) — unwraps single output to scalar', () => {
     const output = [1n]; // true
 
     const result = decodeOutput(ERC20_ABI, 'transfer', output);
     expect(result.error).toBeNull();
-    expect(result.result).toEqual([true]);
+    expect(result.result).toBe(true);
   });
 });
 
@@ -772,7 +772,7 @@ describeIfCrypto('Short String Encoding/Decoding', () => {
     const nameEncoded = encodeShortString('my_token');
     const result = decodeOutput(SHORTSTRING_ABI, 'get_name', [nameEncoded.toBigInt()]);
     expect(result.error).toBeNull();
-    expect(result.result).toEqual(['my_token']);
+    expect(result.result).toBe('my_token');
   });
 
   it('re-exports encodeShortString/decodeShortString from primitives', () => {

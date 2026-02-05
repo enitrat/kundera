@@ -49,8 +49,8 @@ export async function multicallRead(
   transport: Transport,
   calls: ReadContractParams[],
   blockId: BlockId = 'latest',
-): Promise<ContractResult<CairoValue[]>[]> {
-  const results: ContractResult<CairoValue[]>[] = new Array(calls.length);
+): Promise<ContractResult<CairoValue>[]> {
+  const results: ContractResult<CairoValue>[] = new Array(calls.length);
   const requests: JsonRpcRequest[] = [];
   const requestMeta: Array<{ index: number; abi: AbiLike; functionName: string }> = [];
 

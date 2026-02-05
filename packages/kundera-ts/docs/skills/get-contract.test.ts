@@ -96,13 +96,13 @@ describe("docs/skills/get-contract", () => {
   });
 
   describe("decodeOutput with typed ABI", () => {
-    it("decodes u256 output from balance_of", () => {
+    it("decodes u256 output from balance_of — unwraps to scalar", () => {
       // u256 is (low, high) on-chain
       const outputFelts = [BigInt(1000), BigInt(0)];
       const result = decodeOutput(ERC20_ABI, "balance_of", outputFelts);
 
       expect(result.error).toBeNull();
-      expect(result.result).toBeDefined();
+      expect(result.result).toBe(1000n);
     });
   });
 

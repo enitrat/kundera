@@ -202,7 +202,7 @@ Decode function return values.
 
 ```typescript
 const { result } = decodeOutput(abi, 'balance_of', [1000n, 0n]);
-// result: [1000n]
+// result: 1000n  (single output unwrapped to scalar)
 
 const { result: obj } = decodeOutputObject(abi, 'balance_of', [1000n, 0n]);
 // obj: { balance: 1000n }

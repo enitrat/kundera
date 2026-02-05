@@ -71,19 +71,19 @@ const decoded = decodeOutput(ERC20_ABI, 'balance_of', rawResult);
 
 ## Return Values
 
-Read methods return decoded values as an array:
+Single-output functions return the unwrapped scalar value. Multi-output functions return an array.
 
 ```ts
-// Single return value
+// Single return value — unwrapped to scalar
 const { result } = await readContract(transport, {
   abi: ERC20_ABI,
   address: tokenAddress,
   functionName: 'balance_of',
   args: [accountAddress],
 });
-const balance = result[0]; // bigint
+const balance = result; // bigint (scalar, not array)
 
-// Multiple return values
+// Multiple return values — array
 const { result } = await readContract(transport, {
   abi: PAIR_ABI,
   address: pairAddress,

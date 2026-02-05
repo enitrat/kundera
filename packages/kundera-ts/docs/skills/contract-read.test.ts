@@ -26,13 +26,13 @@ describe("docs/skills/contract-read", () => {
     expect(result.result).toEqual([BigInt("0xdead")]);
   });
 
-  it("decodes output from a view function", () => {
+  it("decodes output from a view function — unwraps to scalar", () => {
     // u256 on-chain = (low, high)
     const outputFelts = [BigInt(500), BigInt(0)];
     const result = decodeOutput(ERC20_ABI, "balance_of", outputFelts);
 
     expect(result.error).toBeNull();
-    expect(result.result).toBeDefined();
+    expect(result.result).toBe(500n);
   });
 
   it("computes function selector", () => {

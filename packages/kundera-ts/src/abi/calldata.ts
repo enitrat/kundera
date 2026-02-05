@@ -193,27 +193,36 @@ export function decodeOutput(
   abi: AbiLike,
   fnName: string,
   output: bigint[]
-): Result<CairoValue[]>;
+): Result<CairoValue>;
 export function decodeOutput(
   abi: AbiLike,
   fnName: string,
   output: bigint[]
-): Result<CairoValue[]> {
+): Result<CairoValue> {
   // Parse ABI
   const parsedResult = getParsedAbi(abi);
   if (parsedResult.error) {
-    return parsedResult as Result<CairoValue[]>;
+    return parsedResult as Result<CairoValue>;
   }
   const parsed = parsedResult.result;
 
   // Get function
   const fnResult = getFunction(parsed, fnName);
   if (fnResult.error) {
-    return fnResult as Result<CairoValue[]>;
+    return fnResult as Result<CairoValue>;
   }
   const fn = fnResult.result;
 
-  return decodeOutputs(output, fn.entry.outputs, parsed);
+  const arrayResult = decodeOutputs(output, fn.entry.outputs, parsed);
+  if (arrayResult.error) {
+    return arrayResult as Result<CairoValue>;
+  }
+
+  // Unwrap: 0 outputs → null, 1 output → scalar, 2+ → array
+  const arr = arrayResult.result;
+  if (arr.length === 0) return ok(null);
+  if (arr.length === 1) return ok(arr[0]!);
+  return ok(arr);
 }
 
 /**

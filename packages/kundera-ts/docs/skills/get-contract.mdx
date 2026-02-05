@@ -60,7 +60,7 @@ import type { FunctionRet, FunctionArgs, ExtractAbiFunctionNames } from '@kunder
 
 // Given an ABI and function name, extract types:
 type BalanceArgs = FunctionArgs<typeof ERC20_ABI, 'balance_of'>;
-//   ^? [ContractAddressType]
+//   ^? ContractAddressType  (single-arg tuples are unwrapped)
 
 type BalanceRet = FunctionRet<typeof ERC20_ABI, 'balance_of'>;
 //   ^? Uint256Type

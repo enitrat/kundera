@@ -44,7 +44,7 @@ function err<T>(code: ContractErrorCode, message: string): ContractResult<T> {
 export async function readContract(
   transport: Transport,
   params: ReadContractParams,
-): Promise<ContractResult<CairoValue[]>> {
+): Promise<ContractResult<CairoValue>> {
   const { abi, address, functionName, args = [], blockId } = params;
 
   const calldataResult = encodeCalldata(abi, functionName, args);
