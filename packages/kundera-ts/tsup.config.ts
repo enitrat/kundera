@@ -32,8 +32,7 @@ export default defineConfig({
   // Mark FFI modules as external to avoid bundling errors
   external: [
     'bun:ffi',
-    'ffi-napi',
-    'ref-napi',
+    'koffi',
   ],
   // Ensure proper handling of conditional imports
   noExternal: [],

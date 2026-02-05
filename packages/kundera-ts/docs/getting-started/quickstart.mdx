@@ -45,7 +45,7 @@ Kundera needs a crypto backend for signing and hashing. Choose based on your env
     Install the FFI package for best performance:
 
     ```bash
-    npm install ffi-napi
+    npm install koffi
     ```
 
     Then use normally:
@@ -53,7 +53,7 @@ Kundera needs a crypto backend for signing and hashing. Choose based on your env
     ```typescript
     import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
 
-    console.log(isNativeAvailable()); // true if ffi-napi installed
+    console.log(isNativeAvailable()); // true if koffi installed
     ```
   </Tab>
 </Tabs>

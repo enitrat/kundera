@@ -95,16 +95,16 @@ Bun's FFI is the fastest option. If you're building a backend service with heavy
 
 ### Node.js
 
-Requires the `ffi-napi` package:
+Requires the `koffi` package:
 
 ```bash
-npm install ffi-napi
+npm install koffi
 ```
 
 <Warning>
 ## Native Dependencies
 
-`ffi-napi` requires native build tools:
+`koffi` requires native build tools:
 
 **macOS:**
 ```bash
@@ -258,7 +258,7 @@ Benchmark your actual workload. Most applications don't need Native/WASM perform
 |-------------|-------------|-----|
 | **Browser dApp** | Pure JS or WASM | Pure JS for simplicity, WASM if perf critical |
 | **Bun backend** | Native | Built-in FFI, fastest |
-| **Node.js backend** | Native | Best performance with ffi-napi |
+| **Node.js backend** | Native | Best performance with koffi |
 | **Next.js SSR** | Pure JS | Simplest, works everywhere |
 | **CLI tool** | Pure JS or Native | Pure JS for quick scripts, Native for heavy crypto |
 

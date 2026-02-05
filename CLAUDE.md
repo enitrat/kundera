@@ -2,7 +2,7 @@
 
 ### Single Source of Truth
 
-Rust is the core for crypto. All performance-critical logic lives there. TypeScript consumes Rust through FFI (bun:ffi, ffi-napi) or WASM. Fix a bug once in Rust, every runtime gets the fix. No "the WASM version behaves differently" problems.
+Rust is the core for crypto. All performance-critical logic lives there. TypeScript consumes Rust through FFI (bun:ffi, koffi) or WASM. Fix a bug once in Rust, every runtime gets the fix. No "the WASM version behaves differently" problems.
 
 ### Rust + TypeScript Partnership
 

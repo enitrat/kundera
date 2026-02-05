@@ -90,13 +90,13 @@ Bun:
 - No Bun imports should exist in Node paths.
 
 Node:
-- Uses ffi-napi / ref-napi in packages/kundera-ts/src/native/node-ffi.ts.
+- Uses koffi / koffi in packages/kundera-ts/src/native/node-ffi.ts.
 - These are optionalDependencies (packages/kundera-ts/package.json).
 - ESM-safe `createRequire(import.meta.url)` is required.
 
 Loader:
 - packages/kundera-ts/src/native/loader.ts detects runtime (Bun vs Node).
-- Use dynamic require to avoid loading ffi-napi or bun:ffi in the wrong runtime.
+- Use dynamic require to avoid loading koffi or bun:ffi in the wrong runtime.
 
 Platform:
 - packages/kundera-ts/src/native/platform.ts resolves:
@@ -129,11 +129,11 @@ Tsup:
   packages/kundera-ts/src/wasm/index.ts, packages/kundera-ts/src/wasm-loader/index.ts,
   packages/kundera-ts/src/abi/index.ts, packages/kundera-ts/src/transport/index.ts,
   packages/kundera-ts/src/serde/index.ts, packages/kundera-ts/src/jsonrpc/index.ts
-- Mark externals: bun:ffi, ffi-napi, ref-napi
+- Mark externals: bun:ffi, koffi, koffi
 
 Types:
 - packages/kundera-ts/tsconfig.build.json excludes *.test.ts
-- packages/kundera-ts/src/types/ffi-napi.d.ts provides minimal type stubs
+- packages/kundera-ts/src/types/koffi.d.ts provides minimal type stubs
 
 -----------------------------------------------------------------------------
 Packaging Native Binaries
@@ -158,7 +158,7 @@ Release / Publish Checklist
 Troubleshooting
 
 - If Node cannot load native:
-  - install ffi-napi + ref-napi
+  - install koffi + koffi
   - ensure lib exists in target/release or native/<platform>-<arch>/
 
 - If tsup fails on DTS:

@@ -1,7 +1,7 @@
 /**
  * Node.js FFI Backend
  *
- * Native FFI implementation using ffi-napi and ref-napi.
+ * Native FFI implementation using koffi.
  * Only imported when running in Node.js runtime.
  */
 
@@ -22,36 +22,50 @@ export enum StarkResult {
   NoSquareRoot = 6,
 }
 
-type FFI = {
-  Library: (
-    path: string,
-    definitions: Record<string, [string, string[]]>
-  ) => Record<string, (...args: unknown[]) => number>;
-};
+// Lazily loaded koffi module
+let koffi: any = null;
+let koffiChecked = false;
 
-// Lazily loaded FFI modules
-let ffi: FFI | null = null;
-let ref: unknown = null;
-let ffiChecked = false;
+// FFI function signatures (all return int32 status code)
+type FfiFn = (...args: any[]) => number;
 
-// Loaded library instance
+interface NativeFns {
+  felt_add: FfiFn;
+  felt_sub: FfiFn;
+  felt_mul: FfiFn;
+  felt_div: FfiFn;
+  felt_neg: FfiFn;
+  felt_inverse: FfiFn;
+  felt_pow: FfiFn;
+  felt_sqrt: FfiFn;
+  starknet_pedersen_hash: FfiFn;
+  starknet_poseidon_hash: FfiFn;
+  starknet_poseidon_hash_many: FfiFn;
+  keccak256: FfiFn;
+  starknet_keccak256: FfiFn;
+  starknet_get_public_key: FfiFn;
+  starknet_sign: FfiFn;
+  starknet_verify: FfiFn;
+  starknet_recover: FfiFn;
+}
+
+// Loaded library instance and bound functions
 let lib: any = null;
 let libraryPath: string | null = null;
+let fns: NativeFns | null = null;
 
 /**
- * Try to load ffi-napi and ref-napi
+ * Try to load koffi
  */
-function loadFfiModules(): boolean {
-  if (ffiChecked) return ffi !== null;
-  ffiChecked = true;
+function loadKoffi(): boolean {
+  if (koffiChecked) return koffi !== null;
+  koffiChecked = true;
 
   try {
-    ffi = require('ffi-napi') as FFI;
-    ref = require('ref-napi');
+    koffi = require('koffi');
     return true;
   } catch {
-    ffi = null;
-    ref = null;
+    koffi = null;
     return false;
   }
 }
@@ -60,7 +74,7 @@ function loadFfiModules(): boolean {
  * Check if native library is available
  */
 export function isAvailable(): boolean {
-  if (!loadFfiModules()) return false;
+  if (!loadKoffi()) return false;
   if (lib !== null) return true;
   return getNativeLibPath() !== null;
 }
@@ -75,12 +89,12 @@ export function getLibraryPath(): string | null {
 /**
  * Load the native library (lazy, called automatically)
  */
-function loadLibrary(): any {
-  if (lib !== null) return lib;
+function loadLibrary(): NativeFns {
+  if (fns !== null) return fns;
 
-  if (!loadFfiModules() || !ffi || !ref) {
+  if (!loadKoffi() || !koffi) {
     throw new Error(
-      'ffi-napi not available. Install with: npm install ffi-napi ref-napi'
+      'koffi not available. Install with: npm install koffi'
     );
   }
 
@@ -92,32 +106,38 @@ function loadLibrary(): any {
   }
 
   libraryPath = path;
+  lib = koffi.load(path);
 
-  // Define the library interface
-  lib = ffi.Library(path, {
+  // Declare all FFI functions
+  // Type aliases for readability
+  const ptr = 'void *';
+  const i32 = 'int32_t';
+  const u64 = 'uint64_t';
+
+  fns = {
     // Felt arithmetic
-    felt_add: ['int32', ['pointer', 'pointer', 'pointer']],
-    felt_sub: ['int32', ['pointer', 'pointer', 'pointer']],
-    felt_mul: ['int32', ['pointer', 'pointer', 'pointer']],
-    felt_div: ['int32', ['pointer', 'pointer', 'pointer']],
-    felt_neg: ['int32', ['pointer', 'pointer']],
-    felt_inverse: ['int32', ['pointer', 'pointer']],
-    felt_pow: ['int32', ['pointer', 'pointer', 'pointer']],
-    felt_sqrt: ['int32', ['pointer', 'pointer']],
+    felt_add: lib.func(`${i32} felt_add(${ptr} a, ${ptr} b, ${ptr} out)`),
+    felt_sub: lib.func(`${i32} felt_sub(${ptr} a, ${ptr} b, ${ptr} out)`),
+    felt_mul: lib.func(`${i32} felt_mul(${ptr} a, ${ptr} b, ${ptr} out)`),
+    felt_div: lib.func(`${i32} felt_div(${ptr} a, ${ptr} b, ${ptr} out)`),
+    felt_neg: lib.func(`${i32} felt_neg(${ptr} a, ${ptr} out)`),
+    felt_inverse: lib.func(`${i32} felt_inverse(${ptr} a, ${ptr} out)`),
+    felt_pow: lib.func(`${i32} felt_pow(${ptr} base, ${ptr} exp, ${ptr} out)`),
+    felt_sqrt: lib.func(`${i32} felt_sqrt(${ptr} a, ${ptr} out)`),
     // Hashing
-    starknet_pedersen_hash: ['int32', ['pointer', 'pointer', 'pointer']],
-    starknet_poseidon_hash: ['int32', ['pointer', 'pointer', 'pointer']],
-    starknet_poseidon_hash_many: ['int32', ['pointer', 'uint64', 'pointer']],
-    keccak256: ['int32', ['pointer', 'uint64', 'pointer']],
-    starknet_keccak256: ['int32', ['pointer', 'uint64', 'pointer']],
+    starknet_pedersen_hash: lib.func(`${i32} starknet_pedersen_hash(${ptr} a, ${ptr} b, ${ptr} out)`),
+    starknet_poseidon_hash: lib.func(`${i32} starknet_poseidon_hash(${ptr} a, ${ptr} b, ${ptr} out)`),
+    starknet_poseidon_hash_many: lib.func(`${i32} starknet_poseidon_hash_many(${ptr} data, ${u64} count, ${ptr} out)`),
+    keccak256: lib.func(`${i32} keccak256(${ptr} data, ${u64} len, ${ptr} out)`),
+    starknet_keccak256: lib.func(`${i32} starknet_keccak256(${ptr} data, ${u64} len, ${ptr} out)`),
     // ECDSA
-    starknet_get_public_key: ['int32', ['pointer', 'pointer']],
-    starknet_sign: ['int32', ['pointer', 'pointer', 'pointer', 'pointer']],
-    starknet_verify: ['int32', ['pointer', 'pointer', 'pointer', 'pointer']],
-    starknet_recover: ['int32', ['pointer', 'pointer', 'pointer', 'pointer', 'pointer']],
-  });
+    starknet_get_public_key: lib.func(`${i32} starknet_get_public_key(${ptr} privkey, ${ptr} out)`),
+    starknet_sign: lib.func(`${i32} starknet_sign(${ptr} privkey, ${ptr} msg, ${ptr} r, ${ptr} s)`),
+    starknet_verify: lib.func(`${i32} starknet_verify(${ptr} pubkey, ${ptr} msg, ${ptr} r, ${ptr} s)`),
+    starknet_recover: lib.func(`${i32} starknet_recover(${ptr} msg, ${ptr} r, ${ptr} s, ${ptr} v, ${ptr} out)`),
+  };
 
-  return lib;
+  return fns;
 }
 
 /**
@@ -145,13 +165,6 @@ function checkResult(result: number): void {
 }
 
 /**
- * Convert Uint8Array to Buffer for ffi-napi
- */
-function toBuffer(arr: Uint8Array): Buffer {
-  return Buffer.from(arr.buffer, arr.byteOffset, arr.byteLength);
-}
-
-/**
  * Copy result from output buffer to new Felt252
  */
 function copyResult(out: Buffer): Felt252Type {
@@ -161,87 +174,87 @@ function copyResult(out: Buffer): Felt252Type {
 // ============ Exported Functions ============
 
 export function feltAdd(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.felt_add(toBuffer(a), toBuffer(b), out);
+  const result = fns.felt_add(Buffer.from(a), Buffer.from(b), out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function feltSub(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.felt_sub(toBuffer(a), toBuffer(b), out);
+  const result = fns.felt_sub(Buffer.from(a), Buffer.from(b), out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function feltMul(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.felt_mul(toBuffer(a), toBuffer(b), out);
+  const result = fns.felt_mul(Buffer.from(a), Buffer.from(b), out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function feltDiv(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.felt_div(toBuffer(a), toBuffer(b), out);
+  const result = fns.felt_div(Buffer.from(a), Buffer.from(b), out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function feltNeg(a: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.felt_neg(toBuffer(a), out);
+  const result = fns.felt_neg(Buffer.from(a), out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function feltInverse(a: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.felt_inverse(toBuffer(a), out);
+  const result = fns.felt_inverse(Buffer.from(a), out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function feltPow(base: Felt252Type, exp: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.felt_pow(toBuffer(base), toBuffer(exp), out);
+  const result = fns.felt_pow(Buffer.from(base), Buffer.from(exp), out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function feltSqrt(a: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.felt_sqrt(toBuffer(a), out);
+  const result = fns.felt_sqrt(Buffer.from(a), out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function pedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.starknet_pedersen_hash(toBuffer(a), toBuffer(b), out);
+  const result = fns.starknet_pedersen_hash(Buffer.from(a), Buffer.from(b), out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function poseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.starknet_poseidon_hash(toBuffer(a), toBuffer(b), out);
+  const result = fns.starknet_poseidon_hash(Buffer.from(a), Buffer.from(b), out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   // Pack inputs into contiguous buffer
   const packed = Buffer.alloc(inputs.length * 32);
   for (let i = 0; i < inputs.length; i++) {
@@ -252,7 +265,7 @@ export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
     packed.set(input, i * 32);
   }
   const out = Buffer.alloc(32);
-  const result = lib.starknet_poseidon_hash_many(packed, inputs.length, out);
+  const result = fns.starknet_poseidon_hash_many(packed, inputs.length, out);
   checkResult(result);
   return copyResult(out);
 }
@@ -261,10 +274,10 @@ export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
  * Standard Keccak256 hash (full 32 bytes)
  */
 export function keccak256(data: Uint8Array): Uint8Array {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
   const dataBuf = data.length > 0 ? Buffer.from(data) : Buffer.alloc(0);
-  const result = lib.keccak256(dataBuf, data.length, out);
+  const result = fns.keccak256(dataBuf, data.length, out);
   checkResult(result);
   return new Uint8Array(out);
 }
@@ -273,18 +286,18 @@ export function keccak256(data: Uint8Array): Uint8Array {
  * Starknet Keccak256 (truncated to 250 bits, returns Felt252)
  */
 export function snKeccak256(data: Uint8Array): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
   const dataBuf = data.length > 0 ? Buffer.from(data) : Buffer.alloc(0);
-  const result = lib.starknet_keccak256(dataBuf, data.length, out);
+  const result = fns.starknet_keccak256(dataBuf, data.length, out);
   checkResult(result);
   return copyResult(out);
 }
 
 export function getPublicKey(privateKey: Felt252Type): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.starknet_get_public_key(toBuffer(privateKey), out);
+  const result = fns.starknet_get_public_key(Buffer.from(privateKey), out);
   checkResult(result);
   return copyResult(out);
 }
@@ -298,12 +311,12 @@ export function sign(
   privateKey: Felt252Type,
   messageHash: Felt252Type
 ): NativeSignature {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const outR = Buffer.alloc(32);
   const outS = Buffer.alloc(32);
-  const result = lib.starknet_sign(
-    toBuffer(privateKey),
-    toBuffer(messageHash),
+  const result = fns.starknet_sign(
+    Buffer.from(privateKey),
+    Buffer.from(messageHash),
     outR,
     outS
   );
@@ -320,12 +333,12 @@ export function verify(
   r: Felt252Type,
   s: Felt252Type
 ): boolean {
-  const lib = loadLibrary();
-  const result = lib.starknet_verify(
-    toBuffer(publicKey),
-    toBuffer(messageHash),
-    toBuffer(r),
-    toBuffer(s)
+  const fns = loadLibrary();
+  const result = fns.starknet_verify(
+    Buffer.from(publicKey),
+    Buffer.from(messageHash),
+    Buffer.from(r),
+    Buffer.from(s)
   );
   if (result === StarkResult.Success) return true;
   if (result === StarkResult.InvalidSignature) return false;
@@ -339,13 +352,13 @@ export function recover(
   s: Felt252Type,
   v: Felt252Type
 ): Felt252Type {
-  const lib = loadLibrary();
+  const fns = loadLibrary();
   const out = Buffer.alloc(32);
-  const result = lib.starknet_recover(
-    toBuffer(messageHash),
-    toBuffer(r),
-    toBuffer(s),
-    toBuffer(v),
+  const result = fns.starknet_recover(
+    Buffer.from(messageHash),
+    Buffer.from(r),
+    Buffer.from(s),
+    Buffer.from(v),
     out
   );
   checkResult(result);

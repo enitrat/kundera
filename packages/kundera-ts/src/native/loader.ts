@@ -6,11 +6,9 @@
  * of the underlying runtime.
  */
 
-import { createRequire } from 'node:module';
 import type { Felt252Type } from '../primitives/index.js';
 import { isBun, isNode, getRuntime } from './platform.js';
-
-const require = createRequire(import.meta.url);
+import * as nodeFfi from './node-ffi.js';
 
 // Re-export platform utilities
 export { getNativeLibPath as getNativeLibraryPath, getRuntime, getPlatform, getArch } from './platform.js';
@@ -79,10 +77,9 @@ function getBackend(): NativeBackend | null {
     }
   } else if (isNode()) {
     try {
-      // Dynamic import to avoid loading ffi-napi in Bun
-      backend = require('./node-ffi.js') as NativeBackend;
-      if (!backend.isAvailable()) {
-        backend = null;
+      // koffi is lazy-loaded inside node-ffi, so this import is safe in all runtimes
+      if (nodeFfi.isAvailable()) {
+        backend = nodeFfi as NativeBackend;
       }
     } catch {
       backend = null;
@@ -105,7 +102,7 @@ function requireBackend(): NativeBackend {
       );
     } else {
       throw new Error(
-        'Native FFI not available. Install ffi-napi: npm install ffi-napi ref-napi\n' +
+        'Native FFI not available. Install koffi: npm install koffi\n' +
         'And build the native library: cargo build --release'
       );
     }

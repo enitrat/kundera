@@ -32,7 +32,7 @@ import {
 function ensureNativeAvailable(): void {
   if (!isNativeAvailable()) {
     throw new Error(
-      'Native FFI not available. Use Bun or Node.js with ffi-napi, and build with: cargo build --release'
+      'Native FFI not available. Use Bun or Node.js with koffi, and build with: cargo build --release'
     );
   }
 }
