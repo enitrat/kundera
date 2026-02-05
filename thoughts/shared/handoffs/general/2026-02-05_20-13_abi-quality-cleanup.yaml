@@ -1,0 +1,81 @@
+---
+session: general
+date: 2026-02-05
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: ABI quality cleanup — fix structural types, eliminate shallow tests, remove bad patterns
+now: Commit changes (2 commits ready), then consider broader kanabi type unification
+
+test: pnpm --filter @kundera-sn/kundera-ts typecheck && pnpm --filter @kundera-sn/kundera-ts test:run
+
+done_this_session:
+  - task: Added AbiOutput type (optional name per Starknet spec), fixed AbiFunctionEntry/AbiL1HandlerEntry outputs
+    files: [src/abi/types.ts, src/abi/decode.ts, src/abi/index.ts]
+  - task: Documented why custom MapAbiPrimitive/BuildArgs/FunctionRet/FunctionArgs are necessary (kanabi Config augmentation doesn't work)
+    files: [src/abi/index.ts]
+  - task: Fixed BuildArgs to bail on generic arrays (never) so typed overload doesn't match non-const ABIs
+    files: [src/abi/index.ts]
+  - task: Relaxed ExtractArgs constraint from strict kanabi to { inputs: readonly { type: string }[] }
+    files: [src/abi/index.ts]
+  - task: Deleted get-contract.typecheck.ts — replaced by expectTypeOf in test files
+    files: [docs/skills/get-contract.typecheck.ts]
+  - task: Rewrote get-contract.test.ts with real ABI encode/decode + expectTypeOf for type inference
+    files: [docs/skills/get-contract.test.ts]
+  - task: Rewrote contract-read.test.ts with actual encodeCalldata/decodeOutput/selector tests
+    files: [docs/skills/contract-read.test.ts]
+  - task: Rewrote contract-write.test.ts with encodeCalldata for transfer + error case
+    files: [docs/skills/contract-write.test.ts]
+  - task: Fixed get-contract.ts to import ExtractArgs/FunctionRet from our abi module (not kanabi directly)
+    files: [docs/skills/get-contract.ts]
+  - task: Fixed double cast in contract-multicall.ts (as any as string[] → as string[])
+    files: [docs/skills/contract-multicall.ts]
+  - task: decodeOutputsObject handles unnamed outputs with fallback output_${i} key
+    files: [src/abi/decode.ts]
+
+blockers: []
+
+questions:
+  - "Keccak256 native tests (5) still fail — ffi-napi not installed. Pre-existing, not caused by our changes."
+  - "get-contract.ts uses AbiLike/CairoValue[] casts to hit untyped encodeCalldata overload — is this acceptable or should calldata.ts typed overload accept our ExtractArgs?"
+
+decisions:
+  - keep_custom_types: "MapAbiPrimitive, BuildArgs, FunctionRet, FunctionArgs are NOT duplication of kanabi. kanabi Config augmentation doesn't reliably affect type resolution. Our custom types are the single source of truth for Cairo type → branded TypeScript type mapping."
+  - never_bail_for_generic: "BuildArgs returns `never` when TInputs length is `number` (generic array). This prevents the typed overload from matching non-const ABIs, which would cause TS2589 depth errors."
+  - abi_output_separate_type: "Created AbiOutput (name?: string) instead of making AbiMember.name optional. Inputs always have names; outputs may not per Starknet spec."
+  - untyped_overload_in_skills: "get-contract.ts casts to AbiLike/CairoValue[] to use untyped encodeCalldata overload at runtime. Type safety is enforced at the Contract.read() signature level, not inside the implementation."
+
+findings:
+  - "kanabi ExtractArgs and our ExtractArgs are structurally different — kanabi resolves addresses to `string` while ours resolves to ContractAddressType. They're NOT interchangeable."
+  - "calldata.ts MUST import from abi-wan-kanabi/kanabi (not our index.ts) to avoid TS2589 depth errors when generic Abi is passed"
+  - "FunctionRet fallback changed from KanabiFunctionRet to `never` — cleaner, avoids mixing two type systems"
+
+worked:
+  - "AbiOutput with optional name — structural fix that makes const ABIs (outputs without name) assignable to AbiLike"
+  - "expectTypeOf from vitest — clean replacement for separate typecheck.ts files"
+  - "Casting to AbiLike + CairoValue[] in skill code to hit untyped overload — pragmatic boundary between type-safe API and runtime"
+
+failed:
+  - "Attempt 1: Re-exporting kanabi FunctionArgs/FunctionRet directly — broke because Config augmentation doesn't work, addresses resolved to string"
+  - "Attempt 2: Making calldata.ts import our ExtractArgs — caused TS2589 depth errors with generic Abi"
+  - "Casting to readonly unknown[] — too broad, didn't match AbiLike constraint"
+
+next:
+  - "Commit changes (2 logical commits: core ABI fix + skills cleanup)"
+  - "Consider if calldata.ts typed overload should accept our ExtractArgs (would require careful handling of depth)"
+  - "wallet-modal.ts:132,138 and http-provider.ts:157 still have `as any` casts — different skill scope"
+
+files:
+  created: []
+  modified:
+    - packages/kundera-ts/src/abi/types.ts
+    - packages/kundera-ts/src/abi/decode.ts
+    - packages/kundera-ts/src/abi/index.ts
+    - packages/kundera-ts/docs/skills/get-contract.ts
+    - packages/kundera-ts/docs/skills/get-contract.test.ts
+    - packages/kundera-ts/docs/skills/contract-read.test.ts
+    - packages/kundera-ts/docs/skills/contract-write.test.ts
+    - packages/kundera-ts/docs/skills/contract-multicall.ts
+  deleted:
+    - packages/kundera-ts/docs/skills/get-contract.typecheck.ts
