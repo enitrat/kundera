@@ -1,443 +1,394 @@
-# Cairo Integer Types Research Report
-Generated: 2026-02-04
+# Codebase Report: FunctionRet Type Implementation and Typed decodeOutput
+Generated: 2026-02-05
 
 ## Summary
+The typed `decodeOutput` feature uses TypeScript's type inference with `abi-wan-kanabi` to provide compile-time type safety for ABI function return values. The `FunctionRet<TAbi, TFunctionName>` type extracts the return type from the ABI definition.
 
-Cairo implements unsigned integers (u8, u16, u32, u64, u128, u256) and signed integers (i8, i16, i32, i64, i128) with felt252 as the fundamental serialization format. Unsigned integers up to u128 fit in a single felt252, while u256 uses a struct with two u128 fields (low, high). Signed integers are represented as ranges within the felt252 field and are serialized directly to felt252 without conversion.
+## 1. FunctionRet Type Definition
 
----
+### Location
+✓ VERIFIED: External dependency `abi-wan-kanabi@2.2.4`
 
-## Unsigned Integer Types
-
-### u8, u16, u32, u64 (extern types)
-
-✓ VERIFIED at `/Users/msaug/deps/cairo/corelib/src/integer.cairo`
+**File:** `node_modules/.pnpm/abi-wan-kanabi@2.2.4/node_modules/abi-wan-kanabi/dist/kanabi.d.ts`
 
 **Definition:**
-```cairo
-pub extern type u8;    // Line 310
-pub extern type u16;   // Line 466
-pub extern type u32;   // Line 628
-pub extern type u64;   // Line 790
+```typescript
+export type FunctionRet<
+  TAbi extends Abi, 
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+> = ExtractAbiFunction<TAbi, TFunctionName>['outputs'] extends readonly [] 
+  ? void 
+  : StringToPrimitiveType<TAbi, ExtractAbiFunction<TAbi, TFunctionName>['outputs'][0]['type']>;
 ```
 
-**Serialization:** Single felt252
-- Each type implements `Serde` via `into_felt252_based::SerdeImpl<T>`
-- Example: `impl U8Serde = crate::serde::into_felt252_based::SerdeImpl<u8>;` (Line 324)
+### How It Works
 
-**Conversion Functions:**
-```cairo
-// u8 example (same pattern for u16, u32, u64)
-extern const fn u8_to_felt252(a: u8) -> felt252 nopanic;
-extern const fn u8_try_from_felt252(a: felt252) -> Option<u8> implicits(RangeCheck) nopanic;
+1. **Extract function from ABI** - Uses `ExtractAbiFunction` to get the specific function entry
+2. **Check outputs** - If `outputs` is empty array, return `void`
+3. **Map first output to primitive** - Uses `StringToPrimitiveType` to convert Cairo type string to TypeScript type
+4. **Type mapping** - Uses configured types from `Config` interface (see kanabi-config.d.ts)
+
+### Type Mapping Chain
+
+```typescript
+StringToPrimitiveType<TAbi, T> 
+  → checks if T is primitive (felt252, u256, etc.)
+  → checks if T is generic (Array<T>, Option<T>, Result<T,E>)
+  → checks if T is tuple
+  → checks if T is struct (looks up in ABI)
+  → checks if T is enum (looks up in ABI)
 ```
 
-**Ranges:**
-- u8: 0 to 255 (2^8 - 1)
-- u16: 0 to 65,535 (2^16 - 1)
-- u32: 0 to 4,294,967,295 (2^32 - 1)
-- u64: 0 to 18,446,744,073,709,551,615 (2^64 - 1)
-
----
-
-### u128 (extern type)
-
-✓ VERIFIED at `/Users/msaug/deps/cairo/corelib/src/integer.cairo:87`
-
-**Definition:**
-```cairo
-pub extern type u128;
-impl u128Copy of Copy<u128>;
-impl u128Drop of Drop<u128>;
-impl NumericLiteralu128 of NumericLiteral<u128>;
-```
-
-**Serialization:** Single felt252
-```cairo
-impl U128Serde = crate::serde::into_felt252_based::SerdeImpl<u128>; // Line 94
-```
-
-**Conversion:**
-```cairo
-pub(crate) extern const fn u128_to_felt252(a: u128) -> felt252 nopanic; // Line 113
-
-// Conversion from felt252 handles overflow
-enum U128sFromFelt252Result {
-    Narrow: u128,
-    Wide: (u128, u128),
-}
-
-const fn u128_try_from_felt252(a: felt252) -> Option<u128> implicits(RangeCheck) nopanic {
-    match u128s_from_felt252(a) {
-        U128sFromFelt252Result::Narrow(x) => Some(x),
-        U128sFromFelt252Result::Wide(_x) => None,
-    }
+**Primitive Lookup:**
+```typescript
+{
+  'core::felt252': ResolvedConfig['FeltType'],
+  'core::integer::u256': ResolvedConfig['U256Type'],
+  'core::starknet::contract_address::ContractAddress': ResolvedConfig['AddressType'],
+  'core::bool': boolean,
+  // etc.
 }
 ```
 
-**Range:** 0 to 340,282,366,920,938,463,463,374,607,431,768,211,455 (2^128 - 1)
+## 2. decodeOutput Implementation
 
-**Note:** u128 is the native range check unit in Cairo VM and fits comfortably within felt252's prime field.
+### Location
+✓ VERIFIED: `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/calldata.ts:179-206`
 
----
+**Signature (Typed Overload):**
+```typescript
+export function decodeOutput<
+  TAbi extends KanabiAbi,
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+>(
+  abi: TAbi,
+  fnName: TFunctionName,
+  output: bigint[]
+): Result<FunctionRet<TAbi, TFunctionName>>;
+```
 
-### u256 (struct type)
+**Signature (Untyped Fallback):**
+```typescript
+export function decodeOutput(
+  abi: Abi,
+  fnName: string,
+  output: bigint[]
+): Result<CairoValue[]>;
+```
 
-✓ VERIFIED at `/Users/msaug/deps/cairo/corelib/src/integer.cairo:953`
+### Implementation Flow
 
-**Definition:**
-```cairo
-pub struct u256 {
-    pub low: u128,
-    pub high: u128,
+```typescript
+// 1. Parse ABI
+const parsedResult = getParsedAbi(abi);
+
+// 2. Get function entry
+const fnResult = getFunction(parsed, fnName);
+const fn = fnResult.result;
+
+// 3. Decode outputs using output members
+return decodeOutputs(output, fn.entry.outputs, parsed);
+```
+
+**Runtime decoding** is handled by `decodeOutputs()` in `decode.ts:303`, which:
+- Iterates through output members
+- Decodes each value according to its Cairo type
+- Returns array of `CairoValue[]`
+
+**Type system** ensures the returned `CairoValue[]` matches `FunctionRet<TAbi, TFunctionName>` at compile time.
+
+## 3. Current ABI Type System
+
+### Core Types
+
+**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/types.ts`
+
+| Type | Purpose |
+|------|---------|
+| `Abi` | Array of ABI entries |
+| `AbiEntry` | Union of function/struct/enum/event/constructor/interface/impl |
+| `AbiFunctionEntry` | Function definition with inputs/outputs |
+| `AbiMember` | Input/output parameter |
+| `ParsedAbi` | Indexed ABI with Maps for fast lookup |
+| `CairoValue` | Runtime value type (bigint/string/boolean/array/object/enum) |
+| `DecodedStruct` | Object with named fields |
+| `Result<T, E>` | Voltaire-style result type |
+
+### Kanabi Integration Types
+
+**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/calldata.ts:7-20`
+
+```typescript
+import type {
+  Abi as KanabiAbi,
+  ExtractAbiFunction,
+  ExtractAbiFunctionNames,
+  ExtractArgs,
+  FunctionRet,
+} from 'abi-wan-kanabi/kanabi';
+```
+
+### Type Configuration
+
+**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/kanabi-config.d.ts`
+
+Declares module augmentation for `abi-wan-kanabi` to map Cairo types to Kundera branded types:
+
+```typescript
+declare module 'abi-wan-kanabi' {
+  export interface Config {
+    FeltType: Felt252Type;
+    AddressType: ContractAddressType;
+    ClassHashType: ClassHashType;
+    BigIntType: bigint;
+    U8Type: Uint8Type;
+    U16Type: Uint16Type;
+    // ... all integer types
+  }
 }
 ```
 
-**Serialization:** Two felt252 values (low, high)
+This allows `FunctionRet` to resolve to branded primitive types like `Uint256Type` instead of raw `bigint`.
 
-The struct derives `Serde`, which serializes as:
-```cairo
-// Serialization example from docs (Line 43-46)
-let value: u256 = u256 { low: 1, high: 2 };
-let mut output: Array<felt252> = array![];
-value.serialize(ref output);
-assert!(output == array![1, 2]); // Two felt252s: low first, then high
+### FunctionArgs Type
+
+**Location:** `abi-wan-kanabi/dist/kanabi.d.ts`
+
+```typescript
+export type FunctionArgs<
+  TAbi extends Abi, 
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+> = ExtractAbiFunction<TAbi, TFunctionName>['inputs'] extends readonly [] 
+  ? [] 
+  : _BuildArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>['inputs'], []> extends [infer T] 
+    ? T 
+    : _BuildArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>['inputs'], []>;
 ```
 
-**Format:**
-- **First felt252:** `low` (bits 0-127)
-- **Second felt252:** `high` (bits 128-255)
-- **Representation:** `value = low + high * 2^128`
+**Purpose:** Extract input parameter types for type-safe `encodeCalldata`
 
-**Range:** 0 to 2^256 - 1
+## 4. Contract Interaction Patterns
 
-**Operations:**
-u256 arithmetic is implemented using u128 operations with carry handling:
-```cairo
-pub fn u256_overflowing_add(lhs: u256, rhs: u256) -> (u256, bool) {
-    // Add low parts
-    match u128_overflowing_add(lhs.low, rhs.low) {
-        Ok(low) => (u256 { low, high }, overflow),
-        Err(low) => {
-            // Carry to high part
-            match u128_overflowing_add(high, 1_u128) {
-                Ok(high) => (u256 { low, high }, overflow),
-                Err(high) => (u256 { low, high }, true),
-            }
-        },
-    }
+### Pattern 1: Manual Read (contract-read.ts)
+
+**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/docs/skills/contract-read.ts:44-76`
+
+```typescript
+export async function readContract(
+  transport: Transport,
+  params: ReadContractParams,
+): Promise<ContractResult<unknown[]>> {
+  const { abi, address, functionName, args = [], blockId } = params;
+
+  // 1. Encode calldata
+  const calldataResult = encodeCalldata(abi, functionName, args as any);
+  
+  // 2. Prepare JSON-RPC call
+  const selector = getFunctionSelectorHex(functionName);
+  const calldata = calldataResult.result.map((value) => Felt252(value).toHex());
+  
+  const call: FunctionCall = {
+    contract_address: address,
+    entry_point_selector: selector,
+    calldata: calldata as any,
+  };
+
+  // 3. Call via transport
+  const output = await starknet_call(transport, call, blockId) as string[];
+  
+  // 4. Decode output
+  const outputFelts = output.map((value) => BigInt(value));
+  const decoded = decodeOutput(abi, functionName, outputFelts);
+  
+  return ok(decoded.result);
 }
 ```
 
----
+**Usage:**
+```typescript
+import { readContract } from './contract-read';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
 
-## Signed Integer Types
-
-### i8, i16, i32, i64, i128 (extern types)
-
-✓ VERIFIED at `/Users/msaug/deps/cairo/corelib/src/integer.cairo`
-
-**Definitions:**
-```cairo
-pub extern type i8;    // Line 1933
-pub extern type i16;   // Line 2023
-pub extern type i32;   // Line 2114
-pub extern type i64;   // Line 2205
-pub extern type i128;  // Line 2296
+const result = await readContract(transport, {
+  abi: ERC20_ABI,
+  address: '0x...',
+  functionName: 'balance_of',
+  args: [accountAddress],
+});
 ```
 
-**Serialization:** Single felt252
-```cairo
-impl I8Serde = crate::serde::into_felt252_based::SerdeImpl<i8>;   // Line 1945
-impl I16Serde = crate::serde::into_felt252_based::SerdeImpl<i16>; // Line 2035
-// ... same pattern for i32, i64, i128
-```
+### Pattern 2: Viem-Style Contract (contract-viem.ts)
 
-**Conversion Functions:**
-```cairo
-// Pattern for all signed types (i8 example)
-extern const fn i8_try_from_felt252(a: felt252) -> Option<i8> implicits(RangeCheck) nopanic;
-extern const fn i8_to_felt252(a: i8) -> felt252 nopanic;
-```
+**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/docs/skills/contract-viem.ts:137-176`
 
----
-
-## Signed Integer Encoding Scheme
-
-✓ VERIFIED at `/Users/msaug/deps/cairo/crates/cairo-lang-sierra-to-casm/src/invocations/int/signed.rs`
-
-**Representation:** Signed integers are represented directly in felt252's prime field using **natural range mapping**.
-
-### Key Implementation Details:
-
-From `signed.rs:18-25`:
-```rust
-pub fn build_sint_from_felt252(
-    builder: CompiledInvocationBuilder<'_>,
-    min_value: i128,
-    max_value: i128,
-) -> Result<CompiledInvocation, InvocationError> {
-    assert!(min_value <= 0, "min_value must be non-positive");
-    assert!(max_value > 0, "max_value must be positive");
-    build_felt252_range_reduction(builder, &Range::closed(min_value, max_value), false)
+```typescript
+export async function readContract(
+  transport: Transport,
+  params: ReadContractParams,
+): Promise<ContractResult<unknown[]>> {
+  // Similar to Pattern 1 but with more comprehensive error handling
+  
+  // Uses same primitives:
+  // - encodeCalldata() for args
+  // - starknet_call() for RPC
+  // - decodeOutput() for results
 }
 ```
 
-**Encoding Principle:**
-Signed integers use the **lower positive range** of felt252's prime field, not two's complement. Negative values are represented as large positive values near the prime.
+**Also includes:**
+- `writeContract()` - invoke transactions
+- `simulateContract()` - transaction simulation
+- `estimateFee()` - fee estimation
+- `watchContractEvent()` - event polling
 
-### Felt252 Prime Field Context
+### Pattern 3: Multicall (contract-multicall.ts)
 
-From `range_reduction.rs`:
-```rust
-let prime: BigInt = Felt252::prime().into();
-// Prime = 2^251 + 17*2^192 + 1
-```
+**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/docs/skills/contract-multicall.ts:57-111`
 
-### Ranges (Rust standard ranges):
+```typescript
+export async function multicall(
+  transport: Transport,
+  params: MulticallParams,
+): Promise<ContractResult<unknown[][]>> {
+  const { abi, address, calls } = params;
 
-| Type | Min | Max | Range Size |
-|------|-----|-----|------------|
-| i8 | -128 | 127 | 256 (2^8) |
-| i16 | -32,768 | 32,767 | 65,536 (2^16) |
-| i32 | -2,147,483,648 | 2,147,483,647 | 2^32 |
-| i64 | -2^63 | 2^63 - 1 | 2^64 |
-| i128 | -2^127 | 2^127 - 1 | 2^128 |
+  // Encode each call
+  for (const call of calls) {
+    const calldata = encodeCalldata(abi, call.functionName, call.args || []);
+    // ...
+  }
 
-### Encoding Scheme:
+  // Execute aggregate call
+  const output = await starknet_call(transport, aggregateCall);
 
-**For signed integers in felt252:**
-- Positive values: represented directly (0 to max_value)
-- Negative values: represented as `prime + negative_value`
-
-Example for i8:
-```
-  -128 → prime - 128
-  -127 → prime - 127
-  ...
-  -1   → prime - 1
-   0   → 0
-   1   → 1
-  ...
-  127  → 127
-```
-
-This is effectively **modular arithmetic** in the prime field, NOT two's complement.
-
-### Range Checking:
-
-From `signed.rs:32-42`:
-```rust
-pub fn build_sint_overflowing_operation(
-    builder: CompiledInvocationBuilder<'_>,
-    min_value: i128,
-    max_value: i128,
-    op: IntOperator,
-) -> Result<CompiledInvocation, InvocationError> {
-    // Shift the valid range to [0, range_size)
-    let canonical_value = value + positive_range_fixer;
-    // Check if canonical_value < range_size
-    hint TestLessThan {lhs: canonical_value, rhs: range_size} into {dst: is_in_range};
+  // Decode each result
+  for (const meta of callMetadata) {
+    const outputFelts = /* extract from aggregate output */;
+    const decoded = decodeOutput(meta.abi, meta.functionName, outputFelts);
+    results.push(decoded.result);
+  }
 }
 ```
 
-The implementation:
-1. Shifts values by `positive_range_fixer = -min_value` to make range [0, range_size)
-2. Validates using range checks
-3. Handles overflow/underflow by wrapping within the valid range
+## 5. Usage Examples
 
----
+### Example 1: Basic Typed Decode
 
-## Serialization Format Summary
+✓ VERIFIED: `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/index.test.ts:338`
 
-### Single felt252 (Direct Conversion)
-
-**Types:** u8, u16, u32, u64, u128, i8, i16, i32, i64, i128
-
-**Implementation:**
-```cairo
-// From serde.cairo:111-134
-pub mod into_felt252_based {
-    pub impl SerdeImpl<T, +Copy<T>, +Into<T, felt252>, +TryInto<felt252, T>> of super::Serde<T> {
-        fn serialize(self: @T, ref output: Array<felt252>) {
-            output.append((*self).into());  // Single append
-        }
-        
-        fn deserialize(ref serialized: Span<felt252>) -> Option<T> {
-            Some((*serialized.pop_front()?).try_into()?)  // Single pop
-        }
-    }
-}
+```typescript
+const result = decodeOutput(ERC20_ABI, 'balance_of', output);
+expect(result.error).toBeNull();
+// result.result is typed as CairoValue[] (or FunctionRet if using typed overload)
 ```
 
-**Format:** `[value_as_felt252]`
+### Example 2: Integer Types Round-Trip
 
----
+✓ VERIFIED: `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/integer-types.test.ts:111-119`
 
-### Multiple felt252 (Struct Serialization)
+```typescript
+const TEST_ABI: Abi = [{
+  type: 'function',
+  name: 'test_all_integers',
+  outputs: [{ name: 'result', type: 'core::integer::u256' }],
+  // ...
+}];
 
-**Types:** u256, u512 (and user-defined structs)
+const outputData = [1000000000000000000n, 0n]; // low, high
 
-**u256 Format:** `[low_u128, high_u128]`
-```cairo
-// Verified at integer.cairo:953-956
-pub struct u256 {
-    pub low: u128,   // Serialized first
-    pub high: u128,  // Serialized second
-}
+const result = decodeOutput(TEST_ABI, 'test_all_integers', outputData);
+expect(result.error).toBeNull();
+// result.result is Uint256Type (via FunctionRet inference)
+expect(Uint256.toBigInt(result.result![0])).toBe(1000000000000000000n);
 ```
 
-**u512 Format:** `[limb0, limb1, limb2, limb3]`
-```cairo
-// Line 1173-1179
-#[derive(Copy, Drop, Hash, PartialEq, Serde)]
-pub struct u512 {
-    pub limb0: u128,
-    pub limb1: u128,
-    pub limb2: u128,
-    pub limb3: u128,
-}
+### Example 3: decodeOutputObject (Named Fields)
+
+✓ VERIFIED: `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/calldata.ts:217-244`
+
+```typescript
+const result = decodeOutputObject(ERC20_ABI, 'balance_of', output);
+// Returns: Result<{ balance: Uint256Type }>
+// Named fields instead of positional array
 ```
 
----
+## Key Insights
 
-## Special Cases and Edge Cases
+### Type Safety Architecture
 
-### u128 Wide Multiplication
-```cairo
-// Returns (high, low) as two u128s
-pub fn u128_wide_mul(a: u128, b: u128) -> (u128, u128) nopanic {
-    let (high, low, _) = u128_guarantee_mul(a, b);
-    (high, low)
-}
+1. **Compile-time inference** - `FunctionRet` extracts return type from ABI at compile time
+2. **Runtime decoding** - `decodeOutputs()` performs actual decoding at runtime
+3. **Branded types** - Kundera primitives (Uint256Type, Felt252Type) replace raw bigint
+4. **Config-driven** - Type mappings declared in kanabi-config.d.ts
+
+### Dual API Pattern
+
+```typescript
+// Typed API (with generic parameters)
+decodeOutput<TAbi, TFunctionName>(abi: TAbi, fnName: TFunctionName, ...)
+  → Result<FunctionRet<TAbi, TFunctionName>>
+
+// Untyped API (without generics)
+decodeOutput(abi: Abi, fnName: string, ...)
+  → Result<CairoValue[]>
 ```
 
-Result requires u256 to represent: `result = low + high * 2^128`
+**TypeScript picks the typed overload when:**
+- `abi` is typed as specific ABI (const assertion or `as const`)
+- `fnName` is string literal type (not `string`)
 
-### Signed Integer Overflow Detection
+### Limitations
 
-From `signed.rs:63-82`:
-```rust
-// Overflow detection uses three branches:
-// 1. InRange: value is within [min_value, max_value]
-// 2. Underflow: value < min_value (wraps around field)
-// 3. Overflow: value > max_value
+1. **Single return value** - `FunctionRet` only handles `outputs[0]`, multi-output functions return array
+2. **No tuple unpacking** - Must index into result array for multiple outputs
+3. **Requires const assertion** - ABI must be `as const` for inference to work
+
+## Architecture Map
+
+```
+[User Code]
+    ↓
+[decodeOutput<TAbi, TFunctionName>]  ← Type inference happens here
+    ↓
+[getParsedAbi] → Parse ABI into indexed structure
+    ↓
+[getFunction] → Lookup function by name
+    ↓
+[decodeOutputs] → Runtime decoding (decode.ts)
+    ↓
+    ├─ [decodeValue] → Decode single value
+    │     ↓
+    │     ├─ Primitive (felt252, u256, etc.)
+    │     ├─ Array/Tuple
+    │     ├─ Struct (recursive)
+    │     └─ Enum
+    │
+[Result<FunctionRet<TAbi, TFunctionName>>]  ← Typed return value
 ```
 
-Overflow result type:
-```cairo
-pub(crate) enum SignedIntegerResult<T> {
-    InRange: T,
-    Underflow: T,  // Wrapped value provided
-    Overflow: T,   // Wrapped value provided
-}
-```
+## Files Reference
 
-### i128 Division Edge Case
+| File | Purpose | Entry Points |
+|------|---------|--------------|
+| `src/abi/types.ts` | Core ABI type definitions | `Abi`, `CairoValue`, `Result` |
+| `src/abi/calldata.ts` | High-level encode/decode API | `decodeOutput`, `decodeOutputObject` |
+| `src/abi/decode.ts` | Runtime decoding logic | `decodeOutputs`, `decodeValue` |
+| `src/abi/parse.ts` | ABI parsing and indexing | `parseAbi`, `getFunction` |
+| `src/abi/kanabi-config.d.ts` | Type config for abi-wan-kanabi | Module augmentation |
+| `src/abi/index.ts` | Public API re-exports | All ABI functions |
+| `docs/skills/contract-read.ts` | Manual read pattern | `readContract()` |
+| `docs/skills/contract-viem.ts` | Viem-style helpers | `readContract()`, `writeContract()` |
+| `docs/skills/contract-multicall.ts` | Batch calls | `multicall()` |
 
-From `integer.cairo:2432-2436`:
-```cairo
-// Catching the case for division of i128::MIN by -1, which overflows
-downcast(q).expect('attempt to divide with overflow')
-```
+## Testing Coverage
 
-Dividing `i128::MIN (-2^127)` by `-1` would produce `2^127`, which exceeds `i128::MAX (2^127 - 1)`.
+✓ VERIFIED Test files:
+- `src/abi/index.test.ts` - Core ABI encode/decode tests
+- `src/abi/integer-types.test.ts` - Integer type integration tests
+- `docs/skills/contract-read.test.ts` - Contract read pattern validation
 
----
+## Open Questions
 
-## Key File Locations
-
-| File | Purpose | Key Lines |
-|------|---------|-----------|
-| `/Users/msaug/deps/cairo/corelib/src/integer.cairo` | Integer type definitions | 87 (u128), 310 (u8), 953 (u256), 1933 (i8) |
-| `/Users/msaug/deps/cairo/corelib/src/serde.cairo` | Serialization trait | 84-108 (Serde trait), 111-134 (felt252-based impl) |
-| `/Users/msaug/deps/cairo/crates/cairo-lang-sierra-to-casm/src/invocations/int/signed.rs` | Signed integer CASM compilation | 18-25 (felt252 conversion), 32-140 (overflow ops) |
-| `/Users/msaug/deps/cairo/crates/cairo-lang-sierra-to-casm/src/invocations/range_reduction.rs` | Range validation | 21-110 (felt252 range reduction) |
-| `/Users/msaug/deps/cairo/crates/cairo-lang-sierra/src/extensions/modules/int/signed.rs` | Signed integer Sierra definitions | 24-35 (SintTraits), 193-220 (Sint8-Sint128) |
-
----
-
-## Conversion Functions Reference
-
-### Unsigned to felt252
-```cairo
-u8_to_felt252(a: u8) -> felt252
-u16_to_felt252(a: u16) -> felt252
-u32_to_felt252(a: u32) -> felt252
-u64_to_felt252(a: u64) -> felt252
-u128_to_felt252(a: u128) -> felt252
-// u256: No direct conversion (use .low and .high)
-```
-
-### felt252 to Unsigned
-```cairo
-u8_try_from_felt252(a: felt252) -> Option<u8>
-u16_try_from_felt252(a: felt252) -> Option<u16>
-u32_try_from_felt252(a: felt252) -> Option<u32>
-u64_try_from_felt252(a: felt252) -> Option<u64>
-u128_try_from_felt252(a: felt252) -> Option<u128>
-// u256: Construct from two felt252s as u128
-```
-
-### Signed to felt252
-```cairo
-i8_to_felt252(a: i8) -> felt252
-i16_to_felt252(a: i16) -> felt252
-i32_to_felt252(a: i32) -> felt252
-i64_to_felt252(a: i64) -> felt252
-i128_to_felt252(a: i128) -> felt252
-```
-
-### felt252 to Signed
-```cairo
-i8_try_from_felt252(a: felt252) -> Option<i8>
-i16_try_from_felt252(a: felt252) -> Option<i16>
-i32_try_from_felt252(a: felt252) -> Option<i32>
-i64_try_from_felt252(a: felt252) -> Option<i64>
-i128_try_from_felt252(a: felt252) -> Option<i128>
-```
-
----
-
-## Architecture Insights
-
-### Type Hierarchy
-```
-felt252 (base field element)
-  │
-  ├── u8, u16, u32, u64, u128 (direct mapping)
-  │   └── extern types with Into/TryInto traits
-  │
-  ├── u256 (struct)
-  │   └── { low: u128, high: u128 }
-  │
-  └── i8, i16, i32, i64, i128 (field range mapping)
-      └── extern types with felt252 conversion
-```
-
-### Serialization Pipeline
-```
-Cairo Value → Into<felt252> → Array<felt252> → External World
-External → Span<felt252> → TryInto<T> → Cairo Value
-```
-
-### Safety Guarantees
-- Range checks enforce valid ranges for all integer types
-- Overflow/underflow detection in arithmetic operations
-- Option types for fallible conversions
-- Panic with descriptive messages for overflow (e.g., `'u128_add Overflow'`)
-
----
-
-## Notes
-
-1. **No Two's Complement:** Cairo signed integers use prime field arithmetic, not two's complement. This is different from most programming languages.
-
-2. **u256 Not Extern:** Unlike smaller integers, u256 is a struct, not an extern type. This means its representation is explicit in Cairo source.
-
-3. **Felt252 Prime:** The prime is approximately 2^251, much larger than any integer type's range, ensuring all values fit uniquely.
-
-4. **Serialization Order:** For multi-felt types like u256, serialization is field-order: low to high.
-
-5. **Performance:** u128 and smaller types have optimized libfuncs, while u256 uses Cairo-level implementations.
-
+1. **Multi-output handling** - How should FunctionRet handle functions with multiple outputs?
+2. **Tuple unpacking** - Should there be a typed variant that unpacks tuples?
+3. **Named vs positional** - When to use `decodeOutput` vs `decodeOutputObject`?
