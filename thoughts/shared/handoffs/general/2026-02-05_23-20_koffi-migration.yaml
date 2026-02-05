@@ -1,0 +1,48 @@
+---
+session: general
+date: 2026-02-05
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Replace dead ffi-napi with koffi for Node.js native FFI
+now: No immediate follow-up needed; all tests pass including previously-broken native tests
+test: pnpm --filter @kundera-sn/kundera-ts typecheck && pnpm --filter @kundera-sn/kundera-ts test:run
+
+done_this_session:
+  - task: Rewrote node-ffi.ts from ffi-napi to koffi API
+    files: [packages/kundera-ts/src/native/node-ffi.ts]
+  - task: Fixed loader.ts to use static ESM import instead of createRequire (fixes Vitest compatibility)
+    files: [packages/kundera-ts/src/native/loader.ts]
+  - task: Updated error messages across native module
+    files: [packages/kundera-ts/src/native/crypto.ts, packages/kundera-ts/src/native/index.ts]
+  - task: Updated package.json deps and tsup externals
+    files: [packages/kundera-ts/package.json, packages/kundera-ts/tsup.config.ts]
+  - task: Updated all docs and config references from ffi-napi to koffi
+    files: [CLAUDE.md, Cargo.toml, MAINTAINENCE_SKILL.md, docs/shared/architecture.mdx, docs/shared/runtime-implementations.mdx, docs/typescript/api/crypto.mdx, docs/typescript/getting-started/runtime-implementations.mdx, docs/typescript/overview/architecture.mdx, packages/kundera-ts/docs/api/crypto.mdx, packages/kundera-ts/docs/getting-started/quickstart.mdx, packages/kundera-ts/docs/getting-started/runtime-implementations.mdx, packages/kundera-ts/docs/overview/architecture.mdx]
+  - task: Added NativeFns interface for type-safe FFI function declarations
+    files: [packages/kundera-ts/src/native/node-ffi.ts]
+
+blockers: []
+
+questions: []
+
+decisions:
+  - static-esm-import: loader.ts used createRequire + require('./node-ffi.js') which Vitest couldn't resolve (CJS require bypasses Vite transform). Switched to static ESM import since koffi is lazy-loaded inside node-ffi.ts, so import is safe in all runtimes.
+  - koffi-c-prototype-style: Used koffi's C-like prototype string syntax (e.g. `int32_t felt_add(void *a, void *b, void *out)`) rather than node-ffi-style positional args. More readable and self-documenting.
+  - typed-fns-interface: Replaced Record<string, Function> with explicit NativeFns interface to satisfy strict TypeScript (noUncheckedIndexedAccess).
+
+findings:
+  - vitest-require-bug: "The 30 silently-skipping native tests were caused by loader.ts using createRequire which can't resolve .ts files through Vite's transform pipeline — not by ffi-napi being missing."
+  - koffi-buffer-compat: "koffi passes Buffer/TypedArray as direct pointers identical to ffi-napi semantics. Buffer.from(uint8array) works for all pointer params."
+
+worked: [koffi C-prototype function declarations, static ESM import in loader.ts, NativeFns typed interface]
+failed: [Record<string, Function> type caused TS4111/TS18048 errors due to index signature semantics]
+
+next:
+  - Monitor CI pipeline for this commit (8f2c46d)
+  - koffi ships prebuilds so the "native build tools" docs section could be simplified further
+
+files:
+  created: []
+  modified: [CLAUDE.md, Cargo.toml, MAINTAINENCE_SKILL.md, docs/shared/architecture.mdx, docs/shared/runtime-implementations.mdx, docs/typescript/api/crypto.mdx, docs/typescript/getting-started/runtime-implementations.mdx, docs/typescript/overview/architecture.mdx, packages/kundera-ts/docs/api/crypto.mdx, packages/kundera-ts/docs/getting-started/quickstart.mdx, packages/kundera-ts/docs/getting-started/runtime-implementations.mdx, packages/kundera-ts/docs/overview/architecture.mdx, packages/kundera-ts/package.json, packages/kundera-ts/src/native/crypto.ts, packages/kundera-ts/src/native/index.ts, packages/kundera-ts/src/native/loader.ts, packages/kundera-ts/src/native/node-ffi.ts, packages/kundera-ts/tsup.config.ts, pnpm-lock.yaml]

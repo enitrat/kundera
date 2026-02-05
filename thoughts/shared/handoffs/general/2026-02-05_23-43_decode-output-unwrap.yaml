@@ -1,0 +1,45 @@
+---
+session: general
+date: 2026-02-05
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Fix decodeOutput type/runtime mismatch — unwrap single outputs to match FunctionRet type
+now: ABI feature considered complete; no immediate follow-up needed
+test: pnpm --filter @kundera-sn/kundera-ts typecheck && pnpm --filter @kundera-sn/kundera-ts test:run
+
+done_this_session:
+  - task: Fixed decodeOutput to unwrap single-element arrays (0→null, 1→scalar, 2+→array)
+    files: [packages/kundera-ts/src/abi/calldata.ts]
+  - task: Updated all test assertions from array to scalar
+    files: [packages/kundera-ts/src/abi/index.test.ts, packages/kundera-ts/src/abi/integer-types.test.ts, packages/kundera-ts/docs/skills/get-contract.test.ts, packages/kundera-ts/docs/skills/contract-read.test.ts]
+  - task: Updated skill return types from CairoValue[] to CairoValue
+    files: [packages/kundera-ts/docs/skills/contract-read.ts, packages/kundera-ts/docs/skills/contract-multicall.ts]
+  - task: Fixed docs showing old array-style decodeOutput usage
+    files: [packages/kundera-ts/docs/api/abi.mdx, packages/kundera-ts/docs/guides/abi/encode-decode.mdx, packages/kundera-ts/docs/skills/contract-read.mdx, packages/kundera-ts/docs/skills/get-contract.mdx]
+  - task: Audited all `as X` casts in ABI module — 14 legitimate, 0 remaining suspicious
+    files: []
+
+blockers: []
+
+questions: []
+
+decisions:
+  - unwrap-in-decodeOutput: "FunctionRet already promised scalar for single-output fns. Made runtime match the type by unwrapping in decodeOutput impl rather than changing the type to always return array. This is the better UX — users get `1000n` not `[1000n]`."
+  - keep-get-contract-cast: "get-contract.ts:146 `as FunctionRet<...>` cast is legitimate — bridges untyped runtime overload to typed read() signature. Cannot be removed without major refactor."
+
+findings:
+  - all-casts-legitimate: "Scout audit of 14 `as X` casts in ABI module found all are legitimate (error narrowing, domain assertions, JSON parsing). No hidden type mismatches."
+  - functionargs-unwrap: "FunctionArgs type at index.ts:154-163 unwraps single-arg tuples. Docs incorrectly showed `[ContractAddressType]` — fixed to `ContractAddressType`."
+
+worked: [unwrap logic in calldata.ts with arr[0]! for noUncheckedIndexedAccess, scout parallel audit of as-casts]
+failed: []
+
+next:
+  - Monitor CI for commit e4ff621
+  - Consider adding multi-output test case (function with 2+ outputs) to verify array path
+
+files:
+  created: []
+  modified: [packages/kundera-ts/src/abi/calldata.ts, packages/kundera-ts/src/abi/index.test.ts, packages/kundera-ts/src/abi/integer-types.test.ts, packages/kundera-ts/docs/skills/get-contract.test.ts, packages/kundera-ts/docs/skills/get-contract.mdx, packages/kundera-ts/docs/skills/contract-read.ts, packages/kundera-ts/docs/skills/contract-read.test.ts, packages/kundera-ts/docs/skills/contract-read.mdx, packages/kundera-ts/docs/skills/contract-multicall.ts, packages/kundera-ts/docs/api/abi.mdx, packages/kundera-ts/docs/guides/abi/encode-decode.mdx]

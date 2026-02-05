@@ -1,0 +1,62 @@
+---
+session: general
+date: 2026-02-05
+status: complete
+outcome: PARTIAL_PLUS
+---
+
+goal: Split monolithic "all features" commit into 7 atomic commits on master
+now: Push master to origin (7 commits ahead); optionally delete temp/all-feats branch
+
+test: git log --oneline -7 master && git diff ea18a20 master --stat
+
+done_this_session:
+  - task: Analyzed ea18a20 diff (106 files) and categorized into 7 atomic groups
+    files: []
+  - task: Cherry-picked ea18a20 onto master with --no-commit, then reset and committed by group
+    files: []
+  - task: "Commit 1: chore: add session handoff documents (9 handoff yamls)"
+    files: [thoughts/shared/handoffs/general/2026-02-05_*.yaml]
+  - task: "Commit 2: chore: update agent cache and add bun.lock (4 files)"
+    files: [.claude/cache/agents/scout/latest-output.md, packages/kundera-ts/.claude/cache/agents/*, packages/kundera-ts/bun.lock]
+  - task: "Commit 3: fix(ci): upgrade Vitest to v4, remove bun-types, update tsconfig"
+    files: [packages/kundera-ts/package.json, packages/kundera-ts/vitest.config.ts, packages/kundera-ts/tsconfig.json, pnpm-lock.yaml]
+  - task: "Commit 4: refactor(tests): migrate from bun:test to vitest with type fixes (61 files)"
+    files: [packages/kundera-ts/src/**/*.test.ts, packages/kundera-ts/docs/skills/*.test.ts, packages/kundera-ts/src/test-utils/setupCrypto.ts]
+  - task: "Commit 5: feat(native): add bun:ffi type declarations and fix node-ffi types"
+    files: [packages/kundera-ts/src/native/bun-ffi-types.d.ts, packages/kundera-ts/src/native/node-ffi.ts]
+  - task: "Commit 6: refactor(abi): align types with kanabi (readonly, AbiLike, discriminated events)"
+    files: [packages/kundera-ts/src/abi/*.ts, packages/kundera-ts/src/abi/parse/parseAbi.ts, packages/kundera-ts/src/abi/kanabi-config.d.ts]
+  - task: "Commit 7: refactor(docs): add get-contract skill, remove deprecated skills"
+    files: [docs/docs.json, packages/kundera-ts/docs/skills/*]
+
+blockers: []
+
+questions:
+  - "Should temp/all-feats branch be deleted now that master has the split commits?"
+
+decisions:
+  - abi_tests_with_abi: "ABI test files (classHash.test.ts, index.test.ts, integer-types.test.ts) committed with ABI source changes (commit 6) since their type assertion changes were caused by ABI type refactor, not just vitest migration"
+  - docs_tests_with_migration: "docs/skills test files committed with test migration (commit 4) since their only change was bun:test→vitest import swap"
+  - no_surgical_split: "Files with mixed changes (import migration + type fixes) kept whole in one commit rather than splitting individual files across commits — cleaner and less error-prone"
+
+findings:
+  - "cherry-pick --no-commit + reset HEAD is the cleanest way to split a commit into groups"
+  - "106 files decomposed into 7 commits: handoffs(9), cache(4), config(4), tests(61), native(2), abi(13), docs(13)"
+
+worked:
+  - "git cherry-pick --no-commit + git reset HEAD to get all changes in working tree"
+  - "Grouping files by logical concern rather than file type"
+
+failed: []
+
+next:
+  - "git push origin master (7 commits ahead)"
+  - "Optionally delete temp/all-feats branch: git branch -d temp/all-feats"
+  - "Run pnpm test:run to verify all tests pass on master"
+  - "Run pnpm typecheck to verify types"
+
+files:
+  created:
+    - thoughts/shared/handoffs/general/2026-02-05_19-40_commit-split-master.yaml
+  modified: []
