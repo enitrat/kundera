@@ -1,0 +1,380 @@
+---
+title: "primitives/Uint16"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / primitives/Uint16
+
+# primitives/Uint16
+
+## Classes
+
+### Uint16NegativeError
+
+Defined in: [primitives/Uint16/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/errors.ts#L4)
+
+Error thrown when Uint16 value is negative
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint16NegativeError**(`value`): [`Uint16NegativeError`](#uint16negativeerror)
+
+Defined in: [primitives/Uint16/errors.ts:5](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/errors.ts#L5)
+
+###### Parameters
+
+###### value
+
+`number` | `bigint`
+
+###### Returns
+
+[`Uint16NegativeError`](#uint16negativeerror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint16NotIntegerError
+
+Defined in: [primitives/Uint16/errors.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/errors.ts#L24)
+
+Error thrown when Uint16 value is not an integer
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint16NotIntegerError**(`value`): [`Uint16NotIntegerError`](#uint16notintegererror)
+
+Defined in: [primitives/Uint16/errors.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/errors.ts#L25)
+
+###### Parameters
+
+###### value
+
+`number`
+
+###### Returns
+
+[`Uint16NotIntegerError`](#uint16notintegererror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint16OverflowError
+
+Defined in: [primitives/Uint16/errors.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/errors.ts#L14)
+
+Error thrown when Uint16 value exceeds maximum (65535)
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint16OverflowError**(`value`): [`Uint16OverflowError`](#uint16overflowerror)
+
+Defined in: [primitives/Uint16/errors.ts:15](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/errors.ts#L15)
+
+###### Parameters
+
+###### value
+
+`number` | `bigint`
+
+###### Returns
+
+[`Uint16OverflowError`](#uint16overflowerror)
+
+###### Overrides
+
+`Error.constructor`
+
+## Variables
+
+### from()
+
+> `const` **from**: (`value`) => [`Uint16Type`](../index-1.mdx#uint16type) = `_from`
+
+Defined in: [primitives/Uint16/index.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/index.ts#L18)
+
+Create Uint16 from bigint, number, or string
+
+#### Parameters
+
+##### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+#### Returns
+
+[`Uint16Type`](../index-1.mdx#uint16type)
+
+Uint16 value
+
+#### Throws
+
+If number is not an integer
+
+#### Throws
+
+If value is negative
+
+#### Throws
+
+If value exceeds maximum
+
+***
+
+### MAX
+
+> `const` **MAX**: [`Uint16Type`](../index-1.mdx#uint16type)
+
+Defined in: [primitives/Uint16/constants.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/constants.ts#L7)
+
+Maximum Uint16 value: 2^16 - 1 = 65535
+
+***
+
+### MIN
+
+> `const` **MIN**: [`Uint16Type`](../index-1.mdx#uint16type)
+
+Defined in: [primitives/Uint16/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/constants.ts#L4)
+
+Minimum Uint16 value: 0
+
+***
+
+### SIZE
+
+> `const` **SIZE**: `16` = `16`
+
+Defined in: [primitives/Uint16/constants.ts:10](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/constants.ts#L10)
+
+Size in bits
+
+***
+
+### toBigInt()
+
+> `const` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Defined in: [primitives/Uint16/index.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/index.ts#L20)
+
+Convert Uint16 to bigint
+
+#### Parameters
+
+##### uint
+
+[`Uint16Type`](../index-1.mdx#uint16type)
+
+Uint16 value
+
+#### Returns
+
+`bigint`
+
+BigInt value
+
+***
+
+### toFelt()
+
+> `const` **toFelt**: (`uint`) => [`Felt252Type`](../index-1.mdx#felt252type) = `_toFelt`
+
+Defined in: [primitives/Uint16/index.ts:21](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/index.ts#L21)
+
+Convert Uint16 to Felt252
+
+#### Parameters
+
+##### uint
+
+[`Uint16Type`](../index-1.mdx#uint16type)
+
+Uint16 value
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Felt252 value
+
+***
+
+### toHex()
+
+> `const` **toHex**: (`uint`) => `string` = `_toHex`
+
+Defined in: [primitives/Uint16/index.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/index.ts#L19)
+
+Convert Uint16 to hex string
+
+#### Parameters
+
+##### uint
+
+[`Uint16Type`](../index-1.mdx#uint16type)
+
+Uint16 value
+
+#### Returns
+
+`string`
+
+Hex string with 0x prefix
+
+***
+
+### Uint16
+
+> `const` **Uint16**: `object`
+
+Defined in: [primitives/Uint16/index.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint16/index.ts#L26)
+
+Uint16 namespace with all functions
+
+#### Type Declaration
+
+##### from()
+
+> `readonly` **from**: (`value`) => [`Uint16Type`](../index-1.mdx#uint16type) = `_from`
+
+Create Uint16 from bigint, number, or string
+
+###### Parameters
+
+###### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+###### Returns
+
+[`Uint16Type`](../index-1.mdx#uint16type)
+
+Uint16 value
+
+###### Throws
+
+If number is not an integer
+
+###### Throws
+
+If value is negative
+
+###### Throws
+
+If value exceeds maximum
+
+##### MAX
+
+> **MAX**: [`Uint16Type`](../index-1.mdx#uint16type)
+
+Maximum Uint16 value: 2^16 - 1 = 65535
+
+##### MIN
+
+> **MIN**: [`Uint16Type`](../index-1.mdx#uint16type)
+
+Minimum Uint16 value: 0
+
+##### SIZE
+
+> **SIZE**: `16`
+
+Size in bits
+
+##### toBigInt()
+
+> `readonly` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Convert Uint16 to bigint
+
+###### Parameters
+
+###### uint
+
+[`Uint16Type`](../index-1.mdx#uint16type)
+
+Uint16 value
+
+###### Returns
+
+`bigint`
+
+BigInt value
+
+##### toFelt()
+
+> `readonly` **toFelt**: (`uint`) => [`Felt252Type`](../index-1.mdx#felt252type) = `_toFelt`
+
+Convert Uint16 to Felt252
+
+###### Parameters
+
+###### uint
+
+[`Uint16Type`](../index-1.mdx#uint16type)
+
+Uint16 value
+
+###### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Felt252 value
+
+##### toHex()
+
+> `readonly` **toHex**: (`uint`) => `string` = `_toHex`
+
+Convert Uint16 to hex string
+
+###### Parameters
+
+###### uint
+
+[`Uint16Type`](../index-1.mdx#uint16type)
+
+Uint16 value
+
+###### Returns
+
+`string`
+
+Hex string with 0x prefix
+
+## References
+
+### Uint16Type
+
+Re-exports [Uint16Type](../index-1.mdx#uint16type)

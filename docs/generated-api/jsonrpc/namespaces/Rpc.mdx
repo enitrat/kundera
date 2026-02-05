@@ -1,0 +1,574 @@
+---
+title: "Rpc"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../../index.mdx) / [jsonrpc](../index.mdx) / Rpc
+
+# Rpc
+
+## Variables
+
+### Starknet
+
+> `const` **Starknet**: `object`
+
+Defined in: [jsonrpc/namespace.ts:64](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/namespace.ts#L64)
+
+#### Type Declaration
+
+##### AddDeclareTransactionRequest()
+
+> `readonly` **AddDeclareTransactionRequest**(`transaction`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### transaction
+
+[`BroadcastedDeclareTxn`](../index.mdx#broadcasteddeclaretxn)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### AddDeployAccountTransactionRequest()
+
+> `readonly` **AddDeployAccountTransactionRequest**(`transaction`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### transaction
+
+[`BroadcastedDeployAccountTxn`](../index.mdx#broadcasteddeployaccounttxn)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### AddInvokeTransactionRequest()
+
+> `readonly` **AddInvokeTransactionRequest**(`transaction`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### transaction
+
+[`BroadcastedInvokeTxn`](../index.mdx#broadcastedinvoketxn)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### BlockHashAndNumberRequest()
+
+> `readonly` **BlockHashAndNumberRequest**(): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### BlockNumberRequest()
+
+> `readonly` **BlockNumberRequest**(): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### CallRequest()
+
+> `readonly` **CallRequest**(`request`, `blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### request
+
+[`FunctionCall`](../index.mdx#functioncall)
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid) = `'latest'`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### ChainIdRequest()
+
+> `readonly` **ChainIdRequest**(): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### EstimateFeeRequest()
+
+> `readonly` **EstimateFeeRequest**(`transactions`, `simulationFlags`, `blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### transactions
+
+[`BroadcastedTxn`](../index.mdx#broadcastedtxn)[]
+
+###### simulationFlags
+
+[`SimulationFlag`](../index.mdx#simulationflag)[] = `[]`
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid) = `'latest'`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### EstimateMessageFeeRequest()
+
+> `readonly` **EstimateMessageFeeRequest**(`message`, `blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### message
+
+[`MsgFromL1`](../index.mdx#msgfroml1)
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid) = `'latest'`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetBlockTransactionCountRequest()
+
+> `readonly` **GetBlockTransactionCountRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid) = `'latest'`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetBlockWithReceiptsRequest()
+
+> `readonly` **GetBlockWithReceiptsRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid) = `'latest'`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetBlockWithTxHashesRequest()
+
+> `readonly` **GetBlockWithTxHashesRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid) = `'latest'`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetBlockWithTxsRequest()
+
+> `readonly` **GetBlockWithTxsRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid) = `'latest'`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetClassAtRequest()
+
+> `readonly` **GetClassAtRequest**(`blockId`, `contractAddress`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid)
+
+###### contractAddress
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetClassHashAtRequest()
+
+> `readonly` **GetClassHashAtRequest**(`blockId`, `contractAddress`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid)
+
+###### contractAddress
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetClassRequest()
+
+> `readonly` **GetClassRequest**(`blockId`, `classHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid)
+
+###### classHash
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetEventsRequest()
+
+> `readonly` **GetEventsRequest**(`filter`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### filter
+
+[`EventsFilter`](../index.mdx#eventsfilter)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetMessagesStatusRequest()
+
+> `readonly` **GetMessagesStatusRequest**(`l1TransactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### l1TransactionHash
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetNonceRequest()
+
+> `readonly` **GetNonceRequest**(`blockId`, `contractAddress`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid)
+
+###### contractAddress
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetStateUpdateRequest()
+
+> `readonly` **GetStateUpdateRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid) = `'latest'`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetStorageAtRequest()
+
+> `readonly` **GetStorageAtRequest**(`contractAddress`, `key`, `blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### contractAddress
+
+`string`
+
+###### key
+
+`string`
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid) = `'latest'`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetStorageProofRequest()
+
+> `readonly` **GetStorageProofRequest**(`blockId`, `classHashes`, `contractAddresses`, `contractStorageKeys`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid)
+
+###### classHashes
+
+`string`[]
+
+###### contractAddresses
+
+`string`[]
+
+###### contractStorageKeys
+
+`object`[]
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetTransactionByBlockIdAndIndexRequest()
+
+> `readonly` **GetTransactionByBlockIdAndIndexRequest**(`blockId`, `index`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid)
+
+###### index
+
+`number`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetTransactionByHashRequest()
+
+> `readonly` **GetTransactionByHashRequest**(`transactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### transactionHash
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetTransactionReceiptRequest()
+
+> `readonly` **GetTransactionReceiptRequest**(`transactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### transactionHash
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### GetTransactionStatusRequest()
+
+> `readonly` **GetTransactionStatusRequest**(`transactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### transactionHash
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### SimulateTransactionsRequest()
+
+> `readonly` **SimulateTransactionsRequest**(`blockId`, `transactions`, `simulationFlags`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid)
+
+###### transactions
+
+[`BroadcastedTxn`](../index.mdx#broadcastedtxn)[]
+
+###### simulationFlags
+
+[`SimulationFlag`](../index.mdx#simulationflag)[] = `[]`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### SpecVersionRequest()
+
+> `readonly` **SpecVersionRequest**(): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### SubscribeEventsRequest()
+
+> `readonly` **SubscribeEventsRequest**(`params?`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### params?
+
+[`EventsSubscriptionParams`](../index.mdx#eventssubscriptionparams)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### SubscribeNewHeadsRequest()
+
+> `readonly` **SubscribeNewHeadsRequest**(`params?`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### params?
+
+[`NewHeadsSubscriptionParams`](../index.mdx#newheadssubscriptionparams)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### SubscribeNewTransactionReceiptsRequest()
+
+> `readonly` **SubscribeNewTransactionReceiptsRequest**(`params?`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### params?
+
+[`TransactionReceiptsSubscriptionParams`](../index.mdx#transactionreceiptssubscriptionparams)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### SubscribeNewTransactionsRequest()
+
+> `readonly` **SubscribeNewTransactionsRequest**(`params?`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### params?
+
+[`PendingTransactionsSubscriptionParams`](../index.mdx#pendingtransactionssubscriptionparams)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### SubscribeTransactionStatusRequest()
+
+> `readonly` **SubscribeTransactionStatusRequest**(`transactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### transactionHash
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### SyncingRequest()
+
+> `readonly` **SyncingRequest**(): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### TraceBlockTransactionsRequest()
+
+> `readonly` **TraceBlockTransactionsRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### blockId
+
+[`BlockId`](../index.mdx#blockid)
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### TraceTransactionRequest()
+
+> `readonly` **TraceTransactionRequest**(`transactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### transactionHash
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)
+
+##### UnsubscribeRequest()
+
+> `readonly` **UnsubscribeRequest**(`subscriptionId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+
+###### Parameters
+
+###### subscriptionId
+
+`string`
+
+###### Returns
+
+[`RequestArguments`](../../provider.mdx#requestarguments)

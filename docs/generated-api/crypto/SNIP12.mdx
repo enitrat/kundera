@@ -1,0 +1,865 @@
+---
+title: "crypto/SNIP12"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / crypto/SNIP12
+
+# crypto/SNIP12
+
+## Classes
+
+### Snip12EncodingError
+
+Defined in: [crypto/SNIP12/errors.ts:58](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L58)
+
+Encoding error
+
+#### Extends
+
+- [`Snip12Error`](#snip12error)
+
+#### Constructors
+
+##### Constructor
+
+> **new Snip12EncodingError**(`message`, `context?`): [`Snip12EncodingError`](#snip12encodingerror)
+
+Defined in: [crypto/SNIP12/errors.ts:61](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L61)
+
+###### Parameters
+
+###### message
+
+`string`
+
+###### context?
+
+`Record`\<`string`, `unknown`\>
+
+###### Returns
+
+[`Snip12EncodingError`](#snip12encodingerror)
+
+###### Overrides
+
+[`Snip12Error`](#snip12error).[`constructor`](#constructor-1)
+
+#### Properties
+
+##### context?
+
+> `readonly` `optional` **context**: `Record`\<`string`, `unknown`\>
+
+Defined in: [crypto/SNIP12/errors.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L13)
+
+###### Inherited from
+
+[`Snip12Error`](#snip12error).[`context`](#context-1)
+
+##### name
+
+> **name**: `string` = `'Snip12EncodingError'`
+
+Defined in: [crypto/SNIP12/errors.ts:59](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L59)
+
+###### Overrides
+
+[`Snip12Error`](#snip12error).[`name`](#name-1)
+
+***
+
+### Snip12Error
+
+Defined in: [crypto/SNIP12/errors.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L8)
+
+Base error for SNIP-12 operations
+
+#### Extends
+
+- `Error`
+
+#### Extended by
+
+- [`Snip12TypeNotFoundError`](#snip12typenotfounderror)
+- [`Snip12InvalidMessageError`](#snip12invalidmessageerror)
+- [`Snip12InvalidDomainError`](#snip12invaliddomainerror)
+- [`Snip12EncodingError`](#snip12encodingerror)
+
+#### Constructors
+
+##### Constructor
+
+> **new Snip12Error**(`message`, `context?`): [`Snip12Error`](#snip12error)
+
+Defined in: [crypto/SNIP12/errors.ts:11](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L11)
+
+###### Parameters
+
+###### message
+
+`string`
+
+###### context?
+
+`Record`\<`string`, `unknown`\>
+
+###### Returns
+
+[`Snip12Error`](#snip12error)
+
+###### Overrides
+
+`Error.constructor`
+
+#### Properties
+
+##### context?
+
+> `readonly` `optional` **context**: `Record`\<`string`, `unknown`\>
+
+Defined in: [crypto/SNIP12/errors.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L13)
+
+##### name
+
+> **name**: `string` = `'Snip12Error'`
+
+Defined in: [crypto/SNIP12/errors.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L9)
+
+###### Overrides
+
+`Error.name`
+
+***
+
+### Snip12InvalidDomainError
+
+Defined in: [crypto/SNIP12/errors.ts:47](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L47)
+
+Invalid domain
+
+#### Extends
+
+- [`Snip12Error`](#snip12error)
+
+#### Constructors
+
+##### Constructor
+
+> **new Snip12InvalidDomainError**(`message`, `context?`): [`Snip12InvalidDomainError`](#snip12invaliddomainerror)
+
+Defined in: [crypto/SNIP12/errors.ts:50](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L50)
+
+###### Parameters
+
+###### message
+
+`string`
+
+###### context?
+
+`Record`\<`string`, `unknown`\>
+
+###### Returns
+
+[`Snip12InvalidDomainError`](#snip12invaliddomainerror)
+
+###### Overrides
+
+[`Snip12Error`](#snip12error).[`constructor`](#constructor-1)
+
+#### Properties
+
+##### context?
+
+> `readonly` `optional` **context**: `Record`\<`string`, `unknown`\>
+
+Defined in: [crypto/SNIP12/errors.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L13)
+
+###### Inherited from
+
+[`Snip12Error`](#snip12error).[`context`](#context-1)
+
+##### name
+
+> **name**: `string` = `'Snip12InvalidDomainError'`
+
+Defined in: [crypto/SNIP12/errors.ts:48](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L48)
+
+###### Overrides
+
+[`Snip12Error`](#snip12error).[`name`](#name-1)
+
+***
+
+### Snip12InvalidMessageError
+
+Defined in: [crypto/SNIP12/errors.ts:36](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L36)
+
+Invalid message data
+
+#### Extends
+
+- [`Snip12Error`](#snip12error)
+
+#### Constructors
+
+##### Constructor
+
+> **new Snip12InvalidMessageError**(`message`, `context?`): [`Snip12InvalidMessageError`](#snip12invalidmessageerror)
+
+Defined in: [crypto/SNIP12/errors.ts:39](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L39)
+
+###### Parameters
+
+###### message
+
+`string`
+
+###### context?
+
+`Record`\<`string`, `unknown`\>
+
+###### Returns
+
+[`Snip12InvalidMessageError`](#snip12invalidmessageerror)
+
+###### Overrides
+
+[`Snip12Error`](#snip12error).[`constructor`](#constructor-1)
+
+#### Properties
+
+##### context?
+
+> `readonly` `optional` **context**: `Record`\<`string`, `unknown`\>
+
+Defined in: [crypto/SNIP12/errors.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L13)
+
+###### Inherited from
+
+[`Snip12Error`](#snip12error).[`context`](#context-1)
+
+##### name
+
+> **name**: `string` = `'Snip12InvalidMessageError'`
+
+Defined in: [crypto/SNIP12/errors.ts:37](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L37)
+
+###### Overrides
+
+[`Snip12Error`](#snip12error).[`name`](#name-1)
+
+***
+
+### Snip12TypeNotFoundError
+
+Defined in: [crypto/SNIP12/errors.ts:22](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L22)
+
+Type not found in type definitions
+
+#### Extends
+
+- [`Snip12Error`](#snip12error)
+
+#### Constructors
+
+##### Constructor
+
+> **new Snip12TypeNotFoundError**(`typeName`, `availableTypes`): [`Snip12TypeNotFoundError`](#snip12typenotfounderror)
+
+Defined in: [crypto/SNIP12/errors.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L25)
+
+###### Parameters
+
+###### typeName
+
+`string`
+
+###### availableTypes
+
+`string`[]
+
+###### Returns
+
+[`Snip12TypeNotFoundError`](#snip12typenotfounderror)
+
+###### Overrides
+
+[`Snip12Error`](#snip12error).[`constructor`](#constructor-1)
+
+#### Properties
+
+##### context?
+
+> `readonly` `optional` **context**: `Record`\<`string`, `unknown`\>
+
+Defined in: [crypto/SNIP12/errors.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L13)
+
+###### Inherited from
+
+[`Snip12Error`](#snip12error).[`context`](#context-1)
+
+##### name
+
+> **name**: `string` = `'Snip12TypeNotFoundError'`
+
+Defined in: [crypto/SNIP12/errors.ts:23](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/errors.ts#L23)
+
+###### Overrides
+
+[`Snip12Error`](#snip12error).[`name`](#name-1)
+
+## Type Aliases
+
+### Domain
+
+> **Domain** = `object`
+
+Defined in: [crypto/SNIP12/types.ts:28](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L28)
+
+SNIP-12 Domain separator fields
+
+The domain is used to prevent signature replay across different applications.
+
+#### Properties
+
+##### chainId?
+
+> `optional` **chainId**: `string`
+
+Defined in: [crypto/SNIP12/types.ts:34](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L34)
+
+Chain ID (short string, e.g., "SN_MAIN", "SN_SEPOLIA")
+
+##### name?
+
+> `optional` **name**: `string`
+
+Defined in: [crypto/SNIP12/types.ts:30](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L30)
+
+Application name
+
+##### revision?
+
+> `optional` **revision**: `string`
+
+Defined in: [crypto/SNIP12/types.ts:36](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L36)
+
+SNIP-12 revision (e.g., "1")
+
+##### version?
+
+> `optional` **version**: `string`
+
+Defined in: [crypto/SNIP12/types.ts:32](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L32)
+
+Application version
+
+***
+
+### Message
+
+> **Message** = `object`
+
+Defined in: [crypto/SNIP12/types.ts:88](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L88)
+
+Message data (object with arbitrary structure matching types)
+
+#### Index Signature
+
+\[`key`: `string`\]: [`MessageValue`](#messagevalue)
+
+***
+
+### MessageValue
+
+> **MessageValue** = [`PrimitiveValue`](#primitivevalue) \| [`MessageValue`](#messagevalue)[] \| \{\[`key`: `string`\]: [`MessageValue`](#messagevalue); \}
+
+Defined in: [crypto/SNIP12/types.ts:80](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L80)
+
+Message value (can be primitive, array, or nested object)
+
+***
+
+### PrimitiveValue
+
+> **PrimitiveValue** = [`Felt252Type`](../index-1.mdx#felt252type) \| [`ContractAddressType`](../index-1.mdx#contractaddresstype) \| [`ClassHashType`](../index-1.mdx#classhashtype) \| [`Uint8Type`](../index-1.mdx#uint8type) \| [`Uint16Type`](../index-1.mdx#uint16type) \| [`Uint32Type`](../index-1.mdx#uint32type) \| [`Uint64Type`](../index-1.mdx#uint64type) \| [`Uint128Type`](../index-1.mdx#uint128type) \| [`Uint256Type`](../index-1.mdx#uint256type) \| [`Int8Type`](../index-1.mdx#int8type) \| [`Int16Type`](../index-1.mdx#int16type) \| [`Int32Type`](../index-1.mdx#int32type) \| [`Int64Type`](../index-1.mdx#int64type) \| [`Int128Type`](../index-1.mdx#int128type) \| `string` \| `bigint` \| `number` \| `boolean`
+
+Defined in: [crypto/SNIP12/types.ts:57](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L57)
+
+Primitive value types supported by SNIP-12
+
+***
+
+### TypedData
+
+> **TypedData** = `object`
+
+Defined in: [crypto/SNIP12/types.ts:95](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L95)
+
+Complete SNIP-12 typed data structure
+
+#### Properties
+
+##### domain
+
+> **domain**: [`Domain`](#domain)
+
+Defined in: [crypto/SNIP12/types.ts:97](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L97)
+
+Domain separator
+
+##### message
+
+> **message**: [`Message`](#message)
+
+Defined in: [crypto/SNIP12/types.ts:103](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L103)
+
+The message data
+
+##### primaryType
+
+> **primaryType**: `string`
+
+Defined in: [crypto/SNIP12/types.ts:101](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L101)
+
+The primary type being signed
+
+##### types
+
+> **types**: [`TypeDefinitions`](#typedefinitions)
+
+Defined in: [crypto/SNIP12/types.ts:99](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L99)
+
+Type definitions
+
+***
+
+### TypeDefinitions
+
+> **TypeDefinitions** = `object`
+
+Defined in: [crypto/SNIP12/types.ts:50](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L50)
+
+Type definitions mapping type names to their properties
+
+#### Index Signature
+
+\[`typeName`: `string`\]: readonly [`TypeProperty`](#typeproperty)[]
+
+***
+
+### TypeProperty
+
+> **TypeProperty** = `object`
+
+Defined in: [crypto/SNIP12/types.ts:42](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L42)
+
+Type property definition
+
+#### Properties
+
+##### name
+
+> **name**: `string`
+
+Defined in: [crypto/SNIP12/types.ts:43](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L43)
+
+##### type
+
+> **type**: `string`
+
+Defined in: [crypto/SNIP12/types.ts:44](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/types.ts#L44)
+
+## Variables
+
+### SNIP12
+
+> `const` **SNIP12**: `object`
+
+Defined in: [crypto/SNIP12/index.ts:72](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/index.ts#L72)
+
+SNIP-12 namespace with all functions
+
+#### Type Declaration
+
+##### encodeType()
+
+> **encodeType**: (`primaryType`, `types`) => `string`
+
+Encode type string for SNIP-12 type hashing
+
+###### Parameters
+
+###### primaryType
+
+`string`
+
+Primary type name to encode
+
+###### types
+
+[`TypeDefinitions`](#typedefinitions)
+
+Type definitions mapping
+
+###### Returns
+
+`string`
+
+Encoded type string with primary type followed by referenced types in alphabetical order
+
+###### Throws
+
+If primaryType or any referenced type is not found
+
+###### Example
+
+```typescript
+const types = {
+  Mail: [{ name: 'from', type: 'Person' }, { name: 'contents', type: 'shortstring' }],
+  Person: [{ name: 'name', type: 'shortstring' }]
+};
+const typeString = encodeType('Mail', types);
+// Returns: "Mail(Person from,shortstring contents)Person(shortstring name)"
+```
+
+##### hashDomain()
+
+> **hashDomain**: (`domain`) => [`Felt252Type`](../index-1.mdx#felt252type)
+
+Hash the domain separator
+
+###### Parameters
+
+###### domain
+
+[`Domain`](#domain)
+
+The domain object
+
+###### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The domain hash as Felt252
+
+##### hashStruct()
+
+> **hashStruct**: (`typeName`, `data`, `types`) => [`Felt252Type`](../index-1.mdx#felt252type)
+
+Hash a struct according to SNIP-12
+
+hash = hash_array(type_hash, Enc[param1], Enc[param2], ...)
+
+###### Parameters
+
+###### typeName
+
+`string`
+
+The struct type name
+
+###### data
+
+[`Message`](#message)
+
+The struct data
+
+###### types
+
+[`TypeDefinitions`](#typedefinitions)
+
+Type definitions
+
+###### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The struct hash as Felt252
+
+##### hashType()
+
+> **hashType**: (`typeName`, `types`) => [`Felt252Type`](../index-1.mdx#felt252type)
+
+Compute type hash for a struct type
+
+type_hash = starknet_keccak(encode_type(typeName))
+
+###### Parameters
+
+###### typeName
+
+`string`
+
+The type name to hash
+
+###### types
+
+[`TypeDefinitions`](#typedefinitions)
+
+Type definitions
+
+###### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The type hash as a Felt252
+
+##### hashTypedData()
+
+> **hashTypedData**: (`typedData`, `accountAddress`) => [`Felt252Type`](../index-1.mdx#felt252type)
+
+Hash typed data according to SNIP-12 specification
+
+hash = hash_array(PREFIX_MESSAGE, domain_hash, account, message_hash)
+
+###### Parameters
+
+###### typedData
+
+[`TypedData`](#typeddata)
+
+The typed data to hash
+
+###### accountAddress
+
+The account address (as hex string, bigint, or Felt252)
+
+`string` | `bigint` | [`Felt252Type`](../index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The typed data hash as Felt252
+
+###### Example
+
+```typescript
+import { SNIP12 } from '@kundera-sn/kundera-ts';
+
+const typedData = {
+  domain: {
+    name: 'MyDapp',
+    version: '1',
+    chainId: 'SN_MAIN',
+  },
+  types: {
+    Transfer: [
+      { name: 'recipient', type: 'ContractAddress' },
+      { name: 'amount', type: 'u256' },
+    ],
+  },
+  primaryType: 'Transfer',
+  message: {
+    recipient: '0x123...',
+    amount: 1000000000000000000n,
+  },
+};
+
+const hash = SNIP12.hashTypedData(typedData, accountAddress);
+```
+
+## Functions
+
+### encodeType()
+
+> **encodeType**(`primaryType`, `types`): `string`
+
+Defined in: [crypto/SNIP12/encodeType.ts:68](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/encodeType.ts#L68)
+
+Encode type string for SNIP-12 type hashing
+
+#### Parameters
+
+##### primaryType
+
+`string`
+
+Primary type name to encode
+
+##### types
+
+[`TypeDefinitions`](#typedefinitions)
+
+Type definitions mapping
+
+#### Returns
+
+`string`
+
+Encoded type string with primary type followed by referenced types in alphabetical order
+
+#### Throws
+
+If primaryType or any referenced type is not found
+
+#### Example
+
+```typescript
+const types = {
+  Mail: [{ name: 'from', type: 'Person' }, { name: 'contents', type: 'shortstring' }],
+  Person: [{ name: 'name', type: 'shortstring' }]
+};
+const typeString = encodeType('Mail', types);
+// Returns: "Mail(Person from,shortstring contents)Person(shortstring name)"
+```
+
+***
+
+### hashDomain()
+
+> **hashDomain**(`domain`): [`Felt252Type`](../index-1.mdx#felt252type)
+
+Defined in: [crypto/SNIP12/hashDomain.ts:28](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/hashDomain.ts#L28)
+
+Hash the domain separator
+
+#### Parameters
+
+##### domain
+
+[`Domain`](#domain)
+
+The domain object
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The domain hash as Felt252
+
+***
+
+### hashStruct()
+
+> **hashStruct**(`typeName`, `data`, `types`): [`Felt252Type`](../index-1.mdx#felt252type)
+
+Defined in: [crypto/SNIP12/hashStruct.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/hashStruct.ts#L24)
+
+Hash a struct according to SNIP-12
+
+hash = hash_array(type_hash, Enc[param1], Enc[param2], ...)
+
+#### Parameters
+
+##### typeName
+
+`string`
+
+The struct type name
+
+##### data
+
+[`Message`](#message)
+
+The struct data
+
+##### types
+
+[`TypeDefinitions`](#typedefinitions)
+
+Type definitions
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The struct hash as Felt252
+
+***
+
+### hashType()
+
+> **hashType**(`typeName`, `types`): [`Felt252Type`](../index-1.mdx#felt252type)
+
+Defined in: [crypto/SNIP12/hashType.ts:21](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/hashType.ts#L21)
+
+Compute type hash for a struct type
+
+type_hash = starknet_keccak(encode_type(typeName))
+
+#### Parameters
+
+##### typeName
+
+`string`
+
+The type name to hash
+
+##### types
+
+[`TypeDefinitions`](#typedefinitions)
+
+Type definitions
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The type hash as a Felt252
+
+***
+
+### hashTypedData()
+
+> **hashTypedData**(`typedData`, `accountAddress`): [`Felt252Type`](../index-1.mdx#felt252type)
+
+Defined in: [crypto/SNIP12/hashTypedData.ts:62](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/SNIP12/hashTypedData.ts#L62)
+
+Hash typed data according to SNIP-12 specification
+
+hash = hash_array(PREFIX_MESSAGE, domain_hash, account, message_hash)
+
+#### Parameters
+
+##### typedData
+
+[`TypedData`](#typeddata)
+
+The typed data to hash
+
+##### accountAddress
+
+The account address (as hex string, bigint, or Felt252)
+
+`string` | `bigint` | [`Felt252Type`](../index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The typed data hash as Felt252
+
+#### Example
+
+```typescript
+import { SNIP12 } from '@kundera-sn/kundera-ts';
+
+const typedData = {
+  domain: {
+    name: 'MyDapp',
+    version: '1',
+    chainId: 'SN_MAIN',
+  },
+  types: {
+    Transfer: [
+      { name: 'recipient', type: 'ContractAddress' },
+      { name: 'amount', type: 'u256' },
+    ],
+  },
+  primaryType: 'Transfer',
+  message: {
+    recipient: '0x123...',
+    amount: 1000000000000000000n,
+  },
+};
+
+const hash = SNIP12.hashTypedData(typedData, accountAddress);
+```

@@ -1,0 +1,1170 @@
+---
+title: "native"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](index.mdx) / native
+
+# native
+
+## Enumerations
+
+### StarkResult
+
+Defined in: [native/loader.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/loader.ts#L19)
+
+#### Enumeration Members
+
+##### DivisionByZero
+
+> **DivisionByZero**: `4`
+
+Defined in: [native/loader.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/loader.ts#L24)
+
+##### InvalidInput
+
+> **InvalidInput**: `1`
+
+Defined in: [native/loader.ts:21](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/loader.ts#L21)
+
+##### InvalidSignature
+
+> **InvalidSignature**: `2`
+
+Defined in: [native/loader.ts:22](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/loader.ts#L22)
+
+##### NoInverse
+
+> **NoInverse**: `5`
+
+Defined in: [native/loader.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/loader.ts#L25)
+
+##### NoSquareRoot
+
+> **NoSquareRoot**: `6`
+
+Defined in: [native/loader.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/loader.ts#L26)
+
+##### RecoveryFailed
+
+> **RecoveryFailed**: `3`
+
+Defined in: [native/loader.ts:23](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/loader.ts#L23)
+
+##### Success
+
+> **Success**: `0`
+
+Defined in: [native/loader.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/loader.ts#L20)
+
+## Interfaces
+
+### Signature
+
+Defined in: [api-interface.ts:82](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/api-interface.ts#L82)
+
+#### Properties
+
+##### r
+
+> **r**: [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [api-interface.ts:83](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/api-interface.ts#L83)
+
+##### s
+
+> **s**: [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [api-interface.ts:84](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/api-interface.ts#L84)
+
+## Variables
+
+### Felt
+
+> `const` **Felt**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type) & `object` & `object`
+
+Defined in: [native/index.ts:239](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L239)
+
+#### Type Declaration
+
+##### decodeShortString()
+
+> **decodeShortString**: (`felt`) => `string`
+
+Decode a short string from felt
+
+###### Parameters
+
+###### felt
+
+Felt value as bigint, hex string, or Felt252
+
+`string` | `bigint` | [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`string`
+
+Decoded ASCII string
+
+###### Example
+
+```ts
+decodeShortString(448378203247n) // 'hello'
+decodeShortString('0x68656c6c6f') // 'hello'
+```
+
+##### encodeShortString()
+
+> **encodeShortString**: (`str`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Encode a short string to Felt252
+
+Short strings are ASCII strings up to 31 characters that fit in a single felt252.
+Each character is encoded as its ASCII value.
+
+###### Parameters
+
+###### str
+
+`string`
+
+ASCII string (max 31 characters)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+Encoded value as Felt252Type
+
+###### Example
+
+```ts
+encodeShortString('hello') // Felt252(448378203247n)
+```
+
+##### encodeShortStringHex()
+
+> **encodeShortStringHex**: (`str`) => `string`
+
+Encode a short string to hex
+
+###### Parameters
+
+###### str
+
+`string`
+
+ASCII string (max 31 characters)
+
+###### Returns
+
+`string`
+
+Hex-encoded felt representation (unpadded)
+
+##### equals()
+
+> **equals**: (`a`, `b`) => `boolean`
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`boolean`
+
+##### from()
+
+> **from**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### value
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### fromBigInt()
+
+> **fromBigInt**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### fromBytes()
+
+> **fromBytes**: (`bytes`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### bytes
+
+`Uint8Array`
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### fromHex()
+
+> **fromHex**: (`hex`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### hex
+
+`string`
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### isValid()
+
+> **isValid**: (`felt`) => `boolean`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`boolean`
+
+##### isZero()
+
+> **isZero**: (`felt`) => `boolean`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`boolean`
+
+##### MAX\_SHORT\_STRING\_LENGTH
+
+> **MAX\_SHORT\_STRING\_LENGTH**: `number`
+
+Maximum length for short strings (31 characters)
+Short strings are ASCII strings that fit in a single felt252
+
+##### ONE
+
+> **ONE**: [`Felt252Type`](index-1.mdx#felt252type) = `feltOne`
+
+##### PRIME
+
+> **PRIME**: `bigint` = `FIELD_PRIME`
+
+##### toBigInt()
+
+> **toBigInt**: (`felt`) => `bigint`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`bigint`
+
+##### toHex()
+
+> **toHex**: (`felt`) => `string`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`string`
+
+##### TWO
+
+> **TWO**: [`Felt252Type`](index-1.mdx#felt252type) = `feltTwo`
+
+##### ZERO
+
+> **ZERO**: [`Felt252Type`](index-1.mdx#felt252type) = `feltZero`
+
+#### Type Declaration
+
+##### add()
+
+> **add**: (`a`, `b`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### div()
+
+> **div**: (`a`, `b`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### inverse()
+
+> **inverse**: (`a`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### mul()
+
+> **mul**: (`a`, `b`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### neg()
+
+> **neg**: (`a`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### pow()
+
+> **pow**: (`base`, `exp`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### base
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### exp
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### sqrt()
+
+> **sqrt**: (`a`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### sub()
+
+> **sub**: (`a`, `b`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### Pedersen
+
+> `const` **Pedersen**: `object`
+
+Defined in: [native/index.ts:223](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L223)
+
+#### Type Declaration
+
+##### hash()
+
+> `readonly` **hash**: (`a`, `b`) => [`Felt252Type`](index-1.mdx#felt252type) = `pedersenHash`
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### Poseidon
+
+> `const` **Poseidon**: `object`
+
+Defined in: [native/index.ts:227](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L227)
+
+#### Type Declaration
+
+##### hash()
+
+> `readonly` **hash**: (`a`, `b`) => [`Felt252Type`](index-1.mdx#felt252type) = `poseidonHash`
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### hashMany()
+
+> `readonly` **hashMany**: (`inputs`) => [`Felt252Type`](index-1.mdx#felt252type) = `poseidonHashMany`
+
+###### Parameters
+
+###### inputs
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### StarkCurve
+
+> `const` **StarkCurve**: `object`
+
+Defined in: [native/index.ts:259](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L259)
+
+#### Type Declaration
+
+##### getPublicKey()
+
+> **getPublicKey**: (`privateKey`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### privateKey
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### recover()
+
+> **recover**: (`messageHash`, `r`, `s`, `v`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### messageHash
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### r
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### s
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### v
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### sign()
+
+> **sign**: (`privateKey`, `messageHash`) => [`Signature`](#signature)
+
+###### Parameters
+
+###### privateKey
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### messageHash
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+[`Signature`](#signature)
+
+##### verify()
+
+> **verify**: (`publicKey`, `messageHash`, `signature`) => `boolean`
+
+###### Parameters
+
+###### publicKey
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### messageHash
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### signature
+
+[`Signature`](#signature)
+
+###### Returns
+
+`boolean`
+
+## Functions
+
+### feltAdd()
+
+> **feltAdd**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:147](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L147)
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltDiv()
+
+> **feltDiv**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:162](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L162)
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltInverse()
+
+> **feltInverse**(`a`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:172](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L172)
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltMul()
+
+> **feltMul**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:157](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L157)
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltNeg()
+
+> **feltNeg**(`a`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:167](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L167)
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltPow()
+
+> **feltPow**(`base`, `exp`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:177](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L177)
+
+#### Parameters
+
+##### base
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### exp
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltSqrt()
+
+> **feltSqrt**(`a`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:182](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L182)
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltSub()
+
+> **feltSub**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:152](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L152)
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### getNativeLibraryPath()
+
+> **getNativeLibraryPath**(): `string` \| `null`
+
+Defined in: [native/platform.ts:111](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/platform.ts#L111)
+
+Get the path to the native library, searching multiple locations.
+Returns null if not found.
+
+#### Returns
+
+`string` \| `null`
+
+***
+
+### getPublicKey()
+
+> **getPublicKey**(`privateKey`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:206](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L206)
+
+#### Parameters
+
+##### privateKey
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### isNativeAvailable()
+
+> **isNativeAvailable**(): `boolean`
+
+Defined in: [native/loader.ts:120](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/loader.ts#L120)
+
+Check if native FFI is available
+
+#### Returns
+
+`boolean`
+
+***
+
+### isWasmAvailable()
+
+> **isWasmAvailable**(): `boolean`
+
+Defined in: [native/index.ts:103](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L103)
+
+WASM is never available in native entrypoint
+
+#### Returns
+
+`boolean`
+
+***
+
+### isWasmLoaded()
+
+> **isWasmLoaded**(): `boolean`
+
+Defined in: [native/index.ts:110](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L110)
+
+WASM is never loaded in native entrypoint
+
+#### Returns
+
+`boolean`
+
+***
+
+### loadWasmCrypto()
+
+> **loadWasmCrypto**(): `Promise`\<`void`\>
+
+Defined in: [native/index.ts:117](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L117)
+
+No-op in native entrypoint (native doesn't need async loading)
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### pedersenHash()
+
+> **pedersenHash**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:123](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L123)
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### poseidonHash()
+
+> **poseidonHash**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:128](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L128)
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### poseidonHashMany()
+
+> **poseidonHashMany**(`inputs`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:133](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L133)
+
+#### Parameters
+
+##### inputs
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### recover()
+
+> **recover**(`messageHash`, `r`, `s`, `v`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:211](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L211)
+
+#### Parameters
+
+##### messageHash
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### r
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### s
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### v
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### sign()
+
+> **sign**(`privateKey`, `messageHash`): [`Signature`](#signature)
+
+Defined in: [native/index.ts:191](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L191)
+
+#### Parameters
+
+##### privateKey
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### messageHash
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Signature`](#signature)
+
+***
+
+### snKeccak()
+
+> **snKeccak**(`data`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [native/index.ts:138](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L138)
+
+#### Parameters
+
+##### data
+
+`string` | `Uint8Array`\<`ArrayBufferLike`\>
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### verify()
+
+> **verify**(`publicKey`, `messageHash`, `signature`): `boolean`
+
+Defined in: [native/index.ts:197](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/native/index.ts#L197)
+
+#### Parameters
+
+##### publicKey
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### messageHash
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### signature
+
+[`Signature`](#signature)
+
+#### Returns
+
+`boolean`
+
+## References
+
+### Address
+
+Re-exports [Address](primitives.mdx#address)
+
+***
+
+### CairoSerde
+
+Re-exports [CairoSerde](serde.mdx#cairoserde)
+
+***
+
+### Class
+
+Re-exports [Class](primitives.mdx#class)
+
+***
+
+### ClassHash
+
+Re-exports [ClassHash](index-1.mdx#classhash)
+
+***
+
+### ClassHashType
+
+Re-exports [ClassHashType](index-1.mdx#classhashtype)
+
+***
+
+### ContractAddress
+
+Re-exports [ContractAddress](index-1.mdx#contractaddress)
+
+***
+
+### ContractAddressType
+
+Re-exports [ContractAddressType](index-1.mdx#contractaddresstype)
+
+***
+
+### deserializeArray
+
+Re-exports [deserializeArray](serde.mdx#deserializearray-1)
+
+***
+
+### deserializeU256
+
+Re-exports [deserializeU256](serde.mdx#deserializeu256-1)
+
+***
+
+### EthAddress
+
+Re-exports [EthAddress](index-1.mdx#ethaddress)
+
+***
+
+### EthAddressType
+
+Re-exports [EthAddressType](index-1.mdx#ethaddresstype)
+
+***
+
+### Felt252
+
+Re-exports [Felt252](index-1.mdx#felt252)
+
+***
+
+### Felt252Input
+
+Re-exports [Felt252Input](index-1.mdx#felt252input)
+
+***
+
+### Felt252Type
+
+Re-exports [Felt252Type](index-1.mdx#felt252type)
+
+***
+
+### FIELD\_PRIME
+
+Re-exports [FIELD_PRIME](index-1.mdx#field_prime)
+
+***
+
+### MAX\_ADDRESS
+
+Re-exports [MAX_ADDRESS](primitives.mdx#max_address)
+
+***
+
+### MAX\_CONTRACT\_ADDRESS
+
+Re-exports [MAX_CONTRACT_ADDRESS](index-1.mdx#max_contract_address)
+
+***
+
+### MAX\_ETH\_ADDRESS
+
+Re-exports [MAX_ETH_ADDRESS](index-1.mdx#max_eth_address)
+
+***
+
+### serializeArray
+
+Re-exports [serializeArray](serde.mdx#serializearray-1)
+
+***
+
+### serializeByteArray
+
+Re-exports [serializeByteArray](serde.mdx#serializebytearray-1)
+
+***
+
+### serializeU256
+
+Re-exports [serializeU256](serde.mdx#serializeu256-1)
+
+***
+
+### Storage
+
+Re-exports [Storage](primitives.mdx#storage)
+
+***
+
+### StorageKey
+
+Re-exports [StorageKey](index-1.mdx#storagekey)
+
+***
+
+### StorageKeyType
+
+Re-exports [StorageKeyType](index-1.mdx#storagekeytype)

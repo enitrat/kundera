@@ -1,0 +1,380 @@
+---
+title: "primitives/Uint64"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / primitives/Uint64
+
+# primitives/Uint64
+
+## Classes
+
+### Uint64NegativeError
+
+Defined in: [primitives/Uint64/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/errors.ts#L4)
+
+Error thrown when Uint64 value is negative
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint64NegativeError**(`value`): [`Uint64NegativeError`](#uint64negativeerror)
+
+Defined in: [primitives/Uint64/errors.ts:5](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/errors.ts#L5)
+
+###### Parameters
+
+###### value
+
+`number` | `bigint`
+
+###### Returns
+
+[`Uint64NegativeError`](#uint64negativeerror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint64NotIntegerError
+
+Defined in: [primitives/Uint64/errors.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/errors.ts#L24)
+
+Error thrown when Uint64 value is not an integer
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint64NotIntegerError**(`value`): [`Uint64NotIntegerError`](#uint64notintegererror)
+
+Defined in: [primitives/Uint64/errors.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/errors.ts#L25)
+
+###### Parameters
+
+###### value
+
+`number`
+
+###### Returns
+
+[`Uint64NotIntegerError`](#uint64notintegererror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint64OverflowError
+
+Defined in: [primitives/Uint64/errors.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/errors.ts#L14)
+
+Error thrown when Uint64 value exceeds maximum (2^64 - 1)
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint64OverflowError**(`value`): [`Uint64OverflowError`](#uint64overflowerror)
+
+Defined in: [primitives/Uint64/errors.ts:15](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/errors.ts#L15)
+
+###### Parameters
+
+###### value
+
+`number` | `bigint`
+
+###### Returns
+
+[`Uint64OverflowError`](#uint64overflowerror)
+
+###### Overrides
+
+`Error.constructor`
+
+## Variables
+
+### from()
+
+> `const` **from**: (`value`) => [`Uint64Type`](../index-1.mdx#uint64type) = `_from`
+
+Defined in: [primitives/Uint64/index.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/index.ts#L18)
+
+Create Uint64 from bigint, number, or string
+
+#### Parameters
+
+##### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+#### Returns
+
+[`Uint64Type`](../index-1.mdx#uint64type)
+
+Uint64 value
+
+#### Throws
+
+If number is not an integer
+
+#### Throws
+
+If value is negative
+
+#### Throws
+
+If value exceeds maximum
+
+***
+
+### MAX
+
+> `const` **MAX**: [`Uint64Type`](../index-1.mdx#uint64type)
+
+Defined in: [primitives/Uint64/constants.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/constants.ts#L7)
+
+Maximum Uint64 value: 2^64 - 1
+
+***
+
+### MIN
+
+> `const` **MIN**: [`Uint64Type`](../index-1.mdx#uint64type)
+
+Defined in: [primitives/Uint64/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/constants.ts#L4)
+
+Minimum Uint64 value: 0
+
+***
+
+### SIZE
+
+> `const` **SIZE**: `64` = `64`
+
+Defined in: [primitives/Uint64/constants.ts:10](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/constants.ts#L10)
+
+Size in bits
+
+***
+
+### toBigInt()
+
+> `const` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Defined in: [primitives/Uint64/index.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/index.ts#L20)
+
+Convert Uint64 to bigint
+
+#### Parameters
+
+##### uint
+
+[`Uint64Type`](../index-1.mdx#uint64type)
+
+Uint64 value
+
+#### Returns
+
+`bigint`
+
+BigInt value
+
+***
+
+### toFelt()
+
+> `const` **toFelt**: (`uint`) => [`Felt252Type`](../index-1.mdx#felt252type) = `_toFelt`
+
+Defined in: [primitives/Uint64/index.ts:21](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/index.ts#L21)
+
+Convert Uint64 to Felt252
+
+#### Parameters
+
+##### uint
+
+[`Uint64Type`](../index-1.mdx#uint64type)
+
+Uint64 value
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Felt252 value
+
+***
+
+### toHex()
+
+> `const` **toHex**: (`uint`) => `string` = `_toHex`
+
+Defined in: [primitives/Uint64/index.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/index.ts#L19)
+
+Convert Uint64 to hex string
+
+#### Parameters
+
+##### uint
+
+[`Uint64Type`](../index-1.mdx#uint64type)
+
+Uint64 value
+
+#### Returns
+
+`string`
+
+Hex string with 0x prefix
+
+***
+
+### Uint64
+
+> `const` **Uint64**: `object`
+
+Defined in: [primitives/Uint64/index.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint64/index.ts#L26)
+
+Uint64 namespace with all functions
+
+#### Type Declaration
+
+##### from()
+
+> `readonly` **from**: (`value`) => [`Uint64Type`](../index-1.mdx#uint64type) = `_from`
+
+Create Uint64 from bigint, number, or string
+
+###### Parameters
+
+###### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+###### Returns
+
+[`Uint64Type`](../index-1.mdx#uint64type)
+
+Uint64 value
+
+###### Throws
+
+If number is not an integer
+
+###### Throws
+
+If value is negative
+
+###### Throws
+
+If value exceeds maximum
+
+##### MAX
+
+> **MAX**: [`Uint64Type`](../index-1.mdx#uint64type)
+
+Maximum Uint64 value: 2^64 - 1
+
+##### MIN
+
+> **MIN**: [`Uint64Type`](../index-1.mdx#uint64type)
+
+Minimum Uint64 value: 0
+
+##### SIZE
+
+> **SIZE**: `64`
+
+Size in bits
+
+##### toBigInt()
+
+> `readonly` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Convert Uint64 to bigint
+
+###### Parameters
+
+###### uint
+
+[`Uint64Type`](../index-1.mdx#uint64type)
+
+Uint64 value
+
+###### Returns
+
+`bigint`
+
+BigInt value
+
+##### toFelt()
+
+> `readonly` **toFelt**: (`uint`) => [`Felt252Type`](../index-1.mdx#felt252type) = `_toFelt`
+
+Convert Uint64 to Felt252
+
+###### Parameters
+
+###### uint
+
+[`Uint64Type`](../index-1.mdx#uint64type)
+
+Uint64 value
+
+###### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Felt252 value
+
+##### toHex()
+
+> `readonly` **toHex**: (`uint`) => `string` = `_toHex`
+
+Convert Uint64 to hex string
+
+###### Parameters
+
+###### uint
+
+[`Uint64Type`](../index-1.mdx#uint64type)
+
+Uint64 value
+
+###### Returns
+
+`string`
+
+Hex string with 0x prefix
+
+## References
+
+### Uint64Type
+
+Re-exports [Uint64Type](../index-1.mdx#uint64type)

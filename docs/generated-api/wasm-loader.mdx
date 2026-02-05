@@ -1,0 +1,948 @@
+---
+title: "wasm-loader"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](index.mdx) / wasm-loader
+
+# wasm-loader
+
+## Enumerations
+
+### ErrorCode
+
+Defined in: [wasm-loader/types.ts:10](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L10)
+
+Error codes from the WASM FFI (matches Rust StarkResult enum)
+
+#### Enumeration Members
+
+##### DivisionByZero
+
+> **DivisionByZero**: `4`
+
+Defined in: [wasm-loader/types.ts:15](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L15)
+
+##### InvalidInput
+
+> **InvalidInput**: `1`
+
+Defined in: [wasm-loader/types.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L12)
+
+##### InvalidSignature
+
+> **InvalidSignature**: `2`
+
+Defined in: [wasm-loader/types.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L13)
+
+##### NoInverse
+
+> **NoInverse**: `5`
+
+Defined in: [wasm-loader/types.ts:16](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L16)
+
+##### NoSquareRoot
+
+> **NoSquareRoot**: `6`
+
+Defined in: [wasm-loader/types.ts:17](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L17)
+
+##### RecoveryFailed
+
+> **RecoveryFailed**: `3`
+
+Defined in: [wasm-loader/types.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L14)
+
+##### Success
+
+> **Success**: `0`
+
+Defined in: [wasm-loader/types.ts:11](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L11)
+
+## Interfaces
+
+### WasmExports
+
+Defined in: [wasm-loader/types.ts:23](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L23)
+
+WASM module exports interface
+
+#### Properties
+
+##### \_\_heap\_base?
+
+> `optional` **\_\_heap\_base**: `Global`\<keyof `ValueTypeMap`\>
+
+Defined in: [wasm-loader/types.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L26)
+
+##### felt\_add()
+
+> **felt\_add**: (`a`, `b`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:29](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L29)
+
+###### Parameters
+
+###### a
+
+`number`
+
+###### b
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### felt\_div()
+
+> **felt\_div**: (`a`, `b`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:32](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L32)
+
+###### Parameters
+
+###### a
+
+`number`
+
+###### b
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### felt\_inverse()
+
+> **felt\_inverse**: (`a`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:34](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L34)
+
+###### Parameters
+
+###### a
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### felt\_mul()
+
+> **felt\_mul**: (`a`, `b`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:31](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L31)
+
+###### Parameters
+
+###### a
+
+`number`
+
+###### b
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### felt\_neg()
+
+> **felt\_neg**: (`a`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:33](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L33)
+
+###### Parameters
+
+###### a
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### felt\_pow()
+
+> **felt\_pow**: (`base`, `exp`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:35](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L35)
+
+###### Parameters
+
+###### base
+
+`number`
+
+###### exp
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### felt\_sqrt()
+
+> **felt\_sqrt**: (`a`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:36](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L36)
+
+###### Parameters
+
+###### a
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### felt\_sub()
+
+> **felt\_sub**: (`a`, `b`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:30](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L30)
+
+###### Parameters
+
+###### a
+
+`number`
+
+###### b
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### memory
+
+> **memory**: `Memory`
+
+Defined in: [wasm-loader/types.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L25)
+
+##### starknet\_get\_public\_key()
+
+> **starknet\_get\_public\_key**: (`privKey`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:45](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L45)
+
+###### Parameters
+
+###### privKey
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### starknet\_keccak256()
+
+> **starknet\_keccak256**: (`data`, `len`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:42](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L42)
+
+###### Parameters
+
+###### data
+
+`number`
+
+###### len
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### starknet\_pedersen\_hash()
+
+> **starknet\_pedersen\_hash**: (`a`, `b`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:39](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L39)
+
+###### Parameters
+
+###### a
+
+`number`
+
+###### b
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### starknet\_poseidon\_hash()
+
+> **starknet\_poseidon\_hash**: (`a`, `b`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:40](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L40)
+
+###### Parameters
+
+###### a
+
+`number`
+
+###### b
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### starknet\_poseidon\_hash\_many()
+
+> **starknet\_poseidon\_hash\_many**: (`inputs`, `len`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:41](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L41)
+
+###### Parameters
+
+###### inputs
+
+`number`
+
+###### len
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### starknet\_recover()
+
+> **starknet\_recover**: (`msgHash`, `r`, `s`, `v`, `out`) => `number`
+
+Defined in: [wasm-loader/types.ts:48](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L48)
+
+###### Parameters
+
+###### msgHash
+
+`number`
+
+###### r
+
+`number`
+
+###### s
+
+`number`
+
+###### v
+
+`number`
+
+###### out
+
+`number`
+
+###### Returns
+
+`number`
+
+##### starknet\_sign()
+
+> **starknet\_sign**: (`privKey`, `msgHash`, `outR`, `outS`) => `number`
+
+Defined in: [wasm-loader/types.ts:46](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L46)
+
+###### Parameters
+
+###### privKey
+
+`number`
+
+###### msgHash
+
+`number`
+
+###### outR
+
+`number`
+
+###### outS
+
+`number`
+
+###### Returns
+
+`number`
+
+##### starknet\_verify()
+
+> **starknet\_verify**: (`pubKey`, `msgHash`, `r`, `s`) => `number`
+
+Defined in: [wasm-loader/types.ts:47](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L47)
+
+###### Parameters
+
+###### pubKey
+
+`number`
+
+###### msgHash
+
+`number`
+
+###### r
+
+`number`
+
+###### s
+
+`number`
+
+###### Returns
+
+`number`
+
+***
+
+### WasmInstance
+
+Defined in: [wasm-loader/types.ts:54](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L54)
+
+Loaded WASM instance with typed exports
+
+#### Properties
+
+##### exports
+
+> **exports**: [`WasmExports`](#wasmexports)
+
+Defined in: [wasm-loader/types.ts:55](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L55)
+
+##### memory
+
+> **memory**: `Memory`
+
+Defined in: [wasm-loader/types.ts:56](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/types.ts#L56)
+
+***
+
+### WasmSignature
+
+Defined in: [wasm-loader/loader.ts:475](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L475)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Properties
+
+##### r
+
+> **r**: [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:476](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L476)
+
+##### s
+
+> **s**: [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:477](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L477)
+
+## Functions
+
+### wasmFeltAdd()
+
+> **wasmFeltAdd**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:256](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L256)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmFeltDiv()
+
+> **wasmFeltDiv**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:307](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L307)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmFeltInverse()
+
+> **wasmFeltInverse**(`a`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:339](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L339)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmFeltMul()
+
+> **wasmFeltMul**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:290](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L290)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmFeltNeg()
+
+> **wasmFeltNeg**(`a`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:324](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L324)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmFeltPow()
+
+> **wasmFeltPow**(`base`, `exp`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:354](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L354)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### base
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### exp
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmFeltSqrt()
+
+> **wasmFeltSqrt**(`a`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:371](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L371)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmFeltSub()
+
+> **wasmFeltSub**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:273](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L273)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmGetPublicKey()
+
+> **wasmGetPublicKey**(`privateKey`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:460](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L460)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### privateKey
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmKeccak256()
+
+> **wasmKeccak256**(`data`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:441](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L441)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### data
+
+`Uint8Array`
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmPedersenHash()
+
+> **wasmPedersenHash**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:388](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L388)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmPoseidonHash()
+
+> **wasmPoseidonHash**(`a`, `b`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:405](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L405)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmPoseidonHashMany()
+
+> **wasmPoseidonHashMany**(`inputs`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:422](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L422)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### inputs
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmRecover()
+
+> **wasmRecover**(`messageHash`, `r`, `s`, `v`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [wasm-loader/loader.ts:528](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L528)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### messageHash
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### r
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### s
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### v
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### wasmSign()
+
+> **wasmSign**(`privateKey`, `messageHash`): [`WasmSignature`](#wasmsignature)
+
+Defined in: [wasm-loader/loader.ts:480](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L480)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### privateKey
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### messageHash
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+[`WasmSignature`](#wasmsignature)
+
+***
+
+### wasmVerify()
+
+> **wasmVerify**(`publicKey`, `messageHash`, `r`, `s`): `boolean`
+
+Defined in: [wasm-loader/loader.ts:501](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/wasm-loader/loader.ts#L501)
+
+WASM Loader Module
+
+Exports WASM crypto loader and functions.
+
+#### Parameters
+
+##### publicKey
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### messageHash
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### r
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### s
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+`boolean`
+
+## References
+
+### getWasmPath
+
+Re-exports [getWasmPath](wasm.mdx#getwasmpath)
+
+***
+
+### isWasmAvailable
+
+Re-exports [isWasmAvailable](wasm.mdx#iswasmavailable)
+
+***
+
+### isWasmLoaded
+
+Re-exports [isWasmLoaded](wasm.mdx#iswasmloaded)
+
+***
+
+### loadWasmCrypto
+
+Re-exports [loadWasmCrypto](wasm.mdx#loadwasmcrypto)

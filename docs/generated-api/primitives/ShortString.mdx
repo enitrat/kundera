@@ -1,0 +1,100 @@
+---
+title: "primitives/ShortString"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / primitives/ShortString
+
+# primitives/ShortString
+
+## Functions
+
+### decodeShortString()
+
+> **decodeShortString**(`felt`): `string`
+
+Defined in: [primitives/ShortString/decodeShortString.ts:15](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ShortString/decodeShortString.ts#L15)
+
+Decode a short string from felt
+
+#### Parameters
+
+##### felt
+
+Felt value as bigint, hex string, or Felt252
+
+`string` | `bigint` | [`Felt252Type`](../index-1.mdx#felt252type)
+
+#### Returns
+
+`string`
+
+Decoded ASCII string
+
+#### Example
+
+```ts
+decodeShortString(448378203247n) // 'hello'
+decodeShortString('0x68656c6c6f') // 'hello'
+```
+
+***
+
+### encodeShortString()
+
+> **encodeShortString**(`str`): [`Felt252Type`](../index-1.mdx#felt252type)
+
+Defined in: [primitives/ShortString/encodeShortString.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ShortString/encodeShortString.ts#L26)
+
+Encode a short string to Felt252
+
+Short strings are ASCII strings up to 31 characters that fit in a single felt252.
+Each character is encoded as its ASCII value.
+
+#### Parameters
+
+##### str
+
+`string`
+
+ASCII string (max 31 characters)
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Encoded value as Felt252Type
+
+#### Example
+
+```ts
+encodeShortString('hello') // Felt252(448378203247n)
+```
+
+***
+
+### encodeShortStringHex()
+
+> **encodeShortStringHex**(`str`): `string`
+
+Defined in: [primitives/ShortString/encodeShortStringHex.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ShortString/encodeShortStringHex.ts#L9)
+
+Encode a short string to hex
+
+#### Parameters
+
+##### str
+
+`string`
+
+ASCII string (max 31 characters)
+
+#### Returns
+
+`string`
+
+Hex-encoded felt representation (unpadded)

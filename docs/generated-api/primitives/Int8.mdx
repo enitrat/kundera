@@ -1,0 +1,290 @@
+---
+title: "primitives/Int8"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / primitives/Int8
+
+# primitives/Int8
+
+## Classes
+
+### Int8ParseError
+
+Defined in: [primitives/Int8/errors.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/errors.ts#L12)
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Int8ParseError**(`input`, `reason`): [`Int8ParseError`](#int8parseerror)
+
+Defined in: [primitives/Int8/errors.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/errors.ts#L13)
+
+###### Parameters
+
+###### input
+
+`string`
+
+###### reason
+
+`string`
+
+###### Returns
+
+[`Int8ParseError`](#int8parseerror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Int8RangeError
+
+Defined in: [primitives/Int8/errors.ts:3](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/errors.ts#L3)
+
+#### Extends
+
+- `RangeError`
+
+#### Constructors
+
+##### Constructor
+
+> **new Int8RangeError**(`value`): [`Int8RangeError`](#int8rangeerror)
+
+Defined in: [primitives/Int8/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/errors.ts#L4)
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+[`Int8RangeError`](#int8rangeerror)
+
+###### Overrides
+
+`RangeError.constructor`
+
+## Variables
+
+### MAX
+
+> `const` **MAX**: `127n` = `127n`
+
+Defined in: [primitives/Int8/constants.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/constants.ts#L9)
+
+Maximum value for Int8: 127
+
+***
+
+### MIN
+
+> `const` **MIN**: `-128n` = `-128n`
+
+Defined in: [primitives/Int8/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/constants.ts#L4)
+
+Minimum value for Int8: -128
+
+***
+
+### PRIME
+
+> `const` **PRIME**: `bigint`
+
+Defined in: [primitives/Int8/constants.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/constants.ts#L20)
+
+Stark curve field prime: P = 2^251 + 17*2^192 + 1
+Used for Cairo field encoding of negative values.
+
+***
+
+### SIZE
+
+> `const` **SIZE**: `8` = `8`
+
+Defined in: [primitives/Int8/constants.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/constants.ts#L14)
+
+Bit size of Int8
+
+## Functions
+
+### from()
+
+> **from**(`value`): [`Int8Type`](../index-1.mdx#int8type)
+
+Defined in: [primitives/Int8/from.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/from.ts#L13)
+
+Create an Int8 from various input types.
+
+#### Parameters
+
+##### value
+
+[`Int8Input`](../index-1.mdx#int8input)
+
+The value to convert (bigint, number, or string)
+
+#### Returns
+
+[`Int8Type`](../index-1.mdx#int8type)
+
+A branded Int8Type
+
+#### Throws
+
+Int8RangeError if value is outside [MIN, MAX]
+
+#### Throws
+
+Int8ParseError if string cannot be parsed
+
+***
+
+### fromFelt()
+
+> **fromFelt**(`felt`): [`Int8Type`](../index-1.mdx#int8type)
+
+Defined in: [primitives/Int8/fromFelt.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/fromFelt.ts#L20)
+
+Decode a Felt252 back to an Int8.
+
+CRITICAL: This reverses Cairo's field encoding.
+
+Cairo encodes negative values as PRIME + negative_value.
+To decode:
+- If value <= MAX, it's positive (or zero)
+- If value > MAX, it's a negative number: actual = value - PRIME
+
+#### Parameters
+
+##### felt
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The Felt252 to decode
+
+#### Returns
+
+[`Int8Type`](../index-1.mdx#int8type)
+
+The signed Int8 value
+
+#### Throws
+
+Int8RangeError if the decoded value is outside Int8 range
+
+***
+
+### toBigInt()
+
+> **toBigInt**(`value`): `bigint`
+
+Defined in: [primitives/Int8/toBigInt.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/toBigInt.ts#L9)
+
+Convert an Int8 to its bigint value.
+
+#### Parameters
+
+##### value
+
+[`Int8Type`](../index-1.mdx#int8type)
+
+The Int8 to convert
+
+#### Returns
+
+`bigint`
+
+The signed bigint value
+
+***
+
+### toFelt()
+
+> **toFelt**(`value`): [`Felt252Type`](../index-1.mdx#felt252type)
+
+Defined in: [primitives/Int8/toFelt.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/toFelt.ts#L20)
+
+Convert an Int8 to a Felt252 using Cairo field encoding.
+
+CRITICAL: Cairo signed integer encoding is NOT two's complement!
+
+Cairo uses prime field arithmetic:
+- Positive values: stored directly (0 to MAX)
+- Negative values: stored as PRIME + negative_value
+
+This is because in modular arithmetic over the field,
+PRIME + x === x (mod PRIME), so PRIME - 1 represents -1.
+
+#### Parameters
+
+##### value
+
+[`Int8Type`](../index-1.mdx#int8type)
+
+The Int8 to convert
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The Felt252 representation for Cairo
+
+***
+
+### toHex()
+
+> **toHex**(`value`): `string`
+
+Defined in: [primitives/Int8/toHex.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int8/toHex.ts#L12)
+
+Convert an Int8 to its hexadecimal string representation.
+
+For negative values, returns a string with a minus sign prefix
+followed by 0x and the absolute value in hex.
+
+#### Parameters
+
+##### value
+
+[`Int8Type`](../index-1.mdx#int8type)
+
+The Int8 to convert
+
+#### Returns
+
+`string`
+
+Hexadecimal string (e.g., "0xff" or "-0x1")
+
+## References
+
+### Int8
+
+Re-exports [Int8](../index-1.mdx#int8)
+
+***
+
+### Int8Input
+
+Re-exports [Int8Input](../index-1.mdx#int8input)
+
+***
+
+### Int8Type
+
+Re-exports [Int8Type](../index-1.mdx#int8type)

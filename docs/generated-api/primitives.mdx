@@ -1,0 +1,701 @@
+---
+title: "primitives"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](index.mdx) / primitives
+
+# primitives
+
+## Variables
+
+### Address
+
+> `const` **Address**: (`felt`) => [`ContractAddressType`](index-1.mdx#contractaddresstype) & `object` = `ContractAddress`
+
+Defined in: [primitives/index.ts:77](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/index.ts#L77)
+
+#### Type Declaration
+
+##### from()
+
+> **from**: (`felt`) => [`ContractAddressType`](index-1.mdx#contractaddresstype)
+
+Create a ContractAddress from Felt252 (with validation)
+
+###### Parameters
+
+###### felt
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+###### Returns
+
+[`ContractAddressType`](index-1.mdx#contractaddresstype)
+
+##### isValid()
+
+> **isValid**: (`felt`) => `boolean`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+###### Returns
+
+`boolean`
+
+##### MAX
+
+> **MAX**: `bigint` = `MAX_CONTRACT_ADDRESS`
+
+***
+
+### Class
+
+> `const` **Class**: (`felt`) => [`ClassHashType`](index-1.mdx#classhashtype) & `object` = `ClassHash`
+
+Defined in: [primitives/index.ts:78](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/index.ts#L78)
+
+#### Type Declaration
+
+##### from()
+
+> **from**: (`felt`) => [`ClassHashType`](index-1.mdx#classhashtype)
+
+Create a ClassHash from Felt252 (with validation)
+
+###### Parameters
+
+###### felt
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+###### Returns
+
+[`ClassHashType`](index-1.mdx#classhashtype)
+
+***
+
+### Felt
+
+> `const` **Felt**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type) & `object` = `Felt252`
+
+Defined in: [primitives/index.ts:76](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/index.ts#L76)
+
+#### Type Declaration
+
+##### decodeShortString()
+
+> **decodeShortString**: (`felt`) => `string`
+
+Decode a short string from felt
+
+###### Parameters
+
+###### felt
+
+Felt value as bigint, hex string, or Felt252
+
+`string` | `bigint` | [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`string`
+
+Decoded ASCII string
+
+###### Example
+
+```ts
+decodeShortString(448378203247n) // 'hello'
+decodeShortString('0x68656c6c6f') // 'hello'
+```
+
+##### encodeShortString()
+
+> **encodeShortString**: (`str`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Encode a short string to Felt252
+
+Short strings are ASCII strings up to 31 characters that fit in a single felt252.
+Each character is encoded as its ASCII value.
+
+###### Parameters
+
+###### str
+
+`string`
+
+ASCII string (max 31 characters)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+Encoded value as Felt252Type
+
+###### Example
+
+```ts
+encodeShortString('hello') // Felt252(448378203247n)
+```
+
+##### encodeShortStringHex()
+
+> **encodeShortStringHex**: (`str`) => `string`
+
+Encode a short string to hex
+
+###### Parameters
+
+###### str
+
+`string`
+
+ASCII string (max 31 characters)
+
+###### Returns
+
+`string`
+
+Hex-encoded felt representation (unpadded)
+
+##### equals()
+
+> **equals**: (`a`, `b`) => `boolean`
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`boolean`
+
+##### from()
+
+> **from**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### value
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### fromBigInt()
+
+> **fromBigInt**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### fromBytes()
+
+> **fromBytes**: (`bytes`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### bytes
+
+`Uint8Array`
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### fromHex()
+
+> **fromHex**: (`hex`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### hex
+
+`string`
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### isValid()
+
+> **isValid**: (`felt`) => `boolean`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`boolean`
+
+##### isZero()
+
+> **isZero**: (`felt`) => `boolean`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`boolean`
+
+##### MAX\_SHORT\_STRING\_LENGTH
+
+> **MAX\_SHORT\_STRING\_LENGTH**: `number`
+
+Maximum length for short strings (31 characters)
+Short strings are ASCII strings that fit in a single felt252
+
+##### ONE
+
+> **ONE**: [`Felt252Type`](index-1.mdx#felt252type) = `feltOne`
+
+##### PRIME
+
+> **PRIME**: `bigint` = `FIELD_PRIME`
+
+##### toBigInt()
+
+> **toBigInt**: (`felt`) => `bigint`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`bigint`
+
+##### toHex()
+
+> **toHex**: (`felt`) => `string`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`string`
+
+##### TWO
+
+> **TWO**: [`Felt252Type`](index-1.mdx#felt252type) = `feltTwo`
+
+##### ZERO
+
+> **ZERO**: [`Felt252Type`](index-1.mdx#felt252type) = `feltZero`
+
+***
+
+### MAX\_ADDRESS
+
+> `const` **MAX\_ADDRESS**: `bigint` = `MAX_CONTRACT_ADDRESS`
+
+Defined in: [primitives/index.ts:82](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/index.ts#L82)
+
+***
+
+### Storage
+
+> `const` **Storage**: (`felt`) => [`StorageKeyType`](index-1.mdx#storagekeytype) & `object` = `StorageKey`
+
+Defined in: [primitives/index.ts:79](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/index.ts#L79)
+
+#### Type Declaration
+
+##### from()
+
+> **from**: (`felt`) => [`StorageKeyType`](index-1.mdx#storagekeytype)
+
+Create a StorageKey from Felt252 (with validation)
+
+###### Parameters
+
+###### felt
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+###### Returns
+
+[`StorageKeyType`](index-1.mdx#storagekeytype)
+
+## Functions
+
+### decodeShortString()
+
+> **decodeShortString**(`felt`): `string`
+
+Defined in: [primitives/ShortString/decodeShortString.ts:15](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ShortString/decodeShortString.ts#L15)
+
+Decode a short string from felt
+
+#### Parameters
+
+##### felt
+
+Felt value as bigint, hex string, or Felt252
+
+`string` | `bigint` | [`Felt252Type`](index-1.mdx#felt252type)
+
+#### Returns
+
+`string`
+
+Decoded ASCII string
+
+#### Example
+
+```ts
+decodeShortString(448378203247n) // 'hello'
+decodeShortString('0x68656c6c6f') // 'hello'
+```
+
+***
+
+### encodeShortString()
+
+> **encodeShortString**(`str`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [primitives/ShortString/encodeShortString.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ShortString/encodeShortString.ts#L26)
+
+Encode a short string to Felt252
+
+Short strings are ASCII strings up to 31 characters that fit in a single felt252.
+Each character is encoded as its ASCII value.
+
+#### Parameters
+
+##### str
+
+`string`
+
+ASCII string (max 31 characters)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+Encoded value as Felt252Type
+
+#### Example
+
+```ts
+encodeShortString('hello') // Felt252(448378203247n)
+```
+
+***
+
+### encodeShortStringHex()
+
+> **encodeShortStringHex**(`str`): `string`
+
+Defined in: [primitives/ShortString/encodeShortStringHex.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/ShortString/encodeShortStringHex.ts#L9)
+
+Encode a short string to hex
+
+#### Parameters
+
+##### str
+
+`string`
+
+ASCII string (max 31 characters)
+
+#### Returns
+
+`string`
+
+Hex-encoded felt representation (unpadded)
+
+## References
+
+### ClassHash
+
+Re-exports [ClassHash](index-1.mdx#classhash)
+
+***
+
+### ClassHashType
+
+Re-exports [ClassHashType](index-1.mdx#classhashtype)
+
+***
+
+### ContractAddress
+
+Re-exports [ContractAddress](index-1.mdx#contractaddress)
+
+***
+
+### ContractAddressType
+
+Re-exports [ContractAddressType](index-1.mdx#contractaddresstype)
+
+***
+
+### EthAddress
+
+Re-exports [EthAddress](index-1.mdx#ethaddress)
+
+***
+
+### EthAddressType
+
+Re-exports [EthAddressType](index-1.mdx#ethaddresstype)
+
+***
+
+### Felt252
+
+Re-exports [Felt252](index-1.mdx#felt252)
+
+***
+
+### Felt252Input
+
+Re-exports [Felt252Input](index-1.mdx#felt252input)
+
+***
+
+### Felt252Type
+
+Re-exports [Felt252Type](index-1.mdx#felt252type)
+
+***
+
+### FeltMethods
+
+Re-exports [FeltMethods](index-1.mdx#feltmethods)
+
+***
+
+### FIELD\_PRIME
+
+Re-exports [FIELD_PRIME](index-1.mdx#field_prime)
+
+***
+
+### Int128
+
+Re-exports [Int128](index-1.mdx#int128)
+
+***
+
+### Int128Input
+
+Re-exports [Int128Input](index-1.mdx#int128input)
+
+***
+
+### Int128Type
+
+Re-exports [Int128Type](index-1.mdx#int128type)
+
+***
+
+### Int16
+
+Re-exports [Int16](index-1.mdx#int16)
+
+***
+
+### Int16Input
+
+Re-exports [Int16Input](index-1.mdx#int16input)
+
+***
+
+### Int16Type
+
+Re-exports [Int16Type](index-1.mdx#int16type)
+
+***
+
+### Int32
+
+Re-exports [Int32](index-1.mdx#int32)
+
+***
+
+### Int32Input
+
+Re-exports [Int32Input](index-1.mdx#int32input)
+
+***
+
+### Int32Type
+
+Re-exports [Int32Type](index-1.mdx#int32type)
+
+***
+
+### Int64
+
+Re-exports [Int64](index-1.mdx#int64)
+
+***
+
+### Int64Input
+
+Re-exports [Int64Input](index-1.mdx#int64input)
+
+***
+
+### Int64Type
+
+Re-exports [Int64Type](index-1.mdx#int64type)
+
+***
+
+### Int8
+
+Re-exports [Int8](index-1.mdx#int8)
+
+***
+
+### Int8Input
+
+Re-exports [Int8Input](index-1.mdx#int8input)
+
+***
+
+### Int8Type
+
+Re-exports [Int8Type](index-1.mdx#int8type)
+
+***
+
+### MAX\_CONTRACT\_ADDRESS
+
+Re-exports [MAX_CONTRACT_ADDRESS](index-1.mdx#max_contract_address)
+
+***
+
+### MAX\_ETH\_ADDRESS
+
+Re-exports [MAX_ETH_ADDRESS](index-1.mdx#max_eth_address)
+
+***
+
+### MAX\_SHORT\_STRING\_LENGTH
+
+Re-exports [MAX_SHORT_STRING_LENGTH](index-1.mdx#max_short_string_length)
+
+***
+
+### StorageKey
+
+Re-exports [StorageKey](index-1.mdx#storagekey)
+
+***
+
+### StorageKeyType
+
+Re-exports [StorageKeyType](index-1.mdx#storagekeytype)
+
+***
+
+### Uint128
+
+Re-exports [Uint128](primitives/Uint128.mdx#uint128)
+
+***
+
+### Uint128Type
+
+Re-exports [Uint128Type](index-1.mdx#uint128type)
+
+***
+
+### Uint16
+
+Re-exports [Uint16](primitives/Uint16.mdx#uint16)
+
+***
+
+### Uint16Type
+
+Re-exports [Uint16Type](index-1.mdx#uint16type)
+
+***
+
+### Uint256
+
+Re-exports [Uint256](primitives/Uint256.mdx#uint256)
+
+***
+
+### Uint256Type
+
+Re-exports [Uint256Type](index-1.mdx#uint256type)
+
+***
+
+### Uint32
+
+Re-exports [Uint32](primitives/Uint32.mdx#uint32)
+
+***
+
+### Uint32Type
+
+Re-exports [Uint32Type](index-1.mdx#uint32type)
+
+***
+
+### Uint64
+
+Re-exports [Uint64](primitives/Uint64.mdx#uint64)
+
+***
+
+### Uint64Type
+
+Re-exports [Uint64Type](index-1.mdx#uint64type)
+
+***
+
+### Uint8
+
+Re-exports [Uint8](primitives/Uint8.mdx#uint8)
+
+***
+
+### Uint8Type
+
+Re-exports [Uint8Type](index-1.mdx#uint8type)

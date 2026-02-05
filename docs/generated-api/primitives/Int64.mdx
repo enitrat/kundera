@@ -1,0 +1,290 @@
+---
+title: "primitives/Int64"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / primitives/Int64
+
+# primitives/Int64
+
+## Classes
+
+### Int64ParseError
+
+Defined in: [primitives/Int64/errors.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/errors.ts#L12)
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Int64ParseError**(`input`, `reason`): [`Int64ParseError`](#int64parseerror)
+
+Defined in: [primitives/Int64/errors.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/errors.ts#L13)
+
+###### Parameters
+
+###### input
+
+`string`
+
+###### reason
+
+`string`
+
+###### Returns
+
+[`Int64ParseError`](#int64parseerror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Int64RangeError
+
+Defined in: [primitives/Int64/errors.ts:3](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/errors.ts#L3)
+
+#### Extends
+
+- `RangeError`
+
+#### Constructors
+
+##### Constructor
+
+> **new Int64RangeError**(`value`): [`Int64RangeError`](#int64rangeerror)
+
+Defined in: [primitives/Int64/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/errors.ts#L4)
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+[`Int64RangeError`](#int64rangeerror)
+
+###### Overrides
+
+`RangeError.constructor`
+
+## Variables
+
+### MAX
+
+> `const` **MAX**: `bigint`
+
+Defined in: [primitives/Int64/constants.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/constants.ts#L9)
+
+Maximum value for Int64: 2^63 - 1
+
+***
+
+### MIN
+
+> `const` **MIN**: `bigint`
+
+Defined in: [primitives/Int64/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/constants.ts#L4)
+
+Minimum value for Int64: -2^63
+
+***
+
+### PRIME
+
+> `const` **PRIME**: `bigint`
+
+Defined in: [primitives/Int64/constants.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/constants.ts#L20)
+
+Stark curve field prime: P = 2^251 + 17*2^192 + 1
+Used for Cairo field encoding of negative values.
+
+***
+
+### SIZE
+
+> `const` **SIZE**: `64` = `64`
+
+Defined in: [primitives/Int64/constants.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/constants.ts#L14)
+
+Bit size of Int64
+
+## Functions
+
+### from()
+
+> **from**(`value`): [`Int64Type`](../index-1.mdx#int64type)
+
+Defined in: [primitives/Int64/from.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/from.ts#L13)
+
+Create an Int64 from various input types.
+
+#### Parameters
+
+##### value
+
+[`Int64Input`](../index-1.mdx#int64input)
+
+The value to convert (bigint, number, or string)
+
+#### Returns
+
+[`Int64Type`](../index-1.mdx#int64type)
+
+A branded Int64Type
+
+#### Throws
+
+Int64RangeError if value is outside [MIN, MAX]
+
+#### Throws
+
+Int64ParseError if string cannot be parsed
+
+***
+
+### fromFelt()
+
+> **fromFelt**(`felt`): [`Int64Type`](../index-1.mdx#int64type)
+
+Defined in: [primitives/Int64/fromFelt.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/fromFelt.ts#L20)
+
+Decode a Felt252 back to an Int64.
+
+CRITICAL: This reverses Cairo's field encoding.
+
+Cairo encodes negative values as PRIME + negative_value.
+To decode:
+- If value <= MAX, it's positive (or zero)
+- If value > MAX, it's a negative number: actual = value - PRIME
+
+#### Parameters
+
+##### felt
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The Felt252 to decode
+
+#### Returns
+
+[`Int64Type`](../index-1.mdx#int64type)
+
+The signed Int64 value
+
+#### Throws
+
+Int64RangeError if the decoded value is outside Int64 range
+
+***
+
+### toBigInt()
+
+> **toBigInt**(`value`): `bigint`
+
+Defined in: [primitives/Int64/toBigInt.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/toBigInt.ts#L9)
+
+Convert an Int64 to its bigint value.
+
+#### Parameters
+
+##### value
+
+[`Int64Type`](../index-1.mdx#int64type)
+
+The Int64 to convert
+
+#### Returns
+
+`bigint`
+
+The signed bigint value
+
+***
+
+### toFelt()
+
+> **toFelt**(`value`): [`Felt252Type`](../index-1.mdx#felt252type)
+
+Defined in: [primitives/Int64/toFelt.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/toFelt.ts#L20)
+
+Convert an Int64 to a Felt252 using Cairo field encoding.
+
+CRITICAL: Cairo signed integer encoding is NOT two's complement!
+
+Cairo uses prime field arithmetic:
+- Positive values: stored directly (0 to MAX)
+- Negative values: stored as PRIME + negative_value
+
+This is because in modular arithmetic over the field,
+PRIME + x === x (mod PRIME), so PRIME - 1 represents -1.
+
+#### Parameters
+
+##### value
+
+[`Int64Type`](../index-1.mdx#int64type)
+
+The Int64 to convert
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The Felt252 representation for Cairo
+
+***
+
+### toHex()
+
+> **toHex**(`value`): `string`
+
+Defined in: [primitives/Int64/toHex.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int64/toHex.ts#L12)
+
+Convert an Int64 to its hexadecimal string representation.
+
+For negative values, returns a string with a minus sign prefix
+followed by 0x and the absolute value in hex.
+
+#### Parameters
+
+##### value
+
+[`Int64Type`](../index-1.mdx#int64type)
+
+The Int64 to convert
+
+#### Returns
+
+`string`
+
+Hexadecimal string (e.g., "0xff" or "-0x1")
+
+## References
+
+### Int64
+
+Re-exports [Int64](../index-1.mdx#int64)
+
+***
+
+### Int64Input
+
+Re-exports [Int64Input](../index-1.mdx#int64input)
+
+***
+
+### Int64Type
+
+Re-exports [Int64Type](../index-1.mdx#int64type)

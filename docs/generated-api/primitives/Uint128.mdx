@@ -1,0 +1,380 @@
+---
+title: "primitives/Uint128"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / primitives/Uint128
+
+# primitives/Uint128
+
+## Classes
+
+### Uint128NegativeError
+
+Defined in: [primitives/Uint128/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/errors.ts#L4)
+
+Error thrown when Uint128 value is negative
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint128NegativeError**(`value`): [`Uint128NegativeError`](#uint128negativeerror)
+
+Defined in: [primitives/Uint128/errors.ts:5](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/errors.ts#L5)
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+[`Uint128NegativeError`](#uint128negativeerror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint128NotIntegerError
+
+Defined in: [primitives/Uint128/errors.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/errors.ts#L24)
+
+Error thrown when number is not an integer
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint128NotIntegerError**(`value`): [`Uint128NotIntegerError`](#uint128notintegererror)
+
+Defined in: [primitives/Uint128/errors.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/errors.ts#L25)
+
+###### Parameters
+
+###### value
+
+`number`
+
+###### Returns
+
+[`Uint128NotIntegerError`](#uint128notintegererror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint128OverflowError
+
+Defined in: [primitives/Uint128/errors.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/errors.ts#L14)
+
+Error thrown when Uint128 value exceeds maximum
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint128OverflowError**(`value`): [`Uint128OverflowError`](#uint128overflowerror)
+
+Defined in: [primitives/Uint128/errors.ts:15](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/errors.ts#L15)
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+[`Uint128OverflowError`](#uint128overflowerror)
+
+###### Overrides
+
+`Error.constructor`
+
+## Variables
+
+### from()
+
+> `const` **from**: (`value`) => [`Uint128Type`](../index-1.mdx#uint128type) = `_from`
+
+Defined in: [primitives/Uint128/index.ts:17](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/index.ts#L17)
+
+Create Uint128 from bigint, number, or string
+
+#### Parameters
+
+##### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+#### Returns
+
+[`Uint128Type`](../index-1.mdx#uint128type)
+
+Uint128 value
+
+#### Throws
+
+If number is not an integer
+
+#### Throws
+
+If value is negative
+
+#### Throws
+
+If value exceeds maximum
+
+***
+
+### MAX
+
+> `const` **MAX**: [`Uint128Type`](../index-1.mdx#uint128type)
+
+Defined in: [primitives/Uint128/constants.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/constants.ts#L7)
+
+Maximum Uint128 value: 2^128 - 1
+
+***
+
+### MIN
+
+> `const` **MIN**: [`Uint128Type`](../index-1.mdx#uint128type)
+
+Defined in: [primitives/Uint128/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/constants.ts#L4)
+
+Minimum Uint128 value: 0
+
+***
+
+### SIZE
+
+> `const` **SIZE**: `128` = `128`
+
+Defined in: [primitives/Uint128/constants.ts:10](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/constants.ts#L10)
+
+Size in bits
+
+***
+
+### toBigInt()
+
+> `const` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Defined in: [primitives/Uint128/index.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/index.ts#L19)
+
+Convert Uint128 to bigint
+
+#### Parameters
+
+##### uint
+
+[`Uint128Type`](../index-1.mdx#uint128type)
+
+Uint128 value
+
+#### Returns
+
+`bigint`
+
+bigint value
+
+***
+
+### toFelt()
+
+> `const` **toFelt**: (`uint`) => [`Felt252Type`](../index-1.mdx#felt252type) = `_toFelt`
+
+Defined in: [primitives/Uint128/index.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/index.ts#L20)
+
+Convert Uint128 to Felt252
+
+#### Parameters
+
+##### uint
+
+[`Uint128Type`](../index-1.mdx#uint128type)
+
+Uint128 value
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Felt252 value
+
+***
+
+### toHex()
+
+> `const` **toHex**: (`uint`) => `string` = `_toHex`
+
+Defined in: [primitives/Uint128/index.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/index.ts#L18)
+
+Convert Uint128 to hex string
+
+#### Parameters
+
+##### uint
+
+[`Uint128Type`](../index-1.mdx#uint128type)
+
+Uint128 value
+
+#### Returns
+
+`string`
+
+hex string with 0x prefix
+
+***
+
+### Uint128
+
+> `const` **Uint128**: `object`
+
+Defined in: [primitives/Uint128/index.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint128/index.ts#L25)
+
+Uint128 namespace with all functions
+
+#### Type Declaration
+
+##### from()
+
+> `readonly` **from**: (`value`) => [`Uint128Type`](../index-1.mdx#uint128type) = `_from`
+
+Create Uint128 from bigint, number, or string
+
+###### Parameters
+
+###### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+###### Returns
+
+[`Uint128Type`](../index-1.mdx#uint128type)
+
+Uint128 value
+
+###### Throws
+
+If number is not an integer
+
+###### Throws
+
+If value is negative
+
+###### Throws
+
+If value exceeds maximum
+
+##### MAX
+
+> **MAX**: [`Uint128Type`](../index-1.mdx#uint128type)
+
+Maximum Uint128 value: 2^128 - 1
+
+##### MIN
+
+> **MIN**: [`Uint128Type`](../index-1.mdx#uint128type)
+
+Minimum Uint128 value: 0
+
+##### SIZE
+
+> **SIZE**: `128`
+
+Size in bits
+
+##### toBigInt()
+
+> `readonly` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Convert Uint128 to bigint
+
+###### Parameters
+
+###### uint
+
+[`Uint128Type`](../index-1.mdx#uint128type)
+
+Uint128 value
+
+###### Returns
+
+`bigint`
+
+bigint value
+
+##### toFelt()
+
+> `readonly` **toFelt**: (`uint`) => [`Felt252Type`](../index-1.mdx#felt252type) = `_toFelt`
+
+Convert Uint128 to Felt252
+
+###### Parameters
+
+###### uint
+
+[`Uint128Type`](../index-1.mdx#uint128type)
+
+Uint128 value
+
+###### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Felt252 value
+
+##### toHex()
+
+> `readonly` **toHex**: (`uint`) => `string` = `_toHex`
+
+Convert Uint128 to hex string
+
+###### Parameters
+
+###### uint
+
+[`Uint128Type`](../index-1.mdx#uint128type)
+
+Uint128 value
+
+###### Returns
+
+`string`
+
+hex string with 0x prefix
+
+## References
+
+### Uint128Type
+
+Re-exports [Uint128Type](../index-1.mdx#uint128type)

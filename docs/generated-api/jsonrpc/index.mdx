@@ -1,0 +1,3749 @@
+---
+description: Auto-generated TypeScript API documentation from source code
+title: Generated API Reference
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / jsonrpc
+
+# jsonrpc
+
+## Namespaces
+
+- [Rpc](namespaces/Rpc.mdx)
+
+## Enumerations
+
+### StarknetRpcErrorCode
+
+Defined in: [jsonrpc/types.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L24)
+
+Starknet-specific error codes
+
+#### Enumeration Members
+
+##### BlockNotFound
+
+> **BlockNotFound**: `24`
+
+Defined in: [jsonrpc/types.ts:30](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L30)
+
+Block not found
+
+##### ClassAlreadyDeclared
+
+> **ClassAlreadyDeclared**: `51`
+
+Defined in: [jsonrpc/types.ts:54](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L54)
+
+Class already declared
+
+##### ClassHashNotFound
+
+> **ClassHashNotFound**: `28`
+
+Defined in: [jsonrpc/types.ts:36](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L36)
+
+Class hash not found
+
+##### CompilationFailed
+
+> **CompilationFailed**: `56`
+
+Defined in: [jsonrpc/types.ts:64](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L64)
+
+Compilation failed
+
+##### CompiledClassHashMismatch
+
+> **CompiledClassHashMismatch**: `60`
+
+Defined in: [jsonrpc/types.ts:72](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L72)
+
+Compiled class hash did not match
+
+##### ContractClassSizeIsTooLarge
+
+> **ContractClassSizeIsTooLarge**: `57`
+
+Defined in: [jsonrpc/types.ts:66](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L66)
+
+Contract class size is too large
+
+##### ContractError
+
+> **ContractError**: `40`
+
+Defined in: [jsonrpc/types.ts:48](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L48)
+
+Contract error
+
+##### ContractNotFound
+
+> **ContractNotFound**: `20`
+
+Defined in: [jsonrpc/types.ts:28](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L28)
+
+Contract not found
+
+##### DuplicateTransaction
+
+> **DuplicateTransaction**: `59`
+
+Defined in: [jsonrpc/types.ts:70](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L70)
+
+Transaction with same hash already exists
+
+##### FailedToReceiveTransaction
+
+> **FailedToReceiveTransaction**: `1`
+
+Defined in: [jsonrpc/types.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L26)
+
+Failed to write to transaction pool
+
+##### InsufficientAccountBalance
+
+> **InsufficientAccountBalance**: `54`
+
+Defined in: [jsonrpc/types.ts:60](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L60)
+
+Account balance too small
+
+##### InsufficientMaxFee
+
+> **InsufficientMaxFee**: `53`
+
+Defined in: [jsonrpc/types.ts:58](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L58)
+
+Max fee too small
+
+##### InvalidContinuationToken
+
+> **InvalidContinuationToken**: `33`
+
+Defined in: [jsonrpc/types.ts:44](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L44)
+
+Invalid continuation token
+
+##### InvalidContractClass
+
+> **InvalidContractClass**: `50`
+
+Defined in: [jsonrpc/types.ts:52](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L52)
+
+Invalid contract class
+
+##### InvalidTransactionHash
+
+> **InvalidTransactionHash**: `25`
+
+Defined in: [jsonrpc/types.ts:32](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L32)
+
+Transaction hash not found
+
+##### InvalidTransactionIndex
+
+> **InvalidTransactionIndex**: `27`
+
+Defined in: [jsonrpc/types.ts:34](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L34)
+
+Invalid transaction index
+
+##### InvalidTransactionNonce
+
+> **InvalidTransactionNonce**: `52`
+
+Defined in: [jsonrpc/types.ts:56](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L56)
+
+Invalid transaction nonce
+
+##### NoBlocks
+
+> **NoBlocks**: `32`
+
+Defined in: [jsonrpc/types.ts:42](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L42)
+
+No blocks
+
+##### NonAccount
+
+> **NonAccount**: `58`
+
+Defined in: [jsonrpc/types.ts:68](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L68)
+
+Non-account calls are not supported
+
+##### NoTraceAvailable
+
+> **NoTraceAvailable**: `10`
+
+Defined in: [jsonrpc/types.ts:80](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L80)
+
+No trace available
+
+##### PageSizeTooBig
+
+> **PageSizeTooBig**: `31`
+
+Defined in: [jsonrpc/types.ts:40](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L40)
+
+Requested page size too big
+
+##### TooManyKeysInFilter
+
+> **TooManyKeysInFilter**: `34`
+
+Defined in: [jsonrpc/types.ts:46](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L46)
+
+Too many keys in filter
+
+##### TransactionExecutionError
+
+> **TransactionExecutionError**: `41`
+
+Defined in: [jsonrpc/types.ts:50](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L50)
+
+Transaction execution error
+
+##### TransactionHashNotFound
+
+> **TransactionHashNotFound**: `29`
+
+Defined in: [jsonrpc/types.ts:38](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L38)
+
+Transaction hash not found in pending transactions
+
+##### UnexpectedError
+
+> **UnexpectedError**: `63`
+
+Defined in: [jsonrpc/types.ts:78](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L78)
+
+Unexpected error
+
+##### UnsupportedContractClassVersion
+
+> **UnsupportedContractClassVersion**: `62`
+
+Defined in: [jsonrpc/types.ts:76](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L76)
+
+Unsupported contract class version
+
+##### UnsupportedTransactionVersion
+
+> **UnsupportedTransactionVersion**: `61`
+
+Defined in: [jsonrpc/types.ts:74](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L74)
+
+Unsupported transaction version
+
+##### ValidationFailure
+
+> **ValidationFailure**: `55`
+
+Defined in: [jsonrpc/types.ts:62](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L62)
+
+Account validation failed
+
+## Interfaces
+
+### AddDeclareTransactionResult
+
+Defined in: [jsonrpc/types.ts:1122](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1122)
+
+Result of add declare transaction
+
+#### Properties
+
+##### class\_hash
+
+> **class\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:1124](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1124)
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:1123](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1123)
+
+***
+
+### AddDeployAccountTransactionResult
+
+Defined in: [jsonrpc/types.ts:1130](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1130)
+
+Result of add deploy account transaction
+
+#### Properties
+
+##### contract\_address
+
+> **contract\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:1132](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1132)
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:1131](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1131)
+
+***
+
+### AddInvokeTransactionResult
+
+Defined in: [jsonrpc/types.ts:1115](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1115)
+
+Result of add invoke transaction
+
+#### Properties
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:1116](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1116)
+
+***
+
+### BlockHashAndNumber
+
+Defined in: [jsonrpc/methods/blockHashAndNumber.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/blockHashAndNumber.ts#L4)
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/methods/blockHashAndNumber.ts:5](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/blockHashAndNumber.ts#L5)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/methods/blockHashAndNumber.ts:6](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/blockHashAndNumber.ts#L6)
+
+***
+
+### BlockHeader
+
+Defined in: [jsonrpc/types.ts:308](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L308)
+
+Block header fields (shared by all block types)
+
+#### Extended by
+
+- [`BlockHeaderWithCommitments`](#blockheaderwithcommitments)
+- [`PreConfirmedBlockWithTxHashes`](#preconfirmedblockwithtxhashes)
+- [`PreConfirmedBlockWithTxs`](#preconfirmedblockwithtxs)
+- [`PreConfirmedBlockWithReceipts`](#preconfirmedblockwithreceipts)
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:309](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L309)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:311](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L311)
+
+##### l1\_da\_mode
+
+> **l1\_da\_mode**: `"BLOB"` \| `"CALLDATA"`
+
+Defined in: [jsonrpc/types.ts:318](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L318)
+
+##### l1\_data\_gas\_price
+
+> **l1\_data\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:317](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L317)
+
+##### l1\_gas\_price
+
+> **l1\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:315](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L315)
+
+##### l2\_gas\_price
+
+> **l2\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:316](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L316)
+
+##### new\_root
+
+> **new\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:312](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L312)
+
+##### parent\_hash
+
+> **parent\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:310](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L310)
+
+##### sequencer\_address
+
+> **sequencer\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:314](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L314)
+
+##### starknet\_version
+
+> **starknet\_version**: `string`
+
+Defined in: [jsonrpc/types.ts:319](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L319)
+
+##### timestamp
+
+> **timestamp**: `number`
+
+Defined in: [jsonrpc/types.ts:313](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L313)
+
+***
+
+### BlockHeaderWithCommitments
+
+Defined in: [jsonrpc/types.ts:325](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L325)
+
+Extended block header with commitment fields
+
+#### Extends
+
+- [`BlockHeader`](#blockheader)
+
+#### Extended by
+
+- [`BlockWithTxHashes`](#blockwithtxhashes)
+- [`BlockWithTxs`](#blockwithtxs)
+- [`BlockWithReceipts`](#blockwithreceipts)
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:309](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L309)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`block_hash`](#block_hash-1)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:311](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L311)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`block_number`](#block_number-1)
+
+##### event\_commitment
+
+> **event\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:326](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L326)
+
+##### event\_count
+
+> **event\_count**: `number`
+
+Defined in: [jsonrpc/types.ts:330](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L330)
+
+##### l1\_da\_mode
+
+> **l1\_da\_mode**: `"BLOB"` \| `"CALLDATA"`
+
+Defined in: [jsonrpc/types.ts:318](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L318)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_da_mode`](#l1_da_mode)
+
+##### l1\_data\_gas\_price
+
+> **l1\_data\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:317](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L317)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_data_gas_price`](#l1_data_gas_price)
+
+##### l1\_gas\_price
+
+> **l1\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:315](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L315)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_gas_price`](#l1_gas_price)
+
+##### l2\_gas\_price
+
+> **l2\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:316](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L316)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l2_gas_price`](#l2_gas_price)
+
+##### new\_root
+
+> **new\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:312](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L312)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`new_root`](#new_root)
+
+##### parent\_hash
+
+> **parent\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:310](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L310)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`parent_hash`](#parent_hash)
+
+##### receipt\_commitment
+
+> **receipt\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:328](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L328)
+
+##### sequencer\_address
+
+> **sequencer\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:314](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L314)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`sequencer_address`](#sequencer_address)
+
+##### starknet\_version
+
+> **starknet\_version**: `string`
+
+Defined in: [jsonrpc/types.ts:319](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L319)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`starknet_version`](#starknet_version)
+
+##### state\_diff\_commitment
+
+> **state\_diff\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:329](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L329)
+
+##### state\_diff\_length
+
+> **state\_diff\_length**: `number`
+
+Defined in: [jsonrpc/types.ts:332](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L332)
+
+##### timestamp
+
+> **timestamp**: `number`
+
+Defined in: [jsonrpc/types.ts:313](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L313)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`timestamp`](#timestamp)
+
+##### transaction\_commitment
+
+> **transaction\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:327](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L327)
+
+##### transaction\_count
+
+> **transaction\_count**: `number`
+
+Defined in: [jsonrpc/types.ts:331](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L331)
+
+***
+
+### BlockTransactionTrace
+
+Defined in: [jsonrpc/types.ts:1041](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1041)
+
+Block transaction trace
+
+#### Properties
+
+##### trace\_root
+
+> **trace\_root**: [`TransactionTrace`](#transactiontrace)
+
+Defined in: [jsonrpc/types.ts:1043](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1043)
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:1042](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1042)
+
+***
+
+### BlockWithReceipts
+
+Defined in: [jsonrpc/types.ts:377](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L377)
+
+Block with receipts
+
+#### Extends
+
+- [`BlockHeaderWithCommitments`](#blockheaderwithcommitments)
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:309](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L309)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`block_hash`](#block_hash-2)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:311](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L311)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`block_number`](#block_number-2)
+
+##### event\_commitment
+
+> **event\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:326](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L326)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`event_commitment`](#event_commitment)
+
+##### event\_count
+
+> **event\_count**: `number`
+
+Defined in: [jsonrpc/types.ts:330](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L330)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`event_count`](#event_count)
+
+##### l1\_da\_mode
+
+> **l1\_da\_mode**: `"BLOB"` \| `"CALLDATA"`
+
+Defined in: [jsonrpc/types.ts:318](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L318)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l1_da_mode`](#l1_da_mode-1)
+
+##### l1\_data\_gas\_price
+
+> **l1\_data\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:317](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L317)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l1_data_gas_price`](#l1_data_gas_price-1)
+
+##### l1\_gas\_price
+
+> **l1\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:315](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L315)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l1_gas_price`](#l1_gas_price-1)
+
+##### l2\_gas\_price
+
+> **l2\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:316](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L316)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l2_gas_price`](#l2_gas_price-1)
+
+##### new\_root
+
+> **new\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:312](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L312)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`new_root`](#new_root-1)
+
+##### parent\_hash
+
+> **parent\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:310](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L310)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`parent_hash`](#parent_hash-1)
+
+##### receipt\_commitment
+
+> **receipt\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:328](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L328)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`receipt_commitment`](#receipt_commitment)
+
+##### sequencer\_address
+
+> **sequencer\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:314](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L314)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`sequencer_address`](#sequencer_address-1)
+
+##### starknet\_version
+
+> **starknet\_version**: `string`
+
+Defined in: [jsonrpc/types.ts:319](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L319)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`starknet_version`](#starknet_version-1)
+
+##### state\_diff\_commitment
+
+> **state\_diff\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:329](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L329)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`state_diff_commitment`](#state_diff_commitment)
+
+##### state\_diff\_length
+
+> **state\_diff\_length**: `number`
+
+Defined in: [jsonrpc/types.ts:332](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L332)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`state_diff_length`](#state_diff_length)
+
+##### status
+
+> **status**: [`BlockStatus`](#blockstatus)
+
+Defined in: [jsonrpc/types.ts:378](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L378)
+
+##### timestamp
+
+> **timestamp**: `number`
+
+Defined in: [jsonrpc/types.ts:313](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L313)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`timestamp`](#timestamp-1)
+
+##### transaction\_commitment
+
+> **transaction\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:327](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L327)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`transaction_commitment`](#transaction_commitment)
+
+##### transaction\_count
+
+> **transaction\_count**: `number`
+
+Defined in: [jsonrpc/types.ts:331](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L331)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`transaction_count`](#transaction_count)
+
+##### transactions
+
+> **transactions**: `TxnWithReceipt`[]
+
+Defined in: [jsonrpc/types.ts:379](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L379)
+
+***
+
+### BlockWithTxHashes
+
+Defined in: [jsonrpc/types.ts:338](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L338)
+
+Block with transaction hashes
+
+#### Extends
+
+- [`BlockHeaderWithCommitments`](#blockheaderwithcommitments)
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:309](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L309)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`block_hash`](#block_hash-2)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:311](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L311)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`block_number`](#block_number-2)
+
+##### event\_commitment
+
+> **event\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:326](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L326)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`event_commitment`](#event_commitment)
+
+##### event\_count
+
+> **event\_count**: `number`
+
+Defined in: [jsonrpc/types.ts:330](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L330)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`event_count`](#event_count)
+
+##### l1\_da\_mode
+
+> **l1\_da\_mode**: `"BLOB"` \| `"CALLDATA"`
+
+Defined in: [jsonrpc/types.ts:318](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L318)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l1_da_mode`](#l1_da_mode-1)
+
+##### l1\_data\_gas\_price
+
+> **l1\_data\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:317](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L317)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l1_data_gas_price`](#l1_data_gas_price-1)
+
+##### l1\_gas\_price
+
+> **l1\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:315](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L315)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l1_gas_price`](#l1_gas_price-1)
+
+##### l2\_gas\_price
+
+> **l2\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:316](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L316)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l2_gas_price`](#l2_gas_price-1)
+
+##### new\_root
+
+> **new\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:312](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L312)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`new_root`](#new_root-1)
+
+##### parent\_hash
+
+> **parent\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:310](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L310)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`parent_hash`](#parent_hash-1)
+
+##### receipt\_commitment
+
+> **receipt\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:328](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L328)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`receipt_commitment`](#receipt_commitment)
+
+##### sequencer\_address
+
+> **sequencer\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:314](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L314)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`sequencer_address`](#sequencer_address-1)
+
+##### starknet\_version
+
+> **starknet\_version**: `string`
+
+Defined in: [jsonrpc/types.ts:319](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L319)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`starknet_version`](#starknet_version-1)
+
+##### state\_diff\_commitment
+
+> **state\_diff\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:329](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L329)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`state_diff_commitment`](#state_diff_commitment)
+
+##### state\_diff\_length
+
+> **state\_diff\_length**: `number`
+
+Defined in: [jsonrpc/types.ts:332](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L332)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`state_diff_length`](#state_diff_length)
+
+##### status
+
+> **status**: [`BlockStatus`](#blockstatus)
+
+Defined in: [jsonrpc/types.ts:339](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L339)
+
+##### timestamp
+
+> **timestamp**: `number`
+
+Defined in: [jsonrpc/types.ts:313](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L313)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`timestamp`](#timestamp-1)
+
+##### transaction\_commitment
+
+> **transaction\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:327](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L327)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`transaction_commitment`](#transaction_commitment)
+
+##### transaction\_count
+
+> **transaction\_count**: `number`
+
+Defined in: [jsonrpc/types.ts:331](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L331)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`transaction_count`](#transaction_count)
+
+##### transactions
+
+> **transactions**: `string`[]
+
+Defined in: [jsonrpc/types.ts:340](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L340)
+
+***
+
+### BlockWithTxs
+
+Defined in: [jsonrpc/types.ts:354](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L354)
+
+Block with full transactions
+
+#### Extends
+
+- [`BlockHeaderWithCommitments`](#blockheaderwithcommitments)
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:309](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L309)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`block_hash`](#block_hash-2)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:311](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L311)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`block_number`](#block_number-2)
+
+##### event\_commitment
+
+> **event\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:326](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L326)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`event_commitment`](#event_commitment)
+
+##### event\_count
+
+> **event\_count**: `number`
+
+Defined in: [jsonrpc/types.ts:330](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L330)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`event_count`](#event_count)
+
+##### l1\_da\_mode
+
+> **l1\_da\_mode**: `"BLOB"` \| `"CALLDATA"`
+
+Defined in: [jsonrpc/types.ts:318](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L318)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l1_da_mode`](#l1_da_mode-1)
+
+##### l1\_data\_gas\_price
+
+> **l1\_data\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:317](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L317)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l1_data_gas_price`](#l1_data_gas_price-1)
+
+##### l1\_gas\_price
+
+> **l1\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:315](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L315)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l1_gas_price`](#l1_gas_price-1)
+
+##### l2\_gas\_price
+
+> **l2\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:316](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L316)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`l2_gas_price`](#l2_gas_price-1)
+
+##### new\_root
+
+> **new\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:312](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L312)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`new_root`](#new_root-1)
+
+##### parent\_hash
+
+> **parent\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:310](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L310)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`parent_hash`](#parent_hash-1)
+
+##### receipt\_commitment
+
+> **receipt\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:328](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L328)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`receipt_commitment`](#receipt_commitment)
+
+##### sequencer\_address
+
+> **sequencer\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:314](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L314)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`sequencer_address`](#sequencer_address-1)
+
+##### starknet\_version
+
+> **starknet\_version**: `string`
+
+Defined in: [jsonrpc/types.ts:319](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L319)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`starknet_version`](#starknet_version-1)
+
+##### state\_diff\_commitment
+
+> **state\_diff\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:329](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L329)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`state_diff_commitment`](#state_diff_commitment)
+
+##### state\_diff\_length
+
+> **state\_diff\_length**: `number`
+
+Defined in: [jsonrpc/types.ts:332](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L332)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`state_diff_length`](#state_diff_length)
+
+##### status
+
+> **status**: [`BlockStatus`](#blockstatus)
+
+Defined in: [jsonrpc/types.ts:355](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L355)
+
+##### timestamp
+
+> **timestamp**: `number`
+
+Defined in: [jsonrpc/types.ts:313](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L313)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`timestamp`](#timestamp-1)
+
+##### transaction\_commitment
+
+> **transaction\_commitment**: `string`
+
+Defined in: [jsonrpc/types.ts:327](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L327)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`transaction_commitment`](#transaction_commitment)
+
+##### transaction\_count
+
+> **transaction\_count**: `number`
+
+Defined in: [jsonrpc/types.ts:331](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L331)
+
+###### Inherited from
+
+[`BlockHeaderWithCommitments`](#blockheaderwithcommitments).[`transaction_count`](#transaction_count)
+
+##### transactions
+
+> **transactions**: [`TxnWithHash`](#txnwithhash)[]
+
+Defined in: [jsonrpc/types.ts:356](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L356)
+
+***
+
+### ContractClass
+
+Defined in: [jsonrpc/types.ts:808](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L808)
+
+Contract class (Sierra)
+
+#### Properties
+
+##### abi?
+
+> `optional` **abi**: `string`
+
+Defined in: [jsonrpc/types.ts:812](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L812)
+
+##### contract\_class\_version
+
+> **contract\_class\_version**: `string`
+
+Defined in: [jsonrpc/types.ts:810](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L810)
+
+##### entry\_points\_by\_type
+
+> **entry\_points\_by\_type**: `SierraEntryPointsByType`
+
+Defined in: [jsonrpc/types.ts:811](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L811)
+
+##### sierra\_program
+
+> **sierra\_program**: `string`[]
+
+Defined in: [jsonrpc/types.ts:809](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L809)
+
+***
+
+### ContractStorageDiffItem
+
+Defined in: [jsonrpc/types.ts:718](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L718)
+
+Contract storage diff item
+
+#### Properties
+
+##### address
+
+> **address**: `string`
+
+Defined in: [jsonrpc/types.ts:719](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L719)
+
+##### storage\_entries
+
+> **storage\_entries**: `object`[]
+
+Defined in: [jsonrpc/types.ts:720](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L720)
+
+###### key
+
+> **key**: `string`
+
+###### value
+
+> **value**: `string`
+
+***
+
+### DeclaredClassItem
+
+Defined in: [jsonrpc/types.ts:734](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L734)
+
+Declared class item
+
+#### Properties
+
+##### class\_hash
+
+> **class\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:735](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L735)
+
+##### compiled\_class\_hash
+
+> **compiled\_class\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:736](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L736)
+
+***
+
+### DeployedContractItem
+
+Defined in: [jsonrpc/types.ts:726](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L726)
+
+Deployed contract item
+
+#### Properties
+
+##### address
+
+> **address**: `string`
+
+Defined in: [jsonrpc/types.ts:727](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L727)
+
+##### class\_hash
+
+> **class\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:728](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L728)
+
+***
+
+### EmittedEvent
+
+Defined in: [jsonrpc/types.ts:136](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L136)
+
+Emitted event from subscription
+
+#### Extends
+
+- `Event`
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:137](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L137)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:138](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L138)
+
+##### data
+
+> **data**: `string`[]
+
+Defined in: [jsonrpc/types.ts:142](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L142)
+
+##### from\_address
+
+> **from\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:140](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L140)
+
+##### keys
+
+> **keys**: `string`[]
+
+Defined in: [jsonrpc/types.ts:141](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L141)
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:139](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L139)
+
+***
+
+### EventsFilter
+
+Defined in: [jsonrpc/types.ts:84](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L84)
+
+#### Properties
+
+##### address?
+
+> `optional` **address**: `string`
+
+Defined in: [jsonrpc/types.ts:87](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L87)
+
+##### chunk\_size
+
+> **chunk\_size**: `number`
+
+Defined in: [jsonrpc/types.ts:90](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L90)
+
+##### continuation\_token?
+
+> `optional` **continuation\_token**: `string`
+
+Defined in: [jsonrpc/types.ts:89](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L89)
+
+##### from\_block?
+
+> `optional` **from\_block**: [`BlockId`](#blockid)
+
+Defined in: [jsonrpc/types.ts:85](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L85)
+
+##### keys?
+
+> `optional` **keys**: `string`[][]
+
+Defined in: [jsonrpc/types.ts:88](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L88)
+
+##### to\_block?
+
+> `optional` **to\_block**: [`BlockId`](#blockid)
+
+Defined in: [jsonrpc/types.ts:86](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L86)
+
+***
+
+### EventsResponse
+
+Defined in: [jsonrpc/types.ts:898](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L898)
+
+Events response
+
+#### Properties
+
+##### continuation\_token?
+
+> `optional` **continuation\_token**: `string`
+
+Defined in: [jsonrpc/types.ts:900](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L900)
+
+##### events
+
+> **events**: [`EmittedEvent`](#emittedevent)[]
+
+Defined in: [jsonrpc/types.ts:899](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L899)
+
+***
+
+### EventsSubscriptionParams
+
+Defined in: [jsonrpc/types.ts:164](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L164)
+
+Events subscription parameters (positional: from_address?, keys?, block_id?, finality_status?)
+
+#### Properties
+
+##### block\_id?
+
+> `optional` **block\_id**: [`BlockId`](#blockid)
+
+Defined in: [jsonrpc/types.ts:167](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L167)
+
+##### finality\_status?
+
+> `optional` **finality\_status**: [`TxnFinalityStatusWithoutL1`](#txnfinalitystatuswithoutl1)
+
+Defined in: [jsonrpc/types.ts:168](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L168)
+
+##### from\_address?
+
+> `optional` **from\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:165](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L165)
+
+##### keys?
+
+> `optional` **keys**: `string`[][]
+
+Defined in: [jsonrpc/types.ts:166](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L166)
+
+***
+
+### FeeEstimate
+
+Defined in: [jsonrpc/types.ts:259](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L259)
+
+Fee estimate
+
+#### Properties
+
+##### data\_gas\_consumed
+
+> **data\_gas\_consumed**: `string`
+
+Defined in: [jsonrpc/types.ts:262](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L262)
+
+##### data\_gas\_price
+
+> **data\_gas\_price**: `string`
+
+Defined in: [jsonrpc/types.ts:263](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L263)
+
+##### gas\_consumed
+
+> **gas\_consumed**: `string`
+
+Defined in: [jsonrpc/types.ts:260](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L260)
+
+##### gas\_price
+
+> **gas\_price**: `string`
+
+Defined in: [jsonrpc/types.ts:261](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L261)
+
+##### overall\_fee
+
+> **overall\_fee**: `string`
+
+Defined in: [jsonrpc/types.ts:264](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L264)
+
+##### unit
+
+> **unit**: `"WEI"` \| `"FRI"`
+
+Defined in: [jsonrpc/types.ts:265](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L265)
+
+***
+
+### FunctionCall
+
+Defined in: [jsonrpc/types.ts:245](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L245)
+
+Function call request
+
+#### Properties
+
+##### calldata
+
+> **calldata**: `string`[]
+
+Defined in: [jsonrpc/types.ts:248](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L248)
+
+##### contract\_address
+
+> **contract\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:246](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L246)
+
+##### entry\_point\_selector
+
+> **entry\_point\_selector**: `string`
+
+Defined in: [jsonrpc/types.ts:247](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L247)
+
+***
+
+### MessageFeeEstimate
+
+Defined in: [jsonrpc/types.ts:271](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L271)
+
+Message fee estimate
+
+#### Properties
+
+##### gas\_consumed
+
+> **gas\_consumed**: `string`
+
+Defined in: [jsonrpc/types.ts:272](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L272)
+
+##### gas\_price
+
+> **gas\_price**: `string`
+
+Defined in: [jsonrpc/types.ts:273](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L273)
+
+##### overall\_fee
+
+> **overall\_fee**: `string`
+
+Defined in: [jsonrpc/types.ts:274](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L274)
+
+##### unit
+
+> **unit**: `"WEI"` \| `"FRI"`
+
+Defined in: [jsonrpc/types.ts:275](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L275)
+
+***
+
+### MessageStatus
+
+Defined in: [jsonrpc/types.ts:833](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L833)
+
+Message status
+
+#### Properties
+
+##### execution\_status?
+
+> `optional` **execution\_status**: `TxnExecutionStatus`
+
+Defined in: [jsonrpc/types.ts:836](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L836)
+
+##### failure\_reason?
+
+> `optional` **failure\_reason**: `string`
+
+Defined in: [jsonrpc/types.ts:837](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L837)
+
+##### finality\_status
+
+> **finality\_status**: `TxnFinalityStatus`
+
+Defined in: [jsonrpc/types.ts:835](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L835)
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:834](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L834)
+
+***
+
+### MsgFromL1
+
+Defined in: [jsonrpc/types.ts:823](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L823)
+
+Message from L1
+
+#### Properties
+
+##### entry\_point\_selector
+
+> **entry\_point\_selector**: `string`
+
+Defined in: [jsonrpc/types.ts:826](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L826)
+
+##### from\_address
+
+> **from\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:824](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L824)
+
+##### payload
+
+> **payload**: `string`[]
+
+Defined in: [jsonrpc/types.ts:827](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L827)
+
+##### to\_address
+
+> **to\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:825](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L825)
+
+***
+
+### NewHead
+
+Defined in: [jsonrpc/types.ts:112](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L112)
+
+New block header from subscription
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:113](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L113)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:115](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L115)
+
+##### l1\_da\_mode
+
+> **l1\_da\_mode**: `"BLOB"` \| `"CALLDATA"`
+
+Defined in: [jsonrpc/types.ts:121](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L121)
+
+##### l1\_data\_gas\_price
+
+> **l1\_data\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:120](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L120)
+
+##### l1\_gas\_price
+
+> **l1\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:119](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L119)
+
+##### new\_root
+
+> **new\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:116](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L116)
+
+##### parent\_hash
+
+> **parent\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:114](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L114)
+
+##### sequencer\_address
+
+> **sequencer\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:118](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L118)
+
+##### starknet\_version
+
+> **starknet\_version**: `string`
+
+Defined in: [jsonrpc/types.ts:122](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L122)
+
+##### timestamp
+
+> **timestamp**: `number`
+
+Defined in: [jsonrpc/types.ts:117](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L117)
+
+***
+
+### NewHeadsSubscriptionParams
+
+Defined in: [jsonrpc/types.ts:204](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L204)
+
+New heads subscription parameters (positional: block_id?)
+
+#### Properties
+
+##### block\_id?
+
+> `optional` **block\_id**: [`BlockId`](#blockid)
+
+Defined in: [jsonrpc/types.ts:205](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L205)
+
+***
+
+### NonceUpdateItem
+
+Defined in: [jsonrpc/types.ts:750](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L750)
+
+Nonce update item
+
+#### Properties
+
+##### contract\_address
+
+> **contract\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:751](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L751)
+
+##### nonce
+
+> **nonce**: `string`
+
+Defined in: [jsonrpc/types.ts:752](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L752)
+
+***
+
+### PendingTransaction
+
+Defined in: [jsonrpc/types.ts:186](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L186)
+
+Pending transaction from subscription
+
+#### Indexable
+
+\[`key`: `string`\]: `unknown`
+
+#### Properties
+
+##### sender\_address?
+
+> `optional` **sender\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:188](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L188)
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:187](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L187)
+
+***
+
+### PendingTransactionsSubscriptionParams
+
+Defined in: [jsonrpc/types.ts:196](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L196)
+
+Pending transactions subscription parameters (positional: finality_status?, sender_address?)
+
+#### Properties
+
+##### finality\_status?
+
+> `optional` **finality\_status**: [`TxnFinalityStatusWithoutL1`](#txnfinalitystatuswithoutl1)
+
+Defined in: [jsonrpc/types.ts:197](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L197)
+
+##### sender\_address?
+
+> `optional` **sender\_address**: `string`[]
+
+Defined in: [jsonrpc/types.ts:198](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L198)
+
+***
+
+### PreConfirmedBlockWithReceipts
+
+Defined in: [jsonrpc/types.ts:385](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L385)
+
+Pre-confirmed block with receipts (pending)
+
+#### Extends
+
+- [`BlockHeader`](#blockheader)
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:309](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L309)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`block_hash`](#block_hash-1)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:311](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L311)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`block_number`](#block_number-1)
+
+##### l1\_da\_mode
+
+> **l1\_da\_mode**: `"BLOB"` \| `"CALLDATA"`
+
+Defined in: [jsonrpc/types.ts:318](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L318)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_da_mode`](#l1_da_mode)
+
+##### l1\_data\_gas\_price
+
+> **l1\_data\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:317](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L317)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_data_gas_price`](#l1_data_gas_price)
+
+##### l1\_gas\_price
+
+> **l1\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:315](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L315)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_gas_price`](#l1_gas_price)
+
+##### l2\_gas\_price
+
+> **l2\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:316](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L316)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l2_gas_price`](#l2_gas_price)
+
+##### new\_root
+
+> **new\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:312](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L312)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`new_root`](#new_root)
+
+##### parent\_hash
+
+> **parent\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:310](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L310)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`parent_hash`](#parent_hash)
+
+##### sequencer\_address
+
+> **sequencer\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:314](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L314)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`sequencer_address`](#sequencer_address)
+
+##### starknet\_version
+
+> **starknet\_version**: `string`
+
+Defined in: [jsonrpc/types.ts:319](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L319)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`starknet_version`](#starknet_version)
+
+##### timestamp
+
+> **timestamp**: `number`
+
+Defined in: [jsonrpc/types.ts:313](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L313)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`timestamp`](#timestamp)
+
+##### transactions
+
+> **transactions**: `TxnWithReceipt`[]
+
+Defined in: [jsonrpc/types.ts:386](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L386)
+
+***
+
+### PreConfirmedBlockWithTxHashes
+
+Defined in: [jsonrpc/types.ts:346](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L346)
+
+Pre-confirmed block with transaction hashes (pending)
+
+#### Extends
+
+- [`BlockHeader`](#blockheader)
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:309](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L309)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`block_hash`](#block_hash-1)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:311](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L311)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`block_number`](#block_number-1)
+
+##### l1\_da\_mode
+
+> **l1\_da\_mode**: `"BLOB"` \| `"CALLDATA"`
+
+Defined in: [jsonrpc/types.ts:318](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L318)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_da_mode`](#l1_da_mode)
+
+##### l1\_data\_gas\_price
+
+> **l1\_data\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:317](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L317)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_data_gas_price`](#l1_data_gas_price)
+
+##### l1\_gas\_price
+
+> **l1\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:315](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L315)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_gas_price`](#l1_gas_price)
+
+##### l2\_gas\_price
+
+> **l2\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:316](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L316)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l2_gas_price`](#l2_gas_price)
+
+##### new\_root
+
+> **new\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:312](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L312)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`new_root`](#new_root)
+
+##### parent\_hash
+
+> **parent\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:310](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L310)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`parent_hash`](#parent_hash)
+
+##### sequencer\_address
+
+> **sequencer\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:348](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L348)
+
+###### Overrides
+
+[`BlockHeader`](#blockheader).[`sequencer_address`](#sequencer_address)
+
+##### starknet\_version
+
+> **starknet\_version**: `string`
+
+Defined in: [jsonrpc/types.ts:319](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L319)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`starknet_version`](#starknet_version)
+
+##### timestamp
+
+> **timestamp**: `number`
+
+Defined in: [jsonrpc/types.ts:313](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L313)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`timestamp`](#timestamp)
+
+##### transactions
+
+> **transactions**: `string`[]
+
+Defined in: [jsonrpc/types.ts:347](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L347)
+
+***
+
+### PreConfirmedBlockWithTxs
+
+Defined in: [jsonrpc/types.ts:362](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L362)
+
+Pre-confirmed block with full transactions (pending)
+
+#### Extends
+
+- [`BlockHeader`](#blockheader)
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:309](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L309)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`block_hash`](#block_hash-1)
+
+##### block\_number
+
+> **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:311](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L311)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`block_number`](#block_number-1)
+
+##### l1\_da\_mode
+
+> **l1\_da\_mode**: `"BLOB"` \| `"CALLDATA"`
+
+Defined in: [jsonrpc/types.ts:318](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L318)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_da_mode`](#l1_da_mode)
+
+##### l1\_data\_gas\_price
+
+> **l1\_data\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:317](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L317)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_data_gas_price`](#l1_data_gas_price)
+
+##### l1\_gas\_price
+
+> **l1\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:315](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L315)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l1_gas_price`](#l1_gas_price)
+
+##### l2\_gas\_price
+
+> **l2\_gas\_price**: `ResourcePrice`
+
+Defined in: [jsonrpc/types.ts:316](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L316)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`l2_gas_price`](#l2_gas_price)
+
+##### new\_root
+
+> **new\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:312](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L312)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`new_root`](#new_root)
+
+##### parent\_hash
+
+> **parent\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:310](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L310)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`parent_hash`](#parent_hash)
+
+##### sequencer\_address
+
+> **sequencer\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:314](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L314)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`sequencer_address`](#sequencer_address)
+
+##### starknet\_version
+
+> **starknet\_version**: `string`
+
+Defined in: [jsonrpc/types.ts:319](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L319)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`starknet_version`](#starknet_version)
+
+##### timestamp
+
+> **timestamp**: `number`
+
+Defined in: [jsonrpc/types.ts:313](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L313)
+
+###### Inherited from
+
+[`BlockHeader`](#blockheader).[`timestamp`](#timestamp)
+
+##### transactions
+
+> **transactions**: [`TxnWithHash`](#txnwithhash)[]
+
+Defined in: [jsonrpc/types.ts:363](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L363)
+
+***
+
+### PreConfirmedStateUpdate
+
+Defined in: [jsonrpc/types.ts:779](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L779)
+
+Pre-confirmed state update (pending)
+
+#### Properties
+
+##### old\_root
+
+> **old\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:780](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L780)
+
+##### state\_diff
+
+> **state\_diff**: `StateDiff`
+
+Defined in: [jsonrpc/types.ts:781](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L781)
+
+***
+
+### ReorgData
+
+Defined in: [jsonrpc/types.ts:235](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L235)
+
+Reorg data from subscription
+
+#### Properties
+
+##### ending\_block\_hash
+
+> **ending\_block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:238](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L238)
+
+##### ending\_block\_number
+
+> **ending\_block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:239](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L239)
+
+##### starting\_block\_hash
+
+> **starting\_block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:236](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L236)
+
+##### starting\_block\_number
+
+> **starting\_block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:237](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L237)
+
+***
+
+### ReplacedClassItem
+
+Defined in: [jsonrpc/types.ts:742](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L742)
+
+Replaced class item
+
+#### Properties
+
+##### class\_hash
+
+> **class\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:744](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L744)
+
+##### contract\_address
+
+> **contract\_address**: `string`
+
+Defined in: [jsonrpc/types.ts:743](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L743)
+
+***
+
+### ResourceBounds
+
+Defined in: [jsonrpc/types.ts:401](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L401)
+
+Resource bounds for a resource type
+
+#### Properties
+
+##### max\_amount
+
+> **max\_amount**: `string`
+
+Defined in: [jsonrpc/types.ts:402](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L402)
+
+##### max\_price\_per\_unit
+
+> **max\_price\_per\_unit**: `string`
+
+Defined in: [jsonrpc/types.ts:403](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L403)
+
+***
+
+### ResourceBoundsMapping
+
+Defined in: [jsonrpc/types.ts:409](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L409)
+
+Resource bounds mapping
+
+#### Properties
+
+##### l1\_gas
+
+> **l1\_gas**: [`ResourceBounds`](#resourcebounds)
+
+Defined in: [jsonrpc/types.ts:410](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L410)
+
+##### l2\_gas
+
+> **l2\_gas**: [`ResourceBounds`](#resourcebounds)
+
+Defined in: [jsonrpc/types.ts:411](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L411)
+
+***
+
+### RpcError
+
+Defined in: [jsonrpc/types.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L12)
+
+JSON-RPC error response
+
+#### Properties
+
+##### code
+
+> **code**: `number`
+
+Defined in: [jsonrpc/types.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L14)
+
+Error code
+
+##### data?
+
+> `optional` **data**: `unknown`
+
+Defined in: [jsonrpc/types.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L18)
+
+Optional error data
+
+##### message
+
+> **message**: `string`
+
+Defined in: [jsonrpc/types.ts:16](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L16)
+
+Human-readable error message
+
+***
+
+### SimulatedTransaction
+
+Defined in: [jsonrpc/types.ts:1049](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1049)
+
+Simulated transaction result
+
+#### Properties
+
+##### fee\_estimation
+
+> **fee\_estimation**: [`FeeEstimate`](#feeestimate)
+
+Defined in: [jsonrpc/types.ts:1051](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1051)
+
+##### transaction\_trace
+
+> **transaction\_trace**: [`TransactionTrace`](#transactiontrace)
+
+Defined in: [jsonrpc/types.ts:1050](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1050)
+
+***
+
+### StateUpdate
+
+Defined in: [jsonrpc/types.ts:769](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L769)
+
+State update
+
+#### Properties
+
+##### block\_hash
+
+> **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:770](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L770)
+
+##### new\_root
+
+> **new\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:772](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L772)
+
+##### old\_root
+
+> **old\_root**: `string`
+
+Defined in: [jsonrpc/types.ts:771](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L771)
+
+##### state\_diff
+
+> **state\_diff**: `StateDiff`
+
+Defined in: [jsonrpc/types.ts:773](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L773)
+
+***
+
+### StorageProof
+
+Defined in: [jsonrpc/types.ts:868](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L868)
+
+Storage proof
+
+#### Properties
+
+##### classes\_proof
+
+> **classes\_proof**: `MerkleNode`[]
+
+Defined in: [jsonrpc/types.ts:869](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L869)
+
+##### contracts\_proof
+
+> **contracts\_proof**: `object`
+
+Defined in: [jsonrpc/types.ts:870](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L870)
+
+###### contract\_leaves\_data
+
+> **contract\_leaves\_data**: `ContractLeafData`[]
+
+###### nodes
+
+> **nodes**: `MerkleNode`[]
+
+##### contracts\_storage\_proofs
+
+> **contracts\_storage\_proofs**: `MerkleNode`[][]
+
+Defined in: [jsonrpc/types.ts:874](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L874)
+
+##### global\_roots
+
+> **global\_roots**: `object`
+
+Defined in: [jsonrpc/types.ts:875](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L875)
+
+###### block\_hash
+
+> **block\_hash**: `string`
+
+###### classes\_tree\_root
+
+> **classes\_tree\_root**: `string`
+
+###### contracts\_tree\_root
+
+> **contracts\_tree\_root**: `string`
+
+***
+
+### TransactionReceiptsSubscriptionParams
+
+Defined in: [jsonrpc/types.ts:211](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L211)
+
+Transaction receipts subscription parameters (positional: finality_status?, sender_address?)
+
+#### Properties
+
+##### finality\_status?
+
+> `optional` **finality\_status**: [`ReceiptFinalityStatus`](#receiptfinalitystatus)
+
+Defined in: [jsonrpc/types.ts:212](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L212)
+
+##### sender\_address?
+
+> `optional` **sender\_address**: `string`[]
+
+Defined in: [jsonrpc/types.ts:213](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L213)
+
+***
+
+### TransactionStatus
+
+Defined in: [jsonrpc/types.ts:1142](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1142)
+
+Transaction status (from getTransactionStatus)
+
+#### Properties
+
+##### execution\_status?
+
+> `optional` **execution\_status**: `TxnExecutionStatus`
+
+Defined in: [jsonrpc/types.ts:1144](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1144)
+
+##### failure\_reason?
+
+> `optional` **failure\_reason**: `string`
+
+Defined in: [jsonrpc/types.ts:1145](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1145)
+
+##### finality\_status
+
+> **finality\_status**: `"ACCEPTED_ON_L1"` \| `"ACCEPTED_ON_L2"` \| `"RECEIVED"`
+
+Defined in: [jsonrpc/types.ts:1143](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1143)
+
+***
+
+### TransactionStatusUpdate
+
+Defined in: [jsonrpc/types.ts:174](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L174)
+
+Transaction status update from subscription
+
+#### Properties
+
+##### status
+
+> **status**: `object`
+
+Defined in: [jsonrpc/types.ts:176](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L176)
+
+###### execution\_status?
+
+> `optional` **execution\_status**: `"SUCCEEDED"` \| `"REVERTED"`
+
+###### failure\_reason?
+
+> `optional` **failure\_reason**: `string`
+
+###### finality\_status
+
+> **finality\_status**: `"ACCEPTED_ON_L1"` \| `"ACCEPTED_ON_L2"` \| `"RECEIVED"`
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:175](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L175)
+
+***
+
+### WsTransactionReceipt
+
+Defined in: [jsonrpc/types.ts:219](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L219)
+
+Transaction receipt from subscription (WS)
+
+#### Properties
+
+##### actual\_fee
+
+> **actual\_fee**: `object`
+
+Defined in: [jsonrpc/types.ts:221](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L221)
+
+###### amount
+
+> **amount**: `string`
+
+###### unit
+
+> **unit**: `"WEI"` \| `"FRI"`
+
+##### block\_hash?
+
+> `optional` **block\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:224](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L224)
+
+##### block\_number?
+
+> `optional` **block\_number**: `number`
+
+Defined in: [jsonrpc/types.ts:225](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L225)
+
+##### events
+
+> **events**: `Event`[]
+
+Defined in: [jsonrpc/types.ts:227](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L227)
+
+##### execution\_resources?
+
+> `optional` **execution\_resources**: `ExecutionResources`
+
+Defined in: [jsonrpc/types.ts:228](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L228)
+
+##### execution\_status
+
+> **execution\_status**: `"SUCCEEDED"` \| `"REVERTED"`
+
+Defined in: [jsonrpc/types.ts:222](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L222)
+
+##### finality\_status
+
+> **finality\_status**: `"ACCEPTED_ON_L1"` \| `"ACCEPTED_ON_L2"` \| `"RECEIVED"`
+
+Defined in: [jsonrpc/types.ts:223](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L223)
+
+##### messages\_sent
+
+> **messages\_sent**: `MsgToL1`[]
+
+Defined in: [jsonrpc/types.ts:226](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L226)
+
+##### revert\_reason?
+
+> `optional` **revert\_reason**: `string`
+
+Defined in: [jsonrpc/types.ts:229](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L229)
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [jsonrpc/types.ts:220](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L220)
+
+## Type Aliases
+
+### BlockId
+
+> **BlockId** = [`BlockTag`](#blocktag) \| \{ `block_number`: `number`; \} \| \{ `block_hash`: `string`; \}
+
+Defined in: [jsonrpc/types.ts:101](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L101)
+
+Block identifier
+
+***
+
+### BlockStatus
+
+> **BlockStatus** = `"ACCEPTED_ON_L1"` \| `"ACCEPTED_ON_L2"` \| `"PENDING"` \| `"REJECTED"`
+
+Defined in: [jsonrpc/types.ts:299](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L299)
+
+Block status
+
+***
+
+### BlockTag
+
+> **BlockTag** = `"latest"` \| `"pending"`
+
+Defined in: [jsonrpc/types.ts:96](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L96)
+
+Block tag for specifying block context
+
+***
+
+### BroadcastedDeclareTxn
+
+> **BroadcastedDeclareTxn** = `BroadcastedDeclareTxnV2` \| `BroadcastedDeclareTxnV3`
+
+Defined in: [jsonrpc/types.ts:1086](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1086)
+
+Broadcasted declare transaction
+
+***
+
+### BroadcastedDeployAccountTxn
+
+> **BroadcastedDeployAccountTxn** = `Omit`\<`DeployAccountTxnV1` \| `DeployAccountTxnV3`, `"type"`\> & `object`
+
+Defined in: [jsonrpc/types.ts:1093](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1093)
+
+Broadcasted deploy account transaction
+
+#### Type Declaration
+
+##### type
+
+> **type**: `"DEPLOY_ACCOUNT"`
+
+***
+
+### BroadcastedInvokeTxn
+
+> **BroadcastedInvokeTxn** = `Omit`\<`InvokeTxnV1`, `"type"`\> & `object` \| `Omit`\<`InvokeTxnV3`, `"type"`\> & `object`
+
+Defined in: [jsonrpc/types.ts:1061](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1061)
+
+Broadcasted invoke transaction
+
+***
+
+### BroadcastedTxn
+
+> **BroadcastedTxn** = [`BroadcastedInvokeTxn`](#broadcastedinvoketxn) \| [`BroadcastedDeclareTxn`](#broadcasteddeclaretxn) \| [`BroadcastedDeployAccountTxn`](#broadcasteddeployaccounttxn)
+
+Defined in: [jsonrpc/types.ts:1103](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1103)
+
+Broadcasted transaction (any type)
+
+***
+
+### MessagesStatusResponse
+
+> **MessagesStatusResponse** = [`MessageStatus`](#messagestatus)[]
+
+Defined in: [jsonrpc/types.ts:843](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L843)
+
+Messages status response
+
+***
+
+### ReceiptFinalityStatus
+
+> **ReceiptFinalityStatus** = `"PRE_CONFIRMED"` \| `"ACCEPTED_ON_L2"`
+
+Defined in: [jsonrpc/types.ts:159](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L159)
+
+Transaction finality status for receipts subscription
+Only PRE_CONFIRMED or ACCEPTED_ON_L2 allowed per spec
+
+***
+
+### SimulationFlag
+
+> **SimulationFlag** = `"SKIP_VALIDATE"` \| `"SKIP_FEE_CHARGE"`
+
+Defined in: [jsonrpc/types.ts:254](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L254)
+
+Simulation flag
+
+***
+
+### SyncingStatus
+
+> **SyncingStatus** = `false` \| \{ `current_block_hash`: `string`; `current_block_num`: `number`; `highest_block_hash`: `string`; `highest_block_num`: `number`; `starting_block_hash`: `string`; `starting_block_num`: `number`; \}
+
+Defined in: [jsonrpc/types.ts:281](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L281)
+
+Syncing status
+
+***
+
+### TransactionTrace
+
+> **TransactionTrace** = `InvokeTxnTrace` \| `DeclareTxnTrace` \| `DeployAccountTxnTrace` \| `L1HandlerTxnTrace`
+
+Defined in: [jsonrpc/types.ts:1032](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1032)
+
+Transaction trace union type
+
+***
+
+### TxnFinalityStatusWithoutL1
+
+> **TxnFinalityStatusWithoutL1** = `"RECEIVED"` \| `"CANDIDATE"` \| `"PRE_CONFIRMED"` \| `"ACCEPTED_ON_L2"`
+
+Defined in: [jsonrpc/types.ts:149](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L149)
+
+Transaction finality status without L1 (for WS subscriptions)
+TXN_STATUS_WITHOUT_L1 per Starknet spec
+
+***
+
+### TxnReceiptWithBlockInfo
+
+> **TxnReceiptWithBlockInfo** = `TxnReceipt` & `object`
+
+Defined in: [jsonrpc/types.ts:706](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L706)
+
+Transaction receipt with block info (as returned by getTransactionReceipt)
+
+#### Type Declaration
+
+##### block\_hash?
+
+> `optional` **block\_hash**: `string`
+
+##### block\_number?
+
+> `optional` **block\_number**: `number`
+
+***
+
+### TxnWithHash
+
+> **TxnWithHash** = `Txn` & `object`
+
+Defined in: [jsonrpc/types.ts:588](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L588)
+
+Transaction with hash (as returned by getTransactionByHash)
+
+#### Type Declaration
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+***
+
+### WsNotificationPayload
+
+> **WsNotificationPayload** = [`NewHead`](#newhead) \| [`EmittedEvent`](#emittedevent) \| [`TransactionStatusUpdate`](#transactionstatusupdate) \| [`PendingTransaction`](#pendingtransaction) \| [`WsTransactionReceipt`](#wstransactionreceipt) \| [`ReorgData`](#reorgdata)
+
+Defined in: [jsonrpc/types.ts:1155](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/types.ts#L1155)
+
+Union of all possible WebSocket subscription notification payloads
+
+## Functions
+
+### starknet\_addDeclareTransaction()
+
+> **starknet\_addDeclareTransaction**(`transport`, `transaction`): `Promise`\<[`AddDeclareTransactionResult`](#adddeclaretransactionresult)\>
+
+Defined in: [jsonrpc/methods/addDeclareTransaction.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/addDeclareTransaction.ts#L8)
+
+Submit a declare transaction.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### transaction
+
+[`BroadcastedDeclareTxn`](#broadcasteddeclaretxn)
+
+#### Returns
+
+`Promise`\<[`AddDeclareTransactionResult`](#adddeclaretransactionresult)\>
+
+***
+
+### starknet\_addDeployAccountTransaction()
+
+> **starknet\_addDeployAccountTransaction**(`transport`, `transaction`): `Promise`\<[`AddDeployAccountTransactionResult`](#adddeployaccounttransactionresult)\>
+
+Defined in: [jsonrpc/methods/addDeployAccountTransaction.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/addDeployAccountTransaction.ts#L8)
+
+Submit a deploy account transaction.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### transaction
+
+[`BroadcastedDeployAccountTxn`](#broadcasteddeployaccounttxn)
+
+#### Returns
+
+`Promise`\<[`AddDeployAccountTransactionResult`](#adddeployaccounttransactionresult)\>
+
+***
+
+### starknet\_addInvokeTransaction()
+
+> **starknet\_addInvokeTransaction**(`transport`, `transaction`): `Promise`\<[`AddInvokeTransactionResult`](#addinvoketransactionresult)\>
+
+Defined in: [jsonrpc/methods/addInvokeTransaction.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/addInvokeTransaction.ts#L8)
+
+Submit an invoke transaction.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### transaction
+
+[`BroadcastedInvokeTxn`](#broadcastedinvoketxn)
+
+#### Returns
+
+`Promise`\<[`AddInvokeTransactionResult`](#addinvoketransactionresult)\>
+
+***
+
+### starknet\_blockHashAndNumber()
+
+> **starknet\_blockHashAndNumber**(`transport`): `Promise`\<[`BlockHashAndNumber`](#blockhashandnumber)\>
+
+Defined in: [jsonrpc/methods/blockHashAndNumber.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/blockHashAndNumber.ts#L12)
+
+Get the current block hash and number.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+#### Returns
+
+`Promise`\<[`BlockHashAndNumber`](#blockhashandnumber)\>
+
+***
+
+### starknet\_blockNumber()
+
+> **starknet\_blockNumber**(`transport`): `Promise`\<`number`\>
+
+Defined in: [jsonrpc/methods/blockNumber.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/blockNumber.ts#L7)
+
+Get the current block number.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+#### Returns
+
+`Promise`\<`number`\>
+
+***
+
+### starknet\_call()
+
+> **starknet\_call**(`transport`, `request`, `blockId`): `Promise`\<`string`[]\>
+
+Defined in: [jsonrpc/methods/call.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/call.ts#L8)
+
+Call a contract function (read-only).
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### request
+
+[`FunctionCall`](#functioncall)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<`string`[]\>
+
+***
+
+### starknet\_chainId()
+
+> **starknet\_chainId**(`transport`): `Promise`\<`string`\>
+
+Defined in: [jsonrpc/methods/chainId.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/chainId.ts#L7)
+
+Get the chain ID.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### starknet\_estimateFee()
+
+> **starknet\_estimateFee**(`transport`, `transactions`, `simulationFlags`, `blockId`): `Promise`\<[`FeeEstimate`](#feeestimate)[]\>
+
+Defined in: [jsonrpc/methods/estimateFee.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/estimateFee.ts#L8)
+
+Estimate fee for a transaction.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### transactions
+
+[`BroadcastedTxn`](#broadcastedtxn)[]
+
+##### simulationFlags
+
+[`SimulationFlag`](#simulationflag)[] = `[]`
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<[`FeeEstimate`](#feeestimate)[]\>
+
+***
+
+### starknet\_estimateMessageFee()
+
+> **starknet\_estimateMessageFee**(`transport`, `message`, `blockId`): `Promise`\<[`MessageFeeEstimate`](#messagefeeestimate)\>
+
+Defined in: [jsonrpc/methods/estimateMessageFee.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/estimateMessageFee.ts#L8)
+
+Estimate message fee.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### message
+
+[`MsgFromL1`](#msgfroml1)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<[`MessageFeeEstimate`](#messagefeeestimate)\>
+
+***
+
+### starknet\_getBlockTransactionCount()
+
+> **starknet\_getBlockTransactionCount**(`transport`, `blockId`): `Promise`\<`number`\>
+
+Defined in: [jsonrpc/methods/getBlockTransactionCount.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getBlockTransactionCount.ts#L8)
+
+Get number of transactions in a block.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<`number`\>
+
+***
+
+### starknet\_getBlockWithReceipts()
+
+> **starknet\_getBlockWithReceipts**(`transport`, `blockId`): `Promise`\<[`BlockWithReceipts`](#blockwithreceipts) \| [`PreConfirmedBlockWithReceipts`](#preconfirmedblockwithreceipts)\>
+
+Defined in: [jsonrpc/methods/getBlockWithReceipts.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getBlockWithReceipts.ts#L12)
+
+Get a block with receipts.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<[`BlockWithReceipts`](#blockwithreceipts) \| [`PreConfirmedBlockWithReceipts`](#preconfirmedblockwithreceipts)\>
+
+***
+
+### starknet\_getBlockWithTxHashes()
+
+> **starknet\_getBlockWithTxHashes**(`transport`, `blockId`): `Promise`\<[`BlockWithTxHashes`](#blockwithtxhashes) \| [`PreConfirmedBlockWithTxHashes`](#preconfirmedblockwithtxhashes)\>
+
+Defined in: [jsonrpc/methods/getBlockWithTxHashes.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getBlockWithTxHashes.ts#L8)
+
+Get a block with transaction hashes.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<[`BlockWithTxHashes`](#blockwithtxhashes) \| [`PreConfirmedBlockWithTxHashes`](#preconfirmedblockwithtxhashes)\>
+
+***
+
+### starknet\_getBlockWithTxs()
+
+> **starknet\_getBlockWithTxs**(`transport`, `blockId`): `Promise`\<[`BlockWithTxs`](#blockwithtxs) \| [`PreConfirmedBlockWithTxs`](#preconfirmedblockwithtxs)\>
+
+Defined in: [jsonrpc/methods/getBlockWithTxs.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getBlockWithTxs.ts#L8)
+
+Get a block with full transactions.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<[`BlockWithTxs`](#blockwithtxs) \| [`PreConfirmedBlockWithTxs`](#preconfirmedblockwithtxs)\>
+
+***
+
+### starknet\_getClass()
+
+> **starknet\_getClass**(`transport`, `classHash`, `blockId`): `Promise`\<[`ContractClass`](#contractclass)\>
+
+Defined in: [jsonrpc/methods/getClass.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getClass.ts#L9)
+
+Get class definition by hash.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### classHash
+
+`string` | [`ClassHashType`](../index-1.mdx#classhashtype)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<[`ContractClass`](#contractclass)\>
+
+***
+
+### starknet\_getClassAt()
+
+> **starknet\_getClassAt**(`transport`, `contractAddress`, `blockId`): `Promise`\<[`ContractClass`](#contractclass)\>
+
+Defined in: [jsonrpc/methods/getClassAt.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getClassAt.ts#L9)
+
+Get class definition at contract address.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### contractAddress
+
+`string` | [`ContractAddressType`](../index-1.mdx#contractaddresstype)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<[`ContractClass`](#contractclass)\>
+
+***
+
+### starknet\_getClassHashAt()
+
+> **starknet\_getClassHashAt**(`transport`, `contractAddress`, `blockId`): `Promise`\<`string`\>
+
+Defined in: [jsonrpc/methods/getClassHashAt.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getClassHashAt.ts#L9)
+
+Get class hash at contract address.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### contractAddress
+
+`string` | [`ContractAddressType`](../index-1.mdx#contractaddresstype)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### starknet\_getEvents()
+
+> **starknet\_getEvents**(`transport`, `filter`): `Promise`\<[`EventsResponse`](#eventsresponse)\>
+
+Defined in: [jsonrpc/methods/getEvents.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getEvents.ts#L8)
+
+Get events matching a filter.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### filter
+
+[`EventsFilter`](#eventsfilter)
+
+#### Returns
+
+`Promise`\<[`EventsResponse`](#eventsresponse)\>
+
+***
+
+### starknet\_getMessagesStatus()
+
+> **starknet\_getMessagesStatus**(`transport`, `l1TransactionHash`): `Promise`\<[`MessagesStatusResponse`](#messagesstatusresponse)\>
+
+Defined in: [jsonrpc/methods/getMessagesStatus.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getMessagesStatus.ts#L8)
+
+Get messages status by L1 transaction hash.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### l1TransactionHash
+
+`string`
+
+#### Returns
+
+`Promise`\<[`MessagesStatusResponse`](#messagesstatusresponse)\>
+
+***
+
+### starknet\_getNonce()
+
+> **starknet\_getNonce**(`transport`, `contractAddress`, `blockId`): `Promise`\<`string`\>
+
+Defined in: [jsonrpc/methods/getNonce.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getNonce.ts#L9)
+
+Get the nonce of an account contract.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### contractAddress
+
+`string` | [`ContractAddressType`](../index-1.mdx#contractaddresstype)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'pending'`
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### starknet\_getStateUpdate()
+
+> **starknet\_getStateUpdate**(`transport`, `blockId`): `Promise`\<[`StateUpdate`](#stateupdate) \| [`PreConfirmedStateUpdate`](#preconfirmedstateupdate)\>
+
+Defined in: [jsonrpc/methods/getStateUpdate.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getStateUpdate.ts#L8)
+
+Get state update by block.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<[`StateUpdate`](#stateupdate) \| [`PreConfirmedStateUpdate`](#preconfirmedstateupdate)\>
+
+***
+
+### starknet\_getStorageAt()
+
+> **starknet\_getStorageAt**(`transport`, `contractAddress`, `key`, `blockId`): `Promise`\<`string`\>
+
+Defined in: [jsonrpc/methods/getStorageAt.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getStorageAt.ts#L9)
+
+Get a storage value at a given key.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### contractAddress
+
+`string` | [`ContractAddressType`](../index-1.mdx#contractaddresstype)
+
+##### key
+
+`string` | [`Felt252Type`](../index-1.mdx#felt252type)
+
+##### blockId
+
+[`BlockId`](#blockid) = `'latest'`
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### starknet\_getStorageProof()
+
+> **starknet\_getStorageProof**(`transport`, `blockId`, `classHashes`, `contractAddresses`, `contractStorageKeys`): `Promise`\<[`StorageProof`](#storageproof)\>
+
+Defined in: [jsonrpc/methods/getStorageProof.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getStorageProof.ts#L8)
+
+Get storage proofs.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### blockId
+
+[`BlockId`](#blockid)
+
+##### classHashes
+
+`string`[]
+
+##### contractAddresses
+
+`string`[]
+
+##### contractStorageKeys
+
+`object`[]
+
+#### Returns
+
+`Promise`\<[`StorageProof`](#storageproof)\>
+
+***
+
+### starknet\_getTransactionByBlockIdAndIndex()
+
+> **starknet\_getTransactionByBlockIdAndIndex**(`transport`, `blockId`, `index`): `Promise`\<[`TxnWithHash`](#txnwithhash)\>
+
+Defined in: [jsonrpc/methods/getTransactionByBlockIdAndIndex.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getTransactionByBlockIdAndIndex.ts#L8)
+
+Get transaction by block id and index.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### blockId
+
+[`BlockId`](#blockid)
+
+##### index
+
+`number`
+
+#### Returns
+
+`Promise`\<[`TxnWithHash`](#txnwithhash)\>
+
+***
+
+### starknet\_getTransactionByHash()
+
+> **starknet\_getTransactionByHash**(`transport`, `transactionHash`): `Promise`\<[`TxnWithHash`](#txnwithhash)\>
+
+Defined in: [jsonrpc/methods/getTransactionByHash.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getTransactionByHash.ts#L8)
+
+Get transaction by hash.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### transactionHash
+
+`string`
+
+#### Returns
+
+`Promise`\<[`TxnWithHash`](#txnwithhash)\>
+
+***
+
+### starknet\_getTransactionReceipt()
+
+> **starknet\_getTransactionReceipt**(`transport`, `transactionHash`): `Promise`\<[`TxnReceiptWithBlockInfo`](#txnreceiptwithblockinfo)\>
+
+Defined in: [jsonrpc/methods/getTransactionReceipt.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getTransactionReceipt.ts#L8)
+
+Get transaction receipt.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### transactionHash
+
+`string`
+
+#### Returns
+
+`Promise`\<[`TxnReceiptWithBlockInfo`](#txnreceiptwithblockinfo)\>
+
+***
+
+### starknet\_getTransactionStatus()
+
+> **starknet\_getTransactionStatus**(`transport`, `transactionHash`): `Promise`\<[`TransactionStatus`](#transactionstatus)\>
+
+Defined in: [jsonrpc/methods/getTransactionStatus.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/getTransactionStatus.ts#L8)
+
+Get transaction status.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### transactionHash
+
+`string`
+
+#### Returns
+
+`Promise`\<[`TransactionStatus`](#transactionstatus)\>
+
+***
+
+### starknet\_simulateTransactions()
+
+> **starknet\_simulateTransactions**(`transport`, `blockId`, `transactions`, `simulationFlags`): `Promise`\<[`SimulatedTransaction`](#simulatedtransaction)[]\>
+
+Defined in: [jsonrpc/methods/simulateTransactions.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/simulateTransactions.ts#L8)
+
+Simulate transactions against a block.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### blockId
+
+[`BlockId`](#blockid)
+
+##### transactions
+
+[`BroadcastedTxn`](#broadcastedtxn)[]
+
+##### simulationFlags
+
+[`SimulationFlag`](#simulationflag)[] = `[]`
+
+#### Returns
+
+`Promise`\<[`SimulatedTransaction`](#simulatedtransaction)[]\>
+
+***
+
+### starknet\_specVersion()
+
+> **starknet\_specVersion**(`transport`): `Promise`\<`string`\>
+
+Defined in: [jsonrpc/methods/specVersion.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/specVersion.ts#L7)
+
+Get the Starknet spec version.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### starknet\_subscribeEvents()
+
+> **starknet\_subscribeEvents**(`transport`, `params?`): `Promise`\<`string`\>
+
+Defined in: [jsonrpc/methods/subscribeEvents.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/subscribeEvents.ts#L8)
+
+Subscribe to events.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### params?
+
+[`EventsSubscriptionParams`](#eventssubscriptionparams)
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### starknet\_subscribeNewHeads()
+
+> **starknet\_subscribeNewHeads**(`transport`, `params?`): `Promise`\<`string`\>
+
+Defined in: [jsonrpc/methods/subscribeNewHeads.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/subscribeNewHeads.ts#L8)
+
+Subscribe to new block headers.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### params?
+
+[`NewHeadsSubscriptionParams`](#newheadssubscriptionparams)
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### starknet\_subscribeNewTransactionReceipts()
+
+> **starknet\_subscribeNewTransactionReceipts**(`transport`, `params?`): `Promise`\<`string`\>
+
+Defined in: [jsonrpc/methods/subscribeNewTransactionReceipts.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/subscribeNewTransactionReceipts.ts#L8)
+
+Subscribe to new transaction receipts.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### params?
+
+[`TransactionReceiptsSubscriptionParams`](#transactionreceiptssubscriptionparams)
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### starknet\_subscribeNewTransactions()
+
+> **starknet\_subscribeNewTransactions**(`transport`, `params?`): `Promise`\<`string`\>
+
+Defined in: [jsonrpc/methods/subscribeNewTransactions.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/subscribeNewTransactions.ts#L8)
+
+Subscribe to new pending transactions.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### params?
+
+[`PendingTransactionsSubscriptionParams`](#pendingtransactionssubscriptionparams)
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### starknet\_subscribeTransactionStatus()
+
+> **starknet\_subscribeTransactionStatus**(`transport`, `transactionHash`): `Promise`\<`string`\>
+
+Defined in: [jsonrpc/methods/subscribeTransactionStatus.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/subscribeTransactionStatus.ts#L7)
+
+Subscribe to a transaction status.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### transactionHash
+
+`string`
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### starknet\_syncing()
+
+> **starknet\_syncing**(`transport`): `Promise`\<[`SyncingStatus`](#syncingstatus)\>
+
+Defined in: [jsonrpc/methods/syncing.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/syncing.ts#L8)
+
+Get sync status.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+#### Returns
+
+`Promise`\<[`SyncingStatus`](#syncingstatus)\>
+
+***
+
+### starknet\_traceBlockTransactions()
+
+> **starknet\_traceBlockTransactions**(`transport`, `blockId`): `Promise`\<[`BlockTransactionTrace`](#blocktransactiontrace)[]\>
+
+Defined in: [jsonrpc/methods/traceBlockTransactions.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/traceBlockTransactions.ts#L8)
+
+Trace all transactions in a block.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### blockId
+
+[`BlockId`](#blockid)
+
+#### Returns
+
+`Promise`\<[`BlockTransactionTrace`](#blocktransactiontrace)[]\>
+
+***
+
+### starknet\_traceTransaction()
+
+> **starknet\_traceTransaction**(`transport`, `transactionHash`): `Promise`\<[`TransactionTrace`](#transactiontrace)\>
+
+Defined in: [jsonrpc/methods/traceTransaction.ts:8](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/traceTransaction.ts#L8)
+
+Trace a transaction.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### transactionHash
+
+`string`
+
+#### Returns
+
+`Promise`\<[`TransactionTrace`](#transactiontrace)\>
+
+***
+
+### starknet\_unsubscribe()
+
+> **starknet\_unsubscribe**(`transport`, `subscriptionId`): `Promise`\<`boolean`\>
+
+Defined in: [jsonrpc/methods/unsubscribe.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/jsonrpc/methods/unsubscribe.ts#L7)
+
+Unsubscribe from a subscription.
+
+#### Parameters
+
+##### transport
+
+[`Transport`](../transport.mdx#transport)
+
+##### subscriptionId
+
+`string`
+
+#### Returns
+
+`Promise`\<`boolean`\>

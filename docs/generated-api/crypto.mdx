@@ -1,0 +1,2621 @@
+---
+title: "crypto"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](index.mdx) / crypto
+
+# crypto
+
+## Interfaces
+
+### Call
+
+Defined in: [crypto/account-types.ts:135](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L135)
+
+A single contract call
+
+#### Properties
+
+##### calldata
+
+> **calldata**: [`Felt252Input`](index-1.mdx#felt252input)[]
+
+Defined in: [crypto/account-types.ts:141](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L141)
+
+Call arguments
+
+##### contractAddress
+
+> **contractAddress**: `string`
+
+Defined in: [crypto/account-types.ts:137](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L137)
+
+Target contract address
+
+##### entrypoint
+
+> **entrypoint**: `string`
+
+Defined in: [crypto/account-types.ts:139](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L139)
+
+Entry point selector (function name hash)
+
+***
+
+### DeclarePayload
+
+Defined in: [crypto/account-types.ts:174](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L174)
+
+Declare transaction payload
+
+#### Remarks
+
+Both classHash and compiledClassHash must be provided.
+Sierra class hash computation is complex (involves Cairo compiler)
+and is out of scope for P0. Use external tools like:
+- starkli class-hash <sierra.json>
+- starknet.js: computeSierraContractClassHash()
+
+#### Properties
+
+##### classHash
+
+> **classHash**: `string`
+
+Defined in: [crypto/account-types.ts:186](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L186)
+
+Sierra class hash (required).
+Compute using: starkli class-hash <sierra.json>
+
+##### compiledClassHash
+
+> **compiledClassHash**: `string`
+
+Defined in: [crypto/account-types.ts:181](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L181)
+
+Compiled class hash (Sierra -> CASM).
+Compute using: starkli class-hash --casm <casm.json>
+
+##### contract
+
+> **contract**: `unknown`
+
+Defined in: [crypto/account-types.ts:176](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L176)
+
+Contract class (Sierra JSON)
+
+***
+
+### DeclareResult
+
+Defined in: [crypto/account-types.ts:213](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L213)
+
+Result of declare transaction
+
+#### Properties
+
+##### class\_hash
+
+> **class\_hash**: `string`
+
+Defined in: [crypto/account-types.ts:215](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L215)
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [crypto/account-types.ts:214](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L214)
+
+***
+
+### DeclareTransactionV3
+
+Defined in: [crypto/account-types.ts:89](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L89)
+
+DECLARE_V3 transaction (unsigned)
+
+#### Extends
+
+- [`V3TransactionCommon`](#v3transactioncommon)
+
+#### Extended by
+
+- [`SignedDeclareTransactionV3`](#signeddeclaretransactionv3)
+
+#### Properties
+
+##### account\_deployment\_data
+
+> **account\_deployment\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:97](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L97)
+
+Account deployment data (reserved, currently empty)
+
+##### class\_hash
+
+> **class\_hash**: `string`
+
+Defined in: [crypto/account-types.ts:93](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L93)
+
+Class hash of the contract being declared
+
+##### compiled\_class\_hash
+
+> **compiled\_class\_hash**: `string`
+
+Defined in: [crypto/account-types.ts:95](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L95)
+
+Compiled class hash (Sierra -> CASM)
+
+##### fee\_data\_availability\_mode
+
+> **fee\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:59](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L59)
+
+Fee data availability mode (0 = L1)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`fee_data_availability_mode`](#fee_data_availability_mode-6)
+
+##### nonce
+
+> **nonce**: `bigint`
+
+Defined in: [crypto/account-types.ts:49](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L49)
+
+Account nonce
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`nonce`](#nonce-7)
+
+##### nonce\_data\_availability\_mode
+
+> **nonce\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:57](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L57)
+
+Nonce data availability mode (0 = L1)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`nonce_data_availability_mode`](#nonce_data_availability_mode-6)
+
+##### paymaster\_data
+
+> **paymaster\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:55](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L55)
+
+Paymaster data (reserved, currently empty)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`paymaster_data`](#paymaster_data-6)
+
+##### resource\_bounds
+
+> **resource\_bounds**: [`ResourceBoundsMapping`](#resourceboundsmapping)
+
+Defined in: [crypto/account-types.ts:51](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L51)
+
+Resource bounds for fee calculation
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`resource_bounds`](#resource_bounds-6)
+
+##### sender\_address
+
+> **sender\_address**: `string`
+
+Defined in: [crypto/account-types.ts:91](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L91)
+
+Sender contract address
+
+##### tip
+
+> **tip**: `bigint`
+
+Defined in: [crypto/account-types.ts:53](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L53)
+
+Optional tip for sequencer (usually 0)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`tip`](#tip-7)
+
+##### version
+
+> **version**: `3`
+
+Defined in: [crypto/account-types.ts:47](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L47)
+
+Transaction version (always 3 for V3)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`version`](#version-7)
+
+***
+
+### DeployAccountPayload
+
+Defined in: [crypto/account-types.ts:192](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L192)
+
+Deploy account transaction payload
+
+#### Properties
+
+##### addressSalt?
+
+> `optional` **addressSalt**: `string`
+
+Defined in: [crypto/account-types.ts:198](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L198)
+
+Contract address salt
+
+##### classHash
+
+> **classHash**: `string`
+
+Defined in: [crypto/account-types.ts:194](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L194)
+
+Account class hash
+
+##### constructorCalldata?
+
+> `optional` **constructorCalldata**: [`Felt252Input`](index-1.mdx#felt252input)[]
+
+Defined in: [crypto/account-types.ts:196](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L196)
+
+Constructor calldata
+
+***
+
+### DeployAccountResult
+
+Defined in: [crypto/account-types.ts:221](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L221)
+
+Result of deploy account transaction
+
+#### Properties
+
+##### contract\_address
+
+> **contract\_address**: `string`
+
+Defined in: [crypto/account-types.ts:223](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L223)
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [crypto/account-types.ts:222](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L222)
+
+***
+
+### DeployAccountTransactionV3
+
+Defined in: [crypto/account-types.ts:113](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L113)
+
+DEPLOY_ACCOUNT_V3 transaction (unsigned)
+
+#### Extends
+
+- [`V3TransactionCommon`](#v3transactioncommon)
+
+#### Extended by
+
+- [`SignedDeployAccountTransactionV3`](#signeddeployaccounttransactionv3)
+
+#### Properties
+
+##### class\_hash
+
+> **class\_hash**: `string`
+
+Defined in: [crypto/account-types.ts:115](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L115)
+
+Class hash of the account contract
+
+##### constructor\_calldata
+
+> **constructor\_calldata**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:117](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L117)
+
+Constructor calldata
+
+##### contract\_address\_salt
+
+> **contract\_address\_salt**: `string`
+
+Defined in: [crypto/account-types.ts:119](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L119)
+
+Contract address salt for deterministic deployment
+
+##### fee\_data\_availability\_mode
+
+> **fee\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:59](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L59)
+
+Fee data availability mode (0 = L1)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`fee_data_availability_mode`](#fee_data_availability_mode-6)
+
+##### nonce
+
+> **nonce**: `bigint`
+
+Defined in: [crypto/account-types.ts:49](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L49)
+
+Account nonce
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`nonce`](#nonce-7)
+
+##### nonce\_data\_availability\_mode
+
+> **nonce\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:57](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L57)
+
+Nonce data availability mode (0 = L1)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`nonce_data_availability_mode`](#nonce_data_availability_mode-6)
+
+##### paymaster\_data
+
+> **paymaster\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:55](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L55)
+
+Paymaster data (reserved, currently empty)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`paymaster_data`](#paymaster_data-6)
+
+##### resource\_bounds
+
+> **resource\_bounds**: [`ResourceBoundsMapping`](#resourceboundsmapping)
+
+Defined in: [crypto/account-types.ts:51](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L51)
+
+Resource bounds for fee calculation
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`resource_bounds`](#resource_bounds-6)
+
+##### tip
+
+> **tip**: `bigint`
+
+Defined in: [crypto/account-types.ts:53](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L53)
+
+Optional tip for sequencer (usually 0)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`tip`](#tip-7)
+
+##### version
+
+> **version**: `3`
+
+Defined in: [crypto/account-types.ts:47](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L47)
+
+Transaction version (always 3 for V3)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`version`](#version-7)
+
+***
+
+### ExecuteResult
+
+Defined in: [crypto/account-types.ts:206](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L206)
+
+Result of execute transaction
+
+#### Properties
+
+##### transaction\_hash
+
+> **transaction\_hash**: `string`
+
+Defined in: [crypto/account-types.ts:207](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L207)
+
+***
+
+### InvokeTransactionV3
+
+Defined in: [crypto/account-types.ts:67](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L67)
+
+INVOKE_V3 transaction (unsigned)
+
+#### Extends
+
+- [`V3TransactionCommon`](#v3transactioncommon)
+
+#### Extended by
+
+- [`SignedInvokeTransactionV3`](#signedinvoketransactionv3)
+
+#### Properties
+
+##### account\_deployment\_data
+
+> **account\_deployment\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:73](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L73)
+
+Account deployment data (reserved, currently empty)
+
+##### calldata
+
+> **calldata**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:71](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L71)
+
+Encoded calldata
+
+##### fee\_data\_availability\_mode
+
+> **fee\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:59](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L59)
+
+Fee data availability mode (0 = L1)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`fee_data_availability_mode`](#fee_data_availability_mode-6)
+
+##### nonce
+
+> **nonce**: `bigint`
+
+Defined in: [crypto/account-types.ts:49](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L49)
+
+Account nonce
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`nonce`](#nonce-7)
+
+##### nonce\_data\_availability\_mode
+
+> **nonce\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:57](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L57)
+
+Nonce data availability mode (0 = L1)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`nonce_data_availability_mode`](#nonce_data_availability_mode-6)
+
+##### paymaster\_data
+
+> **paymaster\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:55](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L55)
+
+Paymaster data (reserved, currently empty)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`paymaster_data`](#paymaster_data-6)
+
+##### resource\_bounds
+
+> **resource\_bounds**: [`ResourceBoundsMapping`](#resourceboundsmapping)
+
+Defined in: [crypto/account-types.ts:51](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L51)
+
+Resource bounds for fee calculation
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`resource_bounds`](#resource_bounds-6)
+
+##### sender\_address
+
+> **sender\_address**: `string`
+
+Defined in: [crypto/account-types.ts:69](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L69)
+
+Sender contract address
+
+##### tip
+
+> **tip**: `bigint`
+
+Defined in: [crypto/account-types.ts:53](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L53)
+
+Optional tip for sequencer (usually 0)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`tip`](#tip-7)
+
+##### version
+
+> **version**: `3`
+
+Defined in: [crypto/account-types.ts:47](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L47)
+
+Transaction version (always 3 for V3)
+
+###### Inherited from
+
+[`V3TransactionCommon`](#v3transactioncommon).[`version`](#version-7)
+
+***
+
+### ResourceBounds
+
+Defined in: [crypto/account-types.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L18)
+
+Resource bounds for a single resource type
+
+#### Properties
+
+##### max\_amount
+
+> **max\_amount**: `bigint`
+
+Defined in: [crypto/account-types.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L20)
+
+Maximum amount of this resource that can be used
+
+##### max\_price\_per\_unit
+
+> **max\_price\_per\_unit**: `bigint`
+
+Defined in: [crypto/account-types.ts:22](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L22)
+
+Maximum price per unit willing to pay
+
+***
+
+### ResourceBoundsMapping
+
+Defined in: [crypto/account-types.ts:29](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L29)
+
+Resource bounds mapping for all resource types
+V3 transactions require bounds for L1_GAS, L2_GAS, and L1_DATA
+
+#### Properties
+
+##### l1\_data\_gas
+
+> **l1\_data\_gas**: [`ResourceBounds`](#resourcebounds)
+
+Defined in: [crypto/account-types.ts:32](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L32)
+
+##### l1\_gas
+
+> **l1\_gas**: [`ResourceBounds`](#resourcebounds)
+
+Defined in: [crypto/account-types.ts:30](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L30)
+
+##### l2\_gas
+
+> **l2\_gas**: [`ResourceBounds`](#resourcebounds)
+
+Defined in: [crypto/account-types.ts:31](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L31)
+
+***
+
+### Signature
+
+Defined in: [crypto/index.ts:259](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L259)
+
+STARK curve signature
+
+#### Properties
+
+##### r
+
+> **r**: [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:260](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L260)
+
+##### s
+
+> **s**: [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:261](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L261)
+
+***
+
+### SignedDeclareTransactionV3
+
+Defined in: [crypto/account-types.ts:103](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L103)
+
+Signed DECLARE_V3 transaction
+
+#### Extends
+
+- [`DeclareTransactionV3`](#declaretransactionv3)
+
+#### Properties
+
+##### account\_deployment\_data
+
+> **account\_deployment\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:97](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L97)
+
+Account deployment data (reserved, currently empty)
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`account_deployment_data`](#account_deployment_data)
+
+##### class\_hash
+
+> **class\_hash**: `string`
+
+Defined in: [crypto/account-types.ts:93](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L93)
+
+Class hash of the contract being declared
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`class_hash`](#class_hash-1)
+
+##### compiled\_class\_hash
+
+> **compiled\_class\_hash**: `string`
+
+Defined in: [crypto/account-types.ts:95](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L95)
+
+Compiled class hash (Sierra -> CASM)
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`compiled_class_hash`](#compiled_class_hash)
+
+##### fee\_data\_availability\_mode
+
+> **fee\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:59](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L59)
+
+Fee data availability mode (0 = L1)
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`fee_data_availability_mode`](#fee_data_availability_mode)
+
+##### nonce
+
+> **nonce**: `bigint`
+
+Defined in: [crypto/account-types.ts:49](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L49)
+
+Account nonce
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`nonce`](#nonce)
+
+##### nonce\_data\_availability\_mode
+
+> **nonce\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:57](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L57)
+
+Nonce data availability mode (0 = L1)
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`nonce_data_availability_mode`](#nonce_data_availability_mode)
+
+##### paymaster\_data
+
+> **paymaster\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:55](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L55)
+
+Paymaster data (reserved, currently empty)
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`paymaster_data`](#paymaster_data)
+
+##### resource\_bounds
+
+> **resource\_bounds**: [`ResourceBoundsMapping`](#resourceboundsmapping)
+
+Defined in: [crypto/account-types.ts:51](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L51)
+
+Resource bounds for fee calculation
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`resource_bounds`](#resource_bounds)
+
+##### sender\_address
+
+> **sender\_address**: `string`
+
+Defined in: [crypto/account-types.ts:91](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L91)
+
+Sender contract address
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`sender_address`](#sender_address)
+
+##### signature
+
+> **signature**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:105](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L105)
+
+Transaction signature
+
+##### tip
+
+> **tip**: `bigint`
+
+Defined in: [crypto/account-types.ts:53](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L53)
+
+Optional tip for sequencer (usually 0)
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`tip`](#tip)
+
+##### version
+
+> **version**: `3`
+
+Defined in: [crypto/account-types.ts:47](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L47)
+
+Transaction version (always 3 for V3)
+
+###### Inherited from
+
+[`DeclareTransactionV3`](#declaretransactionv3).[`version`](#version)
+
+***
+
+### SignedDeployAccountTransactionV3
+
+Defined in: [crypto/account-types.ts:125](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L125)
+
+Signed DEPLOY_ACCOUNT_V3 transaction
+
+#### Extends
+
+- [`DeployAccountTransactionV3`](#deployaccounttransactionv3)
+
+#### Properties
+
+##### class\_hash
+
+> **class\_hash**: `string`
+
+Defined in: [crypto/account-types.ts:115](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L115)
+
+Class hash of the account contract
+
+###### Inherited from
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3).[`class_hash`](#class_hash-2)
+
+##### constructor\_calldata
+
+> **constructor\_calldata**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:117](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L117)
+
+Constructor calldata
+
+###### Inherited from
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3).[`constructor_calldata`](#constructor_calldata)
+
+##### contract\_address\_salt
+
+> **contract\_address\_salt**: `string`
+
+Defined in: [crypto/account-types.ts:119](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L119)
+
+Contract address salt for deterministic deployment
+
+###### Inherited from
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3).[`contract_address_salt`](#contract_address_salt)
+
+##### fee\_data\_availability\_mode
+
+> **fee\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:59](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L59)
+
+Fee data availability mode (0 = L1)
+
+###### Inherited from
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3).[`fee_data_availability_mode`](#fee_data_availability_mode-1)
+
+##### nonce
+
+> **nonce**: `bigint`
+
+Defined in: [crypto/account-types.ts:49](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L49)
+
+Account nonce
+
+###### Inherited from
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3).[`nonce`](#nonce-1)
+
+##### nonce\_data\_availability\_mode
+
+> **nonce\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:57](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L57)
+
+Nonce data availability mode (0 = L1)
+
+###### Inherited from
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3).[`nonce_data_availability_mode`](#nonce_data_availability_mode-1)
+
+##### paymaster\_data
+
+> **paymaster\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:55](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L55)
+
+Paymaster data (reserved, currently empty)
+
+###### Inherited from
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3).[`paymaster_data`](#paymaster_data-1)
+
+##### resource\_bounds
+
+> **resource\_bounds**: [`ResourceBoundsMapping`](#resourceboundsmapping)
+
+Defined in: [crypto/account-types.ts:51](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L51)
+
+Resource bounds for fee calculation
+
+###### Inherited from
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3).[`resource_bounds`](#resource_bounds-1)
+
+##### signature
+
+> **signature**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:127](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L127)
+
+Transaction signature
+
+##### tip
+
+> **tip**: `bigint`
+
+Defined in: [crypto/account-types.ts:53](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L53)
+
+Optional tip for sequencer (usually 0)
+
+###### Inherited from
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3).[`tip`](#tip-1)
+
+##### version
+
+> **version**: `3`
+
+Defined in: [crypto/account-types.ts:47](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L47)
+
+Transaction version (always 3 for V3)
+
+###### Inherited from
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3).[`version`](#version-1)
+
+***
+
+### SignedInvokeTransactionV3
+
+Defined in: [crypto/account-types.ts:79](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L79)
+
+Signed INVOKE_V3 transaction
+
+#### Extends
+
+- [`InvokeTransactionV3`](#invoketransactionv3)
+
+#### Properties
+
+##### account\_deployment\_data
+
+> **account\_deployment\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:73](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L73)
+
+Account deployment data (reserved, currently empty)
+
+###### Inherited from
+
+[`InvokeTransactionV3`](#invoketransactionv3).[`account_deployment_data`](#account_deployment_data-1)
+
+##### calldata
+
+> **calldata**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:71](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L71)
+
+Encoded calldata
+
+###### Inherited from
+
+[`InvokeTransactionV3`](#invoketransactionv3).[`calldata`](#calldata-1)
+
+##### fee\_data\_availability\_mode
+
+> **fee\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:59](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L59)
+
+Fee data availability mode (0 = L1)
+
+###### Inherited from
+
+[`InvokeTransactionV3`](#invoketransactionv3).[`fee_data_availability_mode`](#fee_data_availability_mode-2)
+
+##### nonce
+
+> **nonce**: `bigint`
+
+Defined in: [crypto/account-types.ts:49](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L49)
+
+Account nonce
+
+###### Inherited from
+
+[`InvokeTransactionV3`](#invoketransactionv3).[`nonce`](#nonce-2)
+
+##### nonce\_data\_availability\_mode
+
+> **nonce\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:57](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L57)
+
+Nonce data availability mode (0 = L1)
+
+###### Inherited from
+
+[`InvokeTransactionV3`](#invoketransactionv3).[`nonce_data_availability_mode`](#nonce_data_availability_mode-2)
+
+##### paymaster\_data
+
+> **paymaster\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:55](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L55)
+
+Paymaster data (reserved, currently empty)
+
+###### Inherited from
+
+[`InvokeTransactionV3`](#invoketransactionv3).[`paymaster_data`](#paymaster_data-2)
+
+##### resource\_bounds
+
+> **resource\_bounds**: [`ResourceBoundsMapping`](#resourceboundsmapping)
+
+Defined in: [crypto/account-types.ts:51](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L51)
+
+Resource bounds for fee calculation
+
+###### Inherited from
+
+[`InvokeTransactionV3`](#invoketransactionv3).[`resource_bounds`](#resource_bounds-2)
+
+##### sender\_address
+
+> **sender\_address**: `string`
+
+Defined in: [crypto/account-types.ts:69](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L69)
+
+Sender contract address
+
+###### Inherited from
+
+[`InvokeTransactionV3`](#invoketransactionv3).[`sender_address`](#sender_address-1)
+
+##### signature
+
+> **signature**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:81](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L81)
+
+Transaction signature
+
+##### tip
+
+> **tip**: `bigint`
+
+Defined in: [crypto/account-types.ts:53](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L53)
+
+Optional tip for sequencer (usually 0)
+
+###### Inherited from
+
+[`InvokeTransactionV3`](#invoketransactionv3).[`tip`](#tip-2)
+
+##### version
+
+> **version**: `3`
+
+Defined in: [crypto/account-types.ts:47](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L47)
+
+Transaction version (always 3 for V3)
+
+###### Inherited from
+
+[`InvokeTransactionV3`](#invoketransactionv3).[`version`](#version-2)
+
+***
+
+### TypedData
+
+Defined in: [crypto/account-types.ts:263](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L263)
+
+Typed data for off-chain message signing (SNIP-12)
+
+#### Properties
+
+##### domain
+
+> **domain**: [`TypedDataDomain`](#typeddatadomain-1)
+
+Defined in: [crypto/account-types.ts:266](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L266)
+
+##### message
+
+> **message**: `Record`\<`string`, `unknown`\>
+
+Defined in: [crypto/account-types.ts:267](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L267)
+
+##### primaryType
+
+> **primaryType**: `string`
+
+Defined in: [crypto/account-types.ts:265](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L265)
+
+##### types
+
+> **types**: `Record`\<`string`, [`TypedDataType`](#typeddatatype)[]\>
+
+Defined in: [crypto/account-types.ts:264](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L264)
+
+***
+
+### TypedDataDomain
+
+Defined in: [crypto/account-types.ts:245](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L245)
+
+Typed data domain for off-chain signing
+
+#### Properties
+
+##### chainId?
+
+> `optional` **chainId**: `string`
+
+Defined in: [crypto/account-types.ts:248](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L248)
+
+##### name?
+
+> `optional` **name**: `string`
+
+Defined in: [crypto/account-types.ts:246](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L246)
+
+##### revision?
+
+> `optional` **revision**: `string`
+
+Defined in: [crypto/account-types.ts:249](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L249)
+
+##### version?
+
+> `optional` **version**: `string`
+
+Defined in: [crypto/account-types.ts:247](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L247)
+
+***
+
+### TypedDataType
+
+Defined in: [crypto/account-types.ts:255](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L255)
+
+Typed data type definition
+
+#### Properties
+
+##### name
+
+> **name**: `string`
+
+Defined in: [crypto/account-types.ts:256](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L256)
+
+##### type
+
+> **type**: `string`
+
+Defined in: [crypto/account-types.ts:257](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L257)
+
+***
+
+### UniversalDetails
+
+Defined in: [crypto/account-types.ts:149](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L149)
+
+Optional transaction details provided by the user
+
+#### Properties
+
+##### nonce?
+
+> `optional` **nonce**: `bigint`
+
+Defined in: [crypto/account-types.ts:151](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L151)
+
+Override nonce (auto-fetched if not provided)
+
+##### paymasterData?
+
+> `optional` **paymasterData**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:157](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L157)
+
+Paymaster data
+
+##### resourceBounds?
+
+> `optional` **resourceBounds**: `Partial`\<[`ResourceBoundsMapping`](#resourceboundsmapping)\>
+
+Defined in: [crypto/account-types.ts:153](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L153)
+
+Override resource bounds
+
+##### skipValidate?
+
+> `optional` **skipValidate**: `boolean`
+
+Defined in: [crypto/account-types.ts:159](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L159)
+
+Skip signature validation (for simulation)
+
+##### tip?
+
+> `optional` **tip**: `bigint`
+
+Defined in: [crypto/account-types.ts:155](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L155)
+
+Tip for sequencer
+
+***
+
+### V3TransactionCommon
+
+Defined in: [crypto/account-types.ts:45](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L45)
+
+Common fields for all V3 transactions
+
+#### Extended by
+
+- [`InvokeTransactionV3`](#invoketransactionv3)
+- [`DeclareTransactionV3`](#declaretransactionv3)
+- [`DeployAccountTransactionV3`](#deployaccounttransactionv3)
+
+#### Properties
+
+##### fee\_data\_availability\_mode
+
+> **fee\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:59](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L59)
+
+Fee data availability mode (0 = L1)
+
+##### nonce
+
+> **nonce**: `bigint`
+
+Defined in: [crypto/account-types.ts:49](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L49)
+
+Account nonce
+
+##### nonce\_data\_availability\_mode
+
+> **nonce\_data\_availability\_mode**: `0`
+
+Defined in: [crypto/account-types.ts:57](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L57)
+
+Nonce data availability mode (0 = L1)
+
+##### paymaster\_data
+
+> **paymaster\_data**: `bigint`[]
+
+Defined in: [crypto/account-types.ts:55](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L55)
+
+Paymaster data (reserved, currently empty)
+
+##### resource\_bounds
+
+> **resource\_bounds**: [`ResourceBoundsMapping`](#resourceboundsmapping)
+
+Defined in: [crypto/account-types.ts:51](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L51)
+
+Resource bounds for fee calculation
+
+##### tip
+
+> **tip**: `bigint`
+
+Defined in: [crypto/account-types.ts:53](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L53)
+
+Optional tip for sequencer (usually 0)
+
+##### version
+
+> **version**: `3`
+
+Defined in: [crypto/account-types.ts:47](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L47)
+
+Transaction version (always 3 for V3)
+
+## Type Aliases
+
+### DataAvailabilityMode
+
+> **DataAvailabilityMode** = `0`
+
+Defined in: [crypto/account-types.ts:38](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L38)
+
+Data availability mode (currently always 0 - L1)
+
+***
+
+### SignatureArray
+
+> **SignatureArray** = `bigint`[]
+
+Defined in: [crypto/account-types.ts:275](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L275)
+
+Signature as array of bigints (for RPC submission)
+
+## Variables
+
+### DEFAULT\_RESOURCE\_BOUNDS
+
+> `const` **DEFAULT\_RESOURCE\_BOUNDS**: [`ResourceBoundsMapping`](#resourceboundsmapping)
+
+Defined in: [crypto/account-types.ts:298](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L298)
+
+Default resource bounds for estimation
+
+***
+
+### EXECUTE\_SELECTOR
+
+> `const` **EXECUTE\_SELECTOR**: [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/account-hash.ts:405](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-hash.ts#L405)
+
+Standard selectors (precomputed)
+
+***
+
+### Felt
+
+> `const` **Felt**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type) & `object` & `object`
+
+Defined in: [crypto/index.ts:325](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L325)
+
+#### Type Declaration
+
+##### decodeShortString()
+
+> **decodeShortString**: (`felt`) => `string`
+
+Decode a short string from felt
+
+###### Parameters
+
+###### felt
+
+Felt value as bigint, hex string, or Felt252
+
+`string` | `bigint` | [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`string`
+
+Decoded ASCII string
+
+###### Example
+
+```ts
+decodeShortString(448378203247n) // 'hello'
+decodeShortString('0x68656c6c6f') // 'hello'
+```
+
+##### encodeShortString()
+
+> **encodeShortString**: (`str`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Encode a short string to Felt252
+
+Short strings are ASCII strings up to 31 characters that fit in a single felt252.
+Each character is encoded as its ASCII value.
+
+###### Parameters
+
+###### str
+
+`string`
+
+ASCII string (max 31 characters)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+Encoded value as Felt252Type
+
+###### Example
+
+```ts
+encodeShortString('hello') // Felt252(448378203247n)
+```
+
+##### encodeShortStringHex()
+
+> **encodeShortStringHex**: (`str`) => `string`
+
+Encode a short string to hex
+
+###### Parameters
+
+###### str
+
+`string`
+
+ASCII string (max 31 characters)
+
+###### Returns
+
+`string`
+
+Hex-encoded felt representation (unpadded)
+
+##### equals()
+
+> **equals**: (`a`, `b`) => `boolean`
+
+###### Parameters
+
+###### a
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### b
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`boolean`
+
+##### from()
+
+> **from**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### value
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### fromBigInt()
+
+> **fromBigInt**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### fromBytes()
+
+> **fromBytes**: (`bytes`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### bytes
+
+`Uint8Array`
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### fromHex()
+
+> **fromHex**: (`hex`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### hex
+
+`string`
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### isValid()
+
+> **isValid**: (`felt`) => `boolean`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`boolean`
+
+##### isZero()
+
+> **isZero**: (`felt`) => `boolean`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`boolean`
+
+##### MAX\_SHORT\_STRING\_LENGTH
+
+> **MAX\_SHORT\_STRING\_LENGTH**: `number`
+
+Maximum length for short strings (31 characters)
+Short strings are ASCII strings that fit in a single felt252
+
+##### ONE
+
+> **ONE**: [`Felt252Type`](index-1.mdx#felt252type) = `feltOne`
+
+##### PRIME
+
+> **PRIME**: `bigint` = `FIELD_PRIME`
+
+##### toBigInt()
+
+> **toBigInt**: (`felt`) => `bigint`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`bigint`
+
+##### toHex()
+
+> **toHex**: (`felt`) => `string`
+
+###### Parameters
+
+###### felt
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+###### Returns
+
+`string`
+
+##### TWO
+
+> **TWO**: [`Felt252Type`](index-1.mdx#felt252type) = `feltTwo`
+
+##### ZERO
+
+> **ZERO**: [`Felt252Type`](index-1.mdx#felt252type) = `feltZero`
+
+#### Type Declaration
+
+##### add()
+
+> **add**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### div()
+
+> **div**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### inverse()
+
+> **inverse**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### mul()
+
+> **mul**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### neg()
+
+> **neg**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### pow()
+
+> **pow**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### sqrt()
+
+> **sqrt**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### sub()
+
+> **sub**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltAdd()
+
+> `const` **feltAdd**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:193](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L193)
+
+Add two felts (a + b mod P)
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltDiv()
+
+> `const` **feltDiv**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:217](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L217)
+
+Divide two felts (a / b mod P)
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltInverse()
+
+> `const` **feltInverse**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:233](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L233)
+
+Multiplicative inverse (1/a mod P)
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltMul()
+
+> `const` **feltMul**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:209](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L209)
+
+Multiply two felts (a * b mod P)
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltNeg()
+
+> `const` **feltNeg**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:225](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L225)
+
+Negate a felt (-a mod P)
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltPow()
+
+> `const` **feltPow**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:241](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L241)
+
+Power (base^exp mod P)
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltSqrt()
+
+> `const` **feltSqrt**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:249](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L249)
+
+Square root (returns sqrt if exists)
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### feltSub()
+
+> `const` **feltSub**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:201](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L201)
+
+Subtract two felts (a - b mod P)
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### getPublicKey()
+
+> `const` **getPublicKey**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:291](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L291)
+
+Get public key from private key
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### Pedersen
+
+> `const` **Pedersen**: `object`
+
+Defined in: [crypto/index.ts:309](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L309)
+
+#### Type Declaration
+
+##### hash()
+
+> `readonly` **hash**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type) = `pedersenHash`
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### pedersenHash()
+
+> `const` **pedersenHash**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:151](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L151)
+
+Pedersen hash of two felts
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### Poseidon
+
+> `const` **Poseidon**: `object`
+
+Defined in: [crypto/index.ts:313](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L313)
+
+#### Type Declaration
+
+##### hash()
+
+> `readonly` **hash**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type) = `poseidonHash`
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### hashMany()
+
+> `readonly` **hashMany**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type) = `poseidonHashMany`
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type)[]\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### poseidonHash()
+
+> `const` **poseidonHash**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:159](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L159)
+
+Poseidon hash of two felts
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### poseidonHashMany()
+
+> `const` **poseidonHashMany**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:167](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L167)
+
+Poseidon hash of multiple felts
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type)[]\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### recover()
+
+> `const` **recover**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:299](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L299)
+
+Recover public key from signature
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### sign()
+
+> `const` **sign**: (...`args`) => [`Signature`](#signature)
+
+Defined in: [crypto/index.ts:267](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L267)
+
+Sign a message with STARK curve ECDSA
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+[`Signature`](#signature)
+
+***
+
+### StarkCurve
+
+> `const` **StarkCurve**: `object`
+
+Defined in: [crypto/index.ts:345](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L345)
+
+#### Type Declaration
+
+##### getPublicKey()
+
+> **getPublicKey**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Get public key from private key
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### recover()
+
+> **recover**: (...`args`) => [`Felt252Type`](index-1.mdx#felt252type)
+
+Recover public key from signature
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+##### sign()
+
+> **sign**: (...`args`) => [`Signature`](#signature)
+
+Sign a message with STARK curve ECDSA
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+[`Signature`](#signature)
+
+##### verify()
+
+> **verify**: (...`args`) => `boolean`
+
+Verify a STARK curve ECDSA signature
+
+###### Parameters
+
+###### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type), [`Signature`](#signature)\]
+
+###### Returns
+
+`boolean`
+
+***
+
+### TRANSACTION\_HASH\_PREFIX
+
+> `const` **TRANSACTION\_HASH\_PREFIX**: `object`
+
+Defined in: [crypto/account-types.ts:308](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L308)
+
+Transaction hash prefix for different transaction types
+Used in Poseidon hash computation
+
+#### Type Declaration
+
+##### DECLARE
+
+> `readonly` **DECLARE**: `28258975365558885n` = `0x6465636c617265n`
+
+##### DEPLOY\_ACCOUNT
+
+> `readonly` **DEPLOY\_ACCOUNT**: `2036277798190617858034555652763252n` = `0x6465706c6f795f6163636f756e74n`
+
+##### INVOKE
+
+> `readonly` **INVOKE**: `115923154332517n` = `0x696e766f6b65n`
+
+***
+
+### TRANSACTION\_VERSION
+
+> `const` **TRANSACTION\_VERSION**: `object`
+
+Defined in: [crypto/account-types.ts:289](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L289)
+
+Transaction version constants
+
+#### Type Declaration
+
+##### V3
+
+> `readonly` **V3**: `3n` = `3n`
+
+##### V3\_QUERY
+
+> `readonly` **V3\_QUERY**: `340282366920938463463374607431768211459n` = `0x100000000000000000000000000000003n`
+
+***
+
+### verify()
+
+> `const` **verify**: (...`args`) => `boolean`
+
+Defined in: [crypto/index.ts:281](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L281)
+
+Verify a STARK curve ECDSA signature
+
+#### Parameters
+
+##### args
+
+...\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type), [`Signature`](#signature)\]
+
+#### Returns
+
+`boolean`
+
+## Functions
+
+### computeContractAddress()
+
+> **computeContractAddress**(`classHash`, `salt`, `constructorCalldata`, `deployerAddress`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/account-hash.ts:308](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-hash.ts#L308)
+
+Compute contract address for DEPLOY_ACCOUNT
+
+address = pedersen(
+  "STARKNET_CONTRACT_ADDRESS",
+  0, // deployer_address (0 for deploy_account)
+  salt,
+  class_hash,
+  pedersen(constructor_calldata)
+) mod 2^251
+
+Note: Uses Pedersen, not Poseidon (per spec)
+
+#### Parameters
+
+##### classHash
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+##### salt
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+##### constructorCalldata
+
+`bigint`[]
+
+##### deployerAddress
+
+[`Felt252Input`](index-1.mdx#felt252input) = `0n`
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### computeDeclareV3Hash()
+
+> **computeDeclareV3Hash**(`tx`, `chainId`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/account-hash.ts:214](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-hash.ts#L214)
+
+Compute transaction hash for DECLARE_V3
+
+Hash structure (Poseidon) per starknet-specs v0.10.0:
+[
+  "declare" prefix,
+  version,
+  sender_address,
+  h(tip, l1_gas_bounds, l2_gas_bounds),  // Note: L1_DATA omitted per starknet.js v6
+  h(paymaster_data),
+  chain_id,
+  nonce,
+  da_modes,
+  h(account_deployment_data),
+  class_hash,
+  compiled_class_hash
+]
+
+#### Parameters
+
+##### tx
+
+[`DeclareTransactionV3`](#declaretransactionv3)
+
+##### chainId
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### computeDeployAccountV3Hash()
+
+> **computeDeployAccountV3Hash**(`tx`, `contractAddress`, `chainId`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/account-hash.ts:263](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-hash.ts#L263)
+
+Compute transaction hash for DEPLOY_ACCOUNT_V3
+
+Hash structure (Poseidon) per starknet-specs v0.10.0:
+[
+  "deploy_account" prefix,
+  version,
+  contract_address (computed from class_hash, salt, constructor_calldata),
+  h(tip, l1_gas_bounds, l2_gas_bounds),  // Note: L1_DATA omitted per starknet.js v6
+  h(paymaster_data),
+  chain_id,
+  nonce,
+  da_modes,
+  h(constructor_calldata),
+  class_hash,
+  contract_address_salt
+]
+
+#### Parameters
+
+##### tx
+
+[`DeployAccountTransactionV3`](#deployaccounttransactionv3)
+
+##### contractAddress
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+##### chainId
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### computeInvokeV3Hash()
+
+> **computeInvokeV3Hash**(`tx`, `chainId`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/account-hash.ts:165](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-hash.ts#L165)
+
+Compute transaction hash for INVOKE_V3
+
+Hash structure (Poseidon) per starknet-specs v0.10.0:
+[
+  "invoke" prefix,
+  version,
+  sender_address,
+  h(tip, l1_gas_bounds, l2_gas_bounds),  // Note: L1_DATA omitted per starknet.js v6
+  h(paymaster_data),
+  chain_id,
+  nonce,
+  da_modes,
+  h(account_deployment_data),
+  h(calldata)
+]
+
+#### Parameters
+
+##### tx
+
+[`InvokeTransactionV3`](#invoketransactionv3)
+
+##### chainId
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### computeSelector()
+
+> **computeSelector**(`name`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/account-hash.ts:382](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-hash.ts#L382)
+
+Compute entry point selector from function name
+selector = starknet_keccak(name) mod 2^250
+
+For P0, uses precomputed values for known selectors.
+Custom selectors require snKeccak implementation (P1).
+
+#### Parameters
+
+##### name
+
+`string`
+
+Function name (e.g., "transfer", "__execute__")
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+Selector as Felt252
+
+#### Throws
+
+Error if selector not in KNOWN_SELECTORS and snKeccak not implemented
+
+***
+
+### encodeDAModes()
+
+> **encodeDAModes**(`nonceDAMode`, `feeDAMode`): `bigint`
+
+Defined in: [crypto/account-hash.ts:116](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-hash.ts#L116)
+
+Encode data availability modes into a single felt
+Layout per spec:
+  - bits 0-31: fee_data_availability_mode
+  - bits 32-63: nonce_data_availability_mode
+(both currently 0 for L1 mode)
+
+#### Parameters
+
+##### nonceDAMode
+
+`0`
+
+##### feeDAMode
+
+`0`
+
+#### Returns
+
+`bigint`
+
+***
+
+### hashCalldata()
+
+> **hashCalldata**(`calldata`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/account-hash.ts:138](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-hash.ts#L138)
+
+Hash calldata array using Poseidon
+Note: Empty arrays still go through poseidon (matching starknet.js behavior)
+
+#### Parameters
+
+##### calldata
+
+`bigint`[]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### hashTipAndResourceBounds()
+
+> **hashTipAndResourceBounds**(`tip`, `resourceBounds`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/account-hash.ts:89](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-hash.ts#L89)
+
+Hash tip and resource bounds together for V3 transactions
+Per starknet.js v6: h(tip, l1_gas_bounds, l2_gas_bounds)
+Note: L1_DATA is NOT included in the fee field hash per current implementations
+
+#### Parameters
+
+##### tip
+
+`bigint`
+
+Transaction tip
+
+##### resourceBounds
+
+[`ResourceBoundsMapping`](#resourceboundsmapping)
+
+Resource bounds mapping
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### hashTypedData()
+
+> **hashTypedData**(`typedData`, `accountAddress`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/signer.ts:54](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/signer.ts#L54)
+
+Compute typed data hash following SNIP-12
+
+hash = poseidon(prefix, domain_hash, account, message_hash)
+
+#### Parameters
+
+##### typedData
+
+[`TypedData`](#typeddata)
+
+##### accountAddress
+
+`string`
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)
+
+***
+
+### isNativeAvailable()
+
+> **isNativeAvailable**(): `boolean`
+
+Defined in: [crypto/index.ts:105](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L105)
+
+Check if native crypto is available
+
+#### Returns
+
+`boolean`
+
+***
+
+### isWasmAvailable()
+
+> **isWasmAvailable**(): `boolean`
+
+Defined in: [crypto/index.ts:112](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L112)
+
+Check if WASM crypto is available (file exists)
+
+#### Returns
+
+`boolean`
+
+***
+
+### isWasmLoaded()
+
+> **isWasmLoaded**(): `boolean`
+
+Defined in: [crypto/index.ts:120](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L120)
+
+Check if WASM crypto is loaded
+
+#### Returns
+
+`boolean`
+
+***
+
+### loadWasmCrypto()
+
+> **loadWasmCrypto**(): `Promise`\<`void`\>
+
+Defined in: [crypto/index.ts:128](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L128)
+
+Load WASM crypto module
+Call this before using crypto functions if native is not available.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### signatureToArray()
+
+> **signatureToArray**(`sig`): [`SignatureArray`](#signaturearray)
+
+Defined in: [crypto/account-types.ts:280](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/account-types.ts#L280)
+
+Convert Signature to array format
+
+#### Parameters
+
+##### sig
+
+[`Signature`](#signature)
+
+#### Returns
+
+[`SignatureArray`](#signaturearray)
+
+***
+
+### signRaw()
+
+> **signRaw**(`privateKey`, `hash`): [`Signature`](#signature)
+
+Defined in: [crypto/signer.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/signer.ts#L24)
+
+Sign a raw message hash with a private key.
+
+#### Parameters
+
+##### privateKey
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+##### hash
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+#### Returns
+
+[`Signature`](#signature)
+
+***
+
+### signTypedData()
+
+> **signTypedData**(`privateKey`, `typedData`, `accountAddress`): [`Signature`](#signature)
+
+Defined in: [crypto/signer.ts:31](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/signer.ts#L31)
+
+Sign typed data (SNIP-12 / EIP-712 style) with a private key.
+
+#### Parameters
+
+##### privateKey
+
+[`Felt252Input`](index-1.mdx#felt252input)
+
+##### typedData
+
+[`TypedData`](#typeddata)
+
+##### accountAddress
+
+`string`
+
+#### Returns
+
+[`Signature`](#signature)
+
+***
+
+### snKeccak()
+
+> **snKeccak**(`data`): [`Felt252Type`](index-1.mdx#felt252type)
+
+Defined in: [crypto/index.ts:177](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/crypto/index.ts#L177)
+
+sn_keccak - Truncated Keccak256 (first 250 bits)
+
+Computes keccak256(data) and masks to 250 bits for use as Starknet selector.
+
+#### Parameters
+
+##### data
+
+`string` | `Uint8Array`\<`ArrayBufferLike`\>
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)

@@ -1,0 +1,473 @@
+---
+title: "primitives/Uint256"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / primitives/Uint256
+
+# primitives/Uint256
+
+## Classes
+
+### Uint256NegativeError
+
+Defined in: [primitives/Uint256/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/errors.ts#L4)
+
+Error thrown when Uint256 value is negative
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint256NegativeError**(`value`): [`Uint256NegativeError`](#uint256negativeerror)
+
+Defined in: [primitives/Uint256/errors.ts:5](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/errors.ts#L5)
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+[`Uint256NegativeError`](#uint256negativeerror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint256NotIntegerError
+
+Defined in: [primitives/Uint256/errors.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/errors.ts#L24)
+
+Error thrown when number is not an integer
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint256NotIntegerError**(`value`): [`Uint256NotIntegerError`](#uint256notintegererror)
+
+Defined in: [primitives/Uint256/errors.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/errors.ts#L25)
+
+###### Parameters
+
+###### value
+
+`number`
+
+###### Returns
+
+[`Uint256NotIntegerError`](#uint256notintegererror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint256OverflowError
+
+Defined in: [primitives/Uint256/errors.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/errors.ts#L14)
+
+Error thrown when Uint256 value exceeds maximum
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint256OverflowError**(`value`): [`Uint256OverflowError`](#uint256overflowerror)
+
+Defined in: [primitives/Uint256/errors.ts:15](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/errors.ts#L15)
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+[`Uint256OverflowError`](#uint256overflowerror)
+
+###### Overrides
+
+`Error.constructor`
+
+## Variables
+
+### from()
+
+> `const` **from**: (`value`) => [`Uint256Type`](../index-1.mdx#uint256type) = `_from`
+
+Defined in: [primitives/Uint256/index.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/index.ts#L18)
+
+Create Uint256 from bigint, number, or string
+
+#### Parameters
+
+##### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+#### Returns
+
+[`Uint256Type`](../index-1.mdx#uint256type)
+
+Uint256 value
+
+#### Throws
+
+If number is not an integer
+
+#### Throws
+
+If value is negative
+
+#### Throws
+
+If value exceeds maximum
+
+***
+
+### fromFelts()
+
+> `const` **fromFelts**: (`low`, `high`) => [`Uint256Type`](../index-1.mdx#uint256type) = `_fromFelts`
+
+Defined in: [primitives/Uint256/index.ts:22](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/index.ts#L22)
+
+Create Uint256 from two Felt252 values [low, high]
+
+In Cairo, u256 is a struct: { low: u128, high: u128 }
+value = low + high * 2^128
+
+#### Parameters
+
+##### low
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Low 128 bits as Felt252
+
+##### high
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+High 128 bits as Felt252
+
+#### Returns
+
+[`Uint256Type`](../index-1.mdx#uint256type)
+
+Uint256 value
+
+***
+
+### LOW\_MASK
+
+> `const` **LOW\_MASK**: `bigint`
+
+Defined in: [primitives/Uint256/constants.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/constants.ts#L13)
+
+Mask for extracting low 128 bits
+
+***
+
+### MAX
+
+> `const` **MAX**: [`Uint256Type`](../index-1.mdx#uint256type)
+
+Defined in: [primitives/Uint256/constants.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/constants.ts#L7)
+
+Maximum Uint256 value: 2^256 - 1
+
+***
+
+### MIN
+
+> `const` **MIN**: [`Uint256Type`](../index-1.mdx#uint256type)
+
+Defined in: [primitives/Uint256/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/constants.ts#L4)
+
+Minimum Uint256 value: 0
+
+***
+
+### SIZE
+
+> `const` **SIZE**: `256` = `256`
+
+Defined in: [primitives/Uint256/constants.ts:10](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/constants.ts#L10)
+
+Size in bits
+
+***
+
+### toBigInt()
+
+> `const` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Defined in: [primitives/Uint256/index.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/index.ts#L20)
+
+Convert Uint256 to bigint
+
+#### Parameters
+
+##### uint
+
+[`Uint256Type`](../index-1.mdx#uint256type)
+
+Uint256 value
+
+#### Returns
+
+`bigint`
+
+bigint value
+
+***
+
+### toFelts()
+
+> `const` **toFelts**: (`uint`) => \[[`Felt252Type`](../index-1.mdx#felt252type), [`Felt252Type`](../index-1.mdx#felt252type)\] = `_toFelts`
+
+Defined in: [primitives/Uint256/index.ts:21](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/index.ts#L21)
+
+Convert Uint256 to two Felt252 values [low, high]
+
+CRITICAL: In Cairo, u256 is a struct with two u128 fields:
+  struct u256 { low: u128, high: u128 }
+
+Serialization format: [low, high]
+value = low + high * 2^128
+
+#### Parameters
+
+##### uint
+
+[`Uint256Type`](../index-1.mdx#uint256type)
+
+Uint256 value
+
+#### Returns
+
+\[[`Felt252Type`](../index-1.mdx#felt252type), [`Felt252Type`](../index-1.mdx#felt252type)\]
+
+Tuple of [low, high] Felt252 values
+
+***
+
+### toHex()
+
+> `const` **toHex**: (`uint`) => `string` = `_toHex`
+
+Defined in: [primitives/Uint256/index.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/index.ts#L19)
+
+Convert Uint256 to hex string
+
+#### Parameters
+
+##### uint
+
+[`Uint256Type`](../index-1.mdx#uint256type)
+
+Uint256 value
+
+#### Returns
+
+`string`
+
+hex string with 0x prefix
+
+***
+
+### Uint256
+
+> `const` **Uint256**: `object`
+
+Defined in: [primitives/Uint256/index.ts:30](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint256/index.ts#L30)
+
+Uint256 namespace with all functions
+
+IMPORTANT: Unlike other integer types, Uint256 uses `toFelts()` (plural)
+because Cairo serializes u256 as TWO felt252 values: [low, high]
+
+#### Type Declaration
+
+##### from()
+
+> `readonly` **from**: (`value`) => [`Uint256Type`](../index-1.mdx#uint256type) = `_from`
+
+Create Uint256 from bigint, number, or string
+
+###### Parameters
+
+###### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+###### Returns
+
+[`Uint256Type`](../index-1.mdx#uint256type)
+
+Uint256 value
+
+###### Throws
+
+If number is not an integer
+
+###### Throws
+
+If value is negative
+
+###### Throws
+
+If value exceeds maximum
+
+##### fromFelts()
+
+> `readonly` **fromFelts**: (`low`, `high`) => [`Uint256Type`](../index-1.mdx#uint256type) = `_fromFelts`
+
+Create Uint256 from two Felt252 values [low, high]
+
+In Cairo, u256 is a struct: { low: u128, high: u128 }
+value = low + high * 2^128
+
+###### Parameters
+
+###### low
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Low 128 bits as Felt252
+
+###### high
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+High 128 bits as Felt252
+
+###### Returns
+
+[`Uint256Type`](../index-1.mdx#uint256type)
+
+Uint256 value
+
+##### LOW\_MASK
+
+> **LOW\_MASK**: `bigint`
+
+Mask for extracting low 128 bits
+
+##### MAX
+
+> **MAX**: [`Uint256Type`](../index-1.mdx#uint256type)
+
+Maximum Uint256 value: 2^256 - 1
+
+##### MIN
+
+> **MIN**: [`Uint256Type`](../index-1.mdx#uint256type)
+
+Minimum Uint256 value: 0
+
+##### SIZE
+
+> **SIZE**: `256`
+
+Size in bits
+
+##### toBigInt()
+
+> `readonly` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Convert Uint256 to bigint
+
+###### Parameters
+
+###### uint
+
+[`Uint256Type`](../index-1.mdx#uint256type)
+
+Uint256 value
+
+###### Returns
+
+`bigint`
+
+bigint value
+
+##### toFelts()
+
+> `readonly` **toFelts**: (`uint`) => \[[`Felt252Type`](../index-1.mdx#felt252type), [`Felt252Type`](../index-1.mdx#felt252type)\] = `_toFelts`
+
+Convert Uint256 to two Felt252 values [low, high]
+
+CRITICAL: In Cairo, u256 is a struct with two u128 fields:
+  struct u256 { low: u128, high: u128 }
+
+Serialization format: [low, high]
+value = low + high * 2^128
+
+###### Parameters
+
+###### uint
+
+[`Uint256Type`](../index-1.mdx#uint256type)
+
+Uint256 value
+
+###### Returns
+
+\[[`Felt252Type`](../index-1.mdx#felt252type), [`Felt252Type`](../index-1.mdx#felt252type)\]
+
+Tuple of [low, high] Felt252 values
+
+##### toHex()
+
+> `readonly` **toHex**: (`uint`) => `string` = `_toHex`
+
+Convert Uint256 to hex string
+
+###### Parameters
+
+###### uint
+
+[`Uint256Type`](../index-1.mdx#uint256type)
+
+Uint256 value
+
+###### Returns
+
+`string`
+
+hex string with 0x prefix
+
+## References
+
+### Uint256Type
+
+Re-exports [Uint256Type](../index-1.mdx#uint256type)

@@ -1,0 +1,1195 @@
+---
+title: "transport"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](index.mdx) / transport
+
+# transport
+
+Starknet Transport Module
+
+Low-level JSON-RPC transports for HTTP, WebSocket, and fallback scenarios.
+Transports handle communication; providers handle the API layer.
+
+## Interfaces
+
+### EventTransport
+
+Defined in: [transport/types.ts:202](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L202)
+
+Transport with event emitter capabilities
+
+#### Extends
+
+- [`Transport`](#transport)
+
+#### Extended by
+
+- [`WebSocketTransport`](#websockettransport)
+
+#### Type Parameters
+
+##### TMessage
+
+`TMessage` = `unknown`
+
+Type of message payload (default: unknown for raw transport)
+
+#### Properties
+
+##### type
+
+> `readonly` **type**: `"http"` \| `"websocket"` \| `"fallback"` \| `"custom"`
+
+Defined in: [transport/types.ts:144](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L144)
+
+Transport type identifier
+
+###### Inherited from
+
+[`Transport`](#transport).[`type`](#type-1)
+
+#### Methods
+
+##### close()?
+
+> `optional` **close**(): `void` \| `Promise`\<`void`\>
+
+Defined in: [transport/types.ts:176](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L176)
+
+Close the transport connection (if applicable)
+
+###### Returns
+
+`void` \| `Promise`\<`void`\>
+
+###### Inherited from
+
+[`Transport`](#transport).[`close`](#close-2)
+
+##### off()
+
+> **off**\<`E`\>(`event`, `listener`): `this`
+
+Defined in: [transport/types.ts:210](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L210)
+
+Remove event listener
+
+###### Type Parameters
+
+###### E
+
+`E` *extends* keyof [`TransportEvents`](#transportevents)\<`TMessage`\>
+
+###### Parameters
+
+###### event
+
+`E`
+
+###### listener
+
+(...`args`) => `void`
+
+###### Returns
+
+`this`
+
+##### on()
+
+> **on**\<`E`\>(`event`, `listener`): `this`
+
+Defined in: [transport/types.ts:204](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L204)
+
+Listen for transport events
+
+###### Type Parameters
+
+###### E
+
+`E` *extends* keyof [`TransportEvents`](#transportevents)\<`TMessage`\>
+
+###### Parameters
+
+###### event
+
+`E`
+
+###### listener
+
+(...`args`) => `void`
+
+###### Returns
+
+`this`
+
+##### request()
+
+> **request**\<`T`\>(`request`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>\>
+
+Defined in: [transport/types.ts:153](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L153)
+
+Send a single JSON-RPC request
+
+###### Type Parameters
+
+###### T
+
+`T` = `unknown`
+
+###### Parameters
+
+###### request
+
+[`JsonRpcRequest`](#jsonrpcrequest)
+
+JSON-RPC request object
+
+###### options?
+
+[`TransportRequestOptions`](#transportrequestoptions)
+
+Optional request configuration
+
+###### Returns
+
+`Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>\>
+
+JSON-RPC response
+
+###### Inherited from
+
+[`Transport`](#transport).[`request`](#request-2)
+
+##### requestBatch()
+
+> **requestBatch**\<`T`\>(`requests`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]\>
+
+Defined in: [transport/types.ts:168](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L168)
+
+Send a batch of JSON-RPC requests
+
+Responses are matched to requests by id.
+Order of responses may differ from request order (per JSON-RPC 2.0 spec).
+
+###### Type Parameters
+
+###### T
+
+`T` = `unknown`
+
+###### Parameters
+
+###### requests
+
+[`JsonRpcRequest`](#jsonrpcrequest)[]
+
+Array of JSON-RPC requests
+
+###### options?
+
+[`TransportRequestOptions`](#transportrequestoptions)
+
+Optional request configuration
+
+###### Returns
+
+`Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]\>
+
+Array of JSON-RPC responses (matched by id)
+
+###### Inherited from
+
+[`Transport`](#transport).[`requestBatch`](#requestbatch-2)
+
+***
+
+### HttpTransportOptions
+
+Defined in: [transport/http.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/http.ts#L24)
+
+HTTP transport configuration
+
+#### Properties
+
+##### fetchOptions?
+
+> `optional` **fetchOptions**: `RequestInit`
+
+Defined in: [transport/http.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/http.ts#L26)
+
+Custom fetch options (headers, credentials, etc.)
+
+##### timeout?
+
+> `optional` **timeout**: `number`
+
+Defined in: [transport/http.ts:28](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/http.ts#L28)
+
+Request timeout in ms (default: 30000)
+
+***
+
+### JsonRpcError
+
+Defined in: [transport/types.ts:40](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L40)
+
+JSON-RPC 2.0 error object
+
+#### Properties
+
+##### code
+
+> **code**: `number`
+
+Defined in: [transport/types.ts:42](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L42)
+
+Error code
+
+##### data?
+
+> `optional` **data**: `unknown`
+
+Defined in: [transport/types.ts:46](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L46)
+
+Optional error data
+
+##### message
+
+> **message**: `string`
+
+Defined in: [transport/types.ts:44](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L44)
+
+Human-readable error message
+
+***
+
+### JsonRpcErrorResponse
+
+Defined in: [transport/types.ts:52](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L52)
+
+JSON-RPC 2.0 error response
+
+#### Properties
+
+##### error
+
+> **error**: [`JsonRpcError`](#jsonrpcerror)
+
+Defined in: [transport/types.ts:58](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L58)
+
+Error object
+
+##### id
+
+> **id**: `string` \| `number` \| `null`
+
+Defined in: [transport/types.ts:56](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L56)
+
+Request identifier (matches request, null for parse errors)
+
+##### jsonrpc
+
+> **jsonrpc**: `"2.0"`
+
+Defined in: [transport/types.ts:54](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L54)
+
+JSON-RPC version
+
+***
+
+### JsonRpcRequest
+
+Defined in: [transport/types.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L14)
+
+JSON-RPC 2.0 request object
+
+#### Properties
+
+##### id?
+
+> `optional` **id**: `string` \| `number`
+
+Defined in: [transport/types.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L18)
+
+Request identifier (omit for notifications)
+
+##### jsonrpc
+
+> **jsonrpc**: `"2.0"`
+
+Defined in: [transport/types.ts:16](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L16)
+
+JSON-RPC version (always "2.0")
+
+##### method
+
+> **method**: `string`
+
+Defined in: [transport/types.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L20)
+
+Method name
+
+##### params?
+
+> `optional` **params**: `Record`\<`string`, `unknown`\> \| `unknown`[]
+
+Defined in: [transport/types.ts:22](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L22)
+
+Method parameters
+
+***
+
+### JsonRpcSuccessResponse
+
+Defined in: [transport/types.ts:28](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L28)
+
+JSON-RPC 2.0 success response
+
+#### Type Parameters
+
+##### T
+
+`T` = `unknown`
+
+#### Properties
+
+##### id
+
+> **id**: `string` \| `number` \| `null`
+
+Defined in: [transport/types.ts:32](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L32)
+
+Request identifier (matches request)
+
+##### jsonrpc
+
+> **jsonrpc**: `"2.0"`
+
+Defined in: [transport/types.ts:30](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L30)
+
+JSON-RPC version
+
+##### result
+
+> **result**: `T`
+
+Defined in: [transport/types.ts:34](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L34)
+
+Result data
+
+***
+
+### Transport
+
+Defined in: [transport/types.ts:142](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L142)
+
+Transport interface for JSON-RPC communication
+
+Transports handle the low-level communication (HTTP, WebSocket, etc.)
+while providers handle the higher-level API and result mapping.
+
+Key responsibilities:
+- Sending JSON-RPC requests
+- Handling batching (if supported)
+- Connection management
+
+#### Example
+
+```ts
+const transport = httpTransport('https://starknet.example.com');
+
+// Single request
+const response = await transport.request({
+  jsonrpc: '2.0',
+  id: 1,
+  method: 'starknet_blockNumber',
+  params: []
+});
+
+// Batch request (if supported)
+const responses = await transport.requestBatch([
+  { jsonrpc: '2.0', id: 1, method: 'starknet_blockNumber', params: [] },
+  { jsonrpc: '2.0', id: 2, method: 'starknet_chainId', params: [] }
+]);
+```
+
+#### Extended by
+
+- [`EventTransport`](#eventtransport)
+
+#### Properties
+
+##### type
+
+> `readonly` **type**: `"http"` \| `"websocket"` \| `"fallback"` \| `"custom"`
+
+Defined in: [transport/types.ts:144](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L144)
+
+Transport type identifier
+
+#### Methods
+
+##### close()?
+
+> `optional` **close**(): `void` \| `Promise`\<`void`\>
+
+Defined in: [transport/types.ts:176](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L176)
+
+Close the transport connection (if applicable)
+
+###### Returns
+
+`void` \| `Promise`\<`void`\>
+
+##### request()
+
+> **request**\<`T`\>(`request`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>\>
+
+Defined in: [transport/types.ts:153](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L153)
+
+Send a single JSON-RPC request
+
+###### Type Parameters
+
+###### T
+
+`T` = `unknown`
+
+###### Parameters
+
+###### request
+
+[`JsonRpcRequest`](#jsonrpcrequest)
+
+JSON-RPC request object
+
+###### options?
+
+[`TransportRequestOptions`](#transportrequestoptions)
+
+Optional request configuration
+
+###### Returns
+
+`Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>\>
+
+JSON-RPC response
+
+##### requestBatch()
+
+> **requestBatch**\<`T`\>(`requests`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]\>
+
+Defined in: [transport/types.ts:168](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L168)
+
+Send a batch of JSON-RPC requests
+
+Responses are matched to requests by id.
+Order of responses may differ from request order (per JSON-RPC 2.0 spec).
+
+###### Type Parameters
+
+###### T
+
+`T` = `unknown`
+
+###### Parameters
+
+###### requests
+
+[`JsonRpcRequest`](#jsonrpcrequest)[]
+
+Array of JSON-RPC requests
+
+###### options?
+
+[`TransportRequestOptions`](#transportrequestoptions)
+
+Optional request configuration
+
+###### Returns
+
+`Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]\>
+
+Array of JSON-RPC responses (matched by id)
+
+***
+
+### TransportConfig
+
+Defined in: [transport/types.ts:99](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L99)
+
+Transport configuration options
+
+#### Extended by
+
+- [`TransportRequestOptions`](#transportrequestoptions)
+
+#### Properties
+
+##### timeout?
+
+> `optional` **timeout**: `number`
+
+Defined in: [transport/types.ts:101](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L101)
+
+Request timeout in ms (default: 30000)
+
+***
+
+### TransportEvents
+
+Defined in: [transport/types.ts:186](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L186)
+
+Transport event types
+
+#### Type Parameters
+
+##### TMessage
+
+`TMessage` = `unknown`
+
+Type of message payload (default: unknown for raw transport)
+
+#### Properties
+
+##### connect
+
+> **connect**: \[\]
+
+Defined in: [transport/types.ts:188](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L188)
+
+Connection established
+
+##### disconnect
+
+> **disconnect**: \[`Error`\]
+
+Defined in: [transport/types.ts:190](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L190)
+
+Connection closed
+
+##### error
+
+> **error**: \[`Error`\]
+
+Defined in: [transport/types.ts:192](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L192)
+
+Error occurred
+
+##### message
+
+> **message**: \[`TMessage`\]
+
+Defined in: [transport/types.ts:194](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L194)
+
+Message received (for subscriptions)
+
+***
+
+### TransportRequestOptions
+
+Defined in: [transport/types.ts:107](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L107)
+
+Transport request options (per-request overrides)
+
+#### Extends
+
+- [`TransportConfig`](#transportconfig)
+
+#### Properties
+
+##### signal?
+
+> `optional` **signal**: `AbortSignal`
+
+Defined in: [transport/types.ts:109](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L109)
+
+Signal for request cancellation
+
+##### timeout?
+
+> `optional` **timeout**: `number`
+
+Defined in: [transport/types.ts:101](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L101)
+
+Request timeout in ms (default: 30000)
+
+###### Inherited from
+
+[`TransportConfig`](#transportconfig).[`timeout`](#timeout-1)
+
+***
+
+### WebSocketTransport
+
+Defined in: [transport/websocket.ts:412](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L412)
+
+WebSocket transport with additional connection methods
+
+#### Extends
+
+- [`EventTransport`](#eventtransport)
+
+#### Properties
+
+##### connected
+
+> `readonly` **connected**: `boolean`
+
+Defined in: [transport/websocket.ts:414](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L414)
+
+Whether the transport is currently connected
+
+##### type
+
+> `readonly` **type**: `"http"` \| `"websocket"` \| `"fallback"` \| `"custom"`
+
+Defined in: [transport/types.ts:144](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L144)
+
+Transport type identifier
+
+###### Inherited from
+
+[`EventTransport`](#eventtransport).[`type`](#type)
+
+#### Methods
+
+##### close()
+
+> **close**(): `void`
+
+Defined in: [transport/websocket.ts:420](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L420)
+
+Close the connection
+
+###### Returns
+
+`void`
+
+###### Overrides
+
+[`EventTransport`](#eventtransport).[`close`](#close)
+
+##### connect()
+
+> **connect**(): `Promise`\<`void`\>
+
+Defined in: [transport/websocket.ts:417](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L417)
+
+Connect to the WebSocket server
+
+###### Returns
+
+`Promise`\<`void`\>
+
+##### off()
+
+> **off**\<`E`\>(`event`, `listener`): `this`
+
+Defined in: [transport/types.ts:210](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L210)
+
+Remove event listener
+
+###### Type Parameters
+
+###### E
+
+`E` *extends* keyof [`TransportEvents`](#transportevents)\<`TMessage`\>
+
+###### Parameters
+
+###### event
+
+`E`
+
+###### listener
+
+(...`args`) => `void`
+
+###### Returns
+
+`this`
+
+###### Inherited from
+
+[`EventTransport`](#eventtransport).[`off`](#off)
+
+##### on()
+
+> **on**\<`E`\>(`event`, `listener`): `this`
+
+Defined in: [transport/types.ts:204](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L204)
+
+Listen for transport events
+
+###### Type Parameters
+
+###### E
+
+`E` *extends* keyof [`TransportEvents`](#transportevents)\<`TMessage`\>
+
+###### Parameters
+
+###### event
+
+`E`
+
+###### listener
+
+(...`args`) => `void`
+
+###### Returns
+
+`this`
+
+###### Inherited from
+
+[`EventTransport`](#eventtransport).[`on`](#on)
+
+##### request()
+
+> **request**\<`T`\>(`request`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>\>
+
+Defined in: [transport/types.ts:153](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L153)
+
+Send a single JSON-RPC request
+
+###### Type Parameters
+
+###### T
+
+`T` = `unknown`
+
+###### Parameters
+
+###### request
+
+[`JsonRpcRequest`](#jsonrpcrequest)
+
+JSON-RPC request object
+
+###### options?
+
+[`TransportRequestOptions`](#transportrequestoptions)
+
+Optional request configuration
+
+###### Returns
+
+`Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>\>
+
+JSON-RPC response
+
+###### Inherited from
+
+[`EventTransport`](#eventtransport).[`request`](#request)
+
+##### requestBatch()
+
+> **requestBatch**\<`T`\>(`requests`, `options?`): `Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]\>
+
+Defined in: [transport/types.ts:168](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L168)
+
+Send a batch of JSON-RPC requests
+
+Responses are matched to requests by id.
+Order of responses may differ from request order (per JSON-RPC 2.0 spec).
+
+###### Type Parameters
+
+###### T
+
+`T` = `unknown`
+
+###### Parameters
+
+###### requests
+
+[`JsonRpcRequest`](#jsonrpcrequest)[]
+
+Array of JSON-RPC requests
+
+###### options?
+
+[`TransportRequestOptions`](#transportrequestoptions)
+
+Optional request configuration
+
+###### Returns
+
+`Promise`\<[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]\>
+
+Array of JSON-RPC responses (matched by id)
+
+###### Inherited from
+
+[`EventTransport`](#eventtransport).[`requestBatch`](#requestbatch)
+
+##### subscribe()
+
+> **subscribe**(`subscriptionId`, `callback`): `void`
+
+Defined in: [transport/websocket.ts:426](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L426)
+
+Register a subscription callback
+Called when subscription notification is received
+
+###### Parameters
+
+###### subscriptionId
+
+`string`
+
+###### callback
+
+(`data`) => `void`
+
+###### Returns
+
+`void`
+
+##### unsubscribe()
+
+> **unsubscribe**(`subscriptionId`, `callback?`): `void`
+
+Defined in: [transport/websocket.ts:431](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L431)
+
+Unregister a subscription callback
+
+###### Parameters
+
+###### subscriptionId
+
+`string`
+
+###### callback?
+
+(`data`) => `void`
+
+###### Returns
+
+`void`
+
+***
+
+### WebSocketTransportOptions
+
+Defined in: [transport/websocket.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L25)
+
+WebSocket transport configuration
+
+#### Extended by
+
+- [`WebSocketProviderOptions`](provider.mdx#websocketprovideroptions)
+
+#### Properties
+
+##### keepAlive?
+
+> `optional` **keepAlive**: `number`
+
+Defined in: [transport/websocket.ts:35](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L35)
+
+Keep-alive interval in ms, 0 = disabled (default: 30000)
+
+##### maxReconnectAttempts?
+
+> `optional` **maxReconnectAttempts**: `number`
+
+Defined in: [transport/websocket.ts:33](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L33)
+
+Max reconnect attempts, 0 = infinite (default: 0)
+
+##### protocols?
+
+> `optional` **protocols**: `string` \| `string`[]
+
+Defined in: [transport/websocket.ts:27](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L27)
+
+WebSocket protocols
+
+##### reconnect?
+
+> `optional` **reconnect**: `boolean`
+
+Defined in: [transport/websocket.ts:29](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L29)
+
+Auto-reconnect on disconnect (default: true)
+
+##### reconnectDelay?
+
+> `optional` **reconnectDelay**: `number`
+
+Defined in: [transport/websocket.ts:31](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L31)
+
+Reconnect delay in ms (default: 1000)
+
+##### timeout?
+
+> `optional` **timeout**: `number`
+
+Defined in: [transport/websocket.ts:37](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L37)
+
+Request timeout in ms (default: 30000)
+
+## Type Aliases
+
+### JsonRpcResponse
+
+> **JsonRpcResponse**\<`T`\> = [`JsonRpcSuccessResponse`](#jsonrpcsuccessresponse)\<`T`\> \| [`JsonRpcErrorResponse`](#jsonrpcerrorresponse)
+
+Defined in: [transport/types.ts:64](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L64)
+
+JSON-RPC 2.0 response (success or error)
+
+#### Type Parameters
+
+##### T
+
+`T` = `unknown`
+
+## Variables
+
+### JsonRpcErrorCode
+
+> `const` **JsonRpcErrorCode**: `object`
+
+Defined in: [transport/types.ts:79](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L79)
+
+#### Type Declaration
+
+##### InternalError
+
+> `readonly` **InternalError**: `-32603` = `-32603`
+
+Internal error
+
+##### InvalidParams
+
+> `readonly` **InvalidParams**: `-32602` = `-32602`
+
+Invalid params
+
+##### InvalidRequest
+
+> `readonly` **InvalidRequest**: `-32600` = `-32600`
+
+Invalid Request - JSON is not a valid Request object
+
+##### MethodNotFound
+
+> `readonly` **MethodNotFound**: `-32601` = `-32601`
+
+Method not found
+
+##### ParseError
+
+> `readonly` **ParseError**: `-32700` = `-32700`
+
+Parse error - Invalid JSON
+
+##### ServerError
+
+> `readonly` **ServerError**: `-32000` = `-32000`
+
+Server error (reserved range: -32000 to -32099)
+
+## Functions
+
+### createErrorResponse()
+
+> **createErrorResponse**(`id`, `code`, `message`, `data?`): [`JsonRpcErrorResponse`](#jsonrpcerrorresponse)
+
+Defined in: [transport/types.ts:242](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L242)
+
+Create a JSON-RPC error response
+
+#### Parameters
+
+##### id
+
+`string` | `number` | `null`
+
+##### code
+
+`number`
+
+##### message
+
+`string`
+
+##### data?
+
+`unknown`
+
+#### Returns
+
+[`JsonRpcErrorResponse`](#jsonrpcerrorresponse)
+
+***
+
+### createRequest()
+
+> **createRequest**(`method`, `params?`, `id?`): [`JsonRpcRequest`](#jsonrpcrequest)
+
+Defined in: [transport/types.ts:221](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L221)
+
+Create a JSON-RPC request object
+
+#### Parameters
+
+##### method
+
+`string`
+
+##### params?
+
+`unknown`[]
+
+##### id?
+
+`string` | `number`
+
+#### Returns
+
+[`JsonRpcRequest`](#jsonrpcrequest)
+
+***
+
+### httpTransport()
+
+> **httpTransport**(`url`, `options`): [`Transport`](#transport)
+
+Defined in: [transport/http.ts:41](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/http.ts#L41)
+
+Create an HTTP transport for JSON-RPC communication
+
+#### Parameters
+
+##### url
+
+`string`
+
+##### options
+
+[`HttpTransportOptions`](#httptransportoptions) = `{}`
+
+#### Returns
+
+[`Transport`](#transport)
+
+#### Example
+
+```ts
+const transport = httpTransport('https://starknet.example.com');
+```
+
+***
+
+### isJsonRpcError()
+
+> **isJsonRpcError**\<`T`\>(`response`): `response is JsonRpcErrorResponse`
+
+Defined in: [transport/types.ts:71](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L71)
+
+Check if response is an error response
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Parameters
+
+##### response
+
+[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>
+
+#### Returns
+
+`response is JsonRpcErrorResponse`
+
+***
+
+### matchBatchResponses()
+
+> **matchBatchResponses**\<`T`\>(`requests`, `responses`): [`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]
+
+Defined in: [transport/types.ts:265](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/types.ts#L265)
+
+Match batch responses to requests by id
+
+JSON-RPC 2.0 spec allows responses in any order for batch requests.
+This function reorders responses to match request order.
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Parameters
+
+##### requests
+
+[`JsonRpcRequest`](#jsonrpcrequest)[]
+
+##### responses
+
+[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]
+
+#### Returns
+
+[`JsonRpcResponse`](#jsonrpcresponse)\<`T`\>[]
+
+***
+
+### webSocketTransport()
+
+> **webSocketTransport**(`url`, `options`): [`WebSocketTransport`](#websockettransport)
+
+Defined in: [transport/websocket.ts:77](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/transport/websocket.ts#L77)
+
+Create a WebSocket transport for JSON-RPC communication
+
+Features:
+- Automatic reconnection with configurable backoff
+- Keep-alive ping
+- Subscription message handling
+- Event emitter for connect/disconnect/error/message
+
+#### Parameters
+
+##### url
+
+`string`
+
+##### options
+
+[`WebSocketTransportOptions`](#websockettransportoptions) = `{}`
+
+#### Returns
+
+[`WebSocketTransport`](#websockettransport)
+
+#### Example
+
+```ts
+const transport = webSocketTransport('wss://starknet.example.com', {
+  reconnect: true,
+  keepAlive: 30000
+});
+
+await transport.connect();
+
+transport.on('message', (data) => {
+  console.log('Subscription message:', data);
+});
+```

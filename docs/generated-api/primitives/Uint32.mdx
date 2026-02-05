@@ -1,0 +1,380 @@
+---
+title: "primitives/Uint32"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / primitives/Uint32
+
+# primitives/Uint32
+
+## Classes
+
+### Uint32NegativeError
+
+Defined in: [primitives/Uint32/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/errors.ts#L4)
+
+Error thrown when Uint32 value is negative
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint32NegativeError**(`value`): [`Uint32NegativeError`](#uint32negativeerror)
+
+Defined in: [primitives/Uint32/errors.ts:5](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/errors.ts#L5)
+
+###### Parameters
+
+###### value
+
+`number` | `bigint`
+
+###### Returns
+
+[`Uint32NegativeError`](#uint32negativeerror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint32NotIntegerError
+
+Defined in: [primitives/Uint32/errors.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/errors.ts#L24)
+
+Error thrown when Uint32 value is not an integer
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint32NotIntegerError**(`value`): [`Uint32NotIntegerError`](#uint32notintegererror)
+
+Defined in: [primitives/Uint32/errors.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/errors.ts#L25)
+
+###### Parameters
+
+###### value
+
+`number`
+
+###### Returns
+
+[`Uint32NotIntegerError`](#uint32notintegererror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint32OverflowError
+
+Defined in: [primitives/Uint32/errors.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/errors.ts#L14)
+
+Error thrown when Uint32 value exceeds maximum (4294967295)
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint32OverflowError**(`value`): [`Uint32OverflowError`](#uint32overflowerror)
+
+Defined in: [primitives/Uint32/errors.ts:15](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/errors.ts#L15)
+
+###### Parameters
+
+###### value
+
+`number` | `bigint`
+
+###### Returns
+
+[`Uint32OverflowError`](#uint32overflowerror)
+
+###### Overrides
+
+`Error.constructor`
+
+## Variables
+
+### from()
+
+> `const` **from**: (`value`) => [`Uint32Type`](../index-1.mdx#uint32type) = `_from`
+
+Defined in: [primitives/Uint32/index.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/index.ts#L18)
+
+Create Uint32 from bigint, number, or string
+
+#### Parameters
+
+##### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+#### Returns
+
+[`Uint32Type`](../index-1.mdx#uint32type)
+
+Uint32 value
+
+#### Throws
+
+If number is not an integer
+
+#### Throws
+
+If value is negative
+
+#### Throws
+
+If value exceeds maximum
+
+***
+
+### MAX
+
+> `const` **MAX**: [`Uint32Type`](../index-1.mdx#uint32type)
+
+Defined in: [primitives/Uint32/constants.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/constants.ts#L7)
+
+Maximum Uint32 value: 2^32 - 1 = 4294967295
+
+***
+
+### MIN
+
+> `const` **MIN**: [`Uint32Type`](../index-1.mdx#uint32type)
+
+Defined in: [primitives/Uint32/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/constants.ts#L4)
+
+Minimum Uint32 value: 0
+
+***
+
+### SIZE
+
+> `const` **SIZE**: `32` = `32`
+
+Defined in: [primitives/Uint32/constants.ts:10](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/constants.ts#L10)
+
+Size in bits
+
+***
+
+### toBigInt()
+
+> `const` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Defined in: [primitives/Uint32/index.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/index.ts#L20)
+
+Convert Uint32 to bigint
+
+#### Parameters
+
+##### uint
+
+[`Uint32Type`](../index-1.mdx#uint32type)
+
+Uint32 value
+
+#### Returns
+
+`bigint`
+
+BigInt value
+
+***
+
+### toFelt()
+
+> `const` **toFelt**: (`uint`) => [`Felt252Type`](../index-1.mdx#felt252type) = `_toFelt`
+
+Defined in: [primitives/Uint32/index.ts:21](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/index.ts#L21)
+
+Convert Uint32 to Felt252
+
+#### Parameters
+
+##### uint
+
+[`Uint32Type`](../index-1.mdx#uint32type)
+
+Uint32 value
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Felt252 value
+
+***
+
+### toHex()
+
+> `const` **toHex**: (`uint`) => `string` = `_toHex`
+
+Defined in: [primitives/Uint32/index.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/index.ts#L19)
+
+Convert Uint32 to hex string
+
+#### Parameters
+
+##### uint
+
+[`Uint32Type`](../index-1.mdx#uint32type)
+
+Uint32 value
+
+#### Returns
+
+`string`
+
+Hex string with 0x prefix
+
+***
+
+### Uint32
+
+> `const` **Uint32**: `object`
+
+Defined in: [primitives/Uint32/index.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint32/index.ts#L26)
+
+Uint32 namespace with all functions
+
+#### Type Declaration
+
+##### from()
+
+> `readonly` **from**: (`value`) => [`Uint32Type`](../index-1.mdx#uint32type) = `_from`
+
+Create Uint32 from bigint, number, or string
+
+###### Parameters
+
+###### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+###### Returns
+
+[`Uint32Type`](../index-1.mdx#uint32type)
+
+Uint32 value
+
+###### Throws
+
+If number is not an integer
+
+###### Throws
+
+If value is negative
+
+###### Throws
+
+If value exceeds maximum
+
+##### MAX
+
+> **MAX**: [`Uint32Type`](../index-1.mdx#uint32type)
+
+Maximum Uint32 value: 2^32 - 1 = 4294967295
+
+##### MIN
+
+> **MIN**: [`Uint32Type`](../index-1.mdx#uint32type)
+
+Minimum Uint32 value: 0
+
+##### SIZE
+
+> **SIZE**: `32`
+
+Size in bits
+
+##### toBigInt()
+
+> `readonly` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Convert Uint32 to bigint
+
+###### Parameters
+
+###### uint
+
+[`Uint32Type`](../index-1.mdx#uint32type)
+
+Uint32 value
+
+###### Returns
+
+`bigint`
+
+BigInt value
+
+##### toFelt()
+
+> `readonly` **toFelt**: (`uint`) => [`Felt252Type`](../index-1.mdx#felt252type) = `_toFelt`
+
+Convert Uint32 to Felt252
+
+###### Parameters
+
+###### uint
+
+[`Uint32Type`](../index-1.mdx#uint32type)
+
+Uint32 value
+
+###### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Felt252 value
+
+##### toHex()
+
+> `readonly` **toHex**: (`uint`) => `string` = `_toHex`
+
+Convert Uint32 to hex string
+
+###### Parameters
+
+###### uint
+
+[`Uint32Type`](../index-1.mdx#uint32type)
+
+Uint32 value
+
+###### Returns
+
+`string`
+
+Hex string with 0x prefix
+
+## References
+
+### Uint32Type
+
+Re-exports [Uint32Type](../index-1.mdx#uint32type)

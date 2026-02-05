@@ -161,6 +161,62 @@
               "guides/typescript-to-effect",
               "guides/comparisons"
             ]
+          },
+          {
+            "group": "Generated API",
+            "icon": "code",
+            "pages": [
+              "generated-api/abi",
+              "generated-api/crypto",
+              "generated-api/index",
+              "generated-api/index-1",
+              "generated-api/native",
+              "generated-api/primitives",
+              "generated-api/provider",
+              "generated-api/serde",
+              "generated-api/transport",
+              "generated-api/utils",
+              "generated-api/wasm",
+              "generated-api/wasm-loader",
+              {
+                "group": "Crypto",
+                "pages": [
+                  "generated-api/crypto/SNIP12",
+                  "generated-api/crypto/account",
+                  "generated-api/crypto/signer"
+                ]
+              },
+              {
+                "group": "Jsonrpc",
+                "pages": [
+                  "generated-api/jsonrpc/index",
+                  "generated-api/jsonrpc/namespaces/Rpc"
+                ]
+              },
+              {
+                "group": "Primitives",
+                "pages": [
+                  "generated-api/primitives/Address-1",
+                  "generated-api/primitives/ClassHash",
+                  "generated-api/primitives/ContractAddress",
+                  "generated-api/primitives/EthAddress",
+                  "generated-api/primitives/Felt252",
+                  "generated-api/primitives/Int128",
+                  "generated-api/primitives/Int16",
+                  "generated-api/primitives/Int32",
+                  "generated-api/primitives/Int64",
+                  "generated-api/primitives/Int8",
+                  "generated-api/primitives/ShortString",
+                  "generated-api/primitives/StorageKey",
+                  "generated-api/primitives/Uint128",
+                  "generated-api/primitives/Uint16",
+                  "generated-api/primitives/Uint256",
+                  "generated-api/primitives/Uint32",
+                  "generated-api/primitives/Uint64",
+                  "generated-api/primitives/Uint8"
+                ]
+              }
+            ]
           }
         ]
       }

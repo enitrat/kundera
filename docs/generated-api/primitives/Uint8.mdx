@@ -1,0 +1,380 @@
+---
+title: "primitives/Uint8"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / primitives/Uint8
+
+# primitives/Uint8
+
+## Classes
+
+### Uint8NegativeError
+
+Defined in: [primitives/Uint8/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/errors.ts#L4)
+
+Error thrown when Uint8 value is negative
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint8NegativeError**(`value`): [`Uint8NegativeError`](#uint8negativeerror)
+
+Defined in: [primitives/Uint8/errors.ts:5](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/errors.ts#L5)
+
+###### Parameters
+
+###### value
+
+`number` | `bigint`
+
+###### Returns
+
+[`Uint8NegativeError`](#uint8negativeerror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint8NotIntegerError
+
+Defined in: [primitives/Uint8/errors.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/errors.ts#L24)
+
+Error thrown when Uint8 value is not an integer
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint8NotIntegerError**(`value`): [`Uint8NotIntegerError`](#uint8notintegererror)
+
+Defined in: [primitives/Uint8/errors.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/errors.ts#L25)
+
+###### Parameters
+
+###### value
+
+`number`
+
+###### Returns
+
+[`Uint8NotIntegerError`](#uint8notintegererror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Uint8OverflowError
+
+Defined in: [primitives/Uint8/errors.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/errors.ts#L14)
+
+Error thrown when Uint8 value exceeds maximum (255)
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Uint8OverflowError**(`value`): [`Uint8OverflowError`](#uint8overflowerror)
+
+Defined in: [primitives/Uint8/errors.ts:15](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/errors.ts#L15)
+
+###### Parameters
+
+###### value
+
+`number` | `bigint`
+
+###### Returns
+
+[`Uint8OverflowError`](#uint8overflowerror)
+
+###### Overrides
+
+`Error.constructor`
+
+## Variables
+
+### from()
+
+> `const` **from**: (`value`) => [`Uint8Type`](../index-1.mdx#uint8type) = `_from`
+
+Defined in: [primitives/Uint8/index.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/index.ts#L18)
+
+Create Uint8 from bigint, number, or string
+
+#### Parameters
+
+##### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+#### Returns
+
+[`Uint8Type`](../index-1.mdx#uint8type)
+
+Uint8 value
+
+#### Throws
+
+If number is not an integer
+
+#### Throws
+
+If value is negative
+
+#### Throws
+
+If value exceeds maximum
+
+***
+
+### MAX
+
+> `const` **MAX**: [`Uint8Type`](../index-1.mdx#uint8type)
+
+Defined in: [primitives/Uint8/constants.ts:7](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/constants.ts#L7)
+
+Maximum Uint8 value: 2^8 - 1 = 255
+
+***
+
+### MIN
+
+> `const` **MIN**: [`Uint8Type`](../index-1.mdx#uint8type)
+
+Defined in: [primitives/Uint8/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/constants.ts#L4)
+
+Minimum Uint8 value: 0
+
+***
+
+### SIZE
+
+> `const` **SIZE**: `8` = `8`
+
+Defined in: [primitives/Uint8/constants.ts:10](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/constants.ts#L10)
+
+Size in bits
+
+***
+
+### toBigInt()
+
+> `const` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Defined in: [primitives/Uint8/index.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/index.ts#L20)
+
+Convert Uint8 to bigint
+
+#### Parameters
+
+##### uint
+
+[`Uint8Type`](../index-1.mdx#uint8type)
+
+Uint8 value
+
+#### Returns
+
+`bigint`
+
+BigInt value
+
+***
+
+### toFelt()
+
+> `const` **toFelt**: (`uint`) => [`Felt252Type`](../index-1.mdx#felt252type) = `_toFelt`
+
+Defined in: [primitives/Uint8/index.ts:21](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/index.ts#L21)
+
+Convert Uint8 to Felt252
+
+#### Parameters
+
+##### uint
+
+[`Uint8Type`](../index-1.mdx#uint8type)
+
+Uint8 value
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Felt252 value
+
+***
+
+### toHex()
+
+> `const` **toHex**: (`uint`) => `string` = `_toHex`
+
+Defined in: [primitives/Uint8/index.ts:19](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/index.ts#L19)
+
+Convert Uint8 to hex string
+
+#### Parameters
+
+##### uint
+
+[`Uint8Type`](../index-1.mdx#uint8type)
+
+Uint8 value
+
+#### Returns
+
+`string`
+
+Hex string with 0x prefix
+
+***
+
+### Uint8
+
+> `const` **Uint8**: `object`
+
+Defined in: [primitives/Uint8/index.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Uint8/index.ts#L26)
+
+Uint8 namespace with all functions
+
+#### Type Declaration
+
+##### from()
+
+> `readonly` **from**: (`value`) => [`Uint8Type`](../index-1.mdx#uint8type) = `_from`
+
+Create Uint8 from bigint, number, or string
+
+###### Parameters
+
+###### value
+
+bigint, number, or decimal/hex string
+
+`string` | `number` | `bigint`
+
+###### Returns
+
+[`Uint8Type`](../index-1.mdx#uint8type)
+
+Uint8 value
+
+###### Throws
+
+If number is not an integer
+
+###### Throws
+
+If value is negative
+
+###### Throws
+
+If value exceeds maximum
+
+##### MAX
+
+> **MAX**: [`Uint8Type`](../index-1.mdx#uint8type)
+
+Maximum Uint8 value: 2^8 - 1 = 255
+
+##### MIN
+
+> **MIN**: [`Uint8Type`](../index-1.mdx#uint8type)
+
+Minimum Uint8 value: 0
+
+##### SIZE
+
+> **SIZE**: `8`
+
+Size in bits
+
+##### toBigInt()
+
+> `readonly` **toBigInt**: (`uint`) => `bigint` = `_toBigInt`
+
+Convert Uint8 to bigint
+
+###### Parameters
+
+###### uint
+
+[`Uint8Type`](../index-1.mdx#uint8type)
+
+Uint8 value
+
+###### Returns
+
+`bigint`
+
+BigInt value
+
+##### toFelt()
+
+> `readonly` **toFelt**: (`uint`) => [`Felt252Type`](../index-1.mdx#felt252type) = `_toFelt`
+
+Convert Uint8 to Felt252
+
+###### Parameters
+
+###### uint
+
+[`Uint8Type`](../index-1.mdx#uint8type)
+
+Uint8 value
+
+###### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+Felt252 value
+
+##### toHex()
+
+> `readonly` **toHex**: (`uint`) => `string` = `_toHex`
+
+Convert Uint8 to hex string
+
+###### Parameters
+
+###### uint
+
+[`Uint8Type`](../index-1.mdx#uint8type)
+
+Uint8 value
+
+###### Returns
+
+`string`
+
+Hex string with 0x prefix
+
+## References
+
+### Uint8Type
+
+Re-exports [Uint8Type](../index-1.mdx#uint8type)

@@ -1,0 +1,290 @@
+---
+title: "primitives/Int128"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../index.mdx) / primitives/Int128
+
+# primitives/Int128
+
+## Classes
+
+### Int128ParseError
+
+Defined in: [primitives/Int128/errors.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/errors.ts#L12)
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new Int128ParseError**(`input`, `reason`): [`Int128ParseError`](#int128parseerror)
+
+Defined in: [primitives/Int128/errors.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/errors.ts#L13)
+
+###### Parameters
+
+###### input
+
+`string`
+
+###### reason
+
+`string`
+
+###### Returns
+
+[`Int128ParseError`](#int128parseerror)
+
+###### Overrides
+
+`Error.constructor`
+
+***
+
+### Int128RangeError
+
+Defined in: [primitives/Int128/errors.ts:3](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/errors.ts#L3)
+
+#### Extends
+
+- `RangeError`
+
+#### Constructors
+
+##### Constructor
+
+> **new Int128RangeError**(`value`): [`Int128RangeError`](#int128rangeerror)
+
+Defined in: [primitives/Int128/errors.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/errors.ts#L4)
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+[`Int128RangeError`](#int128rangeerror)
+
+###### Overrides
+
+`RangeError.constructor`
+
+## Variables
+
+### MAX
+
+> `const` **MAX**: `bigint`
+
+Defined in: [primitives/Int128/constants.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/constants.ts#L9)
+
+Maximum value for Int128: 2^127 - 1
+
+***
+
+### MIN
+
+> `const` **MIN**: `bigint`
+
+Defined in: [primitives/Int128/constants.ts:4](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/constants.ts#L4)
+
+Minimum value for Int128: -2^127
+
+***
+
+### PRIME
+
+> `const` **PRIME**: `bigint`
+
+Defined in: [primitives/Int128/constants.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/constants.ts#L20)
+
+Stark curve field prime: P = 2^251 + 17*2^192 + 1
+Used for Cairo field encoding of negative values.
+
+***
+
+### SIZE
+
+> `const` **SIZE**: `128` = `128`
+
+Defined in: [primitives/Int128/constants.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/constants.ts#L14)
+
+Bit size of Int128
+
+## Functions
+
+### from()
+
+> **from**(`value`): [`Int128Type`](../index-1.mdx#int128type)
+
+Defined in: [primitives/Int128/from.ts:13](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/from.ts#L13)
+
+Create an Int128 from various input types.
+
+#### Parameters
+
+##### value
+
+[`Int128Input`](../index-1.mdx#int128input)
+
+The value to convert (bigint, number, or string)
+
+#### Returns
+
+[`Int128Type`](../index-1.mdx#int128type)
+
+A branded Int128Type
+
+#### Throws
+
+Int128RangeError if value is outside [MIN, MAX]
+
+#### Throws
+
+Int128ParseError if string cannot be parsed
+
+***
+
+### fromFelt()
+
+> **fromFelt**(`felt`): [`Int128Type`](../index-1.mdx#int128type)
+
+Defined in: [primitives/Int128/fromFelt.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/fromFelt.ts#L20)
+
+Decode a Felt252 back to an Int128.
+
+CRITICAL: This reverses Cairo's field encoding.
+
+Cairo encodes negative values as PRIME + negative_value.
+To decode:
+- If value <= MAX, it's positive (or zero)
+- If value > MAX, it's a negative number: actual = value - PRIME
+
+#### Parameters
+
+##### felt
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The Felt252 to decode
+
+#### Returns
+
+[`Int128Type`](../index-1.mdx#int128type)
+
+The signed Int128 value
+
+#### Throws
+
+Int128RangeError if the decoded value is outside Int128 range
+
+***
+
+### toBigInt()
+
+> **toBigInt**(`value`): `bigint`
+
+Defined in: [primitives/Int128/toBigInt.ts:9](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/toBigInt.ts#L9)
+
+Convert an Int128 to its bigint value.
+
+#### Parameters
+
+##### value
+
+[`Int128Type`](../index-1.mdx#int128type)
+
+The Int128 to convert
+
+#### Returns
+
+`bigint`
+
+The signed bigint value
+
+***
+
+### toFelt()
+
+> **toFelt**(`value`): [`Felt252Type`](../index-1.mdx#felt252type)
+
+Defined in: [primitives/Int128/toFelt.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/toFelt.ts#L20)
+
+Convert an Int128 to a Felt252 using Cairo field encoding.
+
+CRITICAL: Cairo signed integer encoding is NOT two's complement!
+
+Cairo uses prime field arithmetic:
+- Positive values: stored directly (0 to MAX)
+- Negative values: stored as PRIME + negative_value
+
+This is because in modular arithmetic over the field,
+PRIME + x === x (mod PRIME), so PRIME - 1 represents -1.
+
+#### Parameters
+
+##### value
+
+[`Int128Type`](../index-1.mdx#int128type)
+
+The Int128 to convert
+
+#### Returns
+
+[`Felt252Type`](../index-1.mdx#felt252type)
+
+The Felt252 representation for Cairo
+
+***
+
+### toHex()
+
+> **toHex**(`value`): `string`
+
+Defined in: [primitives/Int128/toHex.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/primitives/Int128/toHex.ts#L12)
+
+Convert an Int128 to its hexadecimal string representation.
+
+For negative values, returns a string with a minus sign prefix
+followed by 0x and the absolute value in hex.
+
+#### Parameters
+
+##### value
+
+[`Int128Type`](../index-1.mdx#int128type)
+
+The Int128 to convert
+
+#### Returns
+
+`string`
+
+Hexadecimal string (e.g., "0xff" or "-0x1")
+
+## References
+
+### Int128
+
+Re-exports [Int128](../index-1.mdx#int128)
+
+***
+
+### Int128Input
+
+Re-exports [Int128Input](../index-1.mdx#int128input)
+
+***
+
+### Int128Type
+
+Re-exports [Int128Type](../index-1.mdx#int128type)

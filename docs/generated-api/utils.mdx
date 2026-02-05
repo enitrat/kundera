@@ -1,0 +1,1168 @@
+---
+title: "utils"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](index.mdx) / utils
+
+# utils
+
+Utilities
+
+Generic utilities for building robust Starknet applications.
+
+## Classes
+
+### AsyncQueue
+
+Defined in: [utils/batch.ts:137](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L137)
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+##### R
+
+`R`
+
+#### Constructors
+
+##### Constructor
+
+> **new AsyncQueue**\<`T`, `R`\>(`processFn`, `options`): [`AsyncQueue`](#asyncqueue)\<`T`, `R`\>
+
+Defined in: [utils/batch.ts:147](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L147)
+
+###### Parameters
+
+###### processFn
+
+(`item`) => `Promise`\<`R`\>
+
+###### options
+
+###### concurrency
+
+`number`
+
+###### Returns
+
+[`AsyncQueue`](#asyncqueue)\<`T`, `R`\>
+
+#### Methods
+
+##### activeCount()
+
+> **activeCount**(): `number`
+
+Defined in: [utils/batch.ts:187](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L187)
+
+###### Returns
+
+`number`
+
+##### add()
+
+> **add**(`item`): `Promise`\<`R`\>
+
+Defined in: [utils/batch.ts:152](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L152)
+
+###### Parameters
+
+###### item
+
+`T`
+
+###### Returns
+
+`Promise`\<`R`\>
+
+##### drain()
+
+> **drain**(): `Promise`\<`void`\>
+
+Defined in: [utils/batch.ts:191](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L191)
+
+###### Returns
+
+`Promise`\<`void`\>
+
+##### size()
+
+> **size**(): `number`
+
+Defined in: [utils/batch.ts:183](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L183)
+
+###### Returns
+
+`number`
+
+***
+
+### BatchQueue
+
+Defined in: [utils/batch.ts:11](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L11)
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+##### R
+
+`R`
+
+#### Constructors
+
+##### Constructor
+
+> **new BatchQueue**\<`T`, `R`\>(`options`): [`BatchQueue`](#batchqueue)\<`T`, `R`\>
+
+Defined in: [utils/batch.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L25)
+
+###### Parameters
+
+###### options
+
+[`BatchQueueOptions`](#batchqueueoptions)\<`T`, `R`\>
+
+###### Returns
+
+[`BatchQueue`](#batchqueue)\<`T`, `R`\>
+
+#### Methods
+
+##### add()
+
+> **add**(`item`): `Promise`\<`R`\>
+
+Defined in: [utils/batch.ts:32](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L32)
+
+###### Parameters
+
+###### item
+
+`T`
+
+###### Returns
+
+`Promise`\<`R`\>
+
+##### clear()
+
+> **clear**(): `void`
+
+Defined in: [utils/batch.ts:102](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L102)
+
+###### Returns
+
+`void`
+
+##### drain()
+
+> **drain**(): `Promise`\<`void`\>
+
+Defined in: [utils/batch.ts:115](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L115)
+
+###### Returns
+
+`Promise`\<`void`\>
+
+##### flush()
+
+> **flush**(): `Promise`\<`void`\>
+
+Defined in: [utils/batch.ts:56](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L56)
+
+###### Returns
+
+`Promise`\<`void`\>
+
+##### size()
+
+> **size**(): `number`
+
+Defined in: [utils/batch.ts:98](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L98)
+
+###### Returns
+
+`number`
+
+***
+
+### RateLimiter
+
+Defined in: [utils/rateLimit.ts:59](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/rateLimit.ts#L59)
+
+#### Constructors
+
+##### Constructor
+
+> **new RateLimiter**(`options`): [`RateLimiter`](#ratelimiter)
+
+Defined in: [utils/rateLimit.ts:72](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/rateLimit.ts#L72)
+
+###### Parameters
+
+###### options
+
+[`RateLimiterOptions`](#ratelimiteroptions)
+
+###### Returns
+
+[`RateLimiter`](#ratelimiter)
+
+#### Methods
+
+##### clearQueue()
+
+> **clearQueue**(): `void`
+
+Defined in: [utils/rateLimit.ts:173](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/rateLimit.ts#L173)
+
+###### Returns
+
+`void`
+
+##### execute()
+
+> **execute**\<`T`\>(`fn`): `Promise`\<`T`\>
+
+Defined in: [utils/rateLimit.ts:123](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/rateLimit.ts#L123)
+
+###### Type Parameters
+
+###### T
+
+`T`
+
+###### Parameters
+
+###### fn
+
+() => `Promise`\<`T`\>
+
+###### Returns
+
+`Promise`\<`T`\>
+
+##### getQueueLength()
+
+> **getQueueLength**(): `number`
+
+Defined in: [utils/rateLimit.ts:169](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/rateLimit.ts#L169)
+
+###### Returns
+
+`number`
+
+##### getTokens()
+
+> **getTokens**(): `number`
+
+Defined in: [utils/rateLimit.ts:164](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/rateLimit.ts#L164)
+
+###### Returns
+
+`number`
+
+##### wrap()
+
+> **wrap**\<`TArgs`, `TReturn`\>(`fn`): (...`args`) => `Promise`\<`TReturn`\>
+
+Defined in: [utils/rateLimit.ts:158](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/rateLimit.ts#L158)
+
+###### Type Parameters
+
+###### TArgs
+
+`TArgs` *extends* `unknown`[]
+
+###### TReturn
+
+`TReturn`
+
+###### Parameters
+
+###### fn
+
+(...`args`) => `Promise`\<`TReturn`\>
+
+###### Returns
+
+> (...`args`): `Promise`\<`TReturn`\>
+
+###### Parameters
+
+###### args
+
+...`TArgs`
+
+###### Returns
+
+`Promise`\<`TReturn`\>
+
+***
+
+### TimeoutError
+
+Defined in: [utils/timeout.ts:11](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/timeout.ts#L11)
+
+#### Extends
+
+- `Error`
+
+#### Constructors
+
+##### Constructor
+
+> **new TimeoutError**(`message`): [`TimeoutError`](#timeouterror)
+
+Defined in: [utils/timeout.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/timeout.ts#L12)
+
+###### Parameters
+
+###### message
+
+`string` = `'Operation timed out'`
+
+###### Returns
+
+[`TimeoutError`](#timeouterror)
+
+###### Overrides
+
+`Error.constructor`
+
+## Interfaces
+
+### BatchQueueOptions
+
+Defined in: [utils/types.ts:64](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L64)
+
+Batch queue configuration
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+##### R
+
+`R`
+
+#### Properties
+
+##### maxBatchSize
+
+> **maxBatchSize**: `number`
+
+Defined in: [utils/types.ts:66](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L66)
+
+Maximum batch size
+
+##### maxWaitTime
+
+> **maxWaitTime**: `number`
+
+Defined in: [utils/types.ts:68](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L68)
+
+Maximum wait time before flushing batch (ms)
+
+##### onError()?
+
+> `optional` **onError**: (`error`, `items`) => `void`
+
+Defined in: [utils/types.ts:72](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L72)
+
+Callback on batch processing error
+
+###### Parameters
+
+###### error
+
+`unknown`
+
+###### items
+
+`T`[]
+
+###### Returns
+
+`void`
+
+##### processBatch()
+
+> **processBatch**: (`items`) => `Promise`\<`R`[]\>
+
+Defined in: [utils/types.ts:70](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L70)
+
+Function to process a batch of items
+
+###### Parameters
+
+###### items
+
+`T`[]
+
+###### Returns
+
+`Promise`\<`R`[]\>
+
+***
+
+### PollOptions
+
+Defined in: [utils/types.ts:32](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L32)
+
+Polling configuration options
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Properties
+
+##### backoff?
+
+> `optional` **backoff**: `boolean`
+
+Defined in: [utils/types.ts:38](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L38)
+
+Use exponential backoff for polling intervals (default: false)
+
+##### backoffFactor?
+
+> `optional` **backoffFactor**: `number`
+
+Defined in: [utils/types.ts:40](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L40)
+
+Backoff factor when backoff enabled (default: 1.5)
+
+##### interval?
+
+> `optional` **interval**: `number`
+
+Defined in: [utils/types.ts:34](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L34)
+
+Polling interval in milliseconds (default: 1000)
+
+##### maxInterval?
+
+> `optional` **maxInterval**: `number`
+
+Defined in: [utils/types.ts:42](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L42)
+
+Maximum interval when using backoff (default: 10000)
+
+##### onPoll()?
+
+> `optional` **onPoll**: (`result`, `attempt`) => `void`
+
+Defined in: [utils/types.ts:46](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L46)
+
+Callback invoked on each poll attempt
+
+###### Parameters
+
+###### result
+
+`T`
+
+###### attempt
+
+`number`
+
+###### Returns
+
+`void`
+
+##### timeout?
+
+> `optional` **timeout**: `number`
+
+Defined in: [utils/types.ts:36](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L36)
+
+Maximum polling duration in milliseconds (default: 60000)
+
+##### validate()?
+
+> `optional` **validate**: (`result`) => `boolean`
+
+Defined in: [utils/types.ts:44](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L44)
+
+Predicate to determine if polling should continue
+
+###### Parameters
+
+###### result
+
+`T`
+
+###### Returns
+
+`boolean`
+
+***
+
+### RateLimiterOptions
+
+Defined in: [utils/types.ts:52](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L52)
+
+Rate limiter configuration
+
+#### Properties
+
+##### interval
+
+> **interval**: `number`
+
+Defined in: [utils/types.ts:56](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L56)
+
+Time interval in milliseconds
+
+##### maxRequests
+
+> **maxRequests**: `number`
+
+Defined in: [utils/types.ts:54](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L54)
+
+Maximum number of requests per interval
+
+##### strategy?
+
+> `optional` **strategy**: `"queue"` \| `"reject"` \| `"drop"`
+
+Defined in: [utils/types.ts:58](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L58)
+
+Queue strategy when limit exceeded (default: 'queue')
+
+***
+
+### RetryOptions
+
+Defined in: [utils/types.ts:12](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L12)
+
+Retry configuration options
+
+#### Properties
+
+##### factor?
+
+> `optional` **factor**: `number`
+
+Defined in: [utils/types.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L18)
+
+Exponential backoff factor (default: 2)
+
+##### initialDelay?
+
+> `optional` **initialDelay**: `number`
+
+Defined in: [utils/types.ts:16](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L16)
+
+Initial delay in milliseconds (default: 1000)
+
+##### jitter?
+
+> `optional` **jitter**: `boolean`
+
+Defined in: [utils/types.ts:22](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L22)
+
+Add random jitter to delays (default: true)
+
+##### maxDelay?
+
+> `optional` **maxDelay**: `number`
+
+Defined in: [utils/types.ts:20](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L20)
+
+Maximum delay cap in milliseconds (default: 30000)
+
+##### maxRetries?
+
+> `optional` **maxRetries**: `number`
+
+Defined in: [utils/types.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L14)
+
+Maximum number of retry attempts (default: 3)
+
+##### onRetry()?
+
+> `optional` **onRetry**: (`error`, `attempt`, `nextDelay`) => `void`
+
+Defined in: [utils/types.ts:26](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L26)
+
+Callback invoked on each retry attempt
+
+###### Parameters
+
+###### error
+
+`unknown`
+
+###### attempt
+
+`number`
+
+###### nextDelay
+
+`number`
+
+###### Returns
+
+`void`
+
+##### shouldRetry()?
+
+> `optional` **shouldRetry**: (`error`, `attempt`) => `boolean`
+
+Defined in: [utils/types.ts:24](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L24)
+
+Predicate to determine if error should be retried (default: always retry)
+
+###### Parameters
+
+###### error
+
+`unknown`
+
+###### attempt
+
+`number`
+
+###### Returns
+
+`boolean`
+
+***
+
+### TimeoutOptions
+
+Defined in: [utils/types.ts:78](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L78)
+
+Timeout options
+
+#### Properties
+
+##### message?
+
+> `optional` **message**: `string`
+
+Defined in: [utils/types.ts:82](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L82)
+
+Error message for timeout (default: "Operation timed out")
+
+##### ms
+
+> **ms**: `number`
+
+Defined in: [utils/types.ts:80](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L80)
+
+Timeout duration in milliseconds
+
+##### signal?
+
+> `optional` **signal**: `AbortSignal`
+
+Defined in: [utils/types.ts:84](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/types.ts#L84)
+
+Optional AbortController for cancellation
+
+## Functions
+
+### createBatchedFunction()
+
+> **createBatchedFunction**\<`T`, `R`\>(`fn`, `maxBatchSize`, `maxWaitTime`): (`item`) => `Promise`\<`R`\>
+
+Defined in: [utils/batch.ts:123](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/batch.ts#L123)
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+##### R
+
+`R`
+
+#### Parameters
+
+##### fn
+
+(`items`) => `Promise`\<`R`[]\>
+
+##### maxBatchSize
+
+`number`
+
+##### maxWaitTime
+
+`number`
+
+#### Returns
+
+> (`item`): `Promise`\<`R`\>
+
+##### Parameters
+
+###### item
+
+`T`
+
+##### Returns
+
+`Promise`\<`R`\>
+
+***
+
+### createDeferred()
+
+> **createDeferred**\<`T`\>(): `object`
+
+Defined in: [utils/timeout.ts:79](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/timeout.ts#L79)
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Returns
+
+`object`
+
+##### promise
+
+> **promise**: `Promise`\<`T`\>
+
+##### reject()
+
+> **reject**: (`error`) => `void`
+
+###### Parameters
+
+###### error
+
+`unknown`
+
+###### Returns
+
+`void`
+
+##### resolve()
+
+> **resolve**: (`value`) => `void`
+
+###### Parameters
+
+###### value
+
+`T`
+
+###### Returns
+
+`void`
+
+***
+
+### debounce()
+
+> **debounce**\<`TArgs`, `TReturn`\>(`fn`, `wait`): (...`args`) => `void` & `object`
+
+Defined in: [utils/rateLimit.ts:32](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/rateLimit.ts#L32)
+
+#### Type Parameters
+
+##### TArgs
+
+`TArgs` *extends* `unknown`[]
+
+##### TReturn
+
+`TReturn`
+
+#### Parameters
+
+##### fn
+
+(...`args`) => `TReturn`
+
+##### wait
+
+`number`
+
+#### Returns
+
+(...`args`) => `void` & `object`
+
+***
+
+### executeWithTimeout()
+
+> **executeWithTimeout**\<`T`\>(`fn`, `timeoutMs`, `maxRetries`): `Promise`\<`T`\>
+
+Defined in: [utils/timeout.ts:95](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/timeout.ts#L95)
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Parameters
+
+##### fn
+
+() => `Promise`\<`T`\>
+
+##### timeoutMs
+
+`number`
+
+##### maxRetries
+
+`number` = `0`
+
+#### Returns
+
+`Promise`\<`T`\>
+
+***
+
+### poll()
+
+> **poll**\<`T`\>(`fn`, `options`): `Promise`\<`T`\>
+
+Defined in: [utils/poll.ts:23](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/poll.ts#L23)
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Parameters
+
+##### fn
+
+() => `Promise`\<`T`\>
+
+##### options
+
+[`PollOptions`](#polloptions)\<`T`\> = `{}`
+
+#### Returns
+
+`Promise`\<`T`\>
+
+***
+
+### pollForReceipt()
+
+> **pollForReceipt**\<`TReceipt`\>(`txHash`, `getReceipt`, `options`): `Promise`\<`TReceipt`\>
+
+Defined in: [utils/poll.ts:84](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/poll.ts#L84)
+
+#### Type Parameters
+
+##### TReceipt
+
+`TReceipt`
+
+#### Parameters
+
+##### txHash
+
+`string`
+
+##### getReceipt
+
+(`hash`) => `Promise`\<`TReceipt` \| `null`\>
+
+##### options
+
+`Omit`\<[`PollOptions`](#polloptions)\<`TReceipt` \| `null`\>, `"validate"`\> = `{}`
+
+#### Returns
+
+`Promise`\<`TReceipt`\>
+
+***
+
+### pollUntil()
+
+> **pollUntil**\<`T`\>(`fn`, `predicate`, `options`): `Promise`\<`T`\>
+
+Defined in: [utils/poll.ts:73](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/poll.ts#L73)
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Parameters
+
+##### fn
+
+() => `Promise`\<`T`\>
+
+##### predicate
+
+(`result`) => `boolean`
+
+##### options
+
+`Omit`\<[`PollOptions`](#polloptions)\<`T`\>, `"validate"`\> = `{}`
+
+#### Returns
+
+`Promise`\<`T`\>
+
+***
+
+### pollWithBackoff()
+
+> **pollWithBackoff**\<`T`\>(`fn`, `options`): `Promise`\<`T`\>
+
+Defined in: [utils/poll.ts:99](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/poll.ts#L99)
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Parameters
+
+##### fn
+
+() => `Promise`\<`T`\>
+
+##### options
+
+[`PollOptions`](#polloptions)\<`T`\> = `{}`
+
+#### Returns
+
+`Promise`\<`T`\>
+
+***
+
+### retryWithBackoff()
+
+> **retryWithBackoff**\<`T`\>(`fn`, `options`): `Promise`\<`T`\>
+
+Defined in: [utils/retryWithBackoff.ts:38](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/retryWithBackoff.ts#L38)
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Parameters
+
+##### fn
+
+() => `Promise`\<`T`\>
+
+##### options
+
+[`RetryOptions`](#retryoptions) = `{}`
+
+#### Returns
+
+`Promise`\<`T`\>
+
+***
+
+### sleep()
+
+> **sleep**(`ms`, `signal?`): `Promise`\<`void`\>
+
+Defined in: [utils/timeout.ts:61](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/timeout.ts#L61)
+
+#### Parameters
+
+##### ms
+
+`number`
+
+##### signal?
+
+`AbortSignal`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### throttle()
+
+> **throttle**\<`TArgs`, `TReturn`\>(`fn`, `wait`): (...`args`) => `TReturn` \| `undefined`
+
+Defined in: [utils/rateLimit.ts:11](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/rateLimit.ts#L11)
+
+#### Type Parameters
+
+##### TArgs
+
+`TArgs` *extends* `unknown`[]
+
+##### TReturn
+
+`TReturn`
+
+#### Parameters
+
+##### fn
+
+(...`args`) => `TReturn`
+
+##### wait
+
+`number`
+
+#### Returns
+
+> (...`args`): `TReturn` \| `undefined`
+
+##### Parameters
+
+###### args
+
+...`TArgs`
+
+##### Returns
+
+`TReturn` \| `undefined`
+
+***
+
+### withRetry()
+
+> **withRetry**\<`TArgs`, `TReturn`\>(`fn`, `options`): (...`args`) => `Promise`\<`TReturn`\>
+
+Defined in: [utils/retryWithBackoff.ts:76](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/retryWithBackoff.ts#L76)
+
+#### Type Parameters
+
+##### TArgs
+
+`TArgs` *extends* `unknown`[]
+
+##### TReturn
+
+`TReturn`
+
+#### Parameters
+
+##### fn
+
+(...`args`) => `Promise`\<`TReturn`\>
+
+##### options
+
+[`RetryOptions`](#retryoptions) = `{}`
+
+#### Returns
+
+> (...`args`): `Promise`\<`TReturn`\>
+
+##### Parameters
+
+###### args
+
+...`TArgs`
+
+##### Returns
+
+`Promise`\<`TReturn`\>
+
+***
+
+### withTimeout()
+
+> **withTimeout**\<`T`\>(`promise`, `options`): `Promise`\<`T`\>
+
+Defined in: [utils/timeout.ts:18](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/timeout.ts#L18)
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Parameters
+
+##### promise
+
+`Promise`\<`T`\>
+
+##### options
+
+[`TimeoutOptions`](#timeoutoptions)
+
+#### Returns
+
+`Promise`\<`T`\>
+
+***
+
+### wrapWithTimeout()
+
+> **wrapWithTimeout**\<`TArgs`, `TReturn`\>(`fn`, `ms`, `message?`): (...`args`) => `Promise`\<`TReturn`\>
+
+Defined in: [utils/timeout.ts:47](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/utils/timeout.ts#L47)
+
+#### Type Parameters
+
+##### TArgs
+
+`TArgs` *extends* `unknown`[]
+
+##### TReturn
+
+`TReturn`
+
+#### Parameters
+
+##### fn
+
+(...`args`) => `Promise`\<`TReturn`\>
+
+##### ms
+
+`number`
+
+##### message?
+
+`string`
+
+#### Returns
+
+> (...`args`): `Promise`\<`TReturn`\>
+
+##### Parameters
+
+###### args
+
+...`TArgs`
+
+##### Returns
+
+`Promise`\<`TReturn`\>

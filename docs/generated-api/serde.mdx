@@ -1,0 +1,236 @@
+---
+title: "serde"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](index.mdx) / serde
+
+# serde
+
+## Variables
+
+### CairoSerde
+
+> `const` **CairoSerde**: `object`
+
+Defined in: [serde/index.ts:94](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/serde/index.ts#L94)
+
+#### Type Declaration
+
+##### deserializeArray()
+
+> **deserializeArray**: (`felts`, `offset`) => `object`
+
+Deserialize an array of felts (reads length prefix)
+
+###### Parameters
+
+###### felts
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+###### offset
+
+`number` = `0`
+
+###### Returns
+
+`object`
+
+###### array
+
+> **array**: [`Felt252Type`](index-1.mdx#felt252type)[]
+
+###### nextOffset
+
+> **nextOffset**: `number`
+
+##### deserializeU256()
+
+> **deserializeU256**: (`felts`) => `bigint`
+
+Deserialize two felts [low, high] to u256
+
+###### Parameters
+
+###### felts
+
+\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+###### Returns
+
+`bigint`
+
+##### serializeArray()
+
+> **serializeArray**: (`felts`) => [`Felt252Type`](index-1.mdx#felt252type)[]
+
+Serialize an array of felts (prepends length)
+
+###### Parameters
+
+###### felts
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+##### serializeByteArray()
+
+> **serializeByteArray**: (`data`) => [`Felt252Type`](index-1.mdx#felt252type)[]
+
+Serialize a ByteArray
+
+Cairo ByteArray format:
+[num_full_words, ...31-byte_chunks, pending_word, pending_word_len]
+
+###### Parameters
+
+###### data
+
+`Uint8Array`
+
+###### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+##### serializeU256()
+
+> **serializeU256**: (`value`) => \[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+Serialize a u256 as two felts [low, high]
+
+Cairo represents u256 as two u128 limbs in little-endian order.
+
+###### Parameters
+
+###### value
+
+`bigint`
+
+###### Returns
+
+\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+## Functions
+
+### deserializeArray()
+
+> **deserializeArray**(`felts`, `offset`): `object`
+
+Defined in: [serde/index.ts:41](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/serde/index.ts#L41)
+
+Deserialize an array of felts (reads length prefix)
+
+#### Parameters
+
+##### felts
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+##### offset
+
+`number` = `0`
+
+#### Returns
+
+`object`
+
+##### array
+
+> **array**: [`Felt252Type`](index-1.mdx#felt252type)[]
+
+##### nextOffset
+
+> **nextOffset**: `number`
+
+***
+
+### deserializeU256()
+
+> **deserializeU256**(`felts`): `bigint`
+
+Defined in: [serde/index.ts:25](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/serde/index.ts#L25)
+
+Deserialize two felts [low, high] to u256
+
+#### Parameters
+
+##### felts
+
+\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+#### Returns
+
+`bigint`
+
+***
+
+### serializeArray()
+
+> **serializeArray**(`felts`): [`Felt252Type`](index-1.mdx#felt252type)[]
+
+Defined in: [serde/index.ts:34](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/serde/index.ts#L34)
+
+Serialize an array of felts (prepends length)
+
+#### Parameters
+
+##### felts
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+***
+
+### serializeByteArray()
+
+> **serializeByteArray**(`data`): [`Felt252Type`](index-1.mdx#felt252type)[]
+
+Defined in: [serde/index.ts:60](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/serde/index.ts#L60)
+
+Serialize a ByteArray
+
+Cairo ByteArray format:
+[num_full_words, ...31-byte_chunks, pending_word, pending_word_len]
+
+#### Parameters
+
+##### data
+
+`Uint8Array`
+
+#### Returns
+
+[`Felt252Type`](index-1.mdx#felt252type)[]
+
+***
+
+### serializeU256()
+
+> **serializeU256**(`value`): \[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
+
+Defined in: [serde/index.ts:14](https://github.com/enitrat/kundera/blob/2127a2a91a73792ff92496a7d93a34f996c09df4/packages/kundera-ts/src/serde/index.ts#L14)
+
+Serialize a u256 as two felts [low, high]
+
+Cairo represents u256 as two u128 limbs in little-endian order.
+
+#### Parameters
+
+##### value
+
+`bigint`
+
+#### Returns
+
+\[[`Felt252Type`](index-1.mdx#felt252type), [`Felt252Type`](index-1.mdx#felt252type)\]
