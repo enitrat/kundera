@@ -131,10 +131,10 @@
     "build:wasm": "cargo build --release --target wasm32-wasip1 --manifest-path ../../Cargo.toml && node scripts/prepare-wasm.mjs",
     "package:native": "bun run ../../scripts/package-native.ts --out .",
     "typecheck": "tsc --noEmit",
-    "test": "bun run build:wasm && bun test",
-    "test:run": "bun run build:wasm && bun test",
-    "test:docs": "bun test docs",
-    "test:skills": "bun test docs/skills",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:docs": "vitest run docs",
+    "test:skills": "vitest run docs/skills",
     "test:rust": "cargo test --manifest-path ../../Cargo.toml",
     "lint": "biome check src/",
     "format": "biome format --write src/",
@@ -142,14 +142,13 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.0",
-    "@types/bun": "^1.1.17",
     "@types/ffi-napi": "^4.0.10",
     "@types/node": "^22.13.1",
     "@types/ref-napi": "^3.0.12",
     "starknet": "6.23.1",
     "tsup": "^8.0.0",
     "typescript": "^5.7.0",
-    "vitest": "^2.0.0"
+    "vitest": "^4.0.0"
   },
   "optionalDependencies": {
     "ffi-napi": "^4.0.3",

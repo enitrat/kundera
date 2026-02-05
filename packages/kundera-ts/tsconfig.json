@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM"],
-    "types": ["node", "bun"],
+    "types": ["node"],
     "strict": true,
     "allowJs": true,
     "checkJs": true,
@@ -31,9 +31,17 @@
     "baseUrl": ".",
     "paths": {
       "kundera": ["./src/index.ts"],
-      "kundera/*": ["./src/*/index.ts"]
+      "kundera/*": ["./src/*/index.ts"],
+      "@kundera-sn/kundera-ts": ["./src/index.ts"],
+      "@kundera-sn/kundera-ts/*": ["./src/*/index.ts"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.d.ts", "examples/**/*.ts"],
-  "exclude": ["node_modules", "dist", "types", "**/*.test.ts", "**/*.test-d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.d.ts", "examples/**/*.ts", "docs/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "types",
+    "src/**/*.test-d.ts",
+    "src/test-utils/**/*.ts",
+  ]
 }
