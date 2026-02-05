@@ -69,8 +69,9 @@ export {
 
 // ============ ECDSA ============
 
-export type { Signature } from './ecdsa.js';
-export { sign, verify, getPublicKey, recover } from './ecdsa.js';
+export { ECDSA } from './ECDSA/index.js';
+export { sign, verify, getPublicKey, recover } from './ECDSA/index.js';
+export type { Signature } from './ECDSA/index.js';
 
 // ============ Backend Status ============
 
