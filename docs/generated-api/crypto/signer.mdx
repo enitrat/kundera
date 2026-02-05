@@ -11,80 +11,20 @@ description: Auto-generated API documentation
 
 # crypto/signer
 
-## Functions
+## References
 
-### hashTypedData()
+### hashTypedData
 
-> **hashTypedData**(`typedData`, `accountAddress`): [`Felt252Type`](../index-1.mdx#felt252type)
-
-Defined in: [crypto/signer/hashTypedData.ts:25](https://github.com/enitrat/kundera/blob/d1552edc0369fe37f53eb0ec2cd0490df5b5e1e4/packages/kundera-ts/src/crypto/signer/hashTypedData.ts#L25)
-
-Compute typed data hash following SNIP-12
-
-hash = poseidon(prefix, domain_hash, account, message_hash)
-
-#### Parameters
-
-##### typedData
-
-[`TypedData`](../crypto.mdx#typeddata)
-
-##### accountAddress
-
-`string`
-
-#### Returns
-
-[`Felt252Type`](../index-1.mdx#felt252type)
+Re-exports [hashTypedData](../crypto.mdx#hashtypeddata)
 
 ***
 
-### signRaw()
+### signRaw
 
-> **signRaw**(`privateKey`, `hash`): `Signature`
-
-Defined in: [crypto/signer/signRaw.ts:13](https://github.com/enitrat/kundera/blob/d1552edc0369fe37f53eb0ec2cd0490df5b5e1e4/packages/kundera-ts/src/crypto/signer/signRaw.ts#L13)
-
-Sign a raw message hash with a private key.
-
-#### Parameters
-
-##### privateKey
-
-[`Felt252Input`](../index-1.mdx#felt252input)
-
-##### hash
-
-[`Felt252Input`](../index-1.mdx#felt252input)
-
-#### Returns
-
-`Signature`
+Re-exports [signRaw](../crypto.mdx#signraw)
 
 ***
 
-### signTypedData()
+### signTypedData
 
-> **signTypedData**(`privateKey`, `typedData`, `accountAddress`): `Signature`
-
-Defined in: [crypto/signer/signTypedData.ts:16](https://github.com/enitrat/kundera/blob/d1552edc0369fe37f53eb0ec2cd0490df5b5e1e4/packages/kundera-ts/src/crypto/signer/signTypedData.ts#L16)
-
-Sign typed data (SNIP-12 / EIP-712 style) with a private key.
-
-#### Parameters
-
-##### privateKey
-
-[`Felt252Input`](../index-1.mdx#felt252input)
-
-##### typedData
-
-[`TypedData`](../crypto.mdx#typeddata)
-
-##### accountAddress
-
-`string`
-
-#### Returns
-
-`Signature`
+Re-exports [signTypedData](../crypto.mdx#signtypeddata)

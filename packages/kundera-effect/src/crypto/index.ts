@@ -1,3 +1,4 @@
+import { Effect } from "effect";
 import {
   isNativeAvailable,
   isWasmAvailable,
@@ -62,7 +63,8 @@ import type {
 } from "@kundera-sn/kundera-ts/crypto";
 import type { Felt252Input, Felt252Type } from "@kundera-sn/kundera-ts/Felt252";
 import { tryCrypto, tryCryptoPromise } from "./utils.js";
-export { CryptoError } from "../errors.js";
+import { CryptoError } from "../errors.js";
+export { CryptoError };
 
 export type {
   Signature,
@@ -290,7 +292,10 @@ export const computeSelector = (name: string) =>
     computeSelectorBase(name)
   );
 
-export const signRaw = (privateKey: Felt252Type, hash: Felt252Type) =>
+export const signRaw = (
+  privateKey: Felt252Type,
+  hash: Felt252Type
+): Effect.Effect<Signature, CryptoError> =>
   tryCrypto(
     "signRaw",
     { privateKey, hash },
@@ -302,7 +307,7 @@ export const signTypedData = (
   privateKey: Felt252Type,
   typedData: TypedData,
   accountAddress: string
-) =>
+): Effect.Effect<Signature, CryptoError> =>
   tryCrypto(
     "signTypedData",
     { privateKey, typedData, accountAddress },

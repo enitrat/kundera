@@ -73,6 +73,10 @@ export { ECDSA } from './ECDSA/index.js';
 export { sign, verify, getPublicKey, recover } from './ECDSA/index.js';
 export type { Signature } from './ECDSA/index.js';
 
+// ============ Signer ============
+
+export { signRaw, signTypedData, hashTypedData } from './signer/index.js';
+
 // ============ Backend Status ============
 
 export {
