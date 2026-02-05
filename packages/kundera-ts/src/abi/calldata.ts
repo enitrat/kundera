@@ -5,7 +5,7 @@
  */
 
 import {
-  type Abi,
+  type AbiLike,
   type CairoValue,
   type DecodedStruct,
   type ParsedAbi,
@@ -24,7 +24,7 @@ import { encodeArgs, encodeArgsObject } from './encode.js';
 import { decodeArgs, decodeArgsObject, decodeOutputs, decodeOutputsObject } from './decode.js';
 
 function encodeCalldataInternal(
-  abi: Abi,
+  abi: AbiLike,
   fnName: string,
   args: CairoValue[] | Record<string, CairoValue>
 ): Result<bigint[]> {
@@ -52,12 +52,12 @@ function encodeCalldataInternal(
 
 // ============ ABI Caching ============
 
-const abiCache = new WeakMap<Abi, ParsedAbi>();
+const abiCache = new WeakMap<AbiLike, ParsedAbi>();
 
 /**
  * Get or create parsed ABI from cache
  */
-function getParsedAbi(abi: Abi): Result<ParsedAbi> {
+function getParsedAbi(abi: AbiLike): Result<ParsedAbi> {
   const cached = abiCache.get(abi);
   if (cached) {
     return ok(cached);
@@ -101,7 +101,12 @@ export function encodeCalldata<
   args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>
 ): Result<bigint[]>;
 export function encodeCalldata(
-  abi: Abi,
+  abi: AbiLike,
+  fnName: string,
+  args: CairoValue[] | Record<string, CairoValue>
+): Result<bigint[]>;
+export function encodeCalldata(
+  abi: AbiLike,
   fnName: string,
   args: CairoValue[] | Record<string, CairoValue>
 ): Result<bigint[]> {
@@ -117,7 +122,7 @@ export function encodeCalldata(
  * @returns Decoded values as array, or error
  */
 export function decodeCalldata(
-  abi: Abi,
+  abi: AbiLike,
   fnName: string,
   calldata: bigint[]
 ): Result<CairoValue[]> {
@@ -147,7 +152,7 @@ export function decodeCalldata(
  * @returns Decoded values as object with argument names, or error
  */
 export function decodeCalldataObject(
-  abi: Abi,
+  abi: AbiLike,
   fnName: string,
   calldata: bigint[]
 ): Result<DecodedStruct> {
@@ -185,7 +190,12 @@ export function decodeOutput<
   output: bigint[]
 ): Result<FunctionRet<TAbi, TFunctionName>>;
 export function decodeOutput(
-  abi: Abi,
+  abi: AbiLike,
+  fnName: string,
+  output: bigint[]
+): Result<CairoValue[]>;
+export function decodeOutput(
+  abi: AbiLike,
   fnName: string,
   output: bigint[]
 ): Result<CairoValue[]> {
@@ -223,7 +233,12 @@ export function decodeOutputObject<
   output: bigint[]
 ): Result<{ [key: string]: FunctionRet<TAbi, TFunctionName> }>;
 export function decodeOutputObject(
-  abi: Abi,
+  abi: AbiLike,
+  fnName: string,
+  output: bigint[]
+): Result<DecodedStruct>;
+export function decodeOutputObject(
+  abi: AbiLike,
   fnName: string,
   output: bigint[]
 ): Result<DecodedStruct> {
@@ -283,7 +298,12 @@ export function compileCalldata<
   args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>
 ): Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }>;
 export function compileCalldata(
-  abi: Abi,
+  abi: AbiLike,
+  fnName: string,
+  args: CairoValue[] | Record<string, CairoValue>
+): Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }>;
+export function compileCalldata(
+  abi: AbiLike,
   fnName: string,
   args: CairoValue[] | Record<string, CairoValue>
 ): Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }> {

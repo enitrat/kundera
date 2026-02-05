@@ -255,7 +255,7 @@ export function decodeEvent(
 
   // Decode based on event kind
   try {
-    if (event.entry.kind === 'struct' && event.entry.members) {
+    if (event.entry.kind === 'struct') {
       const args = decodeStructEvent(keys, data, event.entry.members, parsed);
       return ok({
         name: event.entry.name,
@@ -285,7 +285,7 @@ export function decodeEvent(
 function decodeStructEvent(
   keys: bigint[],
   data: bigint[],
-  members: AbiEventMember[],
+  members: readonly AbiEventMember[],
   abi: ParsedAbi
 ): DecodedStruct {
   const result: DecodedStruct = {};

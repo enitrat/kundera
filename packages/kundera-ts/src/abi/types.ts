@@ -113,8 +113,8 @@ export interface AbiMember {
 export interface AbiFunctionEntry {
   type: 'function';
   name: string;
-  inputs: AbiMember[];
-  outputs: AbiMember[];
+  inputs: readonly AbiMember[];
+  outputs: readonly AbiMember[];
   state_mutability: StateMutability;
 }
 
@@ -132,7 +132,7 @@ export interface AbiStructMember {
 export interface AbiStructEntry {
   type: 'struct';
   name: string;
-  members: AbiStructMember[];
+  members: readonly AbiStructMember[];
 }
 
 /**
@@ -149,7 +149,7 @@ export interface AbiEnumVariant {
 export interface AbiEnumEntry {
   type: 'enum';
   name: string;
-  variants: AbiEnumVariant[];
+  variants: readonly AbiEnumVariant[];
 }
 
 /**
@@ -162,15 +162,29 @@ export interface AbiEventMember {
 }
 
 /**
- * ABI event entry
+ * ABI event struct entry (discriminated by kind)
  */
-export interface AbiEventEntry {
+export interface AbiEventStructEntry {
   type: 'event';
   name: string;
-  kind: 'struct' | 'enum';
-  members?: AbiEventMember[];
-  variants?: AbiEnumVariant[];
+  kind: 'struct';
+  members: readonly AbiEventMember[];
 }
+
+/**
+ * ABI event enum entry (discriminated by kind)
+ */
+export interface AbiEventEnumEntry {
+  type: 'event';
+  name: string;
+  kind: 'enum';
+  variants: readonly AbiEventMember[];
+}
+
+/**
+ * ABI event entry (discriminated union matching kanabi)
+ */
+export type AbiEventEntry = AbiEventStructEntry | AbiEventEnumEntry;
 
 /**
  * ABI L1 handler entry
@@ -178,8 +192,8 @@ export interface AbiEventEntry {
 export interface AbiL1HandlerEntry {
   type: 'l1_handler';
   name: string;
-  inputs: AbiMember[];
-  outputs: AbiMember[];
+  inputs: readonly AbiMember[];
+  outputs: readonly AbiMember[];
   state_mutability: StateMutability;
 }
 
@@ -188,8 +202,8 @@ export interface AbiL1HandlerEntry {
  */
 export interface AbiConstructorEntry {
   type: 'constructor';
-  name: string;
-  inputs: AbiMember[];
+  name: 'constructor';
+  inputs: readonly AbiMember[];
 }
 
 /**
@@ -198,7 +212,7 @@ export interface AbiConstructorEntry {
 export interface AbiInterfaceEntry {
   type: 'interface';
   name: string;
-  items: AbiEntry[];
+  items: readonly AbiFunctionEntry[];
 }
 
 /**
@@ -218,7 +232,6 @@ export type AbiEntry =
   | AbiStructEntry
   | AbiEnumEntry
   | AbiEventEntry
-  | AbiL1HandlerEntry
   | AbiConstructorEntry
   | AbiInterfaceEntry
   | AbiImplEntry;
@@ -226,7 +239,22 @@ export type AbiEntry =
 /**
  * Full ABI (array of entries)
  */
-export type Abi = AbiEntry[];
+export type Abi = readonly AbiEntry[];
+
+/**
+ * Extended ABI entry set (includes Starknet-specific l1_handler)
+ */
+export type AbiExtendedEntry = AbiEntry | AbiL1HandlerEntry;
+
+/**
+ * Extended ABI (used when parsing or hashing artifacts that include l1_handler)
+ */
+export type AbiWithL1Handler = readonly AbiExtendedEntry[];
+
+/**
+ * Any ABI accepted by kundera internals
+ */
+export type AbiLike = Abi | AbiWithL1Handler;
 
 // ============ Parsed ABI ============
 
@@ -267,7 +295,7 @@ export interface IndexedEnum {
  */
 export interface ParsedAbi {
   /** Original ABI */
-  raw: Abi;
+  raw: AbiLike;
   /** Functions by name (overloads are indexed as name_0, name_1, etc.) */
   functions: Map<string, IndexedFunction>;
   /** Functions by selector hex */

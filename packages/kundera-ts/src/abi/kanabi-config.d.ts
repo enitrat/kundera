@@ -1,39 +1,60 @@
+/**
+ * Kanabi Type Configuration
+ *
+ * Module augmentation to customize abi-wan-kanabi's type mappings.
+ * Maps Cairo types to Kundera's branded primitive types.
+ *
+ * Supported keys (from kanabi's ResolvedConfig):
+ * - FeltType: felt252
+ * - AddressType: ContractAddress, EthAddress
+ * - ClassHashType: ClassHash
+ * - IntType: u8, u16, u32
+ * - BigIntType: u64, u128
+ * - U256Type: u256
+ *
+ * @see https://github.com/keep-starknet-strange/abi-wan-kanabi
+ */
 import type { Felt252Type } from '../primitives/Felt252/types.js';
 import type { ContractAddressType } from '../primitives/ContractAddress/types.js';
 import type { ClassHashType } from '../primitives/ClassHash/types.js';
-import type { Uint8Type } from '../primitives/Uint8/types.js';
-import type { Uint16Type } from '../primitives/Uint16/types.js';
-import type { Uint32Type } from '../primitives/Uint32/types.js';
-import type { Uint64Type } from '../primitives/Uint64/types.js';
-import type { Uint128Type } from '../primitives/Uint128/types.js';
 import type { Uint256Type } from '../primitives/Uint256/types.js';
-import type { Int8Type } from '../primitives/Int8/types.js';
-import type { Int16Type } from '../primitives/Int16/types.js';
-import type { Int32Type } from '../primitives/Int32/types.js';
-import type { Int64Type } from '../primitives/Int64/types.js';
-import type { Int128Type } from '../primitives/Int128/types.js';
 
 declare module 'abi-wan-kanabi' {
-  export interface Config {
+  export interface Config<OptionT = any, ResultT = any, ErrorT = any> {
+    /** Maps felt252 → Felt252Type */
+    FeltType: Felt252Type;
+    /** Maps ContractAddress, EthAddress → ContractAddressType */
+    AddressType: ContractAddressType;
+    /** Maps ClassHash → ClassHashType */
+    ClassHashType: ClassHashType;
+    /** Maps u8, u16, u32 → number (kanabi default) */
+    IntType: number;
+    /** Maps u64, u128 → bigint */
+    BigIntType: bigint;
+    /** Maps u256 → Uint256Type */
+    U256Type: Uint256Type;
+  }
+}
+
+declare module 'abi-wan-kanabi/dist/config' {
+  export interface Config<OptionT = any, ResultT = any, ErrorT = any> {
     FeltType: Felt252Type;
     AddressType: ContractAddressType;
     ClassHashType: ClassHashType;
+    IntType: number;
     BigIntType: bigint;
-
-    // Unsigned integer types
-    U8Type: Uint8Type;
-    U16Type: Uint16Type;
-    U32Type: Uint32Type;
-    U64Type: Uint64Type;
-    U128Type: Uint128Type;
     U256Type: Uint256Type;
+  }
+}
 
-    // Signed integer types
-    I8Type: Int8Type;
-    I16Type: Int16Type;
-    I32Type: Int32Type;
-    I64Type: Int64Type;
-    I128Type: Int128Type;
+declare module 'abi-wan-kanabi/config' {
+  export interface Config<OptionT = any, ResultT = any, ErrorT = any> {
+    FeltType: Felt252Type;
+    AddressType: ContractAddressType;
+    ClassHashType: ClassHashType;
+    IntType: number;
+    BigIntType: bigint;
+    U256Type: Uint256Type;
   }
 }
 

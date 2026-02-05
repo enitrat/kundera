@@ -12,7 +12,7 @@ import {
   type Felt252Type,
   encodeShortString as encodeShortStringPrimitive,
 } from '../primitives/index.js';
-import { type Result, ok, err, abiError, type Abi } from './types.js';
+import { type Result, ok, err, abiError, type AbiLike } from './types.js';
 
 // ============ Empty Array Hash Constant ============
 
@@ -76,7 +76,7 @@ export interface CompiledSierra {
   sierra_program_debug_info?: unknown;
   contract_class_version: string;
   entry_points_by_type: SierraEntryPoints;
-  abi: Abi | string;
+  abi: AbiLike | string;
 }
 
 /**
@@ -220,7 +220,7 @@ function hashBuiltins(builtins: string[]): bigint {
  * Hash ABI for Sierra class hash
  * ABI is formatted with proper spacing and hashed with keccak
  */
-function hashAbi(abi: Abi | string): bigint {
+function hashAbi(abi: AbiLike | string): bigint {
   const abiString = typeof abi === 'string' ? abi : stringify(abi);
   const formatted = formatSpaces(abiString);
   const hash = snKeccak(formatted);
@@ -412,18 +412,18 @@ export function compiledClassHashFromCasm(casm: CompiledSierraCasm): Result<stri
  * }
  * ```
  */
-export type AbiArtifact = CompiledSierra | { abi: Abi | string };
+export type AbiArtifact = CompiledSierra | { abi: AbiLike | string };
 
-export function extractAbi(artifact: AbiArtifact): Result<Abi> {
+export function extractAbi(artifact: AbiArtifact): Result<AbiLike> {
   try {
     // Check for Sierra artifact
     if (artifact && typeof artifact === 'object' && 'abi' in artifact) {
-      const abi = (artifact as { abi: Abi | string }).abi;
+      const abi = (artifact as { abi: AbiLike | string }).abi;
 
       // ABI might be a string (JSON) or already parsed
       if (typeof abi === 'string') {
         try {
-          return ok(JSON.parse(abi) as Abi);
+          return ok(JSON.parse(abi) as AbiLike);
         } catch {
           return err(abiError('INVALID_ABI', 'ABI string is not valid JSON'));
         }

@@ -6,7 +6,7 @@
 
 import { snKeccak } from '../crypto/index.js';
 import {
-  type Abi,
+  type AbiLike,
   type AbiFunctionEntry,
   type AbiEventEntry,
   type AbiConstructorEntry,
@@ -204,7 +204,7 @@ function getShortName(path: string): string {
 /**
  * Parse and index an ABI for efficient lookup
  */
-export function parseAbi(abi: Abi): Result<ParsedAbi> {
+export function parseAbi(abi: AbiLike): Result<ParsedAbi> {
   try {
     const functions = new Map<string, IndexedFunction>();
     const functionsBySelector = new Map<string, IndexedFunction>();

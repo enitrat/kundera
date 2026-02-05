@@ -4,7 +4,7 @@
  * Test vectors derived from starknet.js v6.23.1 for compatibility.
  */
 
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import '../test-utils/setupCrypto';
 import {
   parseAbi,
@@ -770,7 +770,7 @@ describeIfCrypto('Short String Encoding/Decoding', () => {
 
   it('decodes via high-level decodeOutput', () => {
     const nameEncoded = encodeShortString('my_token');
-    const result = decodeOutput(SHORTSTRING_ABI, 'get_name', [nameEncoded]);
+    const result = decodeOutput(SHORTSTRING_ABI, 'get_name', [nameEncoded.toBigInt()]);
     expect(result.error).toBeNull();
     expect(result.result).toEqual(['my_token']);
   });

@@ -346,7 +346,7 @@ function encodeEnum(
  * Encode function arguments to calldata
  */
 export function encodeArgs(
-  inputs: AbiMember[],
+  inputs: readonly AbiMember[],
   args: CairoValue[],
   abi: ParsedAbi
 ): Result<bigint[]> {
@@ -387,7 +387,7 @@ export function encodeArgs(
  * Encode arguments from an object (by name)
  */
 export function encodeArgsObject(
-  inputs: AbiMember[],
+  inputs: readonly AbiMember[],
   argsObj: Record<string, CairoValue>,
   abi: ParsedAbi
 ): Result<bigint[]> {

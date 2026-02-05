@@ -18,6 +18,7 @@
  * ```
  */
 
+/// <reference path="./kanabi-config.d.ts" />
 
 // Types
 export type {
@@ -27,11 +28,16 @@ export type {
   AbiErrorCode,
   // ABI types
   Abi,
+  AbiLike,
   AbiEntry,
+  AbiExtendedEntry,
+  AbiWithL1Handler,
   AbiFunctionEntry,
   AbiStructEntry,
   AbiEnumEntry,
   AbiEventEntry,
+  AbiEventStructEntry,
+  AbiEventEnumEntry,
   AbiL1HandlerEntry,
   AbiConstructorEntry,
   AbiInterfaceEntry,
@@ -62,17 +68,78 @@ export type {
 // Result helpers
 export { ok, err, abiError } from './types.js';
 
-// Type utilities for building typed contract wrappers (from abi-wan-kanabi)
-export type {
+import type {
   Abi as KanabiAbi,
   ExtractAbiFunctionNames,
   ExtractAbiFunction,
-  ExtractArgs,
-  FunctionRet,
-  FunctionArgs,
+  ExtractArgs as KanabiExtractArgs,
+  FunctionRet as KanabiFunctionRet,
+  StringToPrimitiveType as KanabiStringToPrimitiveType,
   ContractFunctions,
-  StringToPrimitiveType,
 } from 'abi-wan-kanabi/kanabi';
+import type { Felt252Type } from '../primitives/Felt252/types.js';
+import type { ContractAddressType } from '../primitives/ContractAddress/types.js';
+import type { EthAddressType } from '../primitives/EthAddress/types.js';
+import type { ClassHashType } from '../primitives/ClassHash/types.js';
+import type { Uint256Type } from '../primitives/Uint256/types.js';
+
+type MapAbiPrimitive<TAbi extends KanabiAbi, TType extends string> =
+  TType extends 'core::felt252' ? Felt252Type :
+  TType extends 'core::starknet::contract_address::ContractAddress' ? ContractAddressType :
+  TType extends 'core::starknet::eth_address::EthAddress' ? EthAddressType :
+  TType extends 'core::starknet::class_hash::ClassHash' ? ClassHashType :
+  TType extends 'core::integer::u256' ? Uint256Type :
+  KanabiStringToPrimitiveType<TAbi, TType>;
+
+type BuildArgs<
+  TAbi extends KanabiAbi,
+  TInputs extends readonly { type: string }[],
+  R extends unknown[] = []
+> = R['length'] extends TInputs['length']
+  ? R
+  : BuildArgs<
+      TAbi,
+      TInputs,
+      [...R, MapAbiPrimitive<TAbi, TInputs[R['length']]['type']>]
+    >;
+
+// Type utilities for building typed contract wrappers.
+export type {
+  KanabiAbi,
+  ExtractAbiFunctionNames,
+  ExtractAbiFunction,
+  ContractFunctions,
+};
+
+export type StringToPrimitiveType<TAbi extends KanabiAbi, T extends string> =
+  MapAbiPrimitive<TAbi, T>;
+
+export type ExtractArgs<
+  TAbi extends KanabiAbi,
+  TAbiFunction extends ExtractAbiFunction<TAbi, ExtractAbiFunctionNames<TAbi>>
+> = KanabiExtractArgs<TAbi, TAbiFunction>;
+
+export type FunctionRet<
+  TAbi extends KanabiAbi,
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+> = ExtractAbiFunction<TAbi, TFunctionName>['outputs'] extends readonly []
+  ? void
+  : ExtractAbiFunction<TAbi, TFunctionName>['outputs'][0] extends {
+        type: infer TType extends string;
+      }
+    ? MapAbiPrimitive<TAbi, TType>
+    : KanabiFunctionRet<TAbi, TFunctionName>;
+
+export type FunctionArgs<
+  TAbi extends KanabiAbi,
+  TFunctionName extends ExtractAbiFunctionNames<TAbi>
+> = ExtractAbiFunction<TAbi, TFunctionName>['inputs'] extends readonly []
+  ? []
+  : BuildArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>['inputs']> extends [
+        infer TSingle,
+      ]
+    ? TSingle
+    : BuildArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>['inputs']>;
 
 // Parsing
 export {

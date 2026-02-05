@@ -5,7 +5,7 @@
  * Source: https://github.com/starknet-io/starknet.js/blob/v6.23.1/__tests__/utils/classHash.test.ts
  */
 
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import '../test-utils/setupCrypto';
 import { encodeShortStringHex } from '../primitives/index.js';
 import {
@@ -314,7 +314,7 @@ describe('extractAbi', () => {
   });
 
   it('should error on non-array ABI', () => {
-    const artifact = { abi: { notAnArray: true } };
+    const artifact = { abi: { notAnArray: true } } as any;
     const result = extractAbi(artifact);
     expect(result.error).not.toBeNull();
     expect(result.error!.code).toBe('INVALID_ABI');

@@ -5,20 +5,31 @@
  * with abi-wan-kanabi for ABI encoding/decoding.
  */
 
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import '../test-utils/setupCrypto';
-import { parseAbi, encodeCalldata, decodeCalldata, decodeOutput, type Abi } from './index.js';
+import { encodeCalldata, decodeCalldata, decodeOutput, type Abi } from './index.js';
 import * as Uint8 from '../primitives/Uint8/index.js';
+import type { Uint8Type } from '../primitives/Uint8/index.js';
 import * as Uint16 from '../primitives/Uint16/index.js';
+import type { Uint16Type } from '../primitives/Uint16/index.js';
 import * as Uint32 from '../primitives/Uint32/index.js';
+import type { Uint32Type } from '../primitives/Uint32/index.js';
 import * as Uint64 from '../primitives/Uint64/index.js';
+import type { Uint64Type } from '../primitives/Uint64/index.js';
 import * as Uint128 from '../primitives/Uint128/index.js';
+import type { Uint128Type } from '../primitives/Uint128/index.js';
 import * as Uint256 from '../primitives/Uint256/index.js';
+import type { Uint256Type } from '../primitives/Uint256/index.js';
 import * as Int8 from '../primitives/Int8/index.js';
+import type { Int8Type } from '../primitives/Int8/index.js';
 import * as Int16 from '../primitives/Int16/index.js';
+import type { Int16Type } from '../primitives/Int16/index.js';
 import * as Int32 from '../primitives/Int32/index.js';
+import type { Int32Type } from '../primitives/Int32/index.js';
 import * as Int64 from '../primitives/Int64/index.js';
+import type { Int64Type } from '../primitives/Int64/index.js';
 import * as Int128 from '../primitives/Int128/index.js';
+import type { Int128Type } from '../primitives/Int128/index.js';
 
 const TEST_ABI: Abi = [
   {
@@ -94,18 +105,18 @@ describe('Integer Types - ABI Integration', () => {
     expect(decoded.result).toBeDefined();
 
     // Verify the values round-trip correctly
-    const [u8, u16, u32, u64, u128, u256, i8, i16, i32, i64, i128] = decoded.result!;
-    expect(Uint8.toBigInt(u8)).toBe(42n);
-    expect(Uint16.toBigInt(u16)).toBe(1000n);
-    expect(Uint32.toBigInt(u32)).toBe(100000n);
-    expect(Uint64.toBigInt(u64)).toBe(10000000000n);
-    expect(Uint128.toBigInt(u128)).toBe(1000000000000000n);
-    expect(Uint256.toBigInt(u256)).toBe(1000000000000000000n);
-    expect(Int8.toBigInt(i8)).toBe(-42n);
-    expect(Int16.toBigInt(i16)).toBe(-1000n);
-    expect(Int32.toBigInt(i32)).toBe(-100000n);
-    expect(Int64.toBigInt(i64)).toBe(-10000000000n);
-    expect(Int128.toBigInt(i128)).toBe(-1000000000n);
+    const values = decoded.result!;
+    expect(Uint8.toBigInt(values[0] as Uint8Type)).toBe(42n);
+    expect(Uint16.toBigInt(values[1] as Uint16Type)).toBe(1000n);
+    expect(Uint32.toBigInt(values[2] as Uint32Type)).toBe(100000n);
+    expect(Uint64.toBigInt(values[3] as Uint64Type)).toBe(10000000000n);
+    expect(Uint128.toBigInt(values[4] as Uint128Type)).toBe(1000000000000000n);
+    expect(Uint256.toBigInt(values[5] as Uint256Type)).toBe(1000000000000000000n);
+    expect(Int8.toBigInt(values[6] as Int8Type)).toBe(-42n);
+    expect(Int16.toBigInt(values[7] as Int16Type)).toBe(-1000n);
+    expect(Int32.toBigInt(values[8] as Int32Type)).toBe(-100000n);
+    expect(Int64.toBigInt(values[9] as Int64Type)).toBe(-10000000000n);
+    expect(Int128.toBigInt(values[10] as Int128Type)).toBe(-1000000000n);
   });
 
   it('should decode u256 output', () => {

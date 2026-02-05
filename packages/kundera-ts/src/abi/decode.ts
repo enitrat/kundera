@@ -302,7 +302,7 @@ function decodeEnum(
  */
 export function decodeOutputs(
   calldata: bigint[],
-  outputs: AbiMember[],
+  outputs: readonly AbiMember[],
   abi: ParsedAbi
 ): Result<CairoValue[]> {
   if (outputs.length === 0) {
@@ -333,7 +333,7 @@ export function decodeOutputs(
  */
 export function decodeOutputsObject(
   calldata: bigint[],
-  outputs: AbiMember[],
+  outputs: readonly AbiMember[],
   abi: ParsedAbi
 ): Result<DecodedStruct> {
   const decoded = decodeOutputs(calldata, outputs, abi);
@@ -356,7 +356,7 @@ export function decodeOutputsObject(
  */
 export function decodeArgs(
   calldata: bigint[],
-  inputs: AbiMember[],
+  inputs: readonly AbiMember[],
   abi: ParsedAbi
 ): Result<CairoValue[]> {
   if (inputs.length === 0) {
@@ -387,7 +387,7 @@ export function decodeArgs(
  */
 export function decodeArgsObject(
   calldata: bigint[],
-  inputs: AbiMember[],
+  inputs: readonly AbiMember[],
   abi: ParsedAbi
 ): Result<DecodedStruct> {
   const decoded = decodeArgs(calldata, inputs, abi);
