@@ -282,6 +282,33 @@ pub unsafe extern "C" fn starknet_poseidon_hash_many(
     StarkResult::Success
 }
 
+/// Standard Keccak256 hash of arbitrary data (full 32 bytes)
+///
+/// Returns the full 256-bit Keccak256 hash without any truncation.
+#[no_mangle]
+pub unsafe extern "C" fn keccak256(
+    data: *const u8,
+    len: usize,
+    out: *mut [u8; 32],
+) -> StarkResult {
+    if data.is_null() && len > 0 {
+        return StarkResult::InvalidInput;
+    }
+
+    let slice = if len > 0 {
+        std::slice::from_raw_parts(data, len)
+    } else {
+        &[]
+    };
+
+    let mut hasher = Keccak256::new();
+    hasher.update(slice);
+    let hash = hasher.finalize();
+
+    (*out).copy_from_slice(&hash);
+    StarkResult::Success
+}
+
 /// Keccak256 hash of arbitrary data, truncated to 250 bits (Starknet selector format)
 ///
 /// This is used for computing function/event selectors in Starknet.
@@ -720,7 +747,48 @@ mod tests {
     }
 
     #[test]
-    fn test_keccak256() {
+    fn test_keccak256_standard() {
+        let data = b"hello";
+        let mut out = [0u8; 32];
+
+        unsafe {
+            let result = keccak256(data.as_ptr(), data.len(), &mut out);
+            assert_eq!(result, StarkResult::Success);
+        }
+
+        // Known test vector: keccak256("hello")
+        // = 0x1c8aff950685c2ed4bc3174f3472287b56d9517b9c948127319a09a7a36deac8
+        let expected = [
+            0x1c, 0x8a, 0xff, 0x95, 0x06, 0x85, 0xc2, 0xed,
+            0x4b, 0xc3, 0x17, 0x4f, 0x34, 0x72, 0x28, 0x7b,
+            0x56, 0xd9, 0x51, 0x7b, 0x9c, 0x94, 0x81, 0x27,
+            0x31, 0x9a, 0x09, 0xa7, 0xa3, 0x6d, 0xea, 0xc8,
+        ];
+        assert_eq!(out, expected);
+    }
+
+    #[test]
+    fn test_keccak256_empty() {
+        let mut out = [0u8; 32];
+
+        unsafe {
+            let result = keccak256(std::ptr::null(), 0, &mut out);
+            assert_eq!(result, StarkResult::Success);
+        }
+
+        // Known test vector: keccak256("")
+        // = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470
+        let expected = [
+            0xc5, 0xd2, 0x46, 0x01, 0x86, 0xf7, 0x23, 0x3c,
+            0x92, 0x7e, 0x7d, 0xb2, 0xdc, 0xc7, 0x03, 0xc0,
+            0xe5, 0x00, 0xb6, 0x53, 0xca, 0x82, 0x27, 0x3b,
+            0x7b, 0xfa, 0xd8, 0x04, 0x5d, 0x85, 0xa4, 0x70,
+        ];
+        assert_eq!(out, expected);
+    }
+
+    #[test]
+    fn test_starknet_keccak256() {
         let data = b"transfer";
         let mut out = [0u8; 32];
 
@@ -737,7 +805,7 @@ mod tests {
     }
 
     #[test]
-    fn test_keccak256_empty() {
+    fn test_starknet_keccak256_empty() {
         let mut out = [0u8; 32];
 
         unsafe {

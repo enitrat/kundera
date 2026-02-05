@@ -105,6 +105,8 @@ function loadLibrary(): any {
     starknet_pedersen_hash: ['int32', ['pointer', 'pointer', 'pointer']],
     starknet_poseidon_hash: ['int32', ['pointer', 'pointer', 'pointer']],
     starknet_poseidon_hash_many: ['int32', ['pointer', 'uint64', 'pointer']],
+    keccak256: ['int32', ['pointer', 'uint64', 'pointer']],
+    starknet_keccak256: ['int32', ['pointer', 'uint64', 'pointer']],
     // ECDSA
     starknet_get_public_key: ['int32', ['pointer', 'pointer']],
     starknet_sign: ['int32', ['pointer', 'pointer', 'pointer', 'pointer']],
@@ -248,6 +250,30 @@ export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
   }
   const out = Buffer.alloc(32);
   const result = lib.starknet_poseidon_hash_many(packed, inputs.length, out);
+  checkResult(result);
+  return copyResult(out);
+}
+
+/**
+ * Standard Keccak256 hash (full 32 bytes)
+ */
+export function keccak256(data: Uint8Array): Uint8Array {
+  const lib = loadLibrary();
+  const out = Buffer.alloc(32);
+  const dataBuf = data.length > 0 ? Buffer.from(data) : Buffer.alloc(0);
+  const result = lib.keccak256(dataBuf, data.length, out);
+  checkResult(result);
+  return new Uint8Array(out);
+}
+
+/**
+ * Starknet Keccak256 (truncated to 250 bits, returns Felt252)
+ */
+export function snKeccak256(data: Uint8Array): Felt252Type {
+  const lib = loadLibrary();
+  const out = Buffer.alloc(32);
+  const dataBuf = data.length > 0 ? Buffer.from(data) : Buffer.alloc(0);
+  const result = lib.starknet_keccak256(dataBuf, data.length, out);
   checkResult(result);
   return copyResult(out);
 }

@@ -47,7 +47,8 @@ interface NativeBackend {
   pedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type;
   poseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type;
   poseidonHashMany(inputs: Felt252Type[]): Felt252Type;
-  keccak256(data: Uint8Array): Felt252Type;
+  keccak256(data: Uint8Array): Uint8Array;
+  snKeccak256(data: Uint8Array): Felt252Type;
   getPublicKey(privateKey: Felt252Type): Felt252Type;
   sign(privateKey: Felt252Type, messageHash: Felt252Type): NativeSignature;
   verify(publicKey: Felt252Type, messageHash: Felt252Type, r: Felt252Type, s: Felt252Type): boolean;
@@ -170,8 +171,12 @@ export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
   return requireBackend().poseidonHashMany(inputs);
 }
 
-export function keccak256(data: Uint8Array): Felt252Type {
+export function keccak256(data: Uint8Array): Uint8Array {
   return requireBackend().keccak256(data);
+}
+
+export function snKeccak256(data: Uint8Array): Felt252Type {
+  return requireBackend().snKeccak256(data);
 }
 
 // ============ ECDSA ============

@@ -68,6 +68,10 @@ const symbols = {
     args: [FFIType.ptr, FFIType.u64, FFIType.ptr],
     returns: FFIType.i32,
   },
+  keccak256: {
+    args: [FFIType.ptr, FFIType.u64, FFIType.ptr],
+    returns: FFIType.i32,
+  },
   starknet_keccak256: {
     args: [FFIType.ptr, FFIType.u64, FFIType.ptr],
     returns: FFIType.i32,
@@ -277,11 +281,28 @@ export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
   return copyResult(out);
 }
 
-export function keccak256(data: Uint8Array): Felt252Type {
+/**
+ * Standard Keccak256 hash (full 32 bytes)
+ */
+export function keccak256(data: Uint8Array): Uint8Array {
   const lib = loadLibrary()!;
   const out = new Uint8Array(32);
-  // Handle empty input - Bun FFI can't create pointer to empty buffer
-  // Use a dummy buffer with length 0 for the FFI call
+  const dataPtr = data.length > 0 ? ptr(data) : ptr(new Uint8Array(1));
+  const result = lib.symbols.keccak256(
+    dataPtr,
+    data.length,
+    ptr(out)
+  );
+  checkResult(result);
+  return new Uint8Array(out);
+}
+
+/**
+ * Starknet Keccak256 (truncated to 250 bits, returns Felt252)
+ */
+export function snKeccak256(data: Uint8Array): Felt252Type {
+  const lib = loadLibrary()!;
+  const out = new Uint8Array(32);
   const dataPtr = data.length > 0 ? ptr(data) : ptr(new Uint8Array(1));
   const result = lib.symbols.starknet_keccak256(
     dataPtr,

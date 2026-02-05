@@ -114,16 +114,19 @@ export function getNativeLibPath(): string | null {
 
   // Search paths in order of preference
   const searchPaths = [
-    // 1. Development: target/release
+    // 1. Development: target/release (repo root)
     join(process.cwd(), 'target', 'release', libName),
 
-    // 2. Platform-specific: native/<platform>-<arch>/
+    // 2. Monorepo: when running from packages/kundera-ts/
+    join(process.cwd(), '..', '..', 'target', 'release', libName),
+
+    // 3. Platform-specific: native/<platform>-<arch>/
     join(process.cwd(), 'native', platformDir, libName),
 
-    // 3. Relative to this module (installed package)
+    // 4. Relative to this module (installed package)
     join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'native', platformDir, libName),
 
-    // 4. System paths
+    // 5. System paths
     join('/usr/local/lib', libName),
   ];
 
@@ -157,6 +160,7 @@ export function getSearchPaths(): string[] {
 
   return [
     join(process.cwd(), 'target', 'release', libName),
+    join(process.cwd(), '..', '..', 'target', 'release', libName),
     join(process.cwd(), 'native', platformDir, libName),
     join(process.cwd(), 'native', libName),
     join('/usr/local/lib', libName),
