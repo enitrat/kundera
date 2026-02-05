@@ -4,7 +4,7 @@
  * State-changing contract calls using an account executor.
  */
 
-import { encodeCalldata, type Abi } from '@kundera-sn/kundera-ts/abi';
+import { encodeCalldata, type AbiLike, type CairoValue } from '@kundera-sn/kundera-ts/abi';
 import type { Call, UniversalDetails } from '@kundera-sn/kundera-ts/crypto';
 
 export interface AccountExecutor {
@@ -13,10 +13,10 @@ export interface AccountExecutor {
 }
 
 export interface WriteContractParams {
-  abi: Abi;
+  abi: AbiLike;
   address: string;
   functionName: string;
-  args?: unknown[];
+  args?: CairoValue[];
   account: AccountExecutor;
   details?: UniversalDetails;
 }
@@ -57,7 +57,7 @@ export async function writeContract(
     return err('ACCOUNT_REQUIRED', 'Account executor with execute() is required');
   }
 
-  const calldataResult = encodeCalldata(abi, functionName, args as any);
+  const calldataResult = encodeCalldata(abi, functionName, args);
   if (calldataResult.error) {
     return err('ENCODE_ERROR', calldataResult.error.message);
   }

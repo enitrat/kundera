@@ -4,17 +4,17 @@
  * Read-only contract calls with ABI encoding/decoding.
  */
 
-import { encodeCalldata, decodeOutput, getFunctionSelectorHex, type Abi } from '@kundera-sn/kundera-ts/abi';
+import { encodeCalldata, decodeOutput, getFunctionSelectorHex, type AbiLike, type CairoValue } from '@kundera-sn/kundera-ts/abi';
 import { Felt252 } from '@kundera-sn/kundera-ts';
 import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { BlockId, FunctionCall } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { Transport } from '@kundera-sn/kundera-ts/transport';
 
 export interface ReadContractParams {
-  abi: Abi;
+  abi: AbiLike;
   address: string;
   functionName: string;
-  args?: unknown[];
+  args?: CairoValue[];
   blockId?: BlockId;
 }
 
@@ -44,10 +44,10 @@ function err<T>(code: ContractErrorCode, message: string): ContractResult<T> {
 export async function readContract(
   transport: Transport,
   params: ReadContractParams,
-): Promise<ContractResult<unknown[]>> {
+): Promise<ContractResult<CairoValue[]>> {
   const { abi, address, functionName, args = [], blockId } = params;
 
-  const calldataResult = encodeCalldata(abi, functionName, args as any);
+  const calldataResult = encodeCalldata(abi, functionName, args);
   if (calldataResult.error) {
     return err('ENCODE_ERROR', calldataResult.error.message);
   }
@@ -58,7 +58,7 @@ export async function readContract(
   const call: FunctionCall = {
     contract_address: address,
     entry_point_selector: selector,
-    calldata: calldata as any,
+    calldata: calldata as `0x${string}`[],
   };
 
   try {

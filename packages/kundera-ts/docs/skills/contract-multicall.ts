@@ -4,7 +4,7 @@
  * Batch multiple read-only calls using transport.requestBatch.
  */
 
-import { encodeCalldata, decodeOutput, getFunctionSelectorHex, type Abi } from '@kundera-sn/kundera-ts/abi';
+import { encodeCalldata, decodeOutput, getFunctionSelectorHex, type AbiLike, type CairoValue } from '@kundera-sn/kundera-ts/abi';
 import { Felt252 } from '@kundera-sn/kundera-ts';
 import {
   createRequest,
@@ -16,10 +16,10 @@ import {
 import type { BlockId, FunctionCall } from '@kundera-sn/kundera-ts/jsonrpc';
 
 export interface ReadContractParams {
-  abi: Abi;
+  abi: AbiLike;
   address: string;
   functionName: string;
-  args?: unknown[];
+  args?: CairoValue[];
 }
 
 export interface ContractError {
@@ -49,10 +49,10 @@ export async function multicallRead(
   transport: Transport,
   calls: ReadContractParams[],
   blockId: BlockId = 'latest',
-): Promise<ContractResult<unknown[]>[]> {
-  const results: ContractResult<unknown[]>[] = new Array(calls.length);
+): Promise<ContractResult<CairoValue[]>[]> {
+  const results: ContractResult<CairoValue[]>[] = new Array(calls.length);
   const requests: JsonRpcRequest[] = [];
-  const requestMeta: Array<{ index: number; abi: Abi; functionName: string }> = [];
+  const requestMeta: Array<{ index: number; abi: AbiLike; functionName: string }> = [];
 
   let requestId = 0;
 
@@ -61,7 +61,7 @@ export async function multicallRead(
     const calldataResult = encodeCalldata(
       params.abi,
       params.functionName,
-      (params.args ?? []) as any,
+      params.args ?? [],
     );
 
     if (calldataResult.error) {
@@ -75,7 +75,7 @@ export async function multicallRead(
     const call: FunctionCall = {
       contract_address: params.address,
       entry_point_selector: selector,
-      calldata: calldata as any,
+      calldata: calldata as `0x${string}`[],
     };
 
     requestId += 1;

@@ -42,7 +42,7 @@ import type {
   BroadcastedInvokeTxn,
   BroadcastedDeclareTxn,
   BroadcastedDeployAccountTxn,
-  ContractClassResponse,
+
   EventsFilter,
   FunctionCall,
   SimulationFlag,
@@ -76,7 +76,7 @@ export interface HttpProvider {
   getClass: (
     classHash: ClassHashType | string,
     blockId?: BlockId,
-  ) => Promise<ContractClassResponse>;
+  ) => Promise<unknown>;
   getClassHashAt: (
     contractAddress: ContractAddressType | string,
     blockId?: BlockId,
@@ -84,7 +84,7 @@ export interface HttpProvider {
   getClassAt: (
     contractAddress: ContractAddressType | string,
     blockId?: BlockId,
-  ) => Promise<ContractClassResponse>;
+  ) => Promise<unknown>;
   getBlockTransactionCount: (blockId?: BlockId) => Promise<number>;
   call: (request: FunctionCall, blockId?: BlockId) => Promise<string[]>;
   estimateFee: (

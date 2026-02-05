@@ -112,20 +112,19 @@
                 "group": "Skills",
                 "icon": "puzzle-piece",
                 "pages": [
+                  "typescript/skills/index",
+                  "typescript/skills/get-contract",
+                  "typescript/skills/contract-read",
+                  "typescript/skills/contract-write",
+                  "typescript/skills/contract-multicall",
+                  "typescript/skills/account-invoke",
                   "typescript/skills/account-declare",
                   "typescript/skills/account-deploy",
-                  "typescript/skills/account-invoke",
-                  "typescript/skills/contract-multicall",
-                  "typescript/skills/contract-read",
-                  "typescript/skills/contract-viem",
-                  "typescript/skills/contract-write",
                   "typescript/skills/event-filtering",
-                  "typescript/skills/fee-estimation",
-                  "typescript/skills/http-provider",
                   "typescript/skills/http-transport",
-                  "typescript/skills/index",
-                  "typescript/skills/wallet-modal",
-                  "typescript/skills/websocket-provider"
+                  "typescript/skills/http-provider",
+                  "typescript/skills/websocket-provider",
+                  "typescript/skills/wallet-modal"
                 ]
               },
               {
