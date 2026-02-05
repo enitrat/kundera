@@ -5,7 +5,7 @@
  * Skips crypto tests if WASM artifact not present.
  */
 
-import { describe, expect, test, beforeAll } from 'bun:test';
+import { describe, expect, test, beforeAll } from 'vitest';
 import * as wasmEntry from './index';
 import { Felt252 } from '../primitives/index';
 

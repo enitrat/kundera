@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { Int16 } from './Int16.js';
 import { MIN, MAX, PRIME } from './constants.js';
 import { Felt252 } from '../Felt252/index.js';

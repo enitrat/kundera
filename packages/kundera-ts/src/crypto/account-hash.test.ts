@@ -2,7 +2,7 @@
  * Account Hash + Types Tests
  */
 
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect } from 'vitest';
 import '../test-utils/setupCrypto';
 import {
   type ResourceBoundsMapping,

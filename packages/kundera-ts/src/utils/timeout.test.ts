@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test';
+import { describe, expect, it, vi } from 'vitest';
 import {
   createDeferred,
   executeWithTimeout,
@@ -100,7 +100,7 @@ describe('withTimeout', () => {
 
   it('cleans up timeout when promise settles', async () => {
     const original = globalThis.clearTimeout;
-    const clearMock = mock((id: number | undefined) => original(id));
+    const clearMock = vi.fn((id: number | undefined) => original(id));
     globalThis.clearTimeout = clearMock as typeof clearTimeout;
 
     const promise = Promise.resolve(42);

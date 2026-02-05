@@ -2,7 +2,7 @@
  * RPC Methods Tests
  */
 
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import {
   starknet_chainId,
   starknet_getNonce,

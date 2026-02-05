@@ -1,4 +1,4 @@
-import { describe, expect, it, mock, beforeEach, afterEach } from 'bun:test';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { HttpProvider } from './HttpProvider.js';
 
 const makeJsonResponse = (payload: unknown) =>
@@ -9,11 +9,11 @@ const makeJsonResponse = (payload: unknown) =>
 
 describe('HttpProvider', () => {
   let originalFetch: typeof fetch | undefined;
-  let mockFetch: ReturnType<typeof mock>;
+  let mockFetch: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     originalFetch = globalThis.fetch;
-    mockFetch = mock(() => makeJsonResponse({ jsonrpc: '2.0', id: 1, result: 123 }));
+    mockFetch = vi.fn(() => makeJsonResponse({ jsonrpc: '2.0', id: 1, result: 123 }));
     globalThis.fetch = mockFetch as unknown as typeof fetch;
   });
 

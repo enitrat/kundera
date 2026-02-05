@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 
 describe("docs/skills/wallet-modal", () => {
   it("documents the supported chain ids", () => {

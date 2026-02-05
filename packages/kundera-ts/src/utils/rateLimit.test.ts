@@ -1,9 +1,9 @@
-import { describe, expect, it, mock } from 'bun:test';
+import { describe, expect, it, vi } from 'vitest';
 import { debounce, RateLimiter, throttle } from './rateLimit.js';
 
 describe('throttle', () => {
   it('should execute function immediately', () => {
-    const fn = mock(() => 'result');
+    const fn = vi.fn(() => 'result');
 
     const throttled = throttle(fn, 1000);
     const result = throttled();
@@ -13,7 +13,7 @@ describe('throttle', () => {
   });
 
   it('should return cached result for subsequent calls', () => {
-    const fn = mock(() => 'result');
+    const fn = vi.fn(() => 'result');
 
     const throttled = throttle(fn, 1000);
 
@@ -26,7 +26,7 @@ describe('throttle', () => {
   });
 
   it('should allow new call after wait period', async () => {
-    const fn = mock((x: number) => x * 2);
+    const fn = vi.fn((x: number) => x * 2);
 
     const throttled = throttle(fn, 50);
 
@@ -42,7 +42,7 @@ describe('throttle', () => {
   });
 
   it('should preserve arguments', () => {
-    const fn = mock((a: number, b: string) => `${a}-${b}`);
+    const fn = vi.fn((a: number, b: string) => `${a}-${b}`);
 
     const throttled = throttle(fn, 1000);
     const result = throttled(42, 'test');
@@ -51,7 +51,7 @@ describe('throttle', () => {
   });
 
   it('should respect wait time', async () => {
-    const fn = mock(() => 'result');
+    const fn = vi.fn(() => 'result');
     const throttled = throttle(fn, 80);
 
     throttled();
@@ -69,7 +69,7 @@ describe('throttle', () => {
 
 describe('debounce', () => {
   it('should delay execution', async () => {
-    const fn = mock(() => {});
+    const fn = vi.fn(() => {});
 
     const debounced = debounce(fn, 50);
     debounced();
@@ -81,7 +81,7 @@ describe('debounce', () => {
   });
 
   it('should reset timer on new call', async () => {
-    const fn = mock(() => {});
+    const fn = vi.fn(() => {});
 
     const debounced = debounce(fn, 50);
     debounced();
@@ -96,7 +96,7 @@ describe('debounce', () => {
   });
 
   it('should use most recent arguments', async () => {
-    const fn = mock((x: number) => x);
+    const fn = vi.fn((x: number) => x);
 
     const debounced = debounce(fn, 50);
     debounced(1);
@@ -109,14 +109,14 @@ describe('debounce', () => {
   });
 
   it('should have cancel method', () => {
-    const fn = mock(() => {});
+    const fn = vi.fn(() => {});
     const debounced = debounce(fn, 50);
 
     expect(typeof debounced.cancel).toBe('function');
   });
 
   it('should cancel pending execution', async () => {
-    const fn = mock(() => {});
+    const fn = vi.fn(() => {});
 
     const debounced = debounce(fn, 50);
     debounced();
@@ -127,7 +127,7 @@ describe('debounce', () => {
   });
 
   it('should handle rapid calls', async () => {
-    const fn = mock(() => {});
+    const fn = vi.fn(() => {});
     const debounced = debounce(fn, 50);
 
     for (let i = 0; i < 100; i++) {
@@ -139,7 +139,7 @@ describe('debounce', () => {
   });
 
   it('should work with zero wait time', async () => {
-    const fn = mock(() => {});
+    const fn = vi.fn(() => {});
     const debounced = debounce(fn, 0);
 
     debounced();
@@ -151,7 +151,7 @@ describe('debounce', () => {
 
 describe('RateLimiter', () => {
   it('should execute immediate request', async () => {
-    const fn = mock(async () => 'result');
+    const fn = vi.fn(async () => 'result');
 
     const limiter = new RateLimiter({
       maxRequests: 1,
@@ -165,7 +165,7 @@ describe('RateLimiter', () => {
   });
 
   it('should queue requests when limit exceeded', async () => {
-    const fn = mock(async () => 'result');
+    const fn = vi.fn(async () => 'result');
 
     const limiter = new RateLimiter({
       maxRequests: 1,
@@ -183,7 +183,7 @@ describe('RateLimiter', () => {
   });
 
   it('should reject when strategy is reject', async () => {
-    const fn = mock(async () => 'result');
+    const fn = vi.fn(async () => 'result');
 
     const limiter = new RateLimiter({
       maxRequests: 1,
@@ -197,7 +197,7 @@ describe('RateLimiter', () => {
   });
 
   it('should drop silently when strategy is drop', async () => {
-    const fn = mock(async () => 'result');
+    const fn = vi.fn(async () => 'result');
 
     const limiter = new RateLimiter({
       maxRequests: 1,
@@ -228,7 +228,7 @@ describe('RateLimiter', () => {
   });
 
   it('should get queue length', async () => {
-    const fn = mock(async () => {
+    const fn = vi.fn(async () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
     });
 
@@ -246,7 +246,7 @@ describe('RateLimiter', () => {
   });
 
   it('should wrap async function', async () => {
-    const fn = mock(async (x: number) => x * 2);
+    const fn = vi.fn(async (x: number) => x * 2);
 
     const limiter = new RateLimiter({
       maxRequests: 2,
@@ -260,7 +260,7 @@ describe('RateLimiter', () => {
   });
 
   it('should propagate function errors', async () => {
-    const fn = mock(async () => {
+    const fn = vi.fn(async () => {
       throw new Error('Function error');
     });
 
@@ -273,7 +273,7 @@ describe('RateLimiter', () => {
   });
 
   it('should handle burst of requests', async () => {
-    const fn = mock(async () => 'result');
+    const fn = vi.fn(async () => 'result');
 
     const limiter = new RateLimiter({
       maxRequests: 2,
@@ -289,7 +289,7 @@ describe('RateLimiter', () => {
   });
 
   it('should apply rate limit to wrapped function', async () => {
-    const fn = mock(async () => 'result');
+    const fn = vi.fn(async () => 'result');
 
     const limiter = new RateLimiter({
       maxRequests: 1,

@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'bun:test';
-import { Keccak256, hash, hashHex, DIGEST_SIZE, type Keccak256Hash } from './index.js';
+import { describe, expect, test } from 'vitest';
+import { Keccak256, hash, hashHex, DIGEST_SIZE } from './index.js';
 
 describe('Keccak256', () => {
   test('DIGEST_SIZE is 32', () => {

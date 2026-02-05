@@ -4,7 +4,7 @@
  * Tests demonstrating usage of the strongly-typed provider interface.
  */
 
-import { describe, expect, expectTypeOf, it } from 'bun:test';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import type { TypedProvider } from './TypedProvider.js';
 import type { StarknetRpcSchema } from './schemas/StarknetRpcSchema.js';
 import type { ProviderEventMap } from './types.js';
@@ -12,7 +12,7 @@ import type { ProviderEventMap } from './types.js';
 describe('TypedProvider', () => {
   it('provides type-safe request method', async () => {
     const provider: TypedProvider<StarknetRpcSchema, ProviderEventMap> = {
-      request: async ({ method, params }) => {
+      request: (async ({ method, params }: any) => {
         void params;
         if (method === 'starknet_blockNumber') {
           return 123;
@@ -24,7 +24,7 @@ describe('TypedProvider', () => {
           return 5;
         }
         throw new Error('Unsupported method');
-      },
+      }) as any,
       on: () => provider,
       removeListener: () => provider,
     };
@@ -47,7 +47,7 @@ describe('TypedProvider', () => {
 
   it('validates parameters at compile time', async () => {
     const provider: TypedProvider<StarknetRpcSchema, ProviderEventMap> = {
-      request: async ({ method, params }) => {
+      request: (async ({ method, params }: any) => {
         void params;
         if (method === 'starknet_getNonce') {
           return '0x1';
@@ -56,7 +56,7 @@ describe('TypedProvider', () => {
           return ['0x1'];
         }
         throw new Error('Unsupported method');
-      },
+      }) as any,
       on: () => provider,
       removeListener: () => provider,
     };
@@ -84,7 +84,7 @@ describe('TypedProvider', () => {
     let accountsChangedCalled = false;
 
     const provider: TypedProvider<StarknetRpcSchema, ProviderEventMap> = {
-      request: async () => 0,
+      request: (async () => 0) as any,
       on: (event, listener) => {
         if (event === 'chainChanged') {
           setTimeout(() => listener('0x2'), 0);
@@ -115,7 +115,7 @@ describe('TypedProvider', () => {
 
   it('supports method chaining for event listeners', () => {
     const provider: TypedProvider<StarknetRpcSchema, ProviderEventMap> = {
-      request: async () => 0,
+      request: (async () => 0) as any,
       on: () => provider,
       removeListener: () => provider,
     };

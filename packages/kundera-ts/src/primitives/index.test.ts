@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import {
   Felt252,
   ContractAddress,
@@ -48,7 +48,7 @@ describe('Felt252', () => {
   test('toHex returns padded hex', () => {
     const felt = Felt252(42);
     const hex = felt.toHex();
-    expect(hex).toStartWith('0x');
+    expect(hex.startsWith('0x')).toBe(true);
     expect(hex.length).toBe(66); // 0x + 64 hex chars
     expect(hex).toBe(
       '0x000000000000000000000000000000000000000000000000000000000000002a'

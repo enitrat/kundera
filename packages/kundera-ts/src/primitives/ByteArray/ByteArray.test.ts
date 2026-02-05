@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { ByteArray, BYTES_PER_WORD } from './index';
 
 describe('ByteArray', () => {

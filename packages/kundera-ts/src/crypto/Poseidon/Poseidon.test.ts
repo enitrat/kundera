@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { Poseidon, hash, hashMany } from './index.js';
 import { Felt252 } from '../../primitives/Felt252/index.js';
 

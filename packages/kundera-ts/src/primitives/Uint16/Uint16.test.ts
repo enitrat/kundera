@@ -1,6 +1,5 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect } from 'vitest';
 import { Uint16, MIN, MAX, SIZE } from './index.js';
-import type { Uint16Type } from './types.js';
 
 describe('Uint16', () => {
   describe('constants', () => {

@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, afterEach } from 'bun:test';
+import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { WebSocketProvider } from './WebSocketProvider.js';
 
 type MessageEventLike = { data: string };
@@ -10,7 +10,7 @@ class MockWebSocket {
   static CLOSED = 3;
 
   url: string;
-  protocols?: string | string[];
+  protocols?: string | string[] | undefined;
   readyState = MockWebSocket.CONNECTING;
   onopen?: () => void;
   onmessage?: (event: MessageEventLike) => void;
@@ -143,7 +143,7 @@ describe('WebSocketProvider', () => {
     });
 
     const next = await nextPromise;
-    expect(next.value?.block_hash).toBe('0x1');
+    expect((next.value as any)?.block_hash).toBe('0x1');
 
     await stream.return?.();
   });

@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { EthAddress } from './EthAddress';
 import { MAX_ETH_ADDRESS } from './constants';
 

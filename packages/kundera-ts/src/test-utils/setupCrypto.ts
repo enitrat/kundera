@@ -1,4 +1,4 @@
-import { beforeAll } from 'bun:test';
+import { beforeAll } from 'vitest';
 import { isNativeAvailable, loadWasmCrypto } from '../crypto/index';
 
 beforeAll(async () => {

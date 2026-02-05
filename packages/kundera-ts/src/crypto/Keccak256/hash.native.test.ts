@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { hash, hashSync, hashHex, hashHexSync, ensureLoaded, isLoaded } from './hash.native.js';
 
 describe('Keccak256 Native Backend', () => {

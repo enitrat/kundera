@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import { createRequest, createErrorResponse } from "../../src/transport/index";
 
 describe("docs/skills/http-transport", () => {

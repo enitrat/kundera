@@ -1,10 +1,10 @@
-import { describe, expect, it, mock } from 'bun:test';
+import { describe, expect, it, vi } from 'vitest';
 import { poll, pollForReceipt, pollUntil, pollWithBackoff } from './poll.js';
 
 describe('poll', () => {
   describe('basic polling', () => {
     it('should return result when function returns truthy value', async () => {
-      const fn = mock(async () => 'success');
+      const fn = vi.fn(async () => 'success');
 
       const result = await poll(fn, { interval: 10, timeout: 1000 });
 
@@ -14,7 +14,7 @@ describe('poll', () => {
 
     it('should retry until result is valid', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return attempts >= 3 ? 'success' : null;
       });
@@ -27,7 +27,7 @@ describe('poll', () => {
 
     it('should use validate predicate', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return { status: attempts >= 2 ? 'ready' : 'pending' };
       });
@@ -43,9 +43,9 @@ describe('poll', () => {
     });
 
     it('should call onPoll callback', async () => {
-      const onPoll = mock(() => {});
+      const onPoll = vi.fn(() => {});
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return attempts >= 2 ? 'success' : null;
       });
@@ -61,7 +61,7 @@ describe('poll', () => {
     });
 
     it('should throw on timeout', async () => {
-      const fn = mock(async () => null);
+      const fn = vi.fn(async () => null);
 
       await expect(poll(fn, { interval: 10, timeout: 50 })).rejects.toThrow(
         'Polling timeout after 50ms',
@@ -70,7 +70,7 @@ describe('poll', () => {
 
     it('should handle function errors gracefully', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         if (attempts < 2) {
           throw new Error('Temporary error');
@@ -89,7 +89,7 @@ describe('poll', () => {
 
     it('should continue polling despite errors', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         if (attempts < 3) {
           throw new Error('Error');
@@ -108,7 +108,7 @@ describe('poll', () => {
 
   describe('timeout behavior', () => {
     it('should timeout if polling takes too long', async () => {
-      const fn = mock(async () => null);
+      const fn = vi.fn(async () => null);
 
       const startTime = Date.now();
       await expect(poll(fn, { interval: 20, timeout: 60 })).rejects.toThrow(
@@ -121,7 +121,7 @@ describe('poll', () => {
     });
 
     it('should provide accurate timeout message', async () => {
-      const fn = mock(async () => null);
+      const fn = vi.fn(async () => null);
 
       try {
         await poll(fn, { interval: 20, timeout: 50 });
@@ -133,7 +133,7 @@ describe('poll', () => {
 
     it('should respect maxWaitTime between polls', async () => {
       const startTime = Date.now();
-      const fn = mock(async () => null);
+      const fn = vi.fn(async () => null);
 
       try {
         await poll(fn, { interval: 30, timeout: 60 });
@@ -149,7 +149,7 @@ describe('poll', () => {
   describe('backoff', () => {
     it('should not use backoff by default', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return attempts >= 3 ? 'success' : null;
       });
@@ -164,7 +164,7 @@ describe('poll', () => {
 
     it('should apply exponential backoff when enabled', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return attempts >= 4 ? 'success' : null;
       });
@@ -184,7 +184,7 @@ describe('poll', () => {
 
     it('should cap backoff at maxInterval', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return attempts >= 5 ? 'success' : null;
       });
@@ -204,7 +204,7 @@ describe('poll', () => {
   describe('validate callback', () => {
     it('should use validate to check result', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return { count: attempts };
       });
@@ -220,7 +220,7 @@ describe('poll', () => {
 
     it('should treat falsy validate return as invalid', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return attempts;
       });
@@ -236,7 +236,7 @@ describe('poll', () => {
 
     it('should handle validate throwing', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return attempts;
       });
@@ -256,9 +256,9 @@ describe('poll', () => {
 
   describe('onPoll callback', () => {
     it('should call onPoll with result and attempt number', async () => {
-      const onPoll = mock(() => {});
+      const onPoll = vi.fn(() => {});
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return `attempt-${attempts}`;
       });
@@ -273,9 +273,9 @@ describe('poll', () => {
     });
 
     it('should track attempt numbers in onPoll', async () => {
-      const onPoll = mock(() => {});
+      const onPoll = vi.fn(() => {});
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return attempts >= 3 ? 'success' : null;
       });
@@ -287,15 +287,15 @@ describe('poll', () => {
       });
 
       expect(onPoll).toHaveBeenCalledTimes(3);
-      expect(onPoll.mock.calls[0][1]).toBe(0);
-      expect(onPoll.mock.calls[1][1]).toBe(1);
-      expect(onPoll.mock.calls[2][1]).toBe(2);
+      expect((onPoll.mock.calls[0] as any[])[1]).toBe(0);
+      expect((onPoll.mock.calls[1] as any[])[1]).toBe(1);
+      expect((onPoll.mock.calls[2] as any[])[1]).toBe(2);
     });
 
     it('should be called on each poll attempt', async () => {
-      const onPoll = mock(() => {});
+      const onPoll = vi.fn(() => {});
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return attempts >= 2 ? 'success' : null;
       });
@@ -313,7 +313,7 @@ describe('poll', () => {
 
   describe('default options', () => {
     it('should use default interval of 1000ms', async () => {
-      const fn = mock(async () => 'success');
+      const fn = vi.fn(async () => 'success');
 
       const result = await poll(fn);
 
@@ -322,7 +322,7 @@ describe('poll', () => {
 
     it('should use default timeout of 60000ms', async () => {
       let attempts = 0;
-      const fn = mock(async () => {
+      const fn = vi.fn(async () => {
         attempts++;
         return attempts >= 1 ? 'success' : null;
       });
@@ -337,7 +337,7 @@ describe('poll', () => {
 describe('pollUntil', () => {
   it('should poll until predicate is true', async () => {
     let attempts = 0;
-    const fn = mock(async () => {
+    const fn = vi.fn(async () => {
       attempts++;
       return attempts;
     });
@@ -352,7 +352,7 @@ describe('pollUntil', () => {
   });
 
   it('should throw when timeout reached', async () => {
-    const fn = mock(async () => 0);
+    const fn = vi.fn(async () => 0);
 
     await expect(
       pollUntil(fn, (result) => result > 5, {
@@ -364,7 +364,7 @@ describe('pollUntil', () => {
 
   it('should pass options to poll', async () => {
     let attempts = 0;
-    const fn = mock(async () => {
+    const fn = vi.fn(async () => {
       attempts++;
       return { value: attempts };
     });
@@ -380,7 +380,7 @@ describe('pollUntil', () => {
 
   it('should work with boolean predicate', async () => {
     let ready = false;
-    const fn = mock(async () => {
+    const fn = vi.fn(async () => {
       ready = true;
       return 'ready';
     });
@@ -397,7 +397,7 @@ describe('pollUntil', () => {
 describe('pollForReceipt', () => {
   it('should poll for receipt until non-null', async () => {
     let attempts = 0;
-    const getReceipt = mock(async () => {
+    const getReceipt = vi.fn(async () => {
       attempts++;
       return attempts >= 2 ? { transactionHash: '0x123' } : null;
     });
@@ -412,7 +412,7 @@ describe('pollForReceipt', () => {
   });
 
   it('should throw on timeout', async () => {
-    const getReceipt = mock(async () => null);
+    const getReceipt = vi.fn(async () => null);
 
     await expect(
       pollForReceipt('0xabc', getReceipt, {
@@ -424,7 +424,7 @@ describe('pollForReceipt', () => {
 
   it('should use default timeout of 60000ms', async () => {
     let attempts = 0;
-    const getReceipt = mock(async () => {
+    const getReceipt = vi.fn(async () => {
       attempts++;
       return attempts >= 1 ? { status: '0x1' } : null;
     });
@@ -435,7 +435,7 @@ describe('pollForReceipt', () => {
   });
 
   it('should merge provided options with defaults', async () => {
-    const getReceipt = mock(async () => ({ status: '0x1' }));
+    const getReceipt = vi.fn(async () => ({ status: '0x1' }));
 
     await pollForReceipt('0xabc', getReceipt, {
       interval: 500,
@@ -452,7 +452,7 @@ describe('pollForReceipt', () => {
     }
 
     let attempts = 0;
-    const getReceipt = mock(async () => {
+    const getReceipt = vi.fn(async () => {
       attempts++;
       if (attempts >= 1) {
         return {
@@ -477,7 +477,7 @@ describe('pollForReceipt', () => {
 describe('pollWithBackoff', () => {
   it('should enable backoff by default', async () => {
     let attempts = 0;
-    const fn = mock(async () => {
+    const fn = vi.fn(async () => {
       attempts++;
       return attempts >= 2 ? 'success' : null;
     });
@@ -492,7 +492,7 @@ describe('pollWithBackoff', () => {
 
   it('should respect backoffFactor option', async () => {
     let attempts = 0;
-    const fn = mock(async () => {
+    const fn = vi.fn(async () => {
       attempts++;
       return attempts >= 3 ? 'success' : null;
     });
@@ -511,7 +511,7 @@ describe('pollWithBackoff', () => {
 
   it('should respect maxInterval option', async () => {
     let attempts = 0;
-    const fn = mock(async () => {
+    const fn = vi.fn(async () => {
       attempts++;
       return attempts >= 5 ? 'success' : null;
     });
@@ -527,7 +527,7 @@ describe('pollWithBackoff', () => {
   });
 
   it('should allow overriding options', async () => {
-    const fn = mock(async () => 'success');
+    const fn = vi.fn(async () => 'success');
 
     const result = await pollWithBackoff(fn, {
       interval: 10,
@@ -544,7 +544,7 @@ describe('integration tests', () => {
     const txHash = '0x123abc';
     let confirmations = 0;
 
-    const getReceipt = mock(async () => {
+    const getReceipt = vi.fn(async () => {
       confirmations++;
       if (confirmations >= 3) {
         return {
@@ -568,7 +568,7 @@ describe('integration tests', () => {
 
   it('should handle cascading backoff with validate', async () => {
     let attempts = 0;
-    const fn = mock(async () => {
+    const fn = vi.fn(async () => {
       attempts++;
       return { status: attempts >= 4 ? 'complete' : 'pending' };
     });
@@ -586,7 +586,7 @@ describe('integration tests', () => {
 
   it('should handle errors and recovery', async () => {
     let attempts = 0;
-    const fn = mock(async () => {
+    const fn = vi.fn(async () => {
       attempts++;
       if (attempts === 2) {
         throw new Error('Network error');

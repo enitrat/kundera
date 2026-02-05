@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { hash, hashSync, hashHex, hashHexSync, ensureLoaded, isLoaded } from './hash.wasm.js';
 
 describe('Keccak256 WASM Backend', () => {

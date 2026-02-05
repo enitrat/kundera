@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it } from "vitest";
 import * as Crypto from "../../src/crypto/index";
 
 describe("docs/skills/account-invoke", () => {

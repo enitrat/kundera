@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'bun:test';
-import { ECDSA, sign, verify, getPublicKey, getPublicKeyFull, recover } from './index';
+import { describe, expect, test } from 'vitest';
+import { ECDSA, sign, verify, getPublicKey, getPublicKeyFull } from './index';
 import { Felt252 } from '../../primitives/index';
 
 describe('ECDSA (Pure JS)', () => {

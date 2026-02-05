@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { serializeU256 } from './serializeU256';
 import { deserializeU256 } from './deserializeU256';
 

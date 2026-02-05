@@ -5,7 +5,7 @@
  * Actual crypto correctness is tested in backend-specific test files.
  */
 
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import {
   pedersenHash,
   poseidonHash,

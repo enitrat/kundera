@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { ContractAddress } from './ContractAddress';
 import { MAX_CONTRACT_ADDRESS } from './constants';
 import { Felt252 } from '../Felt252/Felt252';
@@ -34,8 +34,8 @@ describe('Constants', () => {
     expect(MAX_CONTRACT_ADDRESS).toBe(1n << 251n);
   });
 
-  test('MAX_ADDRESS alias equals MAX_CONTRACT_ADDRESS', () => {
-    const { MAX_ADDRESS } = require('../index');
+  test('MAX_ADDRESS alias equals MAX_CONTRACT_ADDRESS', async () => {
+    const { MAX_ADDRESS } = await import('../index.js');
     expect(MAX_ADDRESS).toBe(1n << 251n);
     expect(MAX_ADDRESS).toBe(MAX_CONTRACT_ADDRESS);
   });

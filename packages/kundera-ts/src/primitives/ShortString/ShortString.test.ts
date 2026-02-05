@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { encodeShortString } from './encodeShortString';
 import { encodeShortStringHex } from './encodeShortStringHex';
 import { decodeShortString } from './decodeShortString';

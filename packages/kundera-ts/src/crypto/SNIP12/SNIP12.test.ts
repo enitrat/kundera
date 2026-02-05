@@ -4,8 +4,8 @@
  * Comprehensive tests for typed structured data hashing on Starknet.
  */
 
-import { describe, expect, it, beforeAll } from 'bun:test';
-import { isNativeAvailable, loadWasmCrypto, isWasmLoaded } from '../index.js';
+import { describe, expect, it, beforeAll } from 'vitest';
+import { isNativeAvailable, loadWasmCrypto } from '../index.js';
 import {
   SNIP12,
   encodeType,
@@ -21,8 +21,7 @@ import {
 import type { Domain, TypeDefinitions, TypedData } from './types.js';
 import { Felt252 } from '../../primitives/index.js';
 
-// Helper to check if crypto is ready
-const cryptoReady = () => isNativeAvailable() || isWasmLoaded();
+// Crypto readiness is ensured by beforeAll below
 
 describe('SNIP-12 - Typed Structured Data Hashing', () => {
   beforeAll(async () => {

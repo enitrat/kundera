@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { serializeArray } from './serializeArray';
 import { deserializeArray } from './deserializeArray';
 import { Felt252 } from '../primitives/index';

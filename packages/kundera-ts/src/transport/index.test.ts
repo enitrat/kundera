@@ -5,7 +5,7 @@
  * Tests JSON-RPC 2.0 compliance, batching, and error handling.
  */
 
-import { describe, expect, it, mock, beforeEach, afterEach } from 'bun:test';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import {
   httpTransport,
   createRequest,
@@ -121,11 +121,11 @@ describe('Transport Utilities', () => {
 describe('HTTP Transport', () => {
   // Mock fetch for testing
   let originalFetch: typeof fetch;
-  let mockFetch: ReturnType<typeof mock>;
+  let mockFetch: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     originalFetch = globalThis.fetch;
-    mockFetch = mock(() =>
+    mockFetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ jsonrpc: '2.0', id: 1, result: 12345 }),
@@ -246,10 +246,10 @@ describe('HTTP Transport', () => {
 // ============ JSON-RPC 2.0 Compliance Tests ============
 
 describe('JSON-RPC 2.0 Compliance', () => {
-  let mockFetch: ReturnType<typeof mock>;
+  let mockFetch: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    mockFetch = mock(() =>
+    mockFetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ jsonrpc: '2.0', id: 1, result: null }),

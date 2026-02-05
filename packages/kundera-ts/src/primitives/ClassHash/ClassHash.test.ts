@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { ClassHash } from './ClassHash';
 import { Felt252 } from '../Felt252/Felt252';
 

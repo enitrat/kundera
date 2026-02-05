@@ -4,7 +4,7 @@
  * Tests for the pure JS Pedersen hash implementation using @scure/starknet.
  */
 
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { Pedersen, hash, hashMany } from './index';
 import { Felt252 } from '../../primitives/Felt252/index.js';
 

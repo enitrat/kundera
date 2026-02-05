@@ -1,9 +1,9 @@
-import { describe, expect, it, mock } from 'bun:test';
+import { describe, expect, it, vi } from 'vitest';
 import { retryWithBackoff, withRetry } from './retryWithBackoff.js';
 
 describe('retryWithBackoff', () => {
   it('returns result on first success', async () => {
-    const fn = mock(async () => 'success');
+    const fn = vi.fn(async () => 'success');
 
     const result = await retryWithBackoff(fn);
 
@@ -12,7 +12,7 @@ describe('retryWithBackoff', () => {
   });
 
   it('retries on failure and eventually succeeds', async () => {
-    const fn = mock()
+    const fn = vi.fn()
       .mockRejectedValueOnce(new Error('fail 1'))
       .mockRejectedValueOnce(new Error('fail 2'))
       .mockResolvedValue('success');
@@ -28,7 +28,7 @@ describe('retryWithBackoff', () => {
   });
 
   it('throws after max retries exhausted', async () => {
-    const fn = mock().mockRejectedValue(new Error('persistent failure'));
+    const fn = vi.fn().mockRejectedValue(new Error('persistent failure'));
 
     await expect(
       retryWithBackoff(fn, {
@@ -42,7 +42,7 @@ describe('retryWithBackoff', () => {
   });
 
   it('respects shouldRetry predicate', async () => {
-    const fn = mock()
+    const fn = vi.fn()
       .mockRejectedValueOnce(new Error('retryable'))
       .mockRejectedValueOnce(new Error('non-retryable'))
       .mockResolvedValue('success');
@@ -59,11 +59,11 @@ describe('retryWithBackoff', () => {
   });
 
   it('calls onRetry callback', async () => {
-    const fn = mock()
+    const fn = vi.fn()
       .mockRejectedValueOnce(new Error('fail'))
       .mockResolvedValue('success');
 
-    const onRetry = mock(() => {});
+    const onRetry = vi.fn(() => {});
 
     await retryWithBackoff(fn, {
       maxRetries: 3,
@@ -77,14 +77,14 @@ describe('retryWithBackoff', () => {
   });
 
   it('implements exponential backoff', async () => {
-    const fn = mock()
+    const fn = vi.fn()
       .mockRejectedValueOnce(new Error('fail 1'))
       .mockRejectedValueOnce(new Error('fail 2'))
       .mockRejectedValueOnce(new Error('fail 3'))
       .mockResolvedValue('success');
 
     const delays: number[] = [];
-    const onRetry = mock((_: unknown, __: number, delay: number) => {
+    const onRetry = vi.fn((_: unknown, __: number, delay: number) => {
       delays.push(delay);
     });
 
@@ -100,14 +100,14 @@ describe('retryWithBackoff', () => {
   });
 
   it('caps delay at maxDelay', async () => {
-    const fn = mock()
+    const fn = vi.fn()
       .mockRejectedValueOnce(new Error('fail 1'))
       .mockRejectedValueOnce(new Error('fail 2'))
       .mockRejectedValueOnce(new Error('fail 3'))
       .mockResolvedValue('success');
 
     const delays: number[] = [];
-    const onRetry = mock((_: unknown, __: number, delay: number) => {
+    const onRetry = vi.fn((_: unknown, __: number, delay: number) => {
       delays.push(delay);
     });
 
@@ -124,13 +124,13 @@ describe('retryWithBackoff', () => {
   });
 
   it('applies jitter when enabled', async () => {
-    const fn = mock()
+    const fn = vi.fn()
       .mockRejectedValueOnce(new Error('fail 1'))
       .mockRejectedValueOnce(new Error('fail 2'))
       .mockResolvedValue('success');
 
     const delays: number[] = [];
-    const onRetry = mock((_: unknown, __: number, delay: number) => {
+    const onRetry = vi.fn((_: unknown, __: number, delay: number) => {
       delays.push(delay);
     });
 
@@ -151,7 +151,7 @@ describe('retryWithBackoff', () => {
 
 describe('withRetry', () => {
   it('wraps function with retry logic', async () => {
-    const fn = mock()
+    const fn = vi.fn()
       .mockRejectedValueOnce(new Error('fail'))
       .mockResolvedValue('success');
 
@@ -167,7 +167,7 @@ describe('withRetry', () => {
   });
 
   it('passes arguments through', async () => {
-    const fn = mock()
+    const fn = vi.fn()
       .mockRejectedValueOnce(new Error('fail'))
       .mockResolvedValue('result');
 

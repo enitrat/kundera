@@ -1,10 +1,10 @@
-import { describe, expect, it, mock } from 'bun:test';
+import { describe, expect, it, vi } from 'vitest';
 import { AsyncQueue, BatchQueue, createBatchedFunction } from './batch.js';
 
 describe('BatchQueue', () => {
   describe('add', () => {
     it('should queue items and return promises', async () => {
-      const processBatch = mock(async (items: number[]) => items.map((x) => x * 2));
+      const processBatch = vi.fn(async (items: number[]) => items.map((x) => x * 2));
 
       const queue = new BatchQueue({
         maxBatchSize: 3,
@@ -23,7 +23,7 @@ describe('BatchQueue', () => {
     });
 
     it('should process batch when size is reached', async () => {
-      const processBatch = mock(async (items: string[]) => items.map((x) => x.toUpperCase()));
+      const processBatch = vi.fn(async (items: string[]) => items.map((x) => x.toUpperCase()));
 
       const queue = new BatchQueue({
         maxBatchSize: 2,
@@ -43,7 +43,7 @@ describe('BatchQueue', () => {
     });
 
     it('should process batch when timeout elapses', async () => {
-      const processBatch = mock(async (items: number[]) => items.map((x) => x + 1));
+      const processBatch = vi.fn(async (items: number[]) => items.map((x) => x + 1));
 
       const queue = new BatchQueue({
         maxBatchSize: 10,
@@ -63,7 +63,7 @@ describe('BatchQueue', () => {
     });
 
     it('should handle multiple batches', async () => {
-      const processBatch = mock(async (items: number[]) => items.map((x) => x * 2));
+      const processBatch = vi.fn(async (items: number[]) => items.map((x) => x * 2));
 
       const queue = new BatchQueue({
         maxBatchSize: 2,
@@ -81,7 +81,7 @@ describe('BatchQueue', () => {
     });
 
     it('should return individual results in batch order', async () => {
-      const processBatch = mock(async (items: string[]) => items.map((x) => x.length));
+      const processBatch = vi.fn(async (items: string[]) => items.map((x) => x.length));
 
       const queue = new BatchQueue({
         maxBatchSize: 3,
@@ -101,7 +101,7 @@ describe('BatchQueue', () => {
 
   describe('flush', () => {
     it('should manually flush pending items', async () => {
-      const processBatch = mock(async (items: number[]) => items.map((x) => x + 10));
+      const processBatch = vi.fn(async (items: number[]) => items.map((x) => x + 10));
 
       const queue = new BatchQueue({
         maxBatchSize: 10,
@@ -122,7 +122,7 @@ describe('BatchQueue', () => {
     });
 
     it('should handle empty queue flush', async () => {
-      const processBatch = mock(async () => []);
+      const processBatch = vi.fn(async () => []);
 
       const queue = new BatchQueue({
         maxBatchSize: 10,
@@ -136,7 +136,7 @@ describe('BatchQueue', () => {
     });
 
     it('should not process if already processing', async () => {
-      const processBatch = mock(async (items: number[]) => {
+      const processBatch = vi.fn(async (items: number[]) => {
         await new Promise((resolve) => setTimeout(resolve, 50));
         return items;
       });
@@ -159,7 +159,7 @@ describe('BatchQueue', () => {
 
   describe('size', () => {
     it('should return queue size', () => {
-      const processBatch = mock(async () => []);
+      const processBatch = vi.fn(async () => []);
 
       const queue = new BatchQueue({
         maxBatchSize: 10,
@@ -179,7 +179,7 @@ describe('BatchQueue', () => {
 
   describe('clear', () => {
     it('should clear queue and reject pending items', async () => {
-      const processBatch = mock(async () => []);
+      const processBatch = vi.fn(async () => []);
 
       const queue = new BatchQueue({
         maxBatchSize: 10,
@@ -207,7 +207,7 @@ describe('BatchQueue', () => {
 
   describe('drain', () => {
     it('should wait for all pending items to complete', async () => {
-      const processBatch = mock(async (items: number[]) => items.map((x) => x * 2));
+      const processBatch = vi.fn(async (items: number[]) => items.map((x) => x * 2));
 
       const queue = new BatchQueue({
         maxBatchSize: 2,
@@ -229,10 +229,10 @@ describe('BatchQueue', () => {
   describe('error handling', () => {
     it('should call onError when batch processing fails', async () => {
       const error = new Error('Batch processing failed');
-      const processBatch = mock(async () => {
+      const processBatch = vi.fn(async () => {
         throw error;
       });
-      const onError = mock(() => {});
+      const onError = vi.fn(() => {});
 
       const queue = new BatchQueue({
         maxBatchSize: 2,
@@ -258,7 +258,7 @@ describe('BatchQueue', () => {
     });
 
     it('should reject all items in batch on error', async () => {
-      const processBatch = mock(async () => {
+      const processBatch = vi.fn(async () => {
         throw new Error('Processing error');
       });
 
@@ -278,7 +278,7 @@ describe('BatchQueue', () => {
 
   describe('concurrent operations', () => {
     it('should handle rapid additions', async () => {
-      const processBatch = mock(async (items: number[]) => items.map((x) => x + 1));
+      const processBatch = vi.fn(async (items: number[]) => items.map((x) => x + 1));
 
       const queue = new BatchQueue({
         maxBatchSize: 5,
@@ -294,7 +294,7 @@ describe('BatchQueue', () => {
     });
 
     it('should continue processing remaining items after batch', async () => {
-      const processBatch = mock(async (items: number[]) => items.map((x) => x * 2));
+      const processBatch = vi.fn(async (items: number[]) => items.map((x) => x * 2));
 
       const queue = new BatchQueue({
         maxBatchSize: 2,
@@ -317,7 +317,7 @@ describe('BatchQueue', () => {
 
 describe('createBatchedFunction', () => {
   it('should create batched version of function', async () => {
-    const batchFn = mock(async (items: number[]) => items.map((x) => x * 2));
+    const batchFn = vi.fn(async (items: number[]) => items.map((x) => x * 2));
 
     const batched = createBatchedFunction(batchFn, 3, 100);
 
@@ -333,7 +333,7 @@ describe('createBatchedFunction', () => {
   });
 
   it('should batch multiple calls', async () => {
-    const batchFn = mock(async (items: string[]) => items.map((x) => x.toUpperCase()));
+    const batchFn = vi.fn(async (items: string[]) => items.map((x) => x.toUpperCase()));
 
     const batched = createBatchedFunction(batchFn, 5, 100);
 
@@ -349,7 +349,7 @@ describe('createBatchedFunction', () => {
   });
 
   it('should respect max batch size', async () => {
-    const batchFn = mock(async (items: number[]) => items);
+    const batchFn = vi.fn(async (items: number[]) => items);
 
     const batched = createBatchedFunction(batchFn, 2, 5000);
 
@@ -364,7 +364,7 @@ describe('createBatchedFunction', () => {
   });
 
   it('should respect max wait time', async () => {
-    const batchFn = mock(async (items: number[]) => items);
+    const batchFn = vi.fn(async (items: number[]) => items);
 
     const batched = createBatchedFunction(batchFn, 100, 50);
 
@@ -379,7 +379,7 @@ describe('createBatchedFunction', () => {
 describe('AsyncQueue', () => {
   describe('add', () => {
     it('should process items with concurrency limit', async () => {
-      const processFn = mock(async (item: number) => {
+      const processFn = vi.fn(async (item: number) => {
         await new Promise((resolve) => setTimeout(resolve, 20));
         return item * 2;
       });
@@ -419,7 +419,7 @@ describe('AsyncQueue', () => {
 
   describe('size', () => {
     it('should return queue size', async () => {
-      const processFn = mock(async () => {
+      const processFn = vi.fn(async () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
       });
 
@@ -439,7 +439,7 @@ describe('AsyncQueue', () => {
     it('should track active operations', async () => {
       let _active = 0;
 
-      const processFn = mock(async () => {
+      const processFn = vi.fn(async () => {
         _active++;
         await new Promise((resolve) => setTimeout(resolve, 30));
         _active--;
@@ -460,7 +460,7 @@ describe('AsyncQueue', () => {
 
   describe('drain', () => {
     it('should wait for all operations to complete', async () => {
-      const processFn = mock(async (item: number) => {
+      const processFn = vi.fn(async (item: number) => {
         await new Promise((resolve) => setTimeout(resolve, 20));
         return item;
       });
@@ -479,7 +479,7 @@ describe('AsyncQueue', () => {
     });
 
     it('should complete even with concurrent additions', async () => {
-      const processFn = mock(async (item: number) => {
+      const processFn = vi.fn(async (item: number) => {
         await new Promise((resolve) => setTimeout(resolve, 10));
         return item;
       });
@@ -502,7 +502,7 @@ describe('AsyncQueue', () => {
 
   describe('error handling', () => {
     it('should reject on error', async () => {
-      const processFn = mock(async (item: number) => {
+      const processFn = vi.fn(async (item: number) => {
         if (item === 2) throw new Error('Item 2 failed');
         return item;
       });
@@ -521,7 +521,7 @@ describe('AsyncQueue', () => {
     });
 
     it('should continue processing after error', async () => {
-      const processFn = mock(async (item: number) => {
+      const processFn = vi.fn(async (item: number) => {
         if (item === 2) throw new Error('Item 2 failed');
         return item * 2;
       });
@@ -541,7 +541,7 @@ describe('AsyncQueue', () => {
 
   describe('concurrency variations', () => {
     it('should work with concurrency 1', async () => {
-      const processFn = mock(async (item: number) => {
+      const processFn = vi.fn(async (item: number) => {
         await new Promise((resolve) => setTimeout(resolve, 5));
         return item;
       });
@@ -556,7 +556,7 @@ describe('AsyncQueue', () => {
     });
 
     it('should work with high concurrency', async () => {
-      const processFn = mock(async (item: number) => {
+      const processFn = vi.fn(async (item: number) => {
         await new Promise((resolve) => setTimeout(resolve, 5));
         return item * 2;
       });
