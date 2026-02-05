@@ -100,10 +100,18 @@ export interface ParsedType {
 export type StateMutability = 'view' | 'external';
 
 /**
- * ABI member (function input/output)
+ * ABI member (function input)
  */
 export interface AbiMember {
   name: string;
+  type: string;
+}
+
+/**
+ * ABI output (name is optional per Starknet spec)
+ */
+export interface AbiOutput {
+  name?: string;
   type: string;
 }
 
@@ -114,7 +122,7 @@ export interface AbiFunctionEntry {
   type: 'function';
   name: string;
   inputs: readonly AbiMember[];
-  outputs: readonly AbiMember[];
+  outputs: readonly AbiOutput[];
   state_mutability: StateMutability;
 }
 
@@ -193,7 +201,7 @@ export interface AbiL1HandlerEntry {
   type: 'l1_handler';
   name: string;
   inputs: readonly AbiMember[];
-  outputs: readonly AbiMember[];
+  outputs: readonly AbiOutput[];
   state_mutability: StateMutability;
 }
 

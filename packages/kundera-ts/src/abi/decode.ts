@@ -11,6 +11,7 @@ import {
   type ParsedAbi,
   type ParsedType,
   type AbiMember,
+  type AbiOutput,
   type Result,
   ok,
   err,
@@ -302,7 +303,7 @@ function decodeEnum(
  */
 export function decodeOutputs(
   calldata: bigint[],
-  outputs: readonly AbiMember[],
+  outputs: readonly AbiOutput[],
   abi: ParsedAbi
 ): Result<CairoValue[]> {
   if (outputs.length === 0) {
@@ -333,7 +334,7 @@ export function decodeOutputs(
  */
 export function decodeOutputsObject(
   calldata: bigint[],
-  outputs: readonly AbiMember[],
+  outputs: readonly AbiOutput[],
   abi: ParsedAbi
 ): Result<DecodedStruct> {
   const decoded = decodeOutputs(calldata, outputs, abi);
@@ -345,7 +346,7 @@ export function decodeOutputsObject(
   for (let i = 0; i < outputs.length; i++) {
     const output = outputs[i]!;
     const value = decoded.result[i]!;
-    result[output.name] = value;
+    result[output.name ?? `output_${i}`] = value;
   }
 
   return ok(result);

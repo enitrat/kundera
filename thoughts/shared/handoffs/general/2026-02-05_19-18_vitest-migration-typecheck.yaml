@@ -1,0 +1,73 @@
+---
+session: general
+date: 2026-02-05
+status: complete
+outcome: PARTIAL_PLUS
+---
+
+goal: Migrate kundera-ts from bun:test to vitest and achieve clean typecheck
+now: Consider committing changes; investigate if Keccak256 native test failures are fixable without ffi-napi
+
+test: pnpm --filter @kundera-sn/kundera-ts typecheck && pnpm test:run
+
+done_this_session:
+  - task: Replaced all bun:test imports with vitest across 64 test files (both single and double quote variants)
+    files: [src/**/*.test.ts, docs/skills/*.test.ts]
+  - task: Created vitest.config.ts for kundera-ts package
+    files: [packages/kundera-ts/vitest.config.ts]
+  - task: Updated package.json test scripts from bun test to vitest run
+    files: [packages/kundera-ts/package.json]
+  - task: Upgraded vitest ^2 to ^4 for native .js-to-.ts resolution (Vite 5 couldn't resolve .js imports pointing to .ts files)
+    files: [packages/kundera-ts/package.json]
+  - task: Removed bun-types from tsconfig types array, set skipLibCheck true
+    files: [packages/kundera-ts/tsconfig.json]
+  - task: Removed @types/bun from devDependencies
+    files: [packages/kundera-ts/package.json]
+  - task: Fixed 55 typecheck errors in test files
+    files: [src/provider/HttpProvider.test.ts, src/transport/index.test.ts, src/utils/batch.test.ts, src/utils/poll.test.ts, src/utils/rateLimit.test.ts, src/utils/retryWithBackoff.test.ts, src/utils/timeout.test.ts, src/primitives/Felt252/Felt252.test.ts, src/primitives/index.test.ts, src/abi/classHash.test.ts, src/abi/index.test.ts, src/abi/integer-types.test.ts, src/provider/TypedProvider.test.ts, src/provider/WebSocketProvider.test.ts, src/crypto/SNIP12/SNIP12.test.ts, src/crypto/ECDSA/ECDSA.test.ts, src/crypto/Keccak256/Keccak256.test.ts, src/primitives/Uint8-256/*.test.ts, src/primitives/ContractAddress/ContractAddress.test.ts]
+  - task: Fixed require() to dynamic import() in ContractAddress test (ESM compat)
+    files: [src/primitives/ContractAddress/ContractAddress.test.ts]
+
+blockers: []
+
+questions:
+  - "Keccak256 native tests (5) fail because ffi-napi is not installed — should these be skipped in CI or is ffi-napi expected?"
+  - "bun-ffi-types.d.ts and bun-ffi.ts in src/native/ still reference bun:ffi for runtime FFI — this is correct (production code, not tests) but worth noting"
+
+decisions:
+  - vitest_v4: "Upgraded to vitest ^4 (not ^2) because Vite 5 under vitest v2 couldn't resolve .js imports pointing to .ts files. Vitest v4 handles this natively."
+  - skipLibCheck_true: "Set skipLibCheck: true to avoid third-party .d.ts errors (@types/chai, @vitest/expect, vite). Our own code is fully checked."
+  - keep_bun_ffi: "bun:ffi imports in src/native/ are kept — they're production runtime code for Bun FFI backend, not test imports."
+  - mock_migration: "bun:test mock() → vitest vi.fn(). All 7 files using mock were updated."
+  - toStartWith_removal: "bun:test toStartWith() matcher doesn't exist in vitest. Replaced with startsWith() + toBe(true)."
+
+findings:
+  - "bun:test and vitest share describe/expect/it/test APIs, but mock() is bun-specific (vitest uses vi.fn())"
+  - "toStartWith is a bun:test-only matcher"
+  - "src tests used single quotes for imports, docs/skills tests used double quotes — needed two sed passes"
+  - "Felt252Type is Brand<Uint8Array, 'Felt252'> not bigint — so passing Felt252Type[] as bigint[] fails typecheck"
+  - "noUncheckedIndexedAccess + destructured arrays = every element is T|undefined, needs explicit casts in tests"
+
+worked:
+  - "Bulk sed replacement for import migration (fast, clean)"
+  - "vitest v4 for .js→.ts resolution instead of complex vite config"
+  - "as any casts for mock implementations in provider tests (tests don't need full type safety on mocks)"
+
+failed:
+  - "vitest ^2 couldn't resolve .js→.ts imports, had to upgrade to v4"
+  - "Single sed pass missed single-quoted imports in src/ tests"
+
+next:
+  - "Commit all changes (64 test files + configs)"
+  - "Verify docs/skills tests pass: pnpm test:run -- docs/skills"
+  - "Consider adding vitest globals config to avoid explicit imports (optional)"
+  - "Resume ABI kanabi alignment work from 2026-02-05_18-27_abi-kanabi-alignment.yaml"
+
+files:
+  created:
+    - packages/kundera-ts/vitest.config.ts
+  modified:
+    - packages/kundera-ts/tsconfig.json
+    - packages/kundera-ts/package.json
+    - packages/kundera-ts/src/**/*.test.ts (52 files)
+    - packages/kundera-ts/docs/skills/*.test.ts (12 files)
