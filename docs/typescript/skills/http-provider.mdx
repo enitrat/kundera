@@ -1,0 +1,160 @@
+---
+title: "HTTP Provider"
+description: "Lightweight JSON-RPC provider built on transports + RPC methods."
+---
+
+This skill creates a minimal HTTP provider that wraps `@kundera-sn/kundera-ts/transport` and `@kundera-sn/kundera-ts/jsonrpc`. Copy it into your project and tailor the method surface to your needs.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/http-provider src/skills/
+```
+
+## Usage
+
+```typescript
+import { createHttpProvider } from './skills/http-provider';
+
+const provider = createHttpProvider({
+  url: 'https://api.zan.top/public/starknet-sepolia',
+  timeout: 30_000,
+  retries: 2
+});
+
+// Typed convenience methods
+const chainId = await provider.chainId();
+const block = await provider.blockNumber();
+const nonce = await provider.getNonce('latest', address);
+
+// Or use request() directly
+const result = await provider.request({
+  method: 'starknet_call',
+  params: [{ contract_address: '...', entry_point_selector: '...', calldata: [] }, 'latest']
+});
+```
+
+## Implementation Pattern
+
+The skill typically implements:
+
+```typescript
+export function createHttpProvider(options: HttpProviderOptions) {
+  const transport = httpTransport(options.url, {
+    timeout: options.timeout,
+    fetchOptions: options.fetchOptions
+  });
+
+  return {
+    // Expose transport for advanced use
+    transport,
+
+    // JSON-RPC request method
+    async request<T>(args: RequestArguments): Promise<T> {
+      const response = await transport.request(
+        createRequest(args.method, args.params ?? [])
+      );
+
+      if (isJsonRpcError(response)) {
+        throw response.error;
+      }
+
+      return response.result as T;
+    },
+
+    // Typed convenience methods
+    async chainId(): Promise<string> {
+      return this.request({ method: 'starknet_chainId', params: [] });
+    },
+
+    async blockNumber(): Promise<number> {
+      return this.request({ method: 'starknet_blockNumber', params: [] });
+    },
+
+    async getNonce(blockId: string, address: string): Promise<string> {
+      return this.request({
+        method: 'starknet_getNonce',
+        params: [blockId, address]
+      });
+    },
+
+    // Add more methods as needed...
+  };
+}
+```
+
+## Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `url` | `string` | required | RPC endpoint URL |
+| `timeout` | `number` | `30000` | Request timeout (ms) |
+| `retries` | `number` | `0` | Retry attempts |
+| `retryDelay` | `number` | `500` | Delay between retries (ms) |
+| `fetchOptions` | `RequestInit` | `{}` | Custom fetch options |
+
+## Extending the Provider
+
+Add methods as needed:
+
+```typescript
+// Add a method to the provider
+async getBlockWithTxHashes(blockId: string) {
+  return this.request({
+    method: 'starknet_getBlockWithTxHashes',
+    params: [blockId]
+  });
+}
+
+// Add parallel fetch helpers
+async getAccountState(address: string) {
+  const [nonce, classHash] = await Promise.all([
+    this.getNonce('latest', address),
+    this.request({
+      method: 'starknet_getClassHashAt',
+      params: ['latest', address]
+    }).catch(() => null)
+  ]);
+
+  return { address, nonce, classHash, isDeployed: classHash !== null };
+}
+```
+
+## With Advanced Transport
+
+Use the HTTP Transport skill for batching and retries:
+
+```typescript
+import { httpTransport } from './skills/http-transport';
+
+export function createHttpProvider(options: HttpProviderOptions) {
+  const transport = httpTransport(options.url, {
+    timeout: options.timeout,
+    batch: {
+      batchWait: 10,
+      batchSize: 50
+    },
+    retries: options.retries ?? 3
+  });
+
+  // Rest of provider implementation...
+}
+```
+
+## Notes
+
+- Methods are thin wrappers around `@kundera-sn/kundera-ts/jsonrpc`.
+- Add/remove methods to match your app's needs.
+- `provider.transport` exposes the low-level transport for custom calls.
+- For batching/retries, use the `http-transport` skill and pass it as `transport`.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="HTTP Transport Skill" icon="network-wired" href="/typescript/skills/http-transport">
+    Advanced transport with batching and retries.
+  </Card>
+  <Card title="Provider API" icon="plug" href="/typescript/api/provider">
+    Built-in provider reference.
+  </Card>
+</CardGroup>

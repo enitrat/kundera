@@ -9,8 +9,8 @@ import { from } from "./from.js";
  *
  * Cairo encodes negative values as PRIME + negative_value.
  * To decode:
- * - If value <= MAX, it's positive (or zero)
- * - If value > MAX, it's a negative number: actual = value - PRIME
+ * - If value `<=` MAX, it's positive (or zero)
+ * - If value `>` MAX, it's a negative number: actual = value - PRIME
  *
  * @param {import('../Felt252/index.js').Felt252Type} felt - The Felt252 to decode
  * @returns {import('./types.js').Int64Type} The signed Int64 value

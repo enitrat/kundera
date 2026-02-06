@@ -1,0 +1,120 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: COMPLETE
+---
+
+goal: Refactor kundera-ts jsonrpc to Voltaire-style request builder pattern
+now: null
+test: cd /Users/msaug/workspace/kundera && pnpm typecheck && pnpm test:run
+
+done_this_session:
+  - task: Created 37 starknet/*.js method files (one per RPC method)
+    files: [packages/kundera-ts/src/jsonrpc/starknet/*.js]
+  - task: Created starknet/methods.js barrel re-exporting all 37 request builders
+    files: [packages/kundera-ts/src/jsonrpc/starknet/methods.js]
+  - task: Updated jsonrpc/index.ts - export * as Rpc from starknet/methods.js
+    files: [packages/kundera-ts/src/jsonrpc/index.ts]
+  - task: Simplified HttpProvider and WebSocketProvider - removed all starknet_* convenience methods
+    files: [packages/kundera-ts/src/provider/HttpProvider.ts, packages/kundera-ts/src/provider/WebSocketProvider.ts]
+  - task: Inlined nextRequestId() in each provider (was in deleted utils.ts)
+    files: [packages/kundera-ts/src/provider/HttpProvider.ts, packages/kundera-ts/src/provider/WebSocketProvider.ts]
+  - task: Moved BlockHashAndNumber type from methods/blockHashAndNumber.ts to types.ts
+    files: [packages/kundera-ts/src/jsonrpc/types.ts]
+  - task: Rewrote namespace.test.ts for new Rpc.* imports, updated HttpProvider.test.ts
+    files: [packages/kundera-ts/src/jsonrpc/namespace.test.ts, packages/kundera-ts/src/provider/HttpProvider.test.ts]
+  - task: Migrated 9 docs/skills files from old executor pattern to Rpc.*Request() pattern
+    files: [packages/kundera-ts/docs/skills/account-declare.ts, packages/kundera-ts/docs/skills/account-deploy.ts, packages/kundera-ts/docs/skills/account-invoke.ts, packages/kundera-ts/docs/skills/contract-read.ts, packages/kundera-ts/docs/skills/get-contract.ts, packages/kundera-ts/docs/skills/http-provider.ts, packages/kundera-ts/docs/skills/http-provider.test.ts, packages/kundera-ts/docs/skills/websocket-provider.ts, packages/kundera-ts/docs/skills/websocket-provider.test.ts]
+  - task: Deleted old files - methods/*.ts (34 files), namespace.ts, utils.ts, index.test.ts
+    files: []
+  - task: Migrated kundera-effect jsonrpc/index.ts to use Rpc.*Request() builders via send() helper
+    files: [packages/kundera-effect/src/jsonrpc/index.ts]
+  - task: Updated kundera-effect jsonrpc tests for new wire-format API (hex strings, no branded types)
+    files: [packages/kundera-effect/src/jsonrpc/index.test.ts]
+
+blockers: []
+
+questions: []
+
+decisions:
+  - voltaire_pattern: "Each .js file exports `method` const + `XxxRequest()` builder function. Wire-format only (hex strings, no branded types). Matches Voltaire's tree-shakeable pattern exactly."
+  - nextRequestId_inlined: "Inlined in each provider rather than keeping utils.ts, since only 2 consumers and function is trivial (counter++)"
+  - blockHashAndNumber_type: "Moved inline to types.ts since methods/ directory deleted. Was the only type defined there."
+  - ws_subscription_kept: "WebSocketProvider kept subscribeRaw/unsubscribeRaw/createSubscriptionStream/events - these use internal executeRequest, not removed convenience methods"
+  - effect_send_pattern: "Effect jsonrpc wrappers use a single send<T>(transport, args) helper that assigns request IDs, calls transport.request(), discriminates JsonRpcError, and wraps in Effect<T, RpcError>. Each exported method calls Rpc.*Request() then pipes to send()."
+  - effect_specific_txn_types: "addInvoke/addDeclare/addDeployAccount use specific BroadcastedInvokeTxn/BroadcastedDeclareTxn/BroadcastedDeployAccountTxn types (not generic BroadcastedTxn) matching the builder signatures."
+
+findings:
+  - docs_skills_heavy: "9 docs/skills files referenced old executor pattern. All updated to use send(transport, Rpc.XxxRequest(...)) helper."
+  - type_cast_review: "Sonnet critic agent found no critical type safety issues. Pre-existing WebSocketProvider casts (event listeners, subscribeRaw result, callback variance) are safe but improvable. No unwanted casts introduced by this refactor."
+
+worked:
+  - "Parallel subagent for docs/skills migration while main context handled core refactor"
+  - "Building from namespace.ts signatures ensured exact param parity in new builders"
+  - "Type-checking caught 4 errors in effect wrapper (wrong txn types, optional vs required params) - fixed before tests"
+
+failed: []
+
+next:
+  - "Consider adding branded type input support in builders (Phase 2)"
+  - "Consider response deserialization to branded types (Phase 2)"
+
+files:
+  created:
+    - packages/kundera-ts/src/jsonrpc/starknet/specVersion.js
+    - packages/kundera-ts/src/jsonrpc/starknet/blockNumber.js
+    - packages/kundera-ts/src/jsonrpc/starknet/blockHashAndNumber.js
+    - packages/kundera-ts/src/jsonrpc/starknet/chainId.js
+    - packages/kundera-ts/src/jsonrpc/starknet/syncing.js
+    - packages/kundera-ts/src/jsonrpc/starknet/call.js
+    - packages/kundera-ts/src/jsonrpc/starknet/estimateFee.js
+    - packages/kundera-ts/src/jsonrpc/starknet/estimateMessageFee.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getBlockWithTxHashes.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getBlockWithTxs.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getBlockWithReceipts.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getBlockTransactionCount.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getStateUpdate.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getStorageAt.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getTransactionStatus.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getMessagesStatus.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getTransactionByHash.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getTransactionByBlockIdAndIndex.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getTransactionReceipt.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getClass.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getClassHashAt.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getClassAt.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getEvents.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getNonce.js
+    - packages/kundera-ts/src/jsonrpc/starknet/getStorageProof.js
+    - packages/kundera-ts/src/jsonrpc/starknet/addInvokeTransaction.js
+    - packages/kundera-ts/src/jsonrpc/starknet/addDeclareTransaction.js
+    - packages/kundera-ts/src/jsonrpc/starknet/addDeployAccountTransaction.js
+    - packages/kundera-ts/src/jsonrpc/starknet/traceTransaction.js
+    - packages/kundera-ts/src/jsonrpc/starknet/simulateTransactions.js
+    - packages/kundera-ts/src/jsonrpc/starknet/traceBlockTransactions.js
+    - packages/kundera-ts/src/jsonrpc/starknet/subscribeNewHeads.js
+    - packages/kundera-ts/src/jsonrpc/starknet/subscribeEvents.js
+    - packages/kundera-ts/src/jsonrpc/starknet/subscribeTransactionStatus.js
+    - packages/kundera-ts/src/jsonrpc/starknet/subscribeNewTransactions.js
+    - packages/kundera-ts/src/jsonrpc/starknet/subscribeNewTransactionReceipts.js
+    - packages/kundera-ts/src/jsonrpc/starknet/unsubscribe.js
+    - packages/kundera-ts/src/jsonrpc/starknet/methods.js
+  modified:
+    - packages/kundera-ts/src/jsonrpc/index.ts
+    - packages/kundera-ts/src/jsonrpc/types.ts
+    - packages/kundera-ts/src/jsonrpc/namespace.test.ts
+    - packages/kundera-ts/src/provider/HttpProvider.ts
+    - packages/kundera-ts/src/provider/HttpProvider.test.ts
+    - packages/kundera-ts/src/provider/WebSocketProvider.ts
+    - packages/kundera-ts/docs/skills/account-declare.ts
+    - packages/kundera-ts/docs/skills/account-deploy.ts
+    - packages/kundera-ts/docs/skills/account-invoke.ts
+    - packages/kundera-ts/docs/skills/contract-read.ts
+    - packages/kundera-ts/docs/skills/get-contract.ts
+    - packages/kundera-ts/docs/skills/http-provider.ts
+    - packages/kundera-ts/docs/skills/http-provider.test.ts
+    - packages/kundera-ts/docs/skills/websocket-provider.ts
+    - packages/kundera-ts/docs/skills/websocket-provider.test.ts
+    - packages/kundera-effect/src/jsonrpc/index.ts
+    - packages/kundera-effect/src/jsonrpc/index.test.ts

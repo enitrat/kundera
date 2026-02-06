@@ -1,0 +1,145 @@
+---
+title: "Account Invoke"
+description: "Execute invoke transactions with a signer."
+---
+
+This skill provides `execute` + `estimateFee` helpers for invoke transactions. It handles nonce management, fee estimation, and transaction signing.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/account-invoke src/skills/
+```
+
+## Basic Usage
+
+```ts
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { signRaw, signatureToArray } from '@kundera-sn/kundera-ts/crypto';
+import { createAccountInvoker } from './skills/account-invoke';
+
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+const signTransaction = (hash) => signatureToArray(signRaw(PRIVATE_KEY, hash));
+
+const account = createAccountInvoker({ transport, address, signTransaction });
+
+// Execute single call
+const { transaction_hash } = await account.execute({
+  contractAddress: CONTRACT_ADDRESS,
+  entrypoint: 'transfer',
+  calldata: [RECIPIENT, AMOUNT],
+});
+```
+
+## Fee Estimation
+
+Estimate fees before executing:
+
+```ts
+// Estimate fee for single call
+const fee = await account.estimateFee({
+  contractAddress: CONTRACT_ADDRESS,
+  entrypoint: 'transfer',
+  calldata: [RECIPIENT, AMOUNT],
+});
+
+console.log('Overall fee:', fee.overall_fee);
+console.log('Gas consumed:', fee.gas_consumed);
+console.log('Gas price:', fee.gas_price);
+
+// Execute with explicit max fee
+const { transaction_hash } = await account.execute({
+  contractAddress: CONTRACT_ADDRESS,
+  entrypoint: 'transfer',
+  calldata: [RECIPIENT, AMOUNT],
+}, {
+  maxFee: fee.overall_fee * 120n / 100n, // 20% buffer
+});
+```
+
+## Multicall (Batch Execution)
+
+Execute multiple calls atomically:
+
+```ts
+// All calls execute in one transaction - all succeed or all revert
+const { transaction_hash } = await account.execute([
+  {
+    contractAddress: TOKEN_A,
+    entrypoint: 'approve',
+    calldata: [ROUTER, AMOUNT],
+  },
+  {
+    contractAddress: ROUTER,
+    entrypoint: 'swap',
+    calldata: [TOKEN_A, TOKEN_B, AMOUNT, MIN_OUT],
+  },
+]);
+
+// Estimate fee for multicall
+const fee = await account.estimateFee([
+  { contractAddress: TOKEN_A, entrypoint: 'approve', calldata: [...] },
+  { contractAddress: ROUTER, entrypoint: 'swap', calldata: [...] },
+]);
+```
+
+## Execution Options
+
+```ts
+const { transaction_hash } = await account.execute(call, {
+  // Explicit max fee (overrides estimation)
+  maxFee: 1000000000000000n,
+
+  // Fee multiplier (applied to estimation)
+  feeMultiplier: 1.5,
+
+  // Explicit nonce (default: auto-fetched)
+  nonce: 42n,
+
+  // Skip simulation (faster but risky)
+  skipSimulate: true,
+});
+```
+
+## API
+
+### createAccountInvoker
+
+```ts
+function createAccountInvoker(options: {
+  transport: Transport;
+  address: string;
+  signTransaction: (hash: bigint) => bigint[];
+}): AccountInvoker;
+```
+
+### AccountInvoker.execute
+
+```ts
+function execute(
+  calls: Call | Call[],
+  options?: ExecuteOptions
+): Promise<{ transaction_hash: string }>;
+```
+
+### AccountInvoker.estimateFee
+
+```ts
+function estimateFee(
+  calls: Call | Call[]
+): Promise<FeeEstimate>;
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Contract Write" icon="pen" href="/typescript/skills/contract-write">
+    Higher-level write helper with ABI encoding.
+  </Card>
+  <Card title="Fee Estimation" icon="calculator" href="/typescript/skills/fee-estimation">
+    Detailed fee estimation patterns.
+  </Card>
+  <Card title="Security" icon="shield" href="/typescript/concepts/security">
+    Transaction validation best practices.
+  </Card>
+</CardGroup>

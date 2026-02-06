@@ -1,0 +1,177 @@
+---
+title: "Event Filtering"
+description: "Decode and filter receipt events with ABI metadata."
+---
+
+This skill provides `decodeEvents`, `decodeEventsStrict`, and `compileEventFilter` helpers for processing contract events from transaction receipts. Copy it into your project and tailor filtering logic as needed.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/event-filtering src/skills/
+```
+
+## Basic Usage
+
+```ts
+import { decodeEvents } from './skills/event-filtering';
+
+// Decode all events from a receipt
+const { result: events } = decodeEvents(receipt, abi);
+
+for (const event of events) {
+  console.log(`${event.name} from ${event.fromAddress}`);
+  console.log('Args:', event.args);
+}
+```
+
+## Filtering Events
+
+### By Event Name
+
+Filter to specific event types:
+
+```ts
+const { result } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+});
+
+// All returned events are Transfer events
+```
+
+### By Contract Address
+
+Filter to events from a specific contract:
+
+```ts
+const { result } = decodeEvents(receipt, abi, {
+  address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+});
+
+// Shorthand: pass address string directly
+const { result: same } = decodeEvents(receipt, abi, '0x049d...');
+```
+
+### By Indexed Arguments
+
+Filter by indexed event parameters (keys):
+
+```ts
+// Find transfers FROM a specific address
+const { result } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { from: 0x123n },
+});
+
+// Find transfers TO a specific address
+const { result: toMe } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { to: myAddress },
+});
+
+// Combine multiple filters
+const { result: exact } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { from: 0x123n, to: 0x456n },
+});
+```
+
+### OR Matching
+
+Match any of multiple values for an indexed argument:
+
+```ts
+// Transfers FROM address A OR address B
+const { result } = decodeEvents(receipt, abi, {
+  event: 'Transfer',
+  args: { from: [0x111n, 0x333n] },
+});
+```
+
+<Tip>
+Only single-felt types (felt252, ContractAddress, u128, etc.) support OR arrays. Multi-felt types like u256 require exact matches.
+</Tip>
+
+### Combined Filters
+
+Combine address, event, and argument filters:
+
+```ts
+const { result } = decodeEvents(receipt, abi, {
+  address: '0x049d...',   // Contract address
+  event: 'Transfer',      // Event name
+  args: { to: myWallet }, // Indexed argument
+});
+```
+
+## Strict Mode
+
+Use `decodeEventsStrict` to error on unknown events:
+
+```ts
+import { decodeEventsStrict } from './skills/event-filtering';
+
+// Throws error if any event can't be decoded
+const { result, error } = decodeEventsStrict(receipt, abi);
+
+if (error) {
+  console.error('Unknown event at index:', error.message);
+}
+```
+
+<Warning>
+## Strict vs Non-Strict
+
+- `decodeEvents`: Silently skips unknown events
+- `decodeEventsStrict`: Errors on first unknown event
+
+Use strict mode when you expect all events to match your ABI.
+</Warning>
+
+## Compile Event Filters
+
+Pre-compile filters for reuse:
+
+```ts
+import { compileEventFilter } from './skills/event-filtering';
+
+const { result: filter } = compileEventFilter(abi, 'Transfer', {
+  from: 0x123n,
+});
+
+console.log('Selector:', filter.selector);
+console.log('Arg keys:', filter.argKeys);
+```
+
+## Decoded Event Structure
+
+Each decoded event contains:
+
+```ts
+interface DecodedReceiptEvent {
+  name: string;              // Event name from ABI
+  args: Record<string, any>; // Decoded arguments
+  index: number;             // Position in receipt.events
+  fromAddress: string;       // Emitting contract address
+}
+```
+
+## Notes
+
+- `decodeEvents` skips unknown events silently
+- `decodeEventsStrict` returns an error on the first unknown event
+- `compileEventFilter` builds raw key filters for reuse across multiple receipts
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Decode Events Guide" icon="code" href="/typescript/guides/abi/events">
+    In-depth event decoding patterns.
+  </Card>
+  <Card title="Contract Write" icon="pen" href="/typescript/skills/contract-write">
+    Execute transactions and get receipts with events.
+  </Card>
+  <Card title="WebSocket Provider" icon="plug" href="/typescript/skills/websocket-provider">
+    Subscribe to real-time events.
+  </Card>
+</CardGroup>

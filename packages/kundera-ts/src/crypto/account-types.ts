@@ -169,20 +169,20 @@ export interface UniversalDetails {
  * Both classHash and compiledClassHash must be provided.
  * Sierra class hash computation is complex (involves Cairo compiler)
  * and is out of scope for P0. Use external tools like:
- * - starkli class-hash <sierra.json>
- * - starknet.js: computeSierraContractClassHash()
+ * - `starkli class-hash <sierra.json>`
+ * - `starknet.js: computeSierraContractClassHash()`
  */
 export interface DeclarePayload {
 	/** Contract class (Sierra JSON) */
 	contract: unknown;
 	/**
 	 * Compiled class hash (Sierra -> CASM).
-	 * Compute using: starkli class-hash --casm <casm.json>
+	 * Compute using: `starkli class-hash --casm <casm.json>`
 	 */
 	compiledClassHash: string;
 	/**
 	 * Sierra class hash (required).
-	 * Compute using: starkli class-hash <sierra.json>
+	 * Compute using: `starkli class-hash <sierra.json>`
 	 */
 	classHash: string;
 }

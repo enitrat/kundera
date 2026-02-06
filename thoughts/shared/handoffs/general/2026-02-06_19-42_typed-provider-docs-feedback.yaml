@@ -1,0 +1,90 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Fixed all 11 docs friction points from kundera-ts-cli dogfooding + typed provider inference
+now: Consider F2 library-level fix (RpcError extends Error) if plain objects become a real pain point
+
+test: pnpm typecheck && pnpm test:run
+
+done_this_session:
+  - task: "F1: Typed return inference — JSDoc literal method types on 37 Rpc builders + HttpProvider/WebSocketProvider implement TypedProvider<StarknetRpcSchema>"
+    files: [packages/kundera-ts/src/jsonrpc/starknet/*.js, packages/kundera-ts/src/provider/HttpProvider.ts, packages/kundera-ts/src/provider/WebSocketProvider.ts, packages/kundera-ts/src/provider/HttpProvider.test.ts]
+  - task: "Committed kundera-ts-cli example (11 commands, FEEDBACK.md with friction report)"
+    files: [examples/kundera-ts-cli/]
+  - task: "F3: Fixed HttpProvider constructor in domain-primitives.mdx (string form → options object)"
+    files: [packages/kundera-ts/docs/primitives/domain-primitives.mdx]
+  - task: "F5+F9: Quickstart 'Call a Contract' rewritten with computeSelectorHex + encodeCalldata/decodeOutput; CLI balance command uses ABI"
+    files: [packages/kundera-ts/docs/getting-started/quickstart.mdx, examples/kundera-ts-cli/src/commands/balance.ts]
+  - task: "F7: Removed decodeShortString/encodeShortString re-export from abi (primitives only); fixed kundera-effect import"
+    files: [packages/kundera-ts/src/abi/index.ts, packages/kundera-ts/src/abi/index.test.ts, packages/kundera-effect/src/abi/index.ts]
+  - task: "F8: Added BlockId type documentation to jsonrpc.mdx"
+    files: [packages/kundera-ts/docs/api/jsonrpc.mdx]
+  - task: "F11: Replaced all placeholder URLs with https://api.zan.top/public/starknet-sepolia across 7 doc files"
+    files: [packages/kundera-ts/docs/api/jsonrpc.mdx, packages/kundera-ts/docs/api/provider.mdx, packages/kundera-ts/docs/index.mdx, packages/kundera-ts/docs/overview/architecture.mdx, packages/kundera-ts/docs/guides/provider/providers.mdx, packages/kundera-ts/docs/concepts/event-filtering.mdx, packages/kundera-ts/docs/getting-started/quickstart.mdx]
+  - task: "F2: Documented actual RPC error shape (plain { code, message } objects, not Error instances)"
+    files: [packages/kundera-ts/docs/guides/provider/providers.mdx]
+  - task: "Committed and pushed all generated docs (docs/typescript/ copies, docs.json, setup script)"
+    files: [docs/, scripts/setup-docs.ts, pnpm-lock.yaml]
+  - task: "Removed type casts from CLI example commands (now unnecessary with typed provider)"
+    files: [examples/kundera-ts-cli/src/commands/nonce.ts, examples/kundera-ts-cli/src/commands/balance.ts, examples/kundera-ts-cli/src/commands/storage.ts, examples/kundera-ts-cli/src/commands/chainId.ts, examples/kundera-ts-cli/src/commands/classHash.ts, examples/kundera-ts-cli/src/commands/blockHash.ts]
+
+blockers: []
+
+questions:
+  - "Should RpcError become a class (extends Error) in the future? Voltaire has ProviderRpcError class but doesn't wire it into HttpProvider either"
+
+decisions:
+  - jsdoc_literal_types: "Keep builders as .js with JSDoc literal return types (e.g. @returns {{ method: 'starknet_blockNumber', params: [] }}) — tsup preserves these in .d.ts after build. No need to convert to .ts."
+  - f2_docs_not_code: "F2 resolved by documenting actual error shape rather than wrapping in Error class — matches Voltaire's approach"
+  - f4_skip: "F4 (param ordering) resolved by typed builder inference — IDE shows param types"
+  - f6_skip: "F6 (chain ID decoding) not needed — hex chain ID is the useful value"
+  - f7_breaking: "Removed abi re-export of decodeShortString (breaking for abi importers) — alpha so acceptable"
+
+findings:
+  - dist_stale_gotcha: "After changing JSDoc types in .js builders, must run pnpm build to regenerate dist/ .d.ts files. CLI example imports from dist via package subpath exports, not source."
+  - tsup_preserves_jsdoc_literals: "tsup declaration emit faithfully preserves JSDoc @returns literal object types in generated .d.ts — no need to convert to .ts"
+  - voltaire_same_bug: "Voltaire's HttpProvider.ts:112-121 throws plain RpcError objects too, despite having ProviderRpcError class"
+
+worked:
+  - "JSDoc literal return types on .js builders flow through RequestFn<StarknetRpcSchema> → typed returns"
+  - "Precommit docgen hook (docs:generate → docs:setup) handles copying source docs to docs/typescript/"
+
+failed:
+  - "Initial assumption that dist was already built — user caught that types still showed unknown because dist was stale"
+
+next:
+  - "Consider RpcError class if plain object errors cause more friction"
+  - "kundera-effect jsonrpc migration (wraps removed async executors) — separate PR"
+  - "Effect Schema wrappers for domain primitives — deferred"
+
+files:
+  created:
+    - examples/kundera-ts-cli/
+    - packages/kundera-ts/docs/primitives/domain-primitives.mdx
+    - docs/typescript/comparisons.mdx
+    - docs/typescript/index.mdx
+    - packages/kundera-ts/docs/overview.mdx
+  modified:
+    - packages/kundera-ts/src/jsonrpc/starknet/*.js (37 builder files)
+    - packages/kundera-ts/src/provider/HttpProvider.ts
+    - packages/kundera-ts/src/provider/WebSocketProvider.ts
+    - packages/kundera-ts/src/provider/HttpProvider.test.ts
+    - packages/kundera-ts/src/abi/index.ts
+    - packages/kundera-ts/src/abi/index.test.ts
+    - packages/kundera-effect/src/abi/index.ts
+    - packages/kundera-ts/docs/getting-started/quickstart.mdx
+    - packages/kundera-ts/docs/api/jsonrpc.mdx
+    - packages/kundera-ts/docs/api/provider.mdx
+    - packages/kundera-ts/docs/guides/provider/providers.mdx
+    - packages/kundera-ts/docs/index.mdx
+    - packages/kundera-ts/docs/overview/architecture.mdx
+    - packages/kundera-ts/docs/concepts/event-filtering.mdx
+    - examples/kundera-ts-cli/FEEDBACK.md
+    - examples/kundera-ts-cli/src/commands/balance.ts
+    - docs/ (regenerated copies)
+    - scripts/setup-docs.ts
+    - pnpm-lock.yaml

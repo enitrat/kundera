@@ -11,564 +11,1002 @@ description: Auto-generated API documentation
 
 # Rpc
 
+Starknet RPC Module
+
+Tree-shakeable JSON-RPC request builders for Starknet.
+
 ## Variables
 
-### Starknet
+### AddDeclareTransactionRequest()
 
-> `const` **Starknet**: `object`
+> `const` **AddDeclareTransactionRequest**: (`transaction`) => `object` = `_addDeclareTransaction.AddDeclareTransactionRequest`
 
-Defined in: [jsonrpc/namespace.ts:64](https://github.com/enitrat/kundera/blob/365328815c10c34d14b49bf4bcbeea063853210c/packages/kundera-ts/src/jsonrpc/namespace.ts#L64)
+Defined in: [jsonrpc/starknet/methods.js:85](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L85)
 
-#### Type Declaration
+#### Parameters
 
-##### AddDeclareTransactionRequest()
-
-> `readonly` **AddDeclareTransactionRequest**(`transaction`): [`RequestArguments`](../../provider.mdx#requestarguments)
-
-###### Parameters
-
-###### transaction
+##### transaction
 
 [`BroadcastedDeclareTxn`](../index.mdx#broadcasteddeclaretxn)
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### AddDeployAccountTransactionRequest()
+##### method
 
-> `readonly` **AddDeployAccountTransactionRequest**(`transaction`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_addDeclareTransaction"`
 
-###### Parameters
+##### params
 
-###### transaction
+> **params**: \[[`BroadcastedDeclareTxn`](../index.mdx#broadcasteddeclaretxn)\]
+
+***
+
+### AddDeployAccountTransactionRequest()
+
+> `const` **AddDeployAccountTransactionRequest**: (`transaction`) => `object` = `_addDeployAccountTransaction.AddDeployAccountTransactionRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:87](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L87)
+
+#### Parameters
+
+##### transaction
 
 [`BroadcastedDeployAccountTxn`](../index.mdx#broadcasteddeployaccounttxn)
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### AddInvokeTransactionRequest()
+##### method
 
-> `readonly` **AddInvokeTransactionRequest**(`transaction`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_addDeployAccountTransaction"`
 
-###### Parameters
+##### params
 
-###### transaction
+> **params**: \[[`BroadcastedDeployAccountTxn`](../index.mdx#broadcasteddeployaccounttxn)\]
+
+***
+
+### AddInvokeTransactionRequest()
+
+> `const` **AddInvokeTransactionRequest**: (`transaction`) => `object` = `_addInvokeTransaction.AddInvokeTransactionRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:83](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L83)
+
+#### Parameters
+
+##### transaction
 
 [`BroadcastedInvokeTxn`](../index.mdx#broadcastedinvoketxn)
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### BlockHashAndNumberRequest()
+##### method
 
-> `readonly` **BlockHashAndNumberRequest**(): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_addInvokeTransaction"`
 
-###### Returns
+##### params
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+> **params**: \[[`BroadcastedInvokeTxn`](../index.mdx#broadcastedinvoketxn)\]
 
-##### BlockNumberRequest()
+***
 
-> `readonly` **BlockNumberRequest**(): [`RequestArguments`](../../provider.mdx#requestarguments)
+### BlockHashAndNumberRequest()
 
-###### Returns
+> `const` **BlockHashAndNumberRequest**: () => `object` = `_blockHashAndNumber.BlockHashAndNumberRequest`
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+Defined in: [jsonrpc/starknet/methods.js:48](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L48)
 
-##### CallRequest()
+#### Returns
 
-> `readonly` **CallRequest**(`request`, `blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-###### Parameters
+##### method
 
-###### request
+> **method**: `"starknet_blockHashAndNumber"`
+
+##### params
+
+> **params**: \[\]
+
+***
+
+### BlockNumberRequest()
+
+> `const` **BlockNumberRequest**: () => `object` = `_blockNumber.BlockNumberRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:47](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L47)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"starknet_blockNumber"`
+
+##### params
+
+> **params**: \[\]
+
+***
+
+### CallRequest()
+
+> `const` **CallRequest**: (`request`, `blockId?`) => `object` = `_call.CallRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:52](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L52)
+
+#### Parameters
+
+##### request
 
 [`FunctionCall`](../index.mdx#functioncall)
 
-###### blockId
+##### blockId?
 
-[`BlockId`](../index.mdx#blockid) = `'latest'`
+[`BlockId`](../index.mdx#blockid) = `"latest"`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### ChainIdRequest()
+##### method
 
-> `readonly` **ChainIdRequest**(): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_call"`
 
-###### Returns
+##### params
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+> **params**: \[[`FunctionCall`](../index.mdx#functioncall), [`BlockId`](../index.mdx#blockid)\]
 
-##### EstimateFeeRequest()
+***
 
-> `readonly` **EstimateFeeRequest**(`transactions`, `simulationFlags`, `blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+### ChainIdRequest()
 
-###### Parameters
+> `const` **ChainIdRequest**: () => `object` = `_chainId.ChainIdRequest`
 
-###### transactions
+Defined in: [jsonrpc/starknet/methods.js:50](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L50)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"starknet_chainId"`
+
+##### params
+
+> **params**: \[\]
+
+***
+
+### EstimateFeeRequest()
+
+> `const` **EstimateFeeRequest**: (`transactions`, `simulationFlags?`, `blockId?`) => `object` = `_estimateFee.EstimateFeeRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:53](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L53)
+
+#### Parameters
+
+##### transactions
 
 [`BroadcastedTxn`](../index.mdx#broadcastedtxn)[]
 
-###### simulationFlags
+##### simulationFlags?
 
 [`SimulationFlag`](../index.mdx#simulationflag)[] = `[]`
 
-###### blockId
+##### blockId?
 
-[`BlockId`](../index.mdx#blockid) = `'latest'`
+[`BlockId`](../index.mdx#blockid) = `"latest"`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### EstimateMessageFeeRequest()
+##### method
 
-> `readonly` **EstimateMessageFeeRequest**(`message`, `blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_estimateFee"`
 
-###### Parameters
+##### params
 
-###### message
+> **params**: \[[`BroadcastedTxn`](../index.mdx#broadcastedtxn)[], [`SimulationFlag`](../index.mdx#simulationflag)[], [`BlockId`](../index.mdx#blockid)\]
+
+***
+
+### EstimateMessageFeeRequest()
+
+> `const` **EstimateMessageFeeRequest**: (`message`, `blockId?`) => `object` = `_estimateMessageFee.EstimateMessageFeeRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:54](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L54)
+
+#### Parameters
+
+##### message
 
 [`MsgFromL1`](../index.mdx#msgfroml1)
 
-###### blockId
+##### blockId?
 
-[`BlockId`](../index.mdx#blockid) = `'latest'`
+[`BlockId`](../index.mdx#blockid) = `"latest"`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetBlockTransactionCountRequest()
+##### method
 
-> `readonly` **GetBlockTransactionCountRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_estimateMessageFee"`
 
-###### Parameters
+##### params
 
-###### blockId
+> **params**: \[[`MsgFromL1`](../index.mdx#msgfroml1), [`BlockId`](../index.mdx#blockid)\]
 
-[`BlockId`](../index.mdx#blockid) = `'latest'`
+***
 
-###### Returns
+### GetBlockTransactionCountRequest()
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+> `const` **GetBlockTransactionCountRequest**: (`blockId?`) => `object` = `_getBlockTransactionCount.GetBlockTransactionCountRequest`
 
-##### GetBlockWithReceiptsRequest()
+Defined in: [jsonrpc/starknet/methods.js:61](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L61)
 
-> `readonly` **GetBlockWithReceiptsRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+#### Parameters
 
-###### Parameters
+##### blockId?
 
-###### blockId
+[`BlockId`](../index.mdx#blockid) = `"latest"`
 
-[`BlockId`](../index.mdx#blockid) = `'latest'`
+#### Returns
 
-###### Returns
+`object`
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+##### method
 
-##### GetBlockWithTxHashesRequest()
+> **method**: `"starknet_getBlockTransactionCount"`
 
-> `readonly` **GetBlockWithTxHashesRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+##### params
 
-###### Parameters
+> **params**: \[[`BlockId`](../index.mdx#blockid)\]
 
-###### blockId
+***
 
-[`BlockId`](../index.mdx#blockid) = `'latest'`
+### GetBlockWithReceiptsRequest()
 
-###### Returns
+> `const` **GetBlockWithReceiptsRequest**: (`blockId?`) => `object` = `_getBlockWithReceipts.GetBlockWithReceiptsRequest`
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+Defined in: [jsonrpc/starknet/methods.js:59](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L59)
 
-##### GetBlockWithTxsRequest()
+#### Parameters
 
-> `readonly` **GetBlockWithTxsRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+##### blockId?
 
-###### Parameters
+[`BlockId`](../index.mdx#blockid) = `"latest"`
 
-###### blockId
+#### Returns
 
-[`BlockId`](../index.mdx#blockid) = `'latest'`
+`object`
 
-###### Returns
+##### method
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getBlockWithReceipts"`
 
-##### GetClassAtRequest()
+##### params
 
-> `readonly` **GetClassAtRequest**(`blockId`, `contractAddress`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **params**: \[[`BlockId`](../index.mdx#blockid)\]
 
-###### Parameters
+***
 
-###### blockId
+### GetBlockWithTxHashesRequest()
+
+> `const` **GetBlockWithTxHashesRequest**: (`blockId?`) => `object` = `_getBlockWithTxHashes.GetBlockWithTxHashesRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:56](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L56)
+
+#### Parameters
+
+##### blockId?
+
+[`BlockId`](../index.mdx#blockid) = `"latest"`
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"starknet_getBlockWithTxHashes"`
+
+##### params
+
+> **params**: \[[`BlockId`](../index.mdx#blockid)\]
+
+***
+
+### GetBlockWithTxsRequest()
+
+> `const` **GetBlockWithTxsRequest**: (`blockId?`) => `object` = `_getBlockWithTxs.GetBlockWithTxsRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:58](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L58)
+
+#### Parameters
+
+##### blockId?
+
+[`BlockId`](../index.mdx#blockid) = `"latest"`
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"starknet_getBlockWithTxs"`
+
+##### params
+
+> **params**: \[[`BlockId`](../index.mdx#blockid)\]
+
+***
+
+### GetClassAtRequest()
+
+> `const` **GetClassAtRequest**: (`blockId`, `contractAddress`) => `object` = `_getClassAt.GetClassAtRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:77](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L77)
+
+#### Parameters
+
+##### blockId
 
 [`BlockId`](../index.mdx#blockid)
 
-###### contractAddress
+##### contractAddress
 
 `string`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetClassHashAtRequest()
+##### method
 
-> `readonly` **GetClassHashAtRequest**(`blockId`, `contractAddress`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getClassAt"`
 
-###### Parameters
+##### params
 
-###### blockId
+> **params**: \[[`BlockId`](../index.mdx#blockid), `string`\]
+
+***
+
+### GetClassHashAtRequest()
+
+> `const` **GetClassHashAtRequest**: (`blockId`, `contractAddress`) => `object` = `_getClassHashAt.GetClassHashAtRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:76](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L76)
+
+#### Parameters
+
+##### blockId
 
 [`BlockId`](../index.mdx#blockid)
 
-###### contractAddress
+##### contractAddress
 
 `string`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetClassRequest()
+##### method
 
-> `readonly` **GetClassRequest**(`blockId`, `classHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getClassHashAt"`
 
-###### Parameters
+##### params
 
-###### blockId
+> **params**: \[[`BlockId`](../index.mdx#blockid), `string`\]
+
+***
+
+### GetClassRequest()
+
+> `const` **GetClassRequest**: (`blockId`, `classHash`) => `object` = `_getClass.GetClassRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:75](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L75)
+
+#### Parameters
+
+##### blockId
 
 [`BlockId`](../index.mdx#blockid)
 
-###### classHash
+##### classHash
 
 `string`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetEventsRequest()
+##### method
 
-> `readonly` **GetEventsRequest**(`filter`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getClass"`
 
-###### Parameters
+##### params
 
-###### filter
+> **params**: \[[`BlockId`](../index.mdx#blockid), `string`\]
+
+***
+
+### GetEventsRequest()
+
+> `const` **GetEventsRequest**: (`filter`) => `object` = `_getEvents.GetEventsRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:78](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L78)
+
+#### Parameters
+
+##### filter
 
 [`EventsFilter`](../index.mdx#eventsfilter)
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetMessagesStatusRequest()
+##### method
 
-> `readonly` **GetMessagesStatusRequest**(`l1TransactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getEvents"`
 
-###### Parameters
+##### params
 
-###### l1TransactionHash
+> **params**: \[[`EventsFilter`](../index.mdx#eventsfilter)\]
+
+***
+
+### GetMessagesStatusRequest()
+
+> `const` **GetMessagesStatusRequest**: (`l1TransactionHash`) => `object` = `_getMessagesStatus.GetMessagesStatusRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:67](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L67)
+
+#### Parameters
+
+##### l1TransactionHash
 
 `string`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetNonceRequest()
+##### method
 
-> `readonly` **GetNonceRequest**(`blockId`, `contractAddress`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getMessagesStatus"`
 
-###### Parameters
+##### params
 
-###### blockId
+> **params**: \[`string`\]
+
+***
+
+### GetNonceRequest()
+
+> `const` **GetNonceRequest**: (`blockId`, `contractAddress`) => `object` = `_getNonce.GetNonceRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:79](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L79)
+
+#### Parameters
+
+##### blockId
 
 [`BlockId`](../index.mdx#blockid)
 
-###### contractAddress
+##### contractAddress
 
 `string`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetStateUpdateRequest()
+##### method
 
-> `readonly` **GetStateUpdateRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getNonce"`
 
-###### Parameters
+##### params
 
-###### blockId
+> **params**: \[[`BlockId`](../index.mdx#blockid), `string`\]
 
-[`BlockId`](../index.mdx#blockid) = `'latest'`
+***
 
-###### Returns
+### GetStateUpdateRequest()
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+> `const` **GetStateUpdateRequest**: (`blockId?`) => `object` = `_getStateUpdate.GetStateUpdateRequest`
 
-##### GetStorageAtRequest()
+Defined in: [jsonrpc/starknet/methods.js:63](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L63)
 
-> `readonly` **GetStorageAtRequest**(`contractAddress`, `key`, `blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+#### Parameters
 
-###### Parameters
+##### blockId?
 
-###### contractAddress
+[`BlockId`](../index.mdx#blockid) = `"latest"`
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"starknet_getStateUpdate"`
+
+##### params
+
+> **params**: \[[`BlockId`](../index.mdx#blockid)\]
+
+***
+
+### GetStorageAtRequest()
+
+> `const` **GetStorageAtRequest**: (`contractAddress`, `key`, `blockId?`) => `object` = `_getStorageAt.GetStorageAtRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:64](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L64)
+
+#### Parameters
+
+##### contractAddress
 
 `string`
 
-###### key
+##### key
 
 `string`
 
-###### blockId
+##### blockId?
 
-[`BlockId`](../index.mdx#blockid) = `'latest'`
+[`BlockId`](../index.mdx#blockid) = `"latest"`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetStorageProofRequest()
+##### method
 
-> `readonly` **GetStorageProofRequest**(`blockId`, `classHashes`, `contractAddresses`, `contractStorageKeys`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getStorageAt"`
 
-###### Parameters
+##### params
 
-###### blockId
+> **params**: \[`string`, `string`, [`BlockId`](../index.mdx#blockid)\]
+
+***
+
+### GetStorageProofRequest()
+
+> `const` **GetStorageProofRequest**: (`blockId`, `classHashes`, `contractAddresses`, `contractStorageKeys`) => `object` = `_getStorageProof.GetStorageProofRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:80](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L80)
+
+#### Parameters
+
+##### blockId
 
 [`BlockId`](../index.mdx#blockid)
 
-###### classHashes
+##### classHashes
 
 `string`[]
 
-###### contractAddresses
+##### contractAddresses
 
 `string`[]
 
-###### contractStorageKeys
+##### contractStorageKeys
 
 `object`[]
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetTransactionByBlockIdAndIndexRequest()
+##### method
 
-> `readonly` **GetTransactionByBlockIdAndIndexRequest**(`blockId`, `index`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getStorageProof"`
 
-###### Parameters
+##### params
 
-###### blockId
+> **params**: \[[`BlockId`](../index.mdx#blockid), `string`[], `string`[], `object`[]\]
+
+***
+
+### GetTransactionByBlockIdAndIndexRequest()
+
+> `const` **GetTransactionByBlockIdAndIndexRequest**: (`blockId`, `index`) => `object` = `_getTransactionByBlockIdAndIndex.GetTransactionByBlockIdAndIndexRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:71](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L71)
+
+#### Parameters
+
+##### blockId
 
 [`BlockId`](../index.mdx#blockid)
 
-###### index
+##### index
 
 `number`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetTransactionByHashRequest()
+##### method
 
-> `readonly` **GetTransactionByHashRequest**(`transactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getTransactionByBlockIdAndIndex"`
 
-###### Parameters
+##### params
 
-###### transactionHash
+> **params**: \[[`BlockId`](../index.mdx#blockid), `number`\]
 
-`string`
+***
 
-###### Returns
+### GetTransactionByHashRequest()
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+> `const` **GetTransactionByHashRequest**: (`transactionHash`) => `object` = `_getTransactionByHash.GetTransactionByHashRequest`
 
-##### GetTransactionReceiptRequest()
+Defined in: [jsonrpc/starknet/methods.js:69](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L69)
 
-> `readonly` **GetTransactionReceiptRequest**(`transactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+#### Parameters
 
-###### Parameters
-
-###### transactionHash
+##### transactionHash
 
 `string`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### GetTransactionStatusRequest()
+##### method
 
-> `readonly` **GetTransactionStatusRequest**(`transactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getTransactionByHash"`
 
-###### Parameters
+##### params
 
-###### transactionHash
+> **params**: \[`string`\]
+
+***
+
+### GetTransactionReceiptRequest()
+
+> `const` **GetTransactionReceiptRequest**: (`transactionHash`) => `object` = `_getTransactionReceipt.GetTransactionReceiptRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:73](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L73)
+
+#### Parameters
+
+##### transactionHash
 
 `string`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### SimulateTransactionsRequest()
+##### method
 
-> `readonly` **SimulateTransactionsRequest**(`blockId`, `transactions`, `simulationFlags`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_getTransactionReceipt"`
 
-###### Parameters
+##### params
 
-###### blockId
+> **params**: \[`string`\]
+
+***
+
+### GetTransactionStatusRequest()
+
+> `const` **GetTransactionStatusRequest**: (`transactionHash`) => `object` = `_getTransactionStatus.GetTransactionStatusRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:65](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L65)
+
+#### Parameters
+
+##### transactionHash
+
+`string`
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"starknet_getTransactionStatus"`
+
+##### params
+
+> **params**: \[`string`\]
+
+***
+
+### SimulateTransactionsRequest()
+
+> `const` **SimulateTransactionsRequest**: (`blockId`, `transactions`, `simulationFlags?`) => `object` = `_simulateTransactions.SimulateTransactionsRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:93](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L93)
+
+#### Parameters
+
+##### blockId
 
 [`BlockId`](../index.mdx#blockid)
 
-###### transactions
+##### transactions
 
 [`BroadcastedTxn`](../index.mdx#broadcastedtxn)[]
 
-###### simulationFlags
+##### simulationFlags?
 
 [`SimulationFlag`](../index.mdx#simulationflag)[] = `[]`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### SpecVersionRequest()
+##### method
 
-> `readonly` **SpecVersionRequest**(): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_simulateTransactions"`
 
-###### Returns
+##### params
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+> **params**: \[[`BlockId`](../index.mdx#blockid), [`BroadcastedTxn`](../index.mdx#broadcastedtxn)[], [`SimulationFlag`](../index.mdx#simulationflag)[]\]
 
-##### SubscribeEventsRequest()
+***
 
-> `readonly` **SubscribeEventsRequest**(`params?`): [`RequestArguments`](../../provider.mdx#requestarguments)
+### SpecVersionRequest()
 
-###### Parameters
+> `const` **SpecVersionRequest**: () => `object` = `_specVersion.SpecVersionRequest`
 
-###### params?
+Defined in: [jsonrpc/starknet/methods.js:46](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L46)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"starknet_specVersion"`
+
+##### params
+
+> **params**: \[\]
+
+***
+
+### SubscribeEventsRequest()
+
+> `const` **SubscribeEventsRequest**: (`params?`) => `object` = `_subscribeEvents.SubscribeEventsRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:101](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L101)
+
+#### Parameters
+
+##### params?
 
 [`EventsSubscriptionParams`](../index.mdx#eventssubscriptionparams)
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### SubscribeNewHeadsRequest()
+##### method
 
-> `readonly` **SubscribeNewHeadsRequest**(`params?`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_subscribeEvents"`
 
-###### Parameters
+##### params
 
-###### params?
+> **params**: `unknown`[]
+
+***
+
+### SubscribeNewHeadsRequest()
+
+> `const` **SubscribeNewHeadsRequest**: (`params?`) => `object` = `_subscribeNewHeads.SubscribeNewHeadsRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:99](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L99)
+
+#### Parameters
+
+##### params?
 
 [`NewHeadsSubscriptionParams`](../index.mdx#newheadssubscriptionparams)
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### SubscribeNewTransactionReceiptsRequest()
+##### method
 
-> `readonly` **SubscribeNewTransactionReceiptsRequest**(`params?`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_subscribeNewHeads"`
 
-###### Parameters
+##### params
 
-###### params?
+> **params**: `unknown`[]
+
+***
+
+### SubscribeNewTransactionReceiptsRequest()
+
+> `const` **SubscribeNewTransactionReceiptsRequest**: (`params?`) => `object` = `_subscribeNewTransactionReceipts.SubscribeNewTransactionReceiptsRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:106](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L106)
+
+#### Parameters
+
+##### params?
 
 [`TransactionReceiptsSubscriptionParams`](../index.mdx#transactionreceiptssubscriptionparams)
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### SubscribeNewTransactionsRequest()
+##### method
 
-> `readonly` **SubscribeNewTransactionsRequest**(`params?`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_subscribeNewTransactionReceipts"`
 
-###### Parameters
+##### params
 
-###### params?
+> **params**: `unknown`[]
+
+***
+
+### SubscribeNewTransactionsRequest()
+
+> `const` **SubscribeNewTransactionsRequest**: (`params?`) => `object` = `_subscribeNewTransactions.SubscribeNewTransactionsRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:104](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L104)
+
+#### Parameters
+
+##### params?
 
 [`PendingTransactionsSubscriptionParams`](../index.mdx#pendingtransactionssubscriptionparams)
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### SubscribeTransactionStatusRequest()
+##### method
 
-> `readonly` **SubscribeTransactionStatusRequest**(`transactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_subscribeNewTransactions"`
 
-###### Parameters
+##### params
 
-###### transactionHash
+> **params**: `unknown`[]
+
+***
+
+### SubscribeTransactionStatusRequest()
+
+> `const` **SubscribeTransactionStatusRequest**: (`transactionHash`) => `object` = `_subscribeTransactionStatus.SubscribeTransactionStatusRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:102](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L102)
+
+#### Parameters
+
+##### transactionHash
 
 `string`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### SyncingRequest()
+##### method
 
-> `readonly` **SyncingRequest**(): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_subscribeTransactionStatus"`
 
-###### Returns
+##### params
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+> **params**: \[`string`\]
 
-##### TraceBlockTransactionsRequest()
+***
 
-> `readonly` **TraceBlockTransactionsRequest**(`blockId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+### SyncingRequest()
 
-###### Parameters
+> `const` **SyncingRequest**: () => `object` = `_syncing.SyncingRequest`
 
-###### blockId
+Defined in: [jsonrpc/starknet/methods.js:51](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L51)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"starknet_syncing"`
+
+##### params
+
+> **params**: \[\]
+
+***
+
+### TraceBlockTransactionsRequest()
+
+> `const` **TraceBlockTransactionsRequest**: (`blockId`) => `object` = `_traceBlockTransactions.TraceBlockTransactionsRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:95](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L95)
+
+#### Parameters
+
+##### blockId
 
 [`BlockId`](../index.mdx#blockid)
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
 
-##### TraceTransactionRequest()
+##### method
 
-> `readonly` **TraceTransactionRequest**(`transactionHash`): [`RequestArguments`](../../provider.mdx#requestarguments)
+> **method**: `"starknet_traceBlockTransactions"`
 
-###### Parameters
+##### params
 
-###### transactionHash
+> **params**: \[[`BlockId`](../index.mdx#blockid)\]
 
-`string`
+***
 
-###### Returns
+### TraceTransactionRequest()
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+> `const` **TraceTransactionRequest**: (`transactionHash`) => `object` = `_traceTransaction.TraceTransactionRequest`
 
-##### UnsubscribeRequest()
+Defined in: [jsonrpc/starknet/methods.js:91](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L91)
 
-> `readonly` **UnsubscribeRequest**(`subscriptionId`): [`RequestArguments`](../../provider.mdx#requestarguments)
+#### Parameters
 
-###### Parameters
-
-###### subscriptionId
+##### transactionHash
 
 `string`
 
-###### Returns
+#### Returns
 
-[`RequestArguments`](../../provider.mdx#requestarguments)
+`object`
+
+##### method
+
+> **method**: `"starknet_traceTransaction"`
+
+##### params
+
+> **params**: \[`string`\]
+
+***
+
+### UnsubscribeRequest()
+
+> `const` **UnsubscribeRequest**: (`subscriptionId`) => `object` = `_unsubscribe.UnsubscribeRequest`
+
+Defined in: [jsonrpc/starknet/methods.js:108](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/jsonrpc/starknet/methods.js#L108)
+
+#### Parameters
+
+##### subscriptionId
+
+`string`
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"starknet_unsubscribe"`
+
+##### params
+
+> **params**: \[`string`\]

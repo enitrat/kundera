@@ -1,0 +1,230 @@
+---
+title: "Get Contract"
+description: "Type-safe contract factory with full ABI type inference."
+---
+
+A typed contract factory that provides full type inference for function arguments and return values. This is the **reference pattern** for building type-safe contract wrappers.
+
+## Quick Start
+
+```bash
+cp packages/kundera-ts/docs/skills/get-contract.ts src/skills/
+```
+
+## Basic Usage
+
+```ts
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import { getContract } from './skills/get-contract';
+
+// ABI must be `as const` for type inference
+const ERC20_ABI = [
+  {
+    type: 'function',
+    name: 'balance_of',
+    inputs: [{ name: 'account', type: 'core::starknet::contract_address::ContractAddress' }],
+    outputs: [{ type: 'core::integer::u256' }],
+    state_mutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'transfer',
+    inputs: [
+      { name: 'recipient', type: 'core::starknet::contract_address::ContractAddress' },
+      { name: 'amount', type: 'core::integer::u256' },
+    ],
+    outputs: [{ type: 'core::bool' }],
+    state_mutability: 'external',
+  },
+] as const;
+
+const transport = httpTransport('https://api.zan.top/public/starknet-mainnet');
+
+const contract = getContract({
+  abi: ERC20_ABI,
+  address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+  transport,
+});
+
+// Fully typed - function name autocompletes, args/return inferred
+const { result, error } = await contract.read('balance_of', [ContractAddress('0x123...')]);
+//     ^? Uint256Type (inferred from ABI)
+```
+
+## How Type Inference Works
+
+The magic comes from Kundera's `InferReturn`, `InferArgs`, and `InferFunctionName` utility types:
+
+```ts
+import type { InferReturn, InferArgs, InferFunctionName } from '@kundera-sn/kundera-ts/abi';
+
+// Given an ABI and function name, extract types:
+type BalanceArgs = InferArgs<typeof ERC20_ABI, 'balance_of'>;
+//   ^? [ContractAddressType]
+
+type BalanceRet = InferReturn<typeof ERC20_ABI, 'balance_of'>;
+//   ^? Uint256Type
+
+type FnNames = InferFunctionName<typeof ERC20_ABI>;
+//   ^? 'balance_of' | 'transfer'
+```
+
+This pattern requires:
+1. **ABI as const** - TypeScript needs literal types to extract function info
+2. **Literal function name** - Pass `'balance_of'` not a `string` variable
+
+## Type-Safe Patterns
+
+### Autocomplete Function Names
+
+```ts
+// TypeScript autocompletes valid function names
+const result = await contract.read('balance_of', [...]);
+//                                 ^-- shows 'balance_of' | 'transfer' | ...
+```
+
+### Validate Arguments
+
+```ts
+// Type error: wrong argument type
+await contract.read('balance_of', [123]);
+//                                ^^^ Error: expected ContractAddressType
+
+// Type error: wrong number of arguments
+await contract.read('balance_of', []);
+//                                ^^ Error: expected 1 argument
+```
+
+### Infer Return Types
+
+```ts
+const { result } = await contract.read('balance_of', [address]);
+if (result) {
+  // result is Uint256Type, not unknown
+  console.log(result.toString());
+}
+```
+
+## Why `as const`?
+
+Without `as const`, TypeScript widens the ABI to generic types:
+
+```ts
+// Without as const - loses type info
+const abi = [{ type: 'function', name: 'foo', ... }];
+//    ^? { type: string, name: string, ... }[]
+
+// With as const - preserves literal types
+const abi = [{ type: 'function', name: 'foo', ... }] as const;
+//    ^? readonly [{ readonly type: 'function', readonly name: 'foo', ... }]
+```
+
+The type system needs the literal `'foo'` to map function names to their signatures.
+
+## Extending the Pattern
+
+### Add Write Support
+
+```ts
+import type {
+  StarknetAbi,
+  InferFunctionName,
+  InferArgs,
+  InferReturn
+} from '@kundera-sn/kundera-ts/abi';
+
+interface Contract<TAbi extends StarknetAbi> {
+  read<TFn extends InferFunctionName<TAbi> & string>(
+    fn: TFn,
+    args: InferArgs<TAbi, TFn>
+  ): Promise<ContractResult<InferReturn<TAbi, TFn>>>;
+
+  // Add write with account
+  write<TFn extends InferFunctionName<TAbi> & string>(
+    fn: TFn,
+    args: InferArgs<TAbi, TFn>,
+    account: Account
+  ): Promise<ContractResult<TransactionHash>>;
+}
+```
+
+### Add Event Decoding
+
+```ts
+import type {
+  StarknetAbi,
+  ExtractAbiEventNames,
+  AbiEventArgs
+} from '@kundera-sn/kundera-ts/abi';
+
+interface Contract<TAbi extends StarknetAbi> {
+  // ...existing methods
+
+  decodeEvent<TEvent extends ExtractAbiEventNames<TAbi>>(
+    eventName: TEvent,
+    data: { keys: string[]; data: string[] }
+  ): AbiEventArgs<TAbi, TEvent>;
+}
+```
+
+### Compose Multiple Contracts
+
+```ts
+const eth = getContract({ abi: ERC20_ABI, address: ETH_ADDRESS, transport });
+const usdc = getContract({ abi: ERC20_ABI, address: USDC_ADDRESS, transport });
+const router = getContract({ abi: ROUTER_ABI, address: ROUTER_ADDRESS, transport });
+
+// Each contract has its own typed interface
+const ethBalance = await eth.read('balance_of', [myAddress]);
+const usdcBalance = await usdc.read('balance_of', [myAddress]);
+const quote = await router.read('get_amount_out', [amount, path]);
+```
+
+## Error Handling
+
+```ts
+const { result, error } = await contract.read('balance_of', [address]);
+
+if (error) {
+  switch (error.code) {
+    case 'ENCODE_ERROR':
+      // Invalid arguments for ABI encoding
+      break;
+    case 'DECODE_ERROR':
+      // Failed to decode return data
+      break;
+    case 'RPC_ERROR':
+      // Network or contract execution error
+      break;
+  }
+}
+```
+
+## Block Parameter
+
+Read at specific block states:
+
+```ts
+// Latest finalized
+await contract.read('balance_of', [address], { blockId: 'latest' });
+
+// Specific block number
+await contract.read('balance_of', [address], { blockId: { block_number: 123456 } });
+
+// Specific block hash
+await contract.read('balance_of', [address], { blockId: { block_hash: '0xabc...' } });
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Contract Read" icon="book-open" href="/typescript/skills/contract-read">
+    Simple read helper without type inference.
+  </Card>
+  <Card title="Contract Write" icon="pen" href="/typescript/skills/contract-write">
+    State-changing calls with accounts.
+  </Card>
+  <Card title="ABI Types" icon="code" href="/typescript/guides/abi/types">
+    Understanding Cairo type mappings.
+  </Card>
+</CardGroup>

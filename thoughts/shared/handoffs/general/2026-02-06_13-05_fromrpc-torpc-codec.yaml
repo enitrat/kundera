@@ -1,0 +1,95 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Add fromRpc/toRpc codec layer converting wire-format RPC types to branded kundera primitives
+now: Effect integration (Phase 7) — wrap codec in Effect Schema transformOrFail for kundera-effect
+test: pnpm --filter @kundera-sn/kundera-ts test:run -- src/jsonrpc/rpc
+
+done_this_session:
+  - task: Phase 1 — fromHex on subtypes (ContractAddress, ClassHash, StorageKey)
+    files: [primitives/ContractAddress/fromHex.js, primitives/ClassHash/fromHex.js, primitives/StorageKey/fromHex.js]
+  - task: Phase 2 — Rich type definitions mirroring all wire-format types with branded primitives
+    files: [jsonrpc/rich.ts]
+  - task: Phase 3 — Shared conversion helpers (hexToFelt, hexToAddress, hexToClassHash + reverse)
+    files: [jsonrpc/rpc/helpers.js]
+  - task: Phase 4 — P0 converters (blockHeader, block, transaction, receipt)
+    files: [jsonrpc/rpc/blockHeader.js, jsonrpc/rpc/block.js, jsonrpc/rpc/transaction.js, jsonrpc/rpc/receipt.js]
+  - task: Phase 4b — P1/P2 converters (event, stateUpdate, feeEstimate, trace)
+    files: [jsonrpc/rpc/event.js, jsonrpc/rpc/stateUpdate.js, jsonrpc/rpc/feeEstimate.js, jsonrpc/rpc/trace.js]
+  - task: Phase 5 — Barrel export + package.json ./rpc subpath
+    files: [jsonrpc/rpc/index.ts, jsonrpc/index.ts, package.json]
+  - task: Phase 6 — Round-trip tests for all converters (8 test files)
+    files: [jsonrpc/rpc/*.test.ts]
+  - task: Committed and pushed to master (9933ff2), pre-commit hooks all passed
+    files: []
+
+blockers: []
+
+questions:
+  - Should Effect schemas (Phase 7) go in a separate PR or same branch?
+  - Hex canonicalization — toHex() returns 32-byte padded hex (0x000...abc). Should we add a compact toHex variant?
+
+decisions:
+  - single_commit: Voltaire refactor and fromRpc/toRpc were interdependent (shared index.ts), committed together
+  - no_new_hash_types: TransactionHash, BlockHash stay as Felt252Type — only ContractAddress, ClassHash, StorageKey get subtype branding
+  - canonicalized_hex: toRpc() returns 32-byte padded hex since Felt252.toHex() always pads. Tests use toBigInt() for value comparison
+  - manual_converters: No codegen or automatic reflection — each converter is handwritten, explicit, tree-shakeable
+
+findings:
+  - felt_hex_padding: Felt252.fromHex() normalizes to 32 bytes internally, so toHex() always returns 0x + 64 chars. Round-trip tests must compare via BigInt or canon() helper, not string equality with short-form input
+  - subtype_from_pattern: ContractAddress/ClassHash/StorageKey.from() already accepts hex strings via Felt252(), so fromHex() is a thin wrapper that delegates to Felt252.fromHex() + validation
+  - precommit_stash_interaction: Pre-commit hooks stash unstaged changes, which can break commits when staged/unstaged changes to the same file are interdependent
+
+worked:
+  - One-file-per-converter pattern with shared helpers — clean separation
+  - canon() test helper for hex normalization comparison
+  - Parallel task creation for tracking 8 phases
+
+failed:
+  - Test hex literals with non-hex chars (0x0salt, 0x0bh) — Felt252.fromHex rejects them
+  - Two-commit split failed because pre-commit stash reverted index.ts to old version
+
+next:
+  - Phase 7 — Effect Schema wrappers in kundera-effect/src/jsonrpc/schemas/ (separate PR)
+  - Consider adding compact hex output (strip leading zeros) as option
+  - Mintlify docs page for RPC codec usage patterns
+  - Update CLAUDE.md memory with RPC codec architecture
+
+files:
+  created:
+    - packages/kundera-ts/src/primitives/ContractAddress/fromHex.js
+    - packages/kundera-ts/src/primitives/ClassHash/fromHex.js
+    - packages/kundera-ts/src/primitives/StorageKey/fromHex.js
+    - packages/kundera-ts/src/jsonrpc/rich.ts
+    - packages/kundera-ts/src/jsonrpc/rpc/helpers.js
+    - packages/kundera-ts/src/jsonrpc/rpc/blockHeader.js
+    - packages/kundera-ts/src/jsonrpc/rpc/block.js
+    - packages/kundera-ts/src/jsonrpc/rpc/transaction.js
+    - packages/kundera-ts/src/jsonrpc/rpc/receipt.js
+    - packages/kundera-ts/src/jsonrpc/rpc/event.js
+    - packages/kundera-ts/src/jsonrpc/rpc/stateUpdate.js
+    - packages/kundera-ts/src/jsonrpc/rpc/feeEstimate.js
+    - packages/kundera-ts/src/jsonrpc/rpc/trace.js
+    - packages/kundera-ts/src/jsonrpc/rpc/index.ts
+    - packages/kundera-ts/src/jsonrpc/rpc/helpers.test.ts
+    - packages/kundera-ts/src/jsonrpc/rpc/blockHeader.test.ts
+    - packages/kundera-ts/src/jsonrpc/rpc/block.test.ts
+    - packages/kundera-ts/src/jsonrpc/rpc/transaction.test.ts
+    - packages/kundera-ts/src/jsonrpc/rpc/receipt.test.ts
+    - packages/kundera-ts/src/jsonrpc/rpc/event.test.ts
+    - packages/kundera-ts/src/jsonrpc/rpc/stateUpdate.test.ts
+    - packages/kundera-ts/src/jsonrpc/rpc/feeEstimate.test.ts
+    - packages/kundera-ts/src/jsonrpc/rpc/trace.test.ts
+  modified:
+    - packages/kundera-ts/src/primitives/ContractAddress/index.ts
+    - packages/kundera-ts/src/primitives/ContractAddress/ContractAddress.js
+    - packages/kundera-ts/src/primitives/ClassHash/index.ts
+    - packages/kundera-ts/src/primitives/ClassHash/ClassHash.js
+    - packages/kundera-ts/src/primitives/StorageKey/index.ts
+    - packages/kundera-ts/src/primitives/StorageKey/StorageKey.js
+    - packages/kundera-ts/src/jsonrpc/index.ts
+    - packages/kundera-ts/package.json

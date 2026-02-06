@@ -1,0 +1,81 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Kill Rich types — migrate RpcCodec to Voltaire-aligned domain primitives
+now: Verify kundera-effect package has no remaining Rich/RpcCodec imports; update if needed
+test: pnpm --filter @kundera-sn/kundera-ts test:run && pnpm --filter @kundera-sn/kundera-ts typecheck
+
+done_this_session:
+  - task: Created 8 domain primitives under primitives/ with types.ts, fromRpc.js, toRpc.js, index.ts, fromRpc.test.ts each
+    files:
+      - primitives/FeeEstimate/ (5 files)
+      - primitives/Event/ (5 files)
+      - primitives/BlockHeader/ (5 files)
+      - primitives/StateUpdate/ (5 files)
+      - primitives/Transaction/ (5 files)
+      - primitives/Receipt/ (5 files)
+      - primitives/Block/ (5 files)
+      - primitives/Trace/ (5 files)
+  - task: Removed RpcCodec export and all Rich type re-exports from jsonrpc/index.ts
+    files: [src/jsonrpc/index.ts]
+  - task: Added domain primitive type+function exports to primitives/index.ts barrel
+    files: [src/primitives/index.ts]
+  - task: Replaced ./rpc subpath with 8 new subpaths (./BlockHeader, ./Block, etc.) in package.json
+    files: [package.json]
+  - task: Added 8 tsup entry points for new primitives
+    files: [tsup.config.ts]
+  - task: Deleted jsonrpc/rich.ts (465 lines) and jsonrpc/rpc/ directory (19 files, ~2200 lines)
+    files: [jsonrpc/rich.ts, jsonrpc/rpc/]
+
+blockers: []
+
+questions:
+  - Does kundera-effect import anything from jsonrpc/rpc or rich.ts? Previous session noted it needs separate migration.
+
+decisions:
+  - no_helpers_file: "hexToFelt/feltToHex were 1-line passthroughs. Call feltFromHex(hex) and .toHex() directly instead."
+  - shared_subtypes_colocated: "ResourcePriceType in BlockHeader, ResourceBoundsType in Transaction, FeePaymentType in Receipt — each with its owning primitive."
+  - execution_resources_aliased: "Both Receipt and Trace define ExecutionResourcesType; re-exported from primitives/index.ts as ReceiptExecutionResourcesType and TraceExecutionResourcesType."
+  - wire_types_in_jsonrpc: "Wire types stay in jsonrpc/types.ts as stable protocol defs. Domain primitives import via JSDoc @param for type-only dependency."
+
+findings:
+  - test_count_delta: "80 test files → 71 (deleted 9 old rpc tests, added 8 new primitive tests). 1032 tests → 998 (old tests had more granular helper tests)."
+  - biome_formatting: "New files used single quotes + 2-space indent; biome enforces double quotes + tab indent. Run `pnpm format` after creating files."
+
+worked:
+  - Parallel agent delegation for Phase 1 (4 independent primitives) and Phase 2 (4 dependent primitives)
+  - Each agent ran tests after creating files to verify correctness
+  - biome format --write to auto-fix all style issues at the end
+
+failed:
+  - Agents created files with single-quote style that biome rejected — needed format pass
+  - Some test files had array indexing without non-null assertions (TS2532) — needed manual fixup
+
+next:
+  - Check kundera-effect for any remaining Rich/RpcCodec imports
+  - Run full monorepo build (pnpm build) to verify tsup produces correct dist/ output
+  - Consider adding Effect Schema wrappers for domain primitives (deferred from previous session)
+  - Create git commit for this change
+
+files:
+  created:
+    - src/primitives/FeeEstimate/{types.ts,fromRpc.js,toRpc.js,index.ts,fromRpc.test.ts}
+    - src/primitives/Event/{types.ts,fromRpc.js,toRpc.js,index.ts,fromRpc.test.ts}
+    - src/primitives/BlockHeader/{types.ts,fromRpc.js,toRpc.js,index.ts,fromRpc.test.ts}
+    - src/primitives/StateUpdate/{types.ts,fromRpc.js,toRpc.js,index.ts,fromRpc.test.ts}
+    - src/primitives/Transaction/{types.ts,fromRpc.js,toRpc.js,index.ts,fromRpc.test.ts}
+    - src/primitives/Receipt/{types.ts,fromRpc.js,toRpc.js,index.ts,fromRpc.test.ts}
+    - src/primitives/Block/{types.ts,fromRpc.js,toRpc.js,index.ts,fromRpc.test.ts}
+    - src/primitives/Trace/{types.ts,fromRpc.js,toRpc.js,index.ts,fromRpc.test.ts}
+  modified:
+    - src/jsonrpc/index.ts
+    - src/primitives/index.ts
+    - package.json
+    - tsup.config.ts
+  deleted:
+    - src/jsonrpc/rich.ts
+    - src/jsonrpc/rpc/ (19 files)

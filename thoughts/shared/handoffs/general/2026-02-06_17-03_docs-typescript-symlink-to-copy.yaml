@@ -1,0 +1,61 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Replace stale docs/typescript/ files with copy-from-source pattern — single source of truth in packages/kundera-ts/docs/
+now: Verify docs deploy works on Mintlify (may need to commit the copied files), then apply same pattern to effect/ docs
+
+test: pnpm docs:setup && npx @mintlify/cli validate
+
+done_this_session:
+  - task: Moved 2 missing files (overview.mdx, primitives/domain-primitives.mdx) from docs/typescript/ to packages/kundera-ts/docs/
+    files: [packages/kundera-ts/docs/overview.mdx, packages/kundera-ts/docs/primitives/domain-primitives.mdx]
+  - task: Initially replaced docs/typescript/ with symlink — Mintlify couldn't resolve files through it (404s)
+    files: [docs/typescript]
+  - task: Pivoted to copy-based approach — setup-docs.ts copies .mdx files from packages/kundera-ts/docs/ to docs/typescript/
+    files: [scripts/setup-docs.ts]
+  - task: Expanded docs.json TypeScript nav with all 49 pages across 8 groups (was missing Concepts, Guides, Getting Started, Overview subgroups)
+    files: [docs/docs.json]
+  - task: Fixed updateNavSection to recursively check nested groups (was adding duplicate flat entries)
+    files: [scripts/setup-docs.ts]
+
+blockers: []
+
+questions:
+  - Should docs/typescript/ copies be committed or regenerated in CI? Currently they need to be in git for Mintlify deploy.
+  - Apply same pattern to effect/ docs later?
+
+decisions:
+  - copy_over_symlink: Mintlify doesn't follow directory symlinks outside docs/. Nested file symlinks worked (old skills/ symlink) but top-level dir symlinks caused 404s. Copy with mtime check is reliable.
+  - no_precommit_hook: docs:setup already runs before docs:dev and docs:build. Adding precommit would slow every commit for a docs concern.
+  - overview_and_index_both_kept: typescript/overview.mdx is the landing page in nav, typescript/index.mdx exists in package docs. Both included in nav.
+
+findings:
+  - mintlify_symlink_limitation: Mintlify validate warns "file does not exist" for files behind directory symlinks. Individual file symlinks within real directories work fine.
+  - setup_script_dedup_bug: Original updateNavSection only checked top-level string pages, not nested groups. Added collectAllPages() recursive helper.
+
+worked:
+  - Copy with mtime comparison for idempotent file sync
+  - Recursive collectAllPages() to prevent nav duplication
+  - Running docs:setup as gate before dev/build
+
+failed:
+  - Directory symlink (docs/typescript → ../packages/kundera-ts/docs) — Mintlify can't resolve files through it
+
+next:
+  - Commit the docs/typescript/ copied files + updated docs.json + setup-docs.ts
+  - Test Mintlify deploy end-to-end
+  - Apply same copy pattern to docs/effect/ when ready
+  - Consider adding a `docs:sync` watch mode for live editing (chokidar on packages/kundera-ts/docs/)
+
+files:
+  created:
+    - packages/kundera-ts/docs/overview.mdx
+    - packages/kundera-ts/docs/primitives/domain-primitives.mdx
+    - docs/typescript/ (49 copied .mdx files)
+  modified:
+    - scripts/setup-docs.ts
+    - docs/docs.json

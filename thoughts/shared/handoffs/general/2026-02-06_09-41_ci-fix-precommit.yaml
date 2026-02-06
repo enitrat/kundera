@@ -1,0 +1,46 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Fix CI failure, add multi-output tests, fix effect double-unwrap, set up pre-commit hooks
+now: All handoff items resolved except account-hash.ts split; consider tackling that next
+test: pnpm test:run && pnpm --filter @kundera-sn/kundera-effect test:run
+
+done_this_session:
+  - task: Fixed CI failure — vite couldn't resolve self-referencing package imports without dist/
+    files: [packages/kundera-ts/vitest.config.ts, packages/kundera-ts/package.json, pnpm-lock.yaml]
+  - task: Added multi-output decodeOutput tests (0, 2, 3+ outputs with mixed types)
+    files: [packages/kundera-ts/src/abi/index.test.ts]
+  - task: Fixed effect package double-unwrap — removed redundant normalizeReturn in ContractFactory
+    files: [packages/kundera-effect/src/services/Contract/ContractFactory.ts]
+  - task: Set up prek pre-commit hooks (typecheck, docgen, tests)
+    files: [.pre-commit-config.yaml]
+  - task: Audited all handoff next steps — confirmed skill type errors and uint primitives already resolved
+    files: []
+
+blockers: []
+
+questions: []
+
+decisions:
+  - vite-tsconfig-paths: "Used vite-tsconfig-paths plugin instead of manual resolve.alias. Plugin reads tsconfig paths automatically — zero maintenance when new subpath exports are added."
+  - remove-normalizeReturn: "decodeOutput already handles 0/1/2+ unwrap since e4ff621. ContractFactory's normalizeReturn was duplicating this, causing decoded[0] on scalar → undefined."
+
+findings:
+  - double-unwrap-pattern: "When a behavior change happens in a base package (kundera-ts), downstream packages (kundera-effect) with their own normalization layer can silently break. The effect package had its own unwrap that became redundant after the decodeOutput change."
+  - handoff-staleness: "Of 15 handoff next items, 2 P0s (skill type errors, uint primitives) were already resolved. Always verify before acting."
+
+worked: [vite-tsconfig-paths for automatic tsconfig path resolution, tracing undefined through normalizeReturn to find double-unwrap]
+failed: []
+
+next:
+  - Decide on crypto/account-hash.ts — split per one-function-per-file rule or document exception (405 lines, 9 exports)
+  - Consider sha3 → keccak-asm migration (mentioned in 3 handoffs)
+  - Consider integration tests with real Starknet node
+
+files:
+  created: [.pre-commit-config.yaml]
+  modified: [packages/kundera-ts/vitest.config.ts, packages/kundera-ts/package.json, pnpm-lock.yaml, packages/kundera-ts/src/abi/index.test.ts, packages/kundera-effect/src/services/Contract/ContractFactory.ts]

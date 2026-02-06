@@ -1,0 +1,64 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Review domain primitives migration for consistency, fix violations, update docs
+now: Consider Effect Schema wrappers for domain primitives (deferred from prior sessions)
+test: pnpm --filter @kundera-sn/kundera-ts test:run && pnpm --filter @kundera-sn/kundera-ts typecheck
+
+done_this_session:
+  - task: Launched 5 parallel review agents (structure, package.json/tsup, barrel exports, kundera-effect, docs)
+    files: []
+  - task: Fixed one-function-per-file violation — removed redundant hexToFelt/hexToFelts/hexToAddress/hexToClassHash wrappers in Transaction and Receipt fromRpc.js, replaced with direct feltFromHex/addressFromHex/classHashFromHex calls
+    files: [src/primitives/Transaction/fromRpc.js, src/primitives/Receipt/fromRpc.js]
+  - task: Fixed stale docs — Starknet namespace → Rpc, removed dead "Direct Function API" section referencing deleted starknet_*() exports
+    files: [docs/typescript/api/jsonrpc.mdx]
+  - task: Created domain primitives docs page with codec reference, import table, wire vs domain type examples
+    files: [docs/typescript/primitives/domain-primitives.mdx]
+  - task: Updated primitives index to include domain primitives section and link
+    files: [docs/typescript/primitives/index.mdx]
+  - task: Added domain-primitives to docs.json navigation
+    files: [docs/docs.json]
+  - task: Committed (891e20f) and pushed to master — all pre-commit hooks passed
+    files: []
+
+blockers: []
+
+questions:
+  - Should domain primitives expose constructor functions (e.g. BlockHeader()) for manual construction, or remain codec-only (fromRpc/toRpc)?
+  - Should ExecutionResourcesType aliasing (ReceiptExecutionResourcesType vs TraceExecutionResourcesType) get a comment explaining the collision?
+
+decisions:
+  - direct_primitive_calls: "Removed hexToFelt/hexToAddress wrappers — they were trivial aliases duplicated across files. Use feltFromHex/addressFromHex directly, matching Event/FeeEstimate pattern."
+  - rpc_namespace: "Docs corrected to use Rpc (actual export) not Starknet (stale). Verified via grep on jsonrpc/index.ts."
+  - trace_already_clean: "Trace/fromRpc.js was already using direct calls — no changes needed there."
+
+findings:
+  - review_results: "Package.json subpaths + tsup: all correct. Barrel exports: clean, no Rich/RpcCodec remnants. kundera-effect: zero broken imports, builds fine. Existing docs: no stale references to old patterns."
+  - docs_stale_namespace: "jsonrpc.mdx used Starknet namespace and referenced starknet_blockNumber() direct functions — both removed in Voltaire refactor but docs not updated until now."
+
+worked:
+  - Parallel review agents (5 concurrent) for comprehensive audit in ~100s total
+  - Direct file rewrite (Write tool) after botched replace_all — safer than chained edits for complex refactors
+
+failed:
+  - replace_all with 'hexToFelts(' → 'arr.map(feltFromHex)' mangled the file — left dangling arguments like `arr.map(feltFromHex)v0.signature)`. Had to rewrite entire file.
+
+next:
+  - Effect Schema wrappers for domain primitives (deferred from 2 prior sessions)
+  - Consider adding compact hex output (strip leading zeros) as Felt252 option
+  - Consider constructor functions for domain primitives if users need to create them manually
+  - Run full monorepo build (pnpm build) to verify tsup produces correct dist/ output for new entry points
+
+files:
+  modified:
+    - packages/kundera-ts/src/primitives/Transaction/fromRpc.js
+    - packages/kundera-ts/src/primitives/Receipt/fromRpc.js
+    - docs/typescript/api/jsonrpc.mdx
+    - docs/typescript/primitives/index.mdx
+    - docs/docs.json
+  created:
+    - docs/typescript/primitives/domain-primitives.mdx

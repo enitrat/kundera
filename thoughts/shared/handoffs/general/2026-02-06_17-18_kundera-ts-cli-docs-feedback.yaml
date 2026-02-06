@@ -1,0 +1,79 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Built kundera-ts-cli example from docs only, produced documentation friction report
+now: Fix library-level issues (F1, F2, F10) and docs-level issues (F3-F9, F11) from FEEDBACK.md
+
+test: cd examples/kundera-ts-cli && pnpm dev block-number && pnpm dev balance 0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7 --token ETH
+
+done_this_session:
+  - task: Created kundera-ts-cli example (cast-like CLI using pure kundera-ts, no Effect)
+    files: [examples/kundera-ts-cli/package.json, examples/kundera-ts-cli/tsconfig.json, examples/kundera-ts-cli/src/index.ts, examples/kundera-ts-cli/src/config.ts]
+  - task: Implemented 11 CLI commands (block-number, chain-id, block-hash, block, balance, nonce, class-hash, storage, tx, tx-status, tx-receipt)
+    files: [examples/kundera-ts-cli/src/commands/blockNumber.ts, examples/kundera-ts-cli/src/commands/chainId.ts, examples/kundera-ts-cli/src/commands/blockHash.ts, examples/kundera-ts-cli/src/commands/block.ts, examples/kundera-ts-cli/src/commands/balance.ts, examples/kundera-ts-cli/src/commands/nonce.ts, examples/kundera-ts-cli/src/commands/classHash.ts, examples/kundera-ts-cli/src/commands/storage.ts, examples/kundera-ts-cli/src/commands/tx.ts]
+  - task: Verified all commands against live mainnet + sepolia RPCs
+    files: []
+  - task: Wrote FEEDBACK.md with 11 friction points ranked by severity
+    files: [examples/kundera-ts-cli/FEEDBACK.md]
+  - task: Wrote README with usage examples and comparison to kdex
+    files: [examples/kundera-ts-cli/README.md]
+
+blockers: []
+
+questions:
+  - Should Rpc builders return branded types for TypedProvider inference? (F1 — biggest DX win)
+  - Should HttpProvider throw RpcError extends Error instead of plain objects? (F2)
+  - Add parseCallResult helper to bridge hex strings → bigints? (F10)
+
+decisions:
+  - docs_only_constraint: Built entirely from docs/typescript/ without reading source code to stress-test documentation quality
+  - manual_casting: Used `as SomeType` casts on every provider.request() since no typed path exists with Rpc builders
+  - plain_object_error_handling: Added dual error check (instanceof Error + plain object with code/message) after discovering F2
+
+findings:
+  - error_shape_mismatch: JSON-RPC errors are thrown as plain { code, message } objects, not Error instances — contradicts docs
+  - param_order_inconsistency: Rpc builders have no consistent param ordering (blockId first vs last) — users must read each example
+  - missing_recipes: Docs cover individual APIs well but lack end-to-end recipes combining modules (balance check needs 4 doc pages)
+  - constructor_inconsistency: domain-primitives.mdx shows HttpProvider('url') string form, all other docs show HttpProvider({ url }) options form
+
+worked:
+  - HttpProvider + Rpc namespace pattern is clean and minimal for CLI use
+  - computeSelectorHex from ABI module works perfectly for contract calls
+  - decodeShortString for chain ID worked once found
+
+failed:
+  - TypedProvider<StarknetRpcSchema> doesn't work with Rpc builders — only with raw { method, params }
+
+next:
+  - Fix F2 in library — make provider throw RpcError extends Error
+  - Fix F1 in library — add return type branding to Rpc builders for TypedProvider inference
+  - Fix F10 in library — add parseCallResult or accept hex strings in serde
+  - Fix F3 in docs — update domain-primitives.mdx HttpProvider constructor
+  - Fix F4 in docs — add param signature table to jsonrpc.mdx
+  - Fix F5-F6 in docs — improve quickstart with selector computation + chainId decoding
+  - Fix F8 in docs — document BlockId type exhaustively
+  - Fix F9 in docs — create a "Recipes" page for common tasks
+  - Fix F11 in docs — add public RPC URLs to quickstart
+
+files:
+  created:
+    - examples/kundera-ts-cli/package.json
+    - examples/kundera-ts-cli/tsconfig.json
+    - examples/kundera-ts-cli/src/index.ts
+    - examples/kundera-ts-cli/src/config.ts
+    - examples/kundera-ts-cli/src/commands/blockNumber.ts
+    - examples/kundera-ts-cli/src/commands/chainId.ts
+    - examples/kundera-ts-cli/src/commands/blockHash.ts
+    - examples/kundera-ts-cli/src/commands/block.ts
+    - examples/kundera-ts-cli/src/commands/balance.ts
+    - examples/kundera-ts-cli/src/commands/nonce.ts
+    - examples/kundera-ts-cli/src/commands/classHash.ts
+    - examples/kundera-ts-cli/src/commands/storage.ts
+    - examples/kundera-ts-cli/src/commands/tx.ts
+    - examples/kundera-ts-cli/FEEDBACK.md
+    - examples/kundera-ts-cli/README.md
+  modified: []

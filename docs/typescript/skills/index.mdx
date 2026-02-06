@@ -1,0 +1,115 @@
+---
+title: Skills
+description: Copy-paste examples for common Starknet patterns.
+---
+
+Skills are self-contained code examples that you copy into your project. They're not published packages—just well-tested patterns you can adapt to your needs.
+
+## Why Skills?
+
+| Benefit | Description |
+|---------|-------------|
+| **No dependencies** | Skills use only Kundera core APIs |
+| **Copy-paste** | Take what you need, modify as required |
+| **Well-tested** | Each skill includes a test suite |
+| **Tree-shakeable** | Import only what you use |
+
+## Available Skills
+
+<CardGroup cols={2}>
+  <Card title="HTTP Transport" icon="network-wired" href="/typescript/skills/http-transport">
+    HTTP JSON-RPC transport with batching and retries.
+  </Card>
+  <Card title="HTTP Provider" icon="server" href="/typescript/skills/http-provider">
+    Lightweight JSON-RPC provider built on transports + rpc methods.
+  </Card>
+  <Card title="WebSocket Provider" icon="satellite" href="/typescript/skills/websocket-provider">
+    Real-time subscriptions with WebSocket transport.
+  </Card>
+  <Card title="Account Invoke" icon="bolt" href="/typescript/skills/account-invoke">
+    Execute invoke transactions with a signer.
+  </Card>
+  <Card title="Account Declare" icon="file-signature" href="/typescript/skills/account-declare">
+    Declare contract classes with a signer.
+  </Card>
+  <Card title="Account Deploy" icon="rocket" href="/typescript/skills/account-deploy">
+    Deploy account contracts with a signer.
+  </Card>
+  <Card title="Contract Read" icon="eye" href="/typescript/skills/contract-read">
+    Read-only contract calls with ABI decoding.
+  </Card>
+  <Card title="Contract Write" icon="pen" href="/typescript/skills/contract-write">
+    State-changing calls using an account executor.
+  </Card>
+  <Card title="Contract Multicall" icon="layer-group" href="/typescript/skills/contract-multicall">
+    Batch multiple read calls with requestBatch.
+  </Card>
+  <Card title="Event Filtering" icon="filter" href="/typescript/skills/event-filtering">
+    Decode and filter receipt events using ABI metadata.
+  </Card>
+  <Card title="Fee Estimation" icon="calculator" href="/typescript/skills/fee-estimation">
+    Estimate transaction fees before sending.
+  </Card>
+  <Card title="Wallet Modal" icon="wallet" href="/typescript/skills/wallet-modal">
+    Connect to wallets using StarknetKit or get-starknet modals.
+  </Card>
+  <Card title="Viem-Style Contract" icon="file-contract" href="/typescript/skills/contract-viem">
+    Viem-style contract helpers built on transports + rpc.
+  </Card>
+</CardGroup>
+
+## Using Skills
+
+### 1. Copy the Code
+
+```bash
+# Copy a skill to your project
+cp -r examples/skills/http-provider src/skills/
+```
+
+### 2. Install Peer Dependencies (if any)
+
+Some skills have optional peer dependencies:
+
+```bash
+# Wallet Modal requires one of:
+npm install @starknet-io/starknet-kit
+# or
+npm install get-starknet
+```
+
+### 3. Import and Use
+
+```ts
+import { createHttpProvider } from './skills/http-provider';
+
+const provider = createHttpProvider({ url: 'https://api.zan.top/public/starknet-sepolia' });
+```
+
+## Skill Structure
+
+Each skill follows this structure:
+
+```
+examples/skills/<skill-name>/
+├── index.ts              # Main implementation
+├── README.md             # Usage documentation
+└── <skill-name>.test.ts  # Test suite
+```
+
+<Tip>
+## Adapt as Needed
+
+Skills are starting points, not rigid frameworks. Feel free to modify the code to fit your project's patterns and requirements.
+</Tip>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="JSON-RPC Methods" icon="code" href="/typescript/api/jsonrpc">
+    Tree-shakeable JSON-RPC functions for Starknet.
+  </Card>
+  <Card title="Transport Layer" icon="network-wired" href="/typescript/guides/provider/transport">
+    Learn how transports fit into the architecture.
+  </Card>
+</CardGroup>

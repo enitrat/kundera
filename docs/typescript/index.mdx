@@ -46,7 +46,7 @@ const classHash = ClassHash('0x...');
 const hash = pedersen(a, b);
 
 // Tree-shakeable JSON-RPC
-const provider = new HttpProvider({ url: 'https://starknet-sepolia.example.com' });
+const provider = new HttpProvider({ url: 'https://api.zan.top/public/starknet-sepolia' });
 const result = await provider.request(
   Rpc.CallRequest({ contract_address, entry_point_selector, calldata }, 'latest')
 );
@@ -105,7 +105,7 @@ import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import { decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
 
 const provider = new HttpProvider({
-  url: 'https://starknet-sepolia.example.com'
+  url: 'https://api.zan.top/public/starknet-sepolia'
 });
 
 const result = await provider.request(

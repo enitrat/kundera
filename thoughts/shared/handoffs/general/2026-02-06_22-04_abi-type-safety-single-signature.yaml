@@ -1,0 +1,64 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Fixed ABI type safety — encodeCalldata/decodeOutput now enforce branded types via single-signature pattern (no untyped fallback)
+now: Clean up unused kanabi-config.d.ts augmentation code since it's superseded by kanabi-types.ts explicit mappings
+
+test: pnpm typecheck && pnpm test:run
+
+done_this_session:
+  - task: "Diagnosed root cause: calldata.ts imported ExtractArgs/FunctionRet from abi-wan-kanabi/kanabi (uses DefaultConfig loose types) instead of kundera's branded MapAbiPrimitive mappings"
+    files: [packages/kundera-ts/src/abi/calldata.ts]
+  - task: "Extracted MapAbiPrimitive, ExtractArgs, FunctionRet, FunctionArgs into kanabi-types.ts — single source of truth, no more direct kanabi imports for type mappings"
+    files: [packages/kundera-ts/src/abi/kanabi-types.ts, packages/kundera-ts/src/abi/index.ts]
+  - task: "Replaced recursive BuildArgs with mapped type MapInputs to avoid TS2589 depth errors on non-const ABIs"
+    files: [packages/kundera-ts/src/abi/kanabi-types.ts]
+  - task: "Replaced overload pattern (typed + untyped fallback) with single generic signature using IsConstAbi/InferArgs/InferReturn conditional types — eliminates silent fallthrough to untyped overload"
+    files: [packages/kundera-ts/src/abi/calldata.ts, packages/kundera-ts/src/abi/kanabi-types.ts]
+  - task: "Verified type safety: ClassHash where ContractAddress expected now produces compile error; decodeOutput infers Result<Uint256Type> from const ABI"
+    files: [examples/kundera-ts-cli/src/commands/balance.ts]
+
+blockers: []
+
+questions:
+  - "Should kanabi-config.d.ts be deleted? It's vestigial — the module augmentation never worked, and kanabi-types.ts MapAbiPrimitive is the real type mapping"
+  - "Should other CLI example commands be updated to use as const ABIs?"
+
+decisions:
+  - single_signature_over_overloads: "Overloads allow silent fallthrough to untyped fallback when typed args don't match. Single generic signature with conditional types (IsConstAbi) has no escape hatch — wrong branded type is always a compile error."
+  - mapped_type_over_recursion: "Recursive BuildArgs hit TS2589 depth limit on non-const ABIs. Mapped type MapInputs is O(1) depth and bails to never for non-const via number extends length guard."
+  - kanabi_types_central_file: "All kanabi type mappings in one file (kanabi-types.ts). Both calldata.ts and index.ts import from it. No file imports ExtractArgs/FunctionRet from abi-wan-kanabi directly."
+
+findings:
+  - kanabi_config_augmentation_broken: "declare module 'abi-wan-kanabi' Config augmentation never worked — kanabi's internal Config is in dist/config.d.ts which isn't exposed via package exports. The existing kanabi-config.d.ts with 3 module paths was dead code."
+  - kanabi_default_config_loose: "DefaultConfig maps ContractAddress→string, u256→number|bigint|U256, felt252→number|bigint|string. These are starknet.js conventions, not kundera's branded types."
+  - overload_fallthrough_is_silent: "When typed overload rejects args (e.g. ClassHash!=ContractAddress), TS silently tries untyped overload. CairoValue includes Uint8Array, and all branded types are Uint8Array-based, so anything passes."
+  - as_const_prerequisite: "ABI must be declared as const for literal string types. Without it, all type strings widen to string and type-level mapping can't resolve Cairo types to branded primitives."
+
+worked:
+  - "IsConstAbi<TAbi> = number extends TAbi['length'] ? false : true — cleanly distinguishes const vs widened ABIs"
+  - "InferArgs/InferReturn conditional types that branch on IsConstAbi — gives branded types for const, CairoValue for non-const, zero overloads"
+  - "MapInputs mapped type with readonly [infer TSingle] unwrap in FunctionArgs"
+
+failed:
+  - "Recursive BuildArgs caused TS2589 on non-const ABIs despite bail-out guard — TypeScript evaluates deeper before checking length guard"
+  - "Module augmentation of abi-wan-kanabi Config interface — never took effect due to package.json exports not exposing config subpath"
+
+next:
+  - "Consider removing kanabi-config.d.ts and the /// reference path in index.ts (dead code)"
+  - "Update remaining CLI example commands to use as const ABIs for type safety"
+  - "kundera-effect jsonrpc migration (from earlier handoff — still pending)"
+
+files:
+  created:
+    - packages/kundera-ts/src/abi/kanabi-types.ts
+  modified:
+    - packages/kundera-ts/src/abi/calldata.ts
+    - packages/kundera-ts/src/abi/index.ts
+    - packages/kundera-ts/src/abi/integer-types.test.ts
+    - packages/kundera-ts/docs/skills/get-contract.ts
+    - examples/kundera-ts-cli/src/commands/balance.ts

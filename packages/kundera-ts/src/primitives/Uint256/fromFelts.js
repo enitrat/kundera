@@ -4,7 +4,7 @@ import { from } from "./from.js";
 /**
  * Create Uint256 from two Felt252 values [low, high]
  *
- * In Cairo, u256 is a struct: { low: u128, high: u128 }
+ * In Cairo, u256 is a struct: `{ low: u128, high: u128 }`
  * value = low + high * 2^128
  *
  * @param {import('../Felt252/types.js').Felt252Type} low - Low 128 bits as Felt252

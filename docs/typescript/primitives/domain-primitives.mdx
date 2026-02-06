@@ -28,7 +28,7 @@ import { blockHeaderFromRpc } from '@kundera-sn/kundera-ts/BlockHeader';
 import { transactionFromRpc } from '@kundera-sn/kundera-ts/Transaction';
 import { receiptFromRpc } from '@kundera-sn/kundera-ts/Receipt';
 
-const provider = new HttpProvider('https://api.zan.top/public/starknet-sepolia');
+const provider = new HttpProvider({ url: 'https://api.zan.top/public/starknet-sepolia' });
 
 // Fetch raw wire-format response
 const rawBlock = await provider.request(Rpc.GetBlockWithTxHashesRequest('latest'));

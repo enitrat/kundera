@@ -17,7 +17,7 @@ description: Auto-generated API documentation
 
 > `const` **Address**: (`felt`) => [`ContractAddressType`](index-1.mdx#contractaddresstype) & `object` = `ContractAddress`
 
-Defined in: [primitives/index.ts:81](https://github.com/enitrat/kundera/blob/365328815c10c34d14b49bf4bcbeea063853210c/packages/kundera-ts/src/primitives/index.ts#L81)
+Defined in: [primitives/index.ts:103](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/primitives/index.ts#L103)
 
 #### Type Declaration
 
@@ -32,6 +32,22 @@ Create a ContractAddress from Felt252 (with validation)
 ###### felt
 
 [`Felt252Input`](index-1.mdx#felt252input)
+
+###### Returns
+
+[`ContractAddressType`](index-1.mdx#contractaddresstype)
+
+##### fromHex()
+
+> **fromHex**: (`hex`) => [`ContractAddressType`](index-1.mdx#contractaddresstype)
+
+Create ContractAddress from hex string
+
+###### Parameters
+
+###### hex
+
+`string`
 
 ###### Returns
 
@@ -63,7 +79,7 @@ Check if input can be a valid contract address
 
 > `const` **Class**: (`felt`) => [`ClassHashType`](index-1.mdx#classhashtype) & `object` = `ClassHash`
 
-Defined in: [primitives/index.ts:82](https://github.com/enitrat/kundera/blob/365328815c10c34d14b49bf4bcbeea063853210c/packages/kundera-ts/src/primitives/index.ts#L82)
+Defined in: [primitives/index.ts:104](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/primitives/index.ts#L104)
 
 #### Type Declaration
 
@@ -83,13 +99,29 @@ Create a ClassHash from Felt252 (with validation)
 
 [`ClassHashType`](index-1.mdx#classhashtype)
 
+##### fromHex()
+
+> **fromHex**: (`hex`) => [`ClassHashType`](index-1.mdx#classhashtype)
+
+Create ClassHash from hex string
+
+###### Parameters
+
+###### hex
+
+`string`
+
+###### Returns
+
+[`ClassHashType`](index-1.mdx#classhashtype)
+
 ***
 
 ### Felt
 
 > `const` **Felt**: (`value`) => [`Felt252Type`](index-1.mdx#felt252type) & `object` = `Felt252`
 
-Defined in: [primitives/index.ts:80](https://github.com/enitrat/kundera/blob/365328815c10c34d14b49bf4bcbeea063853210c/packages/kundera-ts/src/primitives/index.ts#L80)
+Defined in: [primitives/index.ts:102](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/primitives/index.ts#L102)
 
 #### Type Declaration
 
@@ -333,7 +365,7 @@ Create Felt252 from hex string
 
 > `const` **MAX\_ADDRESS**: `bigint` = `MAX_CONTRACT_ADDRESS`
 
-Defined in: [primitives/index.ts:86](https://github.com/enitrat/kundera/blob/365328815c10c34d14b49bf4bcbeea063853210c/packages/kundera-ts/src/primitives/index.ts#L86)
+Defined in: [primitives/index.ts:108](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/primitives/index.ts#L108)
 
 ***
 
@@ -341,7 +373,7 @@ Defined in: [primitives/index.ts:86](https://github.com/enitrat/kundera/blob/365
 
 > `const` **Storage**: (`felt`) => [`StorageKeyType`](index-1.mdx#storagekeytype) & `object` = `StorageKey`
 
-Defined in: [primitives/index.ts:83](https://github.com/enitrat/kundera/blob/365328815c10c34d14b49bf4bcbeea063853210c/packages/kundera-ts/src/primitives/index.ts#L83)
+Defined in: [primitives/index.ts:105](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/primitives/index.ts#L105)
 
 #### Type Declaration
 
@@ -361,13 +393,29 @@ Create a StorageKey from Felt252 (with validation)
 
 [`StorageKeyType`](index-1.mdx#storagekeytype)
 
+##### fromHex()
+
+> **fromHex**: (`hex`) => [`StorageKeyType`](index-1.mdx#storagekeytype)
+
+Create StorageKey from hex string
+
+###### Parameters
+
+###### hex
+
+`string`
+
+###### Returns
+
+[`StorageKeyType`](index-1.mdx#storagekeytype)
+
 ## Functions
 
 ### decodeShortString()
 
 > **decodeShortString**(`felt`): `string`
 
-Defined in: [primitives/ShortString/decodeShortString.js:13](https://github.com/enitrat/kundera/blob/365328815c10c34d14b49bf4bcbeea063853210c/packages/kundera-ts/src/primitives/ShortString/decodeShortString.js#L13)
+Defined in: [primitives/ShortString/decodeShortString.js:13](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/primitives/ShortString/decodeShortString.js#L13)
 
 Decode a short string from felt
 
@@ -398,7 +446,7 @@ decodeShortString('0x68656c6c6f') // 'hello'
 
 > **encodeShortString**(`str`): [`Felt252Type`](index-1.mdx#felt252type)
 
-Defined in: [primitives/ShortString/encodeShortString.js:30](https://github.com/enitrat/kundera/blob/365328815c10c34d14b49bf4bcbeea063853210c/packages/kundera-ts/src/primitives/ShortString/encodeShortString.js#L30)
+Defined in: [primitives/ShortString/encodeShortString.js:30](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/primitives/ShortString/encodeShortString.js#L30)
 
 Encode a short string to Felt252
 
@@ -431,7 +479,7 @@ encodeShortString('hello') // Felt252(448378203247n)
 
 > **encodeShortStringHex**(`str`): `string`
 
-Defined in: [primitives/ShortString/encodeShortStringHex.js:9](https://github.com/enitrat/kundera/blob/365328815c10c34d14b49bf4bcbeea063853210c/packages/kundera-ts/src/primitives/ShortString/encodeShortStringHex.js#L9)
+Defined in: [primitives/ShortString/encodeShortStringHex.js:9](https://github.com/enitrat/kundera/blob/40e5fa7544479bcb0b5ab4abc5abe505aa9f6a22/packages/kundera-ts/src/primitives/ShortString/encodeShortStringHex.js#L9)
 
 Encode a short string to hex
 
@@ -450,6 +498,102 @@ ASCII string (max 31 characters)
 Hex-encoded felt representation (unpadded)
 
 ## References
+
+### blockHeaderFromRpc
+
+Re-exports [blockHeaderFromRpc](index-1.mdx#blockheaderfromrpc)
+
+***
+
+### blockHeaderToRpc
+
+Re-exports [blockHeaderToRpc](index-1.mdx#blockheadertorpc)
+
+***
+
+### BlockHeaderType
+
+Re-exports [BlockHeaderType](index-1.mdx#blockheadertype)
+
+***
+
+### blockHeaderWithCommitmentsFromRpc
+
+Re-exports [blockHeaderWithCommitmentsFromRpc](index-1.mdx#blockheaderwithcommitmentsfromrpc)
+
+***
+
+### blockHeaderWithCommitmentsToRpc
+
+Re-exports [blockHeaderWithCommitmentsToRpc](index-1.mdx#blockheaderwithcommitmentstorpc)
+
+***
+
+### BlockHeaderWithCommitmentsType
+
+Re-exports [BlockHeaderWithCommitmentsType](index-1.mdx#blockheaderwithcommitmentstype)
+
+***
+
+### BlockTransactionTraceType
+
+Re-exports [BlockTransactionTraceType](index-1.mdx#blocktransactiontracetype)
+
+***
+
+### blockWithReceiptsFromRpc
+
+Re-exports [blockWithReceiptsFromRpc](index-1.mdx#blockwithreceiptsfromrpc)
+
+***
+
+### blockWithReceiptsToRpc
+
+Re-exports [blockWithReceiptsToRpc](index-1.mdx#blockwithreceiptstorpc)
+
+***
+
+### BlockWithReceiptsType
+
+Re-exports [BlockWithReceiptsType](index-1.mdx#blockwithreceiptstype)
+
+***
+
+### blockWithTxHashesFromRpc
+
+Re-exports [blockWithTxHashesFromRpc](index-1.mdx#blockwithtxhashesfromrpc)
+
+***
+
+### blockWithTxHashesToRpc
+
+Re-exports [blockWithTxHashesToRpc](index-1.mdx#blockwithtxhashestorpc)
+
+***
+
+### BlockWithTxHashesType
+
+Re-exports [BlockWithTxHashesType](index-1.mdx#blockwithtxhashestype)
+
+***
+
+### blockWithTxsFromRpc
+
+Re-exports [blockWithTxsFromRpc](index-1.mdx#blockwithtxsfromrpc)
+
+***
+
+### blockWithTxsToRpc
+
+Re-exports [blockWithTxsToRpc](index-1.mdx#blockwithtxstorpc)
+
+***
+
+### BlockWithTxsType
+
+Re-exports [BlockWithTxsType](index-1.mdx#blockwithtxstype)
+
+***
 
 ### BYTE\_ARRAY\_MAGIC
 
@@ -511,6 +655,114 @@ Re-exports [ContractAddressType](index-1.mdx#contractaddresstype)
 
 ***
 
+### ContractStorageDiffItemType
+
+Re-exports [ContractStorageDiffItemType](index-1.mdx#contractstoragediffitemtype)
+
+***
+
+### DeclaredClassItemType
+
+Re-exports [DeclaredClassItemType](index-1.mdx#declaredclassitemtype)
+
+***
+
+### DeclareTxnReceiptType
+
+Re-exports [DeclareTxnReceiptType](index-1.mdx#declaretxnreceipttype)
+
+***
+
+### DeclareTxnTraceType
+
+Re-exports [DeclareTxnTraceType](index-1.mdx#declaretxntracetype)
+
+***
+
+### DeclareTxnType
+
+Re-exports [DeclareTxnType](index-1.mdx#declaretxntype)
+
+***
+
+### DeclareTxnV0Type
+
+Re-exports [DeclareTxnV0Type](index-1.mdx#declaretxnv0type)
+
+***
+
+### DeclareTxnV1Type
+
+Re-exports [DeclareTxnV1Type](index-1.mdx#declaretxnv1type)
+
+***
+
+### DeclareTxnV2Type
+
+Re-exports [DeclareTxnV2Type](index-1.mdx#declaretxnv2type)
+
+***
+
+### DeclareTxnV3Type
+
+Re-exports [DeclareTxnV3Type](index-1.mdx#declaretxnv3type)
+
+***
+
+### DeployAccountTxnReceiptType
+
+Re-exports [DeployAccountTxnReceiptType](index-1.mdx#deployaccounttxnreceipttype)
+
+***
+
+### DeployAccountTxnTraceType
+
+Re-exports [DeployAccountTxnTraceType](index-1.mdx#deployaccounttxntracetype)
+
+***
+
+### DeployAccountTxnType
+
+Re-exports [DeployAccountTxnType](index-1.mdx#deployaccounttxntype)
+
+***
+
+### DeployAccountTxnV1Type
+
+Re-exports [DeployAccountTxnV1Type](index-1.mdx#deployaccounttxnv1type)
+
+***
+
+### DeployAccountTxnV3Type
+
+Re-exports [DeployAccountTxnV3Type](index-1.mdx#deployaccounttxnv3type)
+
+***
+
+### DeployedContractItemType
+
+Re-exports [DeployedContractItemType](index-1.mdx#deployedcontractitemtype)
+
+***
+
+### emittedEventFromRpc
+
+Re-exports [emittedEventFromRpc](index-1.mdx#emittedeventfromrpc)
+
+***
+
+### emittedEventToRpc
+
+Re-exports [emittedEventToRpc](index-1.mdx#emittedeventtorpc)
+
+***
+
+### EmittedEventType
+
+Re-exports [EmittedEventType](index-1.mdx#emittedeventtype)
+
+***
+
 ### EthAddress
 
 Re-exports [EthAddress](index-1.mdx#ethaddress)
@@ -520,6 +772,66 @@ Re-exports [EthAddress](index-1.mdx#ethaddress)
 ### EthAddressType
 
 Re-exports [EthAddressType](index-1.mdx#ethaddresstype)
+
+***
+
+### eventFromRpc
+
+Re-exports [eventFromRpc](index-1.mdx#eventfromrpc)
+
+***
+
+### EventsResponseType
+
+Re-exports [EventsResponseType](index-1.mdx#eventsresponsetype)
+
+***
+
+### eventToRpc
+
+Re-exports [eventToRpc](index-1.mdx#eventtorpc)
+
+***
+
+### EventType
+
+Re-exports [EventType](index-1.mdx#eventtype)
+
+***
+
+### feeEstimateFromRpc
+
+Re-exports [feeEstimateFromRpc](index-1.mdx#feeestimatefromrpc)
+
+***
+
+### feeEstimateToRpc
+
+Re-exports [feeEstimateToRpc](index-1.mdx#feeestimatetorpc)
+
+***
+
+### FeeEstimateType
+
+Re-exports [FeeEstimateType](index-1.mdx#feeestimatetype)
+
+***
+
+### feePaymentFromRpc
+
+Re-exports [feePaymentFromRpc](index-1.mdx#feepaymentfromrpc)
+
+***
+
+### feePaymentToRpc
+
+Re-exports [feePaymentToRpc](index-1.mdx#feepaymenttorpc)
+
+***
+
+### FeePaymentType
+
+Re-exports [FeePaymentType](index-1.mdx#feepaymenttype)
 
 ***
 
@@ -550,6 +862,30 @@ Re-exports [FeltMethods](index-1.mdx#feltmethods)
 ### FIELD\_PRIME
 
 Re-exports [FIELD_PRIME](index-1.mdx#field_prime)
+
+***
+
+### functionInvocationFromRpc
+
+Re-exports [functionInvocationFromRpc](index-1.mdx#functioninvocationfromrpc)
+
+***
+
+### functionInvocationToRpc
+
+Re-exports [functionInvocationToRpc](index-1.mdx#functioninvocationtorpc)
+
+***
+
+### FunctionInvocationType
+
+Re-exports [FunctionInvocationType](index-1.mdx#functioninvocationtype)
+
+***
+
+### InnerCallExecutionResourcesType
+
+Re-exports [InnerCallExecutionResourcesType](index-1.mdx#innercallexecutionresourcestype)
 
 ***
 
@@ -643,6 +979,60 @@ Re-exports [Int8Type](index-1.mdx#int8type)
 
 ***
 
+### InvokeTxnReceiptType
+
+Re-exports [InvokeTxnReceiptType](index-1.mdx#invoketxnreceipttype)
+
+***
+
+### InvokeTxnTraceType
+
+Re-exports [InvokeTxnTraceType](index-1.mdx#invoketxntracetype)
+
+***
+
+### InvokeTxnType
+
+Re-exports [InvokeTxnType](index-1.mdx#invoketxntype)
+
+***
+
+### InvokeTxnV0Type
+
+Re-exports [InvokeTxnV0Type](index-1.mdx#invoketxnv0type)
+
+***
+
+### InvokeTxnV1Type
+
+Re-exports [InvokeTxnV1Type](index-1.mdx#invoketxnv1type)
+
+***
+
+### InvokeTxnV3Type
+
+Re-exports [InvokeTxnV3Type](index-1.mdx#invoketxnv3type)
+
+***
+
+### L1HandlerTxnReceiptType
+
+Re-exports [L1HandlerTxnReceiptType](index-1.mdx#l1handlertxnreceipttype)
+
+***
+
+### L1HandlerTxnTraceType
+
+Re-exports [L1HandlerTxnTraceType](index-1.mdx#l1handlertxntracetype)
+
+***
+
+### L1HandlerTxnType
+
+Re-exports [L1HandlerTxnType](index-1.mdx#l1handlertxntype)
+
+***
+
 ### MAX\_CONTRACT\_ADDRESS
 
 Re-exports [MAX_CONTRACT_ADDRESS](index-1.mdx#max_contract_address)
@@ -661,6 +1051,216 @@ Re-exports [MAX_SHORT_STRING_LENGTH](index-1.mdx#max_short_string_length)
 
 ***
 
+### msgToL1FromRpc
+
+Re-exports [msgToL1FromRpc](index-1.mdx#msgtol1fromrpc)
+
+***
+
+### msgToL1ToRpc
+
+Re-exports [msgToL1ToRpc](index-1.mdx#msgtol1torpc)
+
+***
+
+### MsgToL1Type
+
+Re-exports [MsgToL1Type](index-1.mdx#msgtol1type)
+
+***
+
+### NonceUpdateItemType
+
+Re-exports [NonceUpdateItemType](index-1.mdx#nonceupdateitemtype)
+
+***
+
+### orderedEventFromRpc
+
+Re-exports [orderedEventFromRpc](index-1.mdx#orderedeventfromrpc)
+
+***
+
+### orderedEventToRpc
+
+Re-exports [orderedEventToRpc](index-1.mdx#orderedeventtorpc)
+
+***
+
+### OrderedEventType
+
+Re-exports [OrderedEventType](index-1.mdx#orderedeventtype)
+
+***
+
+### orderedMessageFromRpc
+
+Re-exports [orderedMessageFromRpc](index-1.mdx#orderedmessagefromrpc)
+
+***
+
+### orderedMessageToRpc
+
+Re-exports [orderedMessageToRpc](index-1.mdx#orderedmessagetorpc)
+
+***
+
+### OrderedMessageType
+
+Re-exports [OrderedMessageType](index-1.mdx#orderedmessagetype)
+
+***
+
+### ReceiptExecutionResourcesType
+
+Re-exports [ReceiptExecutionResourcesType](index-1.mdx#receiptexecutionresourcestype)
+
+***
+
+### receiptFromRpc
+
+Re-exports [receiptFromRpc](index-1.mdx#receiptfromrpc)
+
+***
+
+### receiptToRpc
+
+Re-exports [receiptToRpc](index-1.mdx#receipttorpc)
+
+***
+
+### receiptWithBlockInfoFromRpc
+
+Re-exports [receiptWithBlockInfoFromRpc](index-1.mdx#receiptwithblockinfofromrpc)
+
+***
+
+### receiptWithBlockInfoToRpc
+
+Re-exports [receiptWithBlockInfoToRpc](index-1.mdx#receiptwithblockinfotorpc)
+
+***
+
+### ReplacedClassItemType
+
+Re-exports [ReplacedClassItemType](index-1.mdx#replacedclassitemtype)
+
+***
+
+### resourceBoundsFromRpc
+
+Re-exports [resourceBoundsFromRpc](index-1.mdx#resourceboundsfromrpc)
+
+***
+
+### resourceBoundsMappingFromRpc
+
+Re-exports [resourceBoundsMappingFromRpc](index-1.mdx#resourceboundsmappingfromrpc)
+
+***
+
+### resourceBoundsMappingToRpc
+
+Re-exports [resourceBoundsMappingToRpc](index-1.mdx#resourceboundsmappingtorpc)
+
+***
+
+### ResourceBoundsMappingType
+
+Re-exports [ResourceBoundsMappingType](index-1.mdx#resourceboundsmappingtype)
+
+***
+
+### resourceBoundsToRpc
+
+Re-exports [resourceBoundsToRpc](index-1.mdx#resourceboundstorpc)
+
+***
+
+### ResourceBoundsType
+
+Re-exports [ResourceBoundsType](index-1.mdx#resourceboundstype)
+
+***
+
+### resourcePriceFromRpc
+
+Re-exports [resourcePriceFromRpc](index-1.mdx#resourcepricefromrpc)
+
+***
+
+### resourcePriceToRpc
+
+Re-exports [resourcePriceToRpc](index-1.mdx#resourcepricetorpc)
+
+***
+
+### ResourcePriceType
+
+Re-exports [ResourcePriceType](index-1.mdx#resourcepricetype)
+
+***
+
+### revertibleFunctionInvocationFromRpc
+
+Re-exports [revertibleFunctionInvocationFromRpc](index-1.mdx#revertiblefunctioninvocationfromrpc)
+
+***
+
+### revertibleFunctionInvocationToRpc
+
+Re-exports [revertibleFunctionInvocationToRpc](index-1.mdx#revertiblefunctioninvocationtorpc)
+
+***
+
+### RevertibleFunctionInvocationType
+
+Re-exports [RevertibleFunctionInvocationType](index-1.mdx#revertiblefunctioninvocationtype)
+
+***
+
+### SimulatedTransactionType
+
+Re-exports [SimulatedTransactionType](index-1.mdx#simulatedtransactiontype)
+
+***
+
+### stateDiffFromRpc
+
+Re-exports [stateDiffFromRpc](index-1.mdx#statedifffromrpc)
+
+***
+
+### stateDiffToRpc
+
+Re-exports [stateDiffToRpc](index-1.mdx#statedifftorpc)
+
+***
+
+### StateDiffType
+
+Re-exports [StateDiffType](index-1.mdx#statedifftype)
+
+***
+
+### stateUpdateFromRpc
+
+Re-exports [stateUpdateFromRpc](index-1.mdx#stateupdatefromrpc)
+
+***
+
+### stateUpdateToRpc
+
+Re-exports [stateUpdateToRpc](index-1.mdx#stateupdatetorpc)
+
+***
+
+### StateUpdateType
+
+Re-exports [StateUpdateType](index-1.mdx#stateupdatetype)
+
+***
+
 ### StorageKey
 
 Re-exports [StorageKey](index-1.mdx#storagekey)
@@ -670,6 +1270,90 @@ Re-exports [StorageKey](index-1.mdx#storagekey)
 ### StorageKeyType
 
 Re-exports [StorageKeyType](index-1.mdx#storagekeytype)
+
+***
+
+### TraceExecutionResourcesType
+
+Re-exports [TraceExecutionResourcesType](index-1.mdx#traceexecutionresourcestype)
+
+***
+
+### transactionFromRpc
+
+Re-exports [transactionFromRpc](index-1.mdx#transactionfromrpc)
+
+***
+
+### transactionToRpc
+
+Re-exports [transactionToRpc](index-1.mdx#transactiontorpc)
+
+***
+
+### transactionTraceFromRpc
+
+Re-exports [transactionTraceFromRpc](index-1.mdx#transactiontracefromrpc)
+
+***
+
+### transactionTraceToRpc
+
+Re-exports [transactionTraceToRpc](index-1.mdx#transactiontracetorpc)
+
+***
+
+### TransactionTraceType
+
+Re-exports [TransactionTraceType](index-1.mdx#transactiontracetype)
+
+***
+
+### txnFromRpc
+
+Re-exports [txnFromRpc](index-1.mdx#txnfromrpc)
+
+***
+
+### TxnReceiptCommonType
+
+Re-exports [TxnReceiptCommonType](index-1.mdx#txnreceiptcommontype)
+
+***
+
+### TxnReceiptType
+
+Re-exports [TxnReceiptType](index-1.mdx#txnreceipttype)
+
+***
+
+### TxnReceiptWithBlockInfoType
+
+Re-exports [TxnReceiptWithBlockInfoType](index-1.mdx#txnreceiptwithblockinfotype)
+
+***
+
+### txnToRpc
+
+Re-exports [txnToRpc](index-1.mdx#txntorpc)
+
+***
+
+### TxnType
+
+Re-exports [TxnType](index-1.mdx#txntype)
+
+***
+
+### TxnWithHashType
+
+Re-exports [TxnWithHashType](index-1.mdx#txnwithhashtype)
+
+***
+
+### TxnWithReceiptType
+
+Re-exports [TxnWithReceiptType](index-1.mdx#txnwithreceipttype)
 
 ***
 
