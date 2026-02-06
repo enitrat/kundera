@@ -6,7 +6,7 @@ export const method = "starknet_addDeclareTransaction";
 
 /**
  * @param {BroadcastedDeclareTxn} transaction
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_addDeclareTransaction', params: [BroadcastedDeclareTxn] }}
  */
 export function AddDeclareTransactionRequest(transaction) {
 	return { method, params: [transaction] };

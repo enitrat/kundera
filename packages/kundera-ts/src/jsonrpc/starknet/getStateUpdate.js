@@ -6,7 +6,7 @@ export const method = "starknet_getStateUpdate";
 
 /**
  * @param {BlockId} [blockId='latest']
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_getStateUpdate', params: [BlockId] }}
  */
 export function GetStateUpdateRequest(blockId = "latest") {
 	return { method, params: [blockId] };

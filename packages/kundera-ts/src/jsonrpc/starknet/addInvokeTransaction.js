@@ -6,7 +6,7 @@ export const method = "starknet_addInvokeTransaction";
 
 /**
  * @param {BroadcastedInvokeTxn} transaction
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_addInvokeTransaction', params: [BroadcastedInvokeTxn] }}
  */
 export function AddInvokeTransactionRequest(transaction) {
 	return { method, params: [transaction] };

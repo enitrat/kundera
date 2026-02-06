@@ -35,20 +35,26 @@ describe("HttpProvider", () => {
 		const provider = new HttpProvider("http://localhost:9545");
 		await provider.request({
 			method: "starknet_call",
-			params: {
-				contract_address: "0x1",
-				entry_point_selector: "0x2",
-				calldata: [],
-			},
+			params: [
+				{
+					contract_address: "0x1",
+					entry_point_selector: "0x2",
+					calldata: [],
+				},
+				"latest",
+			],
 		});
 
 		const call = mockFetch.mock.calls[0] as [string, RequestInit];
 		const body = JSON.parse(call[1].body as string);
-		expect(body.params).toEqual({
-			contract_address: "0x1",
-			entry_point_selector: "0x2",
-			calldata: [],
-		});
+		expect(body.params).toEqual([
+			{
+				contract_address: "0x1",
+				entry_point_selector: "0x2",
+				calldata: [],
+			},
+			"latest",
+		]);
 	});
 
 	it("works with Rpc request builders", async () => {
@@ -68,7 +74,7 @@ describe("HttpProvider", () => {
 
 		const provider = new HttpProvider("http://localhost:9545");
 		await expect(
-			provider.request({ method: "starknet_unknown" }),
+			provider.request({ method: "starknet_blockNumber", params: [] }),
 		).rejects.toMatchObject({ code: -32601, message: "Method not found" });
 	});
 });

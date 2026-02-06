@@ -7,7 +7,7 @@ export const method = "starknet_getTransactionByBlockIdAndIndex";
 /**
  * @param {BlockId} blockId
  * @param {number} index
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_getTransactionByBlockIdAndIndex', params: [BlockId, number] }}
  */
 export function GetTransactionByBlockIdAndIndexRequest(blockId, index) {
 	return { method, params: [blockId, index] };

@@ -7,7 +7,7 @@ export const method = "starknet_getClassAt";
 /**
  * @param {BlockId} blockId
  * @param {string} contractAddress
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_getClassAt', params: [BlockId, string] }}
  */
 export function GetClassAtRequest(blockId, contractAddress) {
 	return { method, params: [blockId, contractAddress] };

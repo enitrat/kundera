@@ -4,7 +4,7 @@
 export const method = "starknet_blockHashAndNumber";
 
 /**
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_blockHashAndNumber', params: [] }}
  */
 export function BlockHashAndNumberRequest() {
 	return { method, params: [] };

@@ -6,7 +6,7 @@ export const method = "starknet_traceBlockTransactions";
 
 /**
  * @param {BlockId} blockId
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_traceBlockTransactions', params: [BlockId] }}
  */
 export function TraceBlockTransactionsRequest(blockId) {
 	return { method, params: [blockId] };

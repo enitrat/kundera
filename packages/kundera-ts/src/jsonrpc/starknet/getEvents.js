@@ -6,7 +6,7 @@ export const method = "starknet_getEvents";
 
 /**
  * @param {EventsFilter} filter
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_getEvents', params: [EventsFilter] }}
  */
 export function GetEventsRequest(filter) {
 	return { method, params: [filter] };

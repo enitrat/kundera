@@ -6,7 +6,7 @@ export const method = "starknet_getBlockWithTxHashes";
 
 /**
  * @param {BlockId} [blockId='latest']
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_getBlockWithTxHashes', params: [BlockId] }}
  */
 export function GetBlockWithTxHashesRequest(blockId = "latest") {
 	return { method, params: [blockId] };

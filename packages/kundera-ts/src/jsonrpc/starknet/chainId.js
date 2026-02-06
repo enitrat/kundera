@@ -4,7 +4,7 @@
 export const method = "starknet_chainId";
 
 /**
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_chainId', params: [] }}
  */
 export function ChainIdRequest() {
 	return { method, params: [] };

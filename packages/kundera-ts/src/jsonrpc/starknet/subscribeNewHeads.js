@@ -6,7 +6,7 @@ export const method = "starknet_subscribeNewHeads";
 
 /**
  * @param {NewHeadsSubscriptionParams} [params]
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_subscribeNewHeads', params: unknown[] }}
  */
 export function SubscribeNewHeadsRequest(params) {
 	const requestParams = params?.block_id ? [params.block_id] : [];

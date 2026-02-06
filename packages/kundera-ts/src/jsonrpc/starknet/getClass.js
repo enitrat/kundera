@@ -7,7 +7,7 @@ export const method = "starknet_getClass";
 /**
  * @param {BlockId} blockId
  * @param {string} classHash
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_getClass', params: [BlockId, string] }}
  */
 export function GetClassRequest(blockId, classHash) {
 	return { method, params: [blockId, classHash] };

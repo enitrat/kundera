@@ -8,7 +8,7 @@ export const method = "starknet_getStorageAt";
  * @param {string} contractAddress
  * @param {string} key
  * @param {BlockId} [blockId='latest']
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_getStorageAt', params: [string, string, BlockId] }}
  */
 export function GetStorageAtRequest(contractAddress, key, blockId = "latest") {
 	return { method, params: [contractAddress, key, blockId] };

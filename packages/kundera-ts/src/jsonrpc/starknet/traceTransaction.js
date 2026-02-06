@@ -5,7 +5,7 @@ export const method = "starknet_traceTransaction";
 
 /**
  * @param {string} transactionHash
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_traceTransaction', params: [string] }}
  */
 export function TraceTransactionRequest(transactionHash) {
 	return { method, params: [transactionHash] };

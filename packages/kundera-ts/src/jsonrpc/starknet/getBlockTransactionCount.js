@@ -6,7 +6,7 @@ export const method = "starknet_getBlockTransactionCount";
 
 /**
  * @param {BlockId} [blockId='latest']
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_getBlockTransactionCount', params: [BlockId] }}
  */
 export function GetBlockTransactionCountRequest(blockId = "latest") {
 	return { method, params: [blockId] };

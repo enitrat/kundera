@@ -4,7 +4,7 @@
 export const method = "starknet_specVersion";
 
 /**
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_specVersion', params: [] }}
  */
 export function SpecVersionRequest() {
 	return { method, params: [] };

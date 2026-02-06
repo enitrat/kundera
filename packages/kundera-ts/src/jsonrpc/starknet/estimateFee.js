@@ -10,7 +10,7 @@ export const method = "starknet_estimateFee";
  * @param {BroadcastedTxn[]} transactions
  * @param {SimulationFlag[]} [simulationFlags=[]]
  * @param {BlockId} [blockId='latest']
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_estimateFee', params: [BroadcastedTxn[], SimulationFlag[], BlockId] }}
  */
 export function EstimateFeeRequest(
 	transactions,

@@ -5,7 +5,7 @@ export const method = "starknet_getTransactionReceipt";
 
 /**
  * @param {string} transactionHash
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_getTransactionReceipt', params: [string] }}
  */
 export function GetTransactionReceiptRequest(transactionHash) {
 	return { method, params: [transactionHash] };

@@ -6,7 +6,7 @@ export const method = "starknet_addDeployAccountTransaction";
 
 /**
  * @param {BroadcastedDeployAccountTxn} transaction
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_addDeployAccountTransaction', params: [BroadcastedDeployAccountTxn] }}
  */
 export function AddDeployAccountTransactionRequest(transaction) {
 	return { method, params: [transaction] };

@@ -4,7 +4,7 @@
 export const method = "starknet_blockNumber";
 
 /**
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_blockNumber', params: [] }}
  */
 export function BlockNumberRequest() {
 	return { method, params: [] };

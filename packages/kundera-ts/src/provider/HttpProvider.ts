@@ -13,11 +13,11 @@ function nextRequestId(): number {
 	return ++_requestId;
 }
 import { isJsonRpcError } from "../transport/types.js";
-import type { Provider } from "./Provider.js";
+import type { TypedProvider } from "./TypedProvider.js";
+import type { StarknetRpcSchema } from "./schemas/StarknetRpcSchema.js";
 import type {
 	ProviderEvent,
 	ProviderEventMap,
-	RequestArguments,
 	RequestOptions,
 	Response,
 	RpcError,
@@ -39,7 +39,7 @@ export interface HttpProviderOptions {
 	retryDelay?: number;
 }
 
-export class HttpProvider implements Provider {
+export class HttpProvider implements TypedProvider<StarknetRpcSchema> {
 	private transport: Transport;
 	private defaultTimeout: number;
 	private defaultRetryCount: number;
@@ -112,7 +112,7 @@ export class HttpProvider implements Provider {
 		return { error: lastError ?? { code: -32603, message: "Request failed" } };
 	}
 
-	async request(args: RequestArguments): Promise<unknown> {
+	request: TypedProvider<StarknetRpcSchema>["request"] = async (args) => {
 		const { method, params } = args;
 		const normalizedParams: unknown[] | Record<string, unknown> | undefined =
 			Array.isArray(params) ? [...params] : params;
@@ -120,8 +120,8 @@ export class HttpProvider implements Provider {
 		if (response.error) {
 			throw response.error;
 		}
-		return response.result;
-	}
+		return response.result as never;
+	};
 
 	on<E extends ProviderEvent>(event: E, listener: ProviderEventMap[E]): this {
 		if (!this.eventListeners.has(event)) {

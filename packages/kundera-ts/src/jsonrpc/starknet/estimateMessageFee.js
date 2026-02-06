@@ -8,7 +8,7 @@ export const method = "starknet_estimateMessageFee";
 /**
  * @param {MsgFromL1} message
  * @param {BlockId} [blockId='latest']
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_estimateMessageFee', params: [MsgFromL1, BlockId] }}
  */
 export function EstimateMessageFeeRequest(message, blockId = "latest") {
 	return { method, params: [message, blockId] };

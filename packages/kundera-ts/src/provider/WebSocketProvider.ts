@@ -6,12 +6,12 @@
  * @module provider/WebSocketProvider
  */
 
-import type { Provider } from "./Provider.js";
+import type { TypedProvider } from "./TypedProvider.js";
+import type { StarknetRpcSchema } from "./schemas/StarknetRpcSchema.js";
 import type {
 	ProviderEvent,
 	ProviderEventMap,
 	ProviderEvents,
-	RequestArguments,
 	RequestOptions,
 	Response,
 	RpcError,
@@ -46,7 +46,7 @@ export interface WebSocketProviderOptions extends WebSocketTransportOptions {
 	retryDelay?: number;
 }
 
-export class WebSocketProvider implements Provider {
+export class WebSocketProvider implements TypedProvider<StarknetRpcSchema> {
 	private transport: WebSocketTransport;
 	private defaultTimeout: number;
 	private defaultRetryCount: number;
@@ -144,7 +144,7 @@ export class WebSocketProvider implements Provider {
 		return { error: lastError ?? { code: -32603, message: "Request failed" } };
 	}
 
-	async request(args: RequestArguments): Promise<unknown> {
+	request: TypedProvider<StarknetRpcSchema>["request"] = async (args) => {
 		const { method, params } = args;
 		const normalizedParams: unknown[] | Record<string, unknown> | undefined =
 			Array.isArray(params) ? [...params] : params;
@@ -152,8 +152,8 @@ export class WebSocketProvider implements Provider {
 		if (response.error) {
 			throw response.error;
 		}
-		return response.result;
-	}
+		return response.result as never;
+	};
 
 	on<E extends ProviderEvent>(event: E, listener: ProviderEventMap[E]): this {
 		if (!this.eventListeners.has(event)) {

@@ -6,7 +6,7 @@ export const method = "starknet_subscribeNewTransactions";
 
 /**
  * @param {PendingTransactionsSubscriptionParams} [params]
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_subscribeNewTransactions', params: unknown[] }}
  */
 export function SubscribeNewTransactionsRequest(params) {
 	/** @type {unknown[]} */

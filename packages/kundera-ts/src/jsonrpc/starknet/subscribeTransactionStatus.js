@@ -5,7 +5,7 @@ export const method = "starknet_subscribeTransactionStatus";
 
 /**
  * @param {string} transactionHash
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_subscribeTransactionStatus', params: [string] }}
  */
 export function SubscribeTransactionStatusRequest(transactionHash) {
 	return { method, params: [transactionHash] };

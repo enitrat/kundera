@@ -8,7 +8,7 @@ export const method = "starknet_call";
 /**
  * @param {FunctionCall} request
  * @param {BlockId} [blockId='latest']
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_call', params: [FunctionCall, BlockId] }}
  */
 export function CallRequest(request, blockId = "latest") {
 	return { method, params: [request, blockId] };

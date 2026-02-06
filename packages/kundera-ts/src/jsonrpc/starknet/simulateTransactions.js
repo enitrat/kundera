@@ -10,7 +10,7 @@ export const method = "starknet_simulateTransactions";
  * @param {BlockId} blockId
  * @param {BroadcastedTxn[]} transactions
  * @param {SimulationFlag[]} [simulationFlags=[]]
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_simulateTransactions', params: [BlockId, BroadcastedTxn[], SimulationFlag[]] }}
  */
 export function SimulateTransactionsRequest(
 	blockId,

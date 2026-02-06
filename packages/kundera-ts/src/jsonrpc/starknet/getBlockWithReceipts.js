@@ -6,7 +6,7 @@ export const method = "starknet_getBlockWithReceipts";
 
 /**
  * @param {BlockId} [blockId='latest']
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_getBlockWithReceipts', params: [BlockId] }}
  */
 export function GetBlockWithReceiptsRequest(blockId = "latest") {
 	return { method, params: [blockId] };

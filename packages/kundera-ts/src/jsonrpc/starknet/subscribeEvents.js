@@ -6,7 +6,7 @@ export const method = "starknet_subscribeEvents";
 
 /**
  * @param {EventsSubscriptionParams} [params]
- * @returns {RequestArguments}
+ * @returns {{ method: 'starknet_subscribeEvents', params: unknown[] }}
  */
 export function SubscribeEventsRequest(params) {
 	/** @type {unknown[]} */
