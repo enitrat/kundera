@@ -89,17 +89,17 @@ function declareAndDeploy(
 
 All Kundera documentation shows the **recommended API** using constructors like `ContractAddress.from()`, `ClassHash.from()`, etc. These return instances with prototype methods.
 
-For bundle-size optimization, Kundera also provides a [tree-shakeable functional API](/typescript/concepts/tree-shakeable-api) with the same method signatures but imported as standalone functions.
+For bundle-size optimization, Kundera also provides a [tree-shakeable functional API](/concepts/tree-shakeable-api) with the same method signatures but imported as standalone functions.
 
 ## All Branded Types
 
 | Type | Description | Max Value |
 |------|-------------|-----------|
-| [Felt252Type](/typescript/api/primitives#felt252) | Raw 252-bit field element | < 2^251 + 17*2^192 + 1 |
-| [ContractAddressType](/typescript/api/primitives#contractaddress) | Starknet contract address | < 2^251 |
-| [ClassHashType](/typescript/api/primitives#classhash) | Contract class identifier | < 2^251 + 17*2^192 + 1 |
-| [StorageKeyType](/typescript/api/primitives#storagekey) | Storage slot address | < 2^251 + 17*2^192 + 1 |
-| [EthAddressType](/typescript/api/primitives#ethaddress) | L1 Ethereum address | < 2^160 |
+| [Felt252Type](/api/primitives#felt252) | Raw 252-bit field element | < 2^251 + 17*2^192 + 1 |
+| [ContractAddressType](/api/primitives#contractaddress) | Starknet contract address | < 2^251 |
+| [ClassHashType](/api/primitives#classhash) | Contract class identifier | < 2^251 + 17*2^192 + 1 |
+| [StorageKeyType](/api/primitives#storagekey) | Storage slot address | < 2^251 + 17*2^192 + 1 |
+| [EthAddressType](/api/primitives#ethaddress) | L1 Ethereum address | < 2^160 |
 
 <Warning>
 ## Conversion Required for External Data
@@ -120,16 +120,16 @@ Never assume external data is already branded--always use the `.from()` construc
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Tree-Shakeable API" icon="leaf" href="/typescript/concepts/tree-shakeable-api">
+  <Card title="Tree-Shakeable API" icon="leaf" href="/concepts/tree-shakeable-api">
     Functional API for minimal bundle size
   </Card>
-  <Card title="Type-Safe Values" icon="lock" href="/typescript/concepts/type-safe-values">
+  <Card title="Type-Safe Values" icon="lock" href="/concepts/type-safe-values">
     Prevent type confusion with branded types
   </Card>
-  <Card title="Primitives API" icon="cube" href="/typescript/api/primitives">
+  <Card title="Primitives API" icon="cube" href="/api/primitives">
     Full API reference for primitive types
   </Card>
-  <Card title="Error Handling" icon="shield-check" href="/typescript/concepts/error-handling">
+  <Card title="Error Handling" icon="shield-check" href="/concepts/error-handling">
     How validation errors are handled
   </Card>
 </CardGroup>

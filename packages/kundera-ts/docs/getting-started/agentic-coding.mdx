@@ -31,7 +31,7 @@ Kundera's API is designed to work well with AI assistants:
 // Kundera API maps directly to Starknet concepts
 const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
 const hash = pedersen(a, b);
-const result = await starknet_call(transport, request);
+const result = await provider.request(Rpc.CallRequest(call, 'latest'));
 ```
 
 ## Why Local Context Works Best
@@ -51,8 +51,8 @@ Kundera's data-first architecture makes it easier for AI assistants to understan
 
 ```typescript
 // Clear input → output flow
-const transport = httpTransport(url);
-const result = await starknet_call(transport, request);
+const provider = new HttpProvider({ url });
+const result = await provider.request(Rpc.CallRequest(call, 'latest'));
 const decoded = decodeOutputObject(abi, 'balanceOf', result);
 ```
 
@@ -63,12 +63,15 @@ No hidden state, no implicit configuration. Every dependency is explicit.
 Branded types help AI assistants self-correct:
 
 ```typescript
-// AI assistant attempts to swap arguments
-const call = starknet_call(request, transport);
-//                          ~~~~~~~ Type error!
+// AI assistant attempts wrong param type
+const result = await provider.request(
+  Rpc.GetNonceRequest('latest', 12345)  // Type error: number not string
+);
 
 // TypeScript error guides the AI to fix it
-const call = starknet_call(transport, request); // ✓
+const result = await provider.request(
+  Rpc.GetNonceRequest('latest', '0x...') // ✓
+);
 ```
 
 Compile errors provide immediate feedback that helps LLMs produce correct code on the next attempt.

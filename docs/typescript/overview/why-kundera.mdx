@@ -60,8 +60,8 @@ import { Felt252, ContractAddress } from '@kundera-sn/kundera-ts';
 // Only imports crypto
 import { pedersen, poseidon } from '@kundera-sn/kundera-ts/crypto';
 
-// Only imports one RPC method
-import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+// Only imports the Rpc namespace for request builders
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 ```
 
 Compare to monolithic libraries where importing one function pulls in the entire SDK.
@@ -89,7 +89,7 @@ Functions take data and return data. No classes, no `this`, no hidden state.
 ```typescript
 // Data in, data out
 const hash = pedersen(a, b);
-const result = await starknet_call(transport, request);
+const result = await provider.request(Rpc.CallRequest(call, 'latest'));
 ```
 
 ### Explicit Over Implicit
@@ -97,9 +97,9 @@ const result = await starknet_call(transport, request);
 No global configuration. Pass dependencies explicitly.
 
 ```typescript
-// Transport is explicit, not global
-const transport = httpTransport(url);
-await starknet_call(transport, request);
+// Provider wraps transport, everything is explicit
+const provider = new HttpProvider({ url });
+await provider.request(Rpc.CallRequest(call, 'latest'));
 ```
 
 ### Fail Fast
@@ -126,7 +126,7 @@ ContractAddress('not-a-valid-address');
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Architecture" icon="sitemap" href="/typescript/overview/architecture">
+  <Card title="Architecture" icon="sitemap" href="/overview/architecture">
     How Kundera's modules fit together.
   </Card>
   <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">

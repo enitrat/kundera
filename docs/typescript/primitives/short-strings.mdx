@@ -81,14 +81,16 @@ Felt252.MAX_SHORT_STRING_LENGTH;        // 31
 ERC-20 `name()` and `symbol()` often return short strings:
 
 ```typescript
-import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import { decodeShortString } from '@kundera-sn/kundera-ts';
 
-const result = await starknet_call(transport, {
-  contract_address: tokenAddress,
-  entry_point_selector: '0x...', // name()
-  calldata: [],
-});
+const result = await provider.request(
+  Rpc.CallRequest({
+    contract_address: tokenAddress,
+    entry_point_selector: '0x...', // name()
+    calldata: [],
+  }, 'latest')
+);
 
 const name = decodeShortString(result[0]);
 console.log(name); // 'Ether'
@@ -151,10 +153,10 @@ try {
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Felt252" icon="cube" href="/typescript/primitives/felt252">
+  <Card title="Felt252" icon="cube" href="/primitives/felt252">
     The underlying type for short strings.
   </Card>
-  <Card title="ABI Encoding" icon="code" href="/typescript/guides/abi/encode-decode">
+  <Card title="ABI Encoding" icon="code" href="/guides/abi/encode-decode">
     Encoding complex types in calldata.
   </Card>
 </CardGroup>

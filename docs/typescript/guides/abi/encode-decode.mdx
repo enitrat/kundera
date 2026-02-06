@@ -67,7 +67,7 @@ import { decodeOutput } from '@kundera-sn/kundera-ts/abi';
 const rawOutput = [1000n, 0n];
 
 const { result } = decodeOutput(abi, 'balance_of', rawOutput);
-console.log('Balance:', result[0]); // 1000n
+console.log('Balance:', result); // 1000n  (single output unwrapped to scalar)
 ```
 
 ## Type Encoding Rules
@@ -197,10 +197,10 @@ const decoded = decodeCalldata(abi, 'transfer', encoded.result!);
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="ABI API" icon="code" href="/typescript/api/abi">
+  <Card title="ABI API" icon="code" href="/api/abi">
     Full ABI encoding/decoding API reference.
   </Card>
-  <Card title="Cairo Types" icon="cube" href="/typescript/api/serde">
+  <Card title="Cairo Types" icon="cube" href="/concepts/cairo-types">
     Understanding Cairo type encoding.
   </Card>
 </CardGroup>

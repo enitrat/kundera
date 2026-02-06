@@ -1,14 +1,17 @@
 #!/usr/bin/env npx tsx
 /**
- * Setup docs symlinks and discover package documentation
+ * Setup docs by copying package documentation into docs/
  *
  * This script:
- * 1. Creates symlinks from docs/ to package docs (e.g., docs/typescript/skills → packages/kundera-ts/docs/skills)
- * 2. Discovers all .mdx files in linked package docs
+ * 1. Copies .mdx files from package docs into docs/ (e.g., packages/kundera-ts/docs/ → docs/typescript/)
+ * 2. Discovers all .mdx files in copied package docs
  * 3. Updates docs.json navigation with discovered pages
+ *
+ * Source of truth: packages/kundera-ts/docs/
+ * Mintlify serves from: docs/typescript/
  */
 
-import { existsSync, lstatSync, symlinkSync, unlinkSync } from "node:fs";
+import { existsSync, mkdirSync, lstatSync, readdirSync, statSync, copyFileSync, rmSync } from "node:fs";
 import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 
@@ -16,16 +19,21 @@ const DOCS_ROOT = "docs";
 const DOCS_JSON_PATH = "docs/docs.json";
 
 /**
- * Package doc sources to symlink into docs/
- * Format: { linkPath: targetPath }
- * - linkPath: where the symlink should appear in docs/ (relative to docs/)
- * - targetPath: where the actual files are (relative to repo root)
+ * Package doc sources to copy into docs/
+ * Format: { destPath: sourcePath }
+ * - destPath: where files should appear in docs/ (relative to docs/)
+ * - sourcePath: where the actual source files are (relative to repo root)
  */
 const PACKAGE_DOC_SOURCES: Record<string, string> = {
-  "typescript/skills": "packages/kundera-ts/docs/skills",
+  "typescript": "packages/kundera-ts/docs",
   // Add more package doc sources here as needed:
-  // "effect/skills": "packages/kundera-effect/docs/skills",
+  // "effect": "packages/kundera-effect/docs",
 };
+
+/**
+ * File extensions to copy (only documentation files)
+ */
+const COPY_EXTENSIONS = new Set([".mdx"]);
 
 interface NavPage {
   group?: string;
@@ -46,35 +54,41 @@ interface DocsJson {
 }
 
 /**
- * Ensure symlink exists, creating or updating as needed
+ * Recursively copy .mdx files from source to destination
  */
-function ensureSymlink(linkPath: string, targetPath: string): void {
-  const fullLinkPath = join(DOCS_ROOT, linkPath);
-  // Calculate relative path from link location to target
-  const linkDir = dirname(fullLinkPath);
-  const relativeTarget = relative(linkDir, targetPath);
-
-  // Check if target exists
-  if (!existsSync(targetPath)) {
-    console.warn(`⚠️  Target does not exist: ${targetPath}`);
-    return;
+function copyDocs(srcDir: string, destDir: string): number {
+  if (!existsSync(srcDir)) {
+    console.warn(`⚠️  Source does not exist: ${srcDir}`);
+    return 0;
   }
 
-  // Check if link already exists
-  if (existsSync(fullLinkPath)) {
-    const stats = lstatSync(fullLinkPath);
-    if (stats.isSymbolicLink()) {
-      // Already a symlink - remove and recreate to ensure correct target
-      unlinkSync(fullLinkPath);
-    } else {
-      console.warn(`⚠️  ${fullLinkPath} exists but is not a symlink. Skipping.`);
-      return;
+  mkdirSync(destDir, { recursive: true });
+
+  let copied = 0;
+  const entries = readdirSync(srcDir);
+
+  for (const entry of entries) {
+    const srcPath = join(srcDir, entry);
+    const destPath = join(destDir, entry);
+    const stats = lstatSync(srcPath);
+
+    if (stats.isDirectory()) {
+      copied += copyDocs(srcPath, destPath);
+    } else if (COPY_EXTENSIONS.has(extOf(entry))) {
+      // Only copy if source is newer or dest doesn't exist
+      if (!existsSync(destPath) || stats.mtimeMs > lstatSync(destPath).mtimeMs) {
+        copyFileSync(srcPath, destPath);
+        copied++;
+      }
     }
   }
 
-  // Create symlink
-  symlinkSync(relativeTarget, fullLinkPath);
-  console.log(`✓ Symlink: ${fullLinkPath} → ${relativeTarget}`);
+  return copied;
+}
+
+function extOf(filename: string): string {
+  const dot = filename.lastIndexOf(".");
+  return dot === -1 ? "" : filename.slice(dot);
 }
 
 /**
@@ -111,13 +125,13 @@ async function collectMdxFiles(dirPath: string): Promise<string[]> {
 async function discoverPackagePages(): Promise<Map<string, string[]>> {
   const discovered = new Map<string, string[]>();
 
-  for (const [linkPath, targetPath] of Object.entries(PACKAGE_DOC_SOURCES)) {
-    const fullLinkPath = join(DOCS_ROOT, linkPath);
-    const files = await collectMdxFiles(fullLinkPath);
+  for (const [destPath] of Object.entries(PACKAGE_DOC_SOURCES)) {
+    const fullDestPath = join(DOCS_ROOT, destPath);
+    const files = await collectMdxFiles(fullDestPath);
 
     if (files.length > 0) {
-      discovered.set(linkPath, files);
-      console.log(`✓ Discovered ${files.length} pages in ${linkPath}`);
+      discovered.set(destPath, files);
+      console.log(`✓ Discovered ${files.length} pages in ${destPath}`);
     }
   }
 
@@ -148,7 +162,25 @@ function findNavGroup(
 }
 
 /**
- * Update navigation for a specific section with discovered pages
+ * Recursively collect all page strings from a nav structure
+ */
+function collectAllPages(pages: (string | NavPage)[]): Set<string> {
+  const result = new Set<string>();
+  for (const page of pages) {
+    if (typeof page === "string") {
+      result.add(page);
+    } else if (page.pages) {
+      for (const p of collectAllPages(page.pages)) {
+        result.add(p);
+      }
+    }
+  }
+  return result;
+}
+
+/**
+ * Update navigation for a specific section with discovered pages.
+ * Only adds pages that don't already exist anywhere in the section (including nested groups).
  */
 function updateNavSection(docsJson: DocsJson, linkPath: string, pages: string[]): void {
   const docAnchor = docsJson.navigation.anchors.find((a) => a.anchor === "Documentation");
@@ -161,13 +193,11 @@ function updateNavSection(docsJson: DocsJson, linkPath: string, pages: string[])
     return;
   }
 
-  // Get current pages in that group
+  // Recursively collect ALL existing pages (including nested groups)
   const { group } = result;
-  const existingPages = new Set(
-    group.pages.filter((p): p is string => typeof p === "string")
-  );
+  const existingPages = collectAllPages(group.pages);
 
-  // Add any new pages
+  // Add only truly new pages
   let added = 0;
   for (const page of pages) {
     if (!existingPages.has(page)) {
@@ -177,12 +207,6 @@ function updateNavSection(docsJson: DocsJson, linkPath: string, pages: string[])
   }
 
   if (added > 0) {
-    // Sort pages within group
-    group.pages = group.pages.sort((a, b) => {
-      const aStr = typeof a === "string" ? a : a.group || "";
-      const bStr = typeof b === "string" ? b : b.group || "";
-      return aStr.localeCompare(bStr);
-    });
     console.log(`✓ Added ${added} new pages to ${linkPath} navigation`);
   }
 }
@@ -190,10 +214,16 @@ function updateNavSection(docsJson: DocsJson, linkPath: string, pages: string[])
 async function main() {
   console.log("\n📚 Setting up docs...\n");
 
-  // Step 1: Ensure symlinks
-  console.log("Creating symlinks:");
-  for (const [linkPath, targetPath] of Object.entries(PACKAGE_DOC_SOURCES)) {
-    ensureSymlink(linkPath, targetPath);
+  // Step 1: Copy package docs into docs/
+  console.log("Copying package docs:");
+  for (const [destPath, sourcePath] of Object.entries(PACKAGE_DOC_SOURCES)) {
+    const fullDest = join(DOCS_ROOT, destPath);
+    const copied = copyDocs(sourcePath, fullDest);
+    if (copied > 0) {
+      console.log(`✓ Copied ${copied} files: ${sourcePath} → ${fullDest}`);
+    } else {
+      console.log(`✓ ${destPath}: all files up to date`);
+    }
   }
 
   // Step 2: Discover pages

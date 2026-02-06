@@ -202,7 +202,7 @@ Decode function return values.
 
 ```typescript
 const { result } = decodeOutput(abi, 'balance_of', [1000n, 0n]);
-// result: [1000n]
+// result: 1000n  (single output unwrapped to scalar)
 
 const { result: obj } = decodeOutputObject(abi, 'balance_of', [1000n, 0n]);
 // obj: { balance: 1000n }
@@ -375,10 +375,10 @@ type AbiErrorCode =
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Encode/Decode Guide" icon="code" href="/typescript/guides/abi/encode-decode">
+  <Card title="Encode/Decode Guide" icon="code" href="/guides/abi/encode-decode">
     Calldata encoding guide.
   </Card>
-  <Card title="Events Guide" icon="bell" href="/typescript/guides/abi/events">
+  <Card title="Events Guide" icon="bell" href="/guides/abi/events">
     Event decoding guide.
   </Card>
 </CardGroup>

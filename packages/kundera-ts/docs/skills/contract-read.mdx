@@ -58,14 +58,16 @@ const { result } = await readContract(transport, {
 
 // Equivalent to:
 import { encodeCalldata, decodeOutput } from '@kundera-sn/kundera-ts/abi';
-import { starknet_call } from '@kundera-sn/kundera-ts/rpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 
 const { result: calldata } = encodeCalldata(ERC20_ABI, 'balance_of', [accountAddress]);
-const rawResult = await starknet_call(transport, {
-  contract_address: tokenAddress,
-  entry_point_selector: computeSelector('balance_of'),
-  calldata,
-});
+const rawResult = await provider.request(
+  Rpc.CallRequest({
+    contract_address: tokenAddress,
+    entry_point_selector: computeSelector('balance_of'),
+    calldata,
+  }, 'latest')
+);
 const decoded = decodeOutput(ERC20_ABI, 'balance_of', rawResult);
 ```
 

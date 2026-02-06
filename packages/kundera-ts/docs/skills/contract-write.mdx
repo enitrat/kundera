@@ -151,7 +151,7 @@ Common failures:
 The write method returns immediately. To wait for confirmation:
 
 ```ts
-import { starknet_getTransactionReceipt } from '@kundera-sn/kundera-ts/rpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 
 const { result } = await writeContract({
   abi: ERC20_ABI,
@@ -164,9 +164,13 @@ const { result } = await writeContract({
 // Poll for receipt
 let receipt = null;
 while (!receipt) {
-  const { result: r } = await starknet_getTransactionReceipt(transport, result.transaction_hash);
-  if (r) receipt = r;
-  else await new Promise((resolve) => setTimeout(resolve, 1000));
+  try {
+    receipt = await provider.request(
+      Rpc.GetTransactionReceiptRequest(result.transaction_hash)
+    );
+  } catch {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
 }
 
 // Check status

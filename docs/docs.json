@@ -95,6 +95,26 @@
             "icon": "code",
             "pages": [
               "typescript/overview",
+              "typescript/index",
+              {
+                "group": "Overview",
+                "icon": "house",
+                "pages": [
+                  "typescript/overview/architecture",
+                  "typescript/overview/why-kundera",
+                  "typescript/comparisons"
+                ]
+              },
+              {
+                "group": "Getting Started",
+                "icon": "rocket",
+                "pages": [
+                  "typescript/getting-started/quickstart",
+                  "typescript/getting-started/branded-types",
+                  "typescript/getting-started/agentic-coding",
+                  "typescript/getting-started/runtime-implementations"
+                ]
+              },
               {
                 "group": "Primitives",
                 "icon": "cube",
@@ -107,6 +127,39 @@
                   "typescript/primitives/eth-address",
                   "typescript/primitives/short-strings",
                   "typescript/primitives/domain-primitives"
+                ]
+              },
+              {
+                "group": "Concepts",
+                "icon": "lightbulb",
+                "pages": [
+                  "typescript/concepts/branded-types",
+                  "typescript/concepts/tree-shakeable-api",
+                  "typescript/concepts/type-safe-values",
+                  "typescript/concepts/error-handling",
+                  "typescript/concepts/event-filtering",
+                  "typescript/concepts/security"
+                ]
+              },
+              {
+                "group": "Guides",
+                "icon": "compass",
+                "pages": [
+                  {
+                    "group": "Provider",
+                    "pages": [
+                      "typescript/guides/provider/providers",
+                      "typescript/guides/provider/transport"
+                    ]
+                  },
+                  {
+                    "group": "ABI",
+                    "pages": [
+                      "typescript/guides/abi/encode-decode",
+                      "typescript/guides/abi/events"
+                    ]
+                  },
+                  "typescript/guides/serialization"
                 ]
               },
               {

@@ -184,23 +184,28 @@ const { result } = decodeEvents(receipt, abi, {
 For RPC queries, compile your filter (skill) and pass to the RPC call:
 
 ```typescript
-import { httpTransport } from '@kundera-sn/kundera-ts/transport';
-import { starknet_getEvents } from '@kundera-sn/kundera-ts/jsonrpc';
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import { compileEventFilter } from './skills/event-filtering';
 
-const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+const provider = new HttpProvider({ url: 'https://starknet-sepolia.example.com' });
 const filter = compileEventFilter(abi, 'Transfer', { from: myAddress });
 
 // Use with RPC (convert to hex strings for API)
-const events = await starknet_getEvents(transport, {
-  from_block: { block_number: startBlock },
-  to_block: { block_number: endBlock },
-  address: contractAddress,
-  keys: [
-    [filter.selector.toString(16)],
-    ...filter.argKeys.map(k => k.map(v => '0x' + v.toString(16))),
-  ],
-});
+const { events } = await provider.request(
+  Rpc.GetEventsRequest({
+    filter: {
+      from_block: { block_number: startBlock },
+      to_block: { block_number: endBlock },
+      address: contractAddress,
+      keys: [
+        [filter.selector.toString(16)],
+        ...filter.argKeys.map(k => k.map(v => '0x' + v.toString(16))),
+      ],
+      chunk_size: 100,
+    }
+  })
+);
 ```
 
 ## Best Practices
@@ -213,10 +218,10 @@ const events = await starknet_getEvents(transport, {
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Events Guide" icon="bell" href="/typescript/guides/abi/events">
+  <Card title="Events Guide" icon="bell" href="/guides/abi/events">
     Practical event decoding.
   </Card>
-  <Card title="WebSocket Provider Skill" icon="plug" href="/typescript/skills/websocket-provider">
+  <Card title="WebSocket Provider Skill" icon="plug" href="/skills/websocket-provider">
     Subscribe to real-time events over WebSocket transport.
   </Card>
 </CardGroup>

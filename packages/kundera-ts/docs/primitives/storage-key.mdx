@@ -77,14 +77,16 @@ const storageKey = StorageKey(pedersen(baseKey, addressFelt));
 ### Reading Storage
 
 ```typescript
-import { starknet_getStorageAt } from '@kundera-sn/kundera-ts/jsonrpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import { StorageKey, ContractAddress } from '@kundera-sn/kundera-ts';
 
-const value = await starknet_getStorageAt(transport, {
-  contract_address: ContractAddress('0x...'),
-  key: StorageKey('0x...'),
-  block_id: 'latest',
-});
+const value = await provider.request(
+  Rpc.GetStorageAtRequest(
+    ContractAddress('0x...'),
+    StorageKey('0x...'),
+    'latest'
+  )
+);
 ```
 
 ### Storage Proofs
@@ -92,11 +94,9 @@ const value = await starknet_getStorageAt(transport, {
 Storage keys are used in Merkle proofs for state verification:
 
 ```typescript
-const proof = await starknet_getProof(transport, {
-  contract_address: address,
-  keys: [StorageKey('0x...')],
-  block_id: 'latest',
-});
+const proof = await provider.request(
+  Rpc.GetStorageProofRequest('latest', [address], [StorageKey('0x...')])
+);
 ```
 
 ## Aliases

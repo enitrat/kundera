@@ -17,124 +17,103 @@ yarn add @kundera-sn/kundera-ts
 bun add @kundera-sn/kundera-ts
 ```
 
-## Crypto Backend
+## Choose Your Crypto Backend
 
-Kundera uses pure JS crypto by default - no setup needed:
+Kundera needs a crypto backend for signing and hashing. Choose based on your environment:
 
-```typescript
-import { Pedersen, Poseidon, snKeccak } from '@kundera-sn/kundera-ts/crypto';
+<Tabs>
+  <Tab title="Browser (WASM)">
+    Load WASM at app startup:
 
-const hash = Pedersen.hash(a, b);  // Just works
-```
+    ```typescript
+    import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+
+    // Call once at startup
+    await loadWasmCrypto();
+    ```
+  </Tab>
+  <Tab title="Bun (Native)">
+    Native crypto works out of the box in Bun:
+
+    ```typescript
+    import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
+
+    console.log(isNativeAvailable()); // true
+    ```
+  </Tab>
+  <Tab title="Node.js (Native)">
+    Install the FFI package for best performance:
+
+    ```bash
+    npm install koffi
+    ```
+
+    Then use normally:
+
+    ```typescript
+    import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
+
+    console.log(isNativeAvailable()); // true if koffi installed
+    ```
+  </Tab>
+</Tabs>
 
 <Note>
-For performance-critical applications, Native FFI and WASM backends are available. See [Runtime Implementations](/typescript/getting-started/runtime-implementations) for details.
+**Don't need signing?** If you only need read operations (calling contracts, fetching state), you can skip crypto setup entirely.
 </Note>
 
-## Basic Usage
+## Your First Request
 
-### Create a Transport
-
-```typescript
-import { httpTransport } from '@kundera-sn/kundera-ts/transport';
-
-const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
-```
-
-### Make RPC Calls
+Create a provider and query the chain.
 
 ```typescript
-import { starknet_blockNumber, starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
-import { ContractAddress } from '@kundera-sn/kundera-ts';
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 
-// Get current block
-const blockNumber = await starknet_blockNumber(transport);
+const provider = new HttpProvider({
+  url: 'https://starknet-sepolia.example.com'
+});
+
+// Get current block number
+const blockNumber = await provider.request(Rpc.BlockNumberRequest());
 console.log('Block:', blockNumber);
 
-// Call a contract
-const result = await starknet_call(
-  transport,
-  {
-    contract_address: ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7'),
-    entry_point_selector: '0x361458367e696363fbcc70777d07ebbd2394e89fd0adcaf147faccd1d294d60', // name()
-    calldata: []
-  },
-  'latest'
-);
+// Get chain ID
+const chainId = await provider.request(Rpc.ChainIdRequest());
+console.log('Chain:', chainId);
 ```
 
-### Use Branded Types
+The `Rpc` namespace contains request builders for all 37 Starknet JSON-RPC methods. Each builder constructs a `{ method, params }` object that you pass to `provider.request()`.
 
-Kundera uses [branded types](/typescript/getting-started/branded-types) to prevent mixing incompatible values:
+## Call a Contract
 
-```typescript
-import { ContractAddress, ClassHash, Felt252 } from '@kundera-sn/kundera-ts';
-
-// Create typed values
-const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
-const classHash = ClassHash('0x...');
-const felt = Felt252(123n);
-
-// TypeScript prevents mixups
-function deployContract(hash: ClassHash, addr: ContractAddress) { }
-deployContract(address, classHash); // Error: wrong order!
-
-// Convert between formats
-const hex = felt.toHex();
-const bigint = felt.toBigInt();
-```
-
-### Encode/Decode Calldata
+Read an ERC-20 token balance.
 
 ```typescript
-import { encodeCalldata, decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
+import { ContractAddress } from '@kundera-sn/kundera-ts';
 
-// Encode function arguments
-const encoded = encodeCalldata(erc20Abi, 'transfer', [
-  recipientAddress,
-  { low: amountLow, high: amountHigh }
-]);
-if (encoded.error) {
-  throw encoded.error;
-}
-const calldata = encoded.result;
-
-// Decode return values
-const decoded = decodeOutputObject(erc20Abi, 'balanceOf', result.map(BigInt));
-if (decoded.error) {
-  throw decoded.error;
-}
-const balance = decoded.result;
-```
-
-## Complete Example
-
-Read an ERC-20 token balance:
-
-```typescript
-import { httpTransport } from '@kundera-sn/kundera-ts/transport';
-import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
-import { ContractAddress, Felt252 } from '@kundera-sn/kundera-ts';
-
-// Setup
-const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+const provider = new HttpProvider({
+  url: 'https://starknet-sepolia.example.com'
+});
 
 // ETH token on Starknet
-const ethToken = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
-const account = ContractAddress('0x...');
+const ethToken = '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7';
+const account = '0x...'; // your account address
 
 // balanceOf selector
 const balanceOfSelector = '0x2e4263afad30923c891518314c3c95dbe830a16874e8abc5777a9a20b54c76e';
 
-// Call
-const result = await starknet_call(
-  transport,
-  {
-    contract_address: ethToken,
-    entry_point_selector: balanceOfSelector,
-    calldata: [account.toHex()]
-  },
-  'latest'
+const result = await provider.request(
+  Rpc.CallRequest(
+    {
+      contract_address: ethToken,
+      entry_point_selector: balanceOfSelector,
+      calldata: [account]
+    },
+    'latest'
+  )
 );
 
 // Result is [low, high] for u256
@@ -145,9 +124,71 @@ const balance = low + (high << 128n);
 console.log('Balance:', balance);
 ```
 
+## Typed Returns
+
+By default, `provider.request()` returns `Promise<unknown>`. For compile-time return type inference, cast to `TypedProvider<StarknetRpcSchema>`.
+
+```typescript
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import type { TypedProvider, StarknetRpcSchema } from '@kundera-sn/kundera-ts/provider';
+
+const provider = new HttpProvider({
+  url: 'https://starknet-sepolia.example.com'
+}) as TypedProvider<StarknetRpcSchema>;
+
+// TypeScript now infers return types from method strings
+const block = await provider.request({
+  method: 'starknet_getBlockWithTxHashes',
+  params: [{ block_number: 12345 }]
+});
+// block: BlockWithTxHashes ✓ (inferred, zero runtime cost)
+```
+
+This is a compile-time overlay — the cast adds no runtime behavior. See [Architecture](/overview/architecture) for details.
+
+## Use Branded Types
+
+Kundera uses [branded types](/getting-started/branded-types) to prevent mixing incompatible values at compile time.
+
+```typescript
+import { ContractAddress, ClassHash, Felt252 } from '@kundera-sn/kundera-ts';
+
+const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+const classHash = ClassHash('0x...');
+const felt = Felt252(123n);
+
+// TypeScript catches argument order mistakes
+function deployContract(hash: ClassHashType, addr: ContractAddressType) { }
+deployContract(address, classHash); // TS Error: wrong order!
+
+// Convert between formats
+const hex = felt.toHex();
+const bigint = felt.toBigInt();
+```
+
+## Encode/Decode Calldata
+
+The ABI module encodes function arguments and decodes return values.
+
+```typescript
+import { encodeCalldata, decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
+
+// Encode function arguments
+const encoded = encodeCalldata(erc20Abi, 'transfer', [
+  recipientAddress,
+  { low: amountLow, high: amountHigh }
+]);
+if (encoded.error) throw encoded.error;
+
+// Decode return values
+const decoded = decodeOutputObject(erc20Abi, 'balanceOf', result.map(BigInt));
+if (decoded.error) throw decoded.error;
+const balance = decoded.result;
+```
+
 ## What Makes Kundera Different?
 
-Kundera is a **low-level primitives library**, not a full SDK:
+Kundera is a low-level primitives library, not a full SDK. It gives you type-safe building blocks and lets you compose them however you want.
 
 | Feature | Kundera | starknet.js |
 |---------|---------|-------------|
@@ -156,29 +197,25 @@ Kundera is a **low-level primitives library**, not a full SDK:
 | **Performance** | Native Rust or WASM crypto | Pure JS |
 | **Philosophy** | Data-first, explicit dependencies | Object-oriented, implicit state |
 
-<Tip>
-**Use Kundera when** you need type safety, performance, or small bundles. **Use starknet.js when** you need high-level abstractions and ecosystem compatibility.
-</Tip>
-
 ## Next Steps
 
 <CardGroup cols={2}>
-  <Card title="Branded Types" icon="tag" href="/typescript/getting-started/branded-types">
-    How type safety prevents bugs
+  <Card title="Architecture" icon="sitemap" href="/overview/architecture">
+    Understand the layered stack and design philosophy.
   </Card>
-  <Card title="Runtime Implementations" icon="bolt" href="/typescript/getting-started/runtime-implementations">
-    Deep dive on Native vs WASM crypto
+  <Card title="Branded Types" icon="tag" href="/getting-started/branded-types">
+    How type safety prevents bugs.
   </Card>
-  <Card title="Agentic Coding" icon="robot" href="/typescript/getting-started/agentic-coding">
-    Maximize AI assistant productivity
+  <Card title="Provider Guide" icon="plug" href="/guides/provider/providers">
+    Provider patterns and recipes.
   </Card>
-  <Card title="Architecture" icon="sitemap" href="/typescript/overview/architecture">
-    Understand how modules fit together
+  <Card title="JSON-RPC Reference" icon="code" href="/api/jsonrpc">
+    All 37 request builders.
   </Card>
-  <Card title="Skills" icon="puzzle-piece" href="/typescript/skills/index">
-    Copy-paste patterns for common tasks
+  <Card title="Domain Primitives" icon="cube" href="/primitives/domain-primitives">
+    Convert wire types to rich types.
   </Card>
-  <Card title="API Reference" icon="book" href="/typescript/api/primitives">
-    Complete API documentation
+  <Card title="Runtime Implementations" icon="bolt" href="/getting-started/runtime-implementations">
+    Native vs WASM crypto deep dive.
   </Card>
 </CardGroup>

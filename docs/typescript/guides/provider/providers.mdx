@@ -5,94 +5,99 @@ description: Patterns and best practices for HTTP and WebSocket providers.
 
 # Provider Guide
 
-This guide covers provider patterns, usage recipes, and best practices for interacting with Starknet nodes.
+Providers are the primary interface between your application and a Starknet node. They wrap a transport with operational concerns — retries, timeouts, event emission — and expose a single `request()` method for all JSON-RPC calls.
 
-## When to Use a Provider
+## Setting Up
 
-Use a **Provider** when you want:
-
-- `request()` with standard JSON-RPC arguments
-- Built-in retries and timeouts per request
-- Typed Starknet convenience methods (`starknet_*`)
-- WebSocket subscriptions via async generators
-- Higher-level abstractions over raw JSON-RPC
-
-Use **raw transports** when you want:
-
-- Full control over request/response handling
-- Minimal overhead
-- Custom middleware or caching layers
-
-## HTTP Provider Patterns
-
-### Basic Setup
+The simplest setup is an `HttpProvider` with the `Rpc` namespace for building requests.
 
 ```typescript
 import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
-import { Starknet } from '@kundera-sn/kundera-ts/jsonrpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 
 const provider = new HttpProvider({
-  url: 'https://api.zan.top/public/starknet-sepolia',
+  url: 'https://starknet-sepolia.example.com',
   timeout: 30_000,
   retry: 2,
   retryDelay: 250
 });
+
+const blockNumber = await provider.request(Rpc.BlockNumberRequest());
 ```
+
+The provider doesn't have typed convenience methods like `provider.getBlockNumber()`. There is one method — `request()` — and you pass it a request object. This keeps the provider thin and the API surface predictable.
+
+## Typed Providers
+
+By default, `provider.request()` returns `Promise<unknown>`. If you want the TypeScript compiler to infer return types from your method strings, cast the provider to `TypedProvider<StarknetRpcSchema>`.
+
+```typescript
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import type { TypedProvider, StarknetRpcSchema } from '@kundera-sn/kundera-ts/provider';
+
+const provider = new HttpProvider({
+  url: 'https://starknet-sepolia.example.com'
+}) as TypedProvider<StarknetRpcSchema>;
+
+// TypeScript infers return type from the literal method string
+const chainId = await provider.request({
+  method: 'starknet_chainId',
+  params: []
+});
+// chainId: string ✓
+
+const block = await provider.request({
+  method: 'starknet_getBlockWithTxHashes',
+  params: [{ block_number: 12345 }]
+});
+// block: BlockWithTxHashes ✓
+```
+
+This is a compile-time overlay. The runtime behavior is identical — the cast adds zero cost. See the [Architecture](/overview/architecture) page for the full explanation of type honesty and the schema system.
+
+## HTTP Provider Patterns
 
 ### Parallel Requests
 
-Execute independent requests in parallel for better performance:
+Independent requests should always run concurrently.
 
 ```typescript
-// Good: parallel requests
 const [balance, nonce, classHash] = await Promise.all([
-  provider.request(Starknet.GetStorageAtRequest(address, '0x0', 'latest')),
-  provider.request(Starknet.GetNonceRequest('latest', address)),
-  provider.request(Starknet.GetClassHashAtRequest('latest', address))
+  provider.request(Rpc.GetStorageAtRequest(address, '0x0', 'latest')),
+  provider.request(Rpc.GetNonceRequest('latest', address)),
+  provider.request(Rpc.GetClassHashAtRequest('latest', address))
 ]);
-
-// Bad: sequential requests (slower)
-const balance = await provider.request(...);
-const nonce = await provider.request(...);
-const classHash = await provider.request(...);
 ```
 
-### Request with Timeout Override
+### Request-Level Overrides
+
+Every request accepts optional overrides for timeout and retry behavior, independent of the provider defaults.
 
 ```typescript
 // Long-running request with extended timeout
 const block = await provider.request(
-  Starknet.GetBlockWithReceiptsRequest('latest'),
-  { timeout: 60_000 }  // 60 second timeout
+  Rpc.GetBlockWithReceiptsRequest('latest'),
+  { timeout: 60_000 }
 );
-```
 
-### Retry Configuration
-
-```typescript
-// Provider-level retries
-const provider = new HttpProvider({
-  url: 'https://...',
-  retry: 3,
-  retryDelay: 500  // Exponential backoff: 500ms, 1000ms, 2000ms
-});
-
-// Per-request override
+// Critical request with aggressive retries
 const result = await provider.request(
-  Starknet.EstimateFeeRequest([tx], [], 'latest'),
+  Rpc.EstimateFeeRequest([tx], [], 'latest'),
   { retryCount: 5, retryDelay: 1000 }
 );
 ```
 
-## WebSocket Provider Patterns
+## WebSocket Provider
 
-### Basic Setup
+For real-time data, use `WebSocketProvider`. It supports the same `request()` interface as `HttpProvider`, plus async generator subscriptions.
+
+### Setup and Connection
 
 ```typescript
 import { WebSocketProvider } from '@kundera-sn/kundera-ts/provider';
 
 const ws = new WebSocketProvider({
-  url: 'wss://api.zan.top/public/starknet-sepolia',
+  url: 'wss://starknet-sepolia.example.com',
   reconnect: true,
   reconnectDelay: 1000
 });
@@ -100,59 +105,44 @@ const ws = new WebSocketProvider({
 await ws.connect();
 ```
 
-### Subscription to New Blocks
+### Subscribing to New Blocks
 
 ```typescript
-// Async generator pattern
 for await (const head of ws.events.newHeads()) {
+  // head is a NewHead wire type
   console.log('New block:', head.block_number);
-  console.log('Block hash:', head.block_hash);
-
-  // Process block...
   await processBlock(head);
 }
 ```
 
-### Event Subscription
+### Subscribing to Contract Events
 
 ```typescript
-// Subscribe to contract events
 for await (const event of ws.events.events({
   from_address: contractAddress,
   keys: [[transferEventKey]],
   block_id: 'latest'
 })) {
   console.log('Event data:', event.data);
-  console.log('Event keys:', event.keys);
 }
 ```
 
 ### Transaction Status Tracking
 
 ```typescript
-async function trackTransaction(ws: WebSocketProvider, txHash: string) {
-  for await (const status of ws.events.transactionStatus(txHash)) {
-    console.log('Status:', status.finality_status);
-
-    if (status.finality_status === 'ACCEPTED_ON_L2') {
-      console.log('Transaction confirmed on L2');
-      return 'confirmed';
-    }
-
-    if (status.finality_status === 'REJECTED') {
-      console.log('Transaction rejected');
-      return 'rejected';
-    }
+for await (const status of ws.events.transactionStatus(txHash)) {
+  if (status.finality_status === 'ACCEPTED_ON_L2') {
+    return 'confirmed';
+  }
+  if (status.finality_status === 'REJECTED') {
+    return 'rejected';
   }
 }
 ```
 
-### Connection Management
+### Connection Lifecycle
 
 ```typescript
-const ws = new WebSocketProvider({ url: 'wss://...' });
-
-// Connection events
 ws.on('connect', () => {
   console.log('Connected');
 });
@@ -161,314 +151,158 @@ ws.on('disconnect', (error) => {
   console.log('Disconnected:', error?.message);
 });
 
-ws.on('reconnecting', (attempt) => {
-  console.log('Reconnecting, attempt:', attempt);
-});
-
-// Connect
 await ws.connect();
 
 // ... use provider ...
 
-// Cleanup
 ws.disconnect();
 ```
 
-## Error Handling Patterns
+## Converting Wire Types to Domain Types
 
-### Try/Catch for Critical Operations
+Providers return wire types — the raw JSON-RPC response shapes with hex strings. If you need rich types with `Felt252`, `ContractAddress`, etc., use the domain primitive codecs explicitly.
+
+```typescript
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
+import { blockWithTxHashesFromRpc } from '@kundera-sn/kundera-ts/Block';
+import { transactionFromRpc } from '@kundera-sn/kundera-ts/Transaction';
+
+// Wire type from the node
+const wire = await provider.request(
+  Rpc.GetBlockWithTxHashesRequest('latest')
+);
+
+// Convert when you need rich types
+const block = blockWithTxHashesFromRpc(wire);
+// block.blockHeader.parentHash: Felt252Type
+// block.blockHeader.sequencerAddress: ContractAddressType
+```
+
+This conversion is always opt-in. Many use cases — forwarding data to a frontend, storing raw responses, piping to another RPC call — don't need domain types at all.
+
+## Error Handling
+
+All JSON-RPC errors come through as thrown exceptions with a `code` property matching the Starknet JSON-RPC error codes.
 
 ```typescript
 try {
   const receipt = await provider.request(
-    Starknet.GetTransactionReceiptRequest(txHash)
+    Rpc.GetTransactionReceiptRequest(txHash)
   );
-  return receipt;
 } catch (error) {
   if (error.code === 25) {
-    // Transaction not found - might be pending
+    // Transaction not found — might still be pending
     return null;
   }
   throw error;
 }
 ```
 
-### Graceful Degradation
+Common error codes: `-32601` (method not found), `-32602` (invalid params), `20` (contract not found), `21` (block not found), `25` (transaction not found), `29` (contract execution error).
 
-```typescript
-async function getBlockSafe(provider: Provider, blockId: string) {
-  try {
-    return await provider.request(
-      Starknet.GetBlockWithTxHashesRequest(blockId)
-    );
-  } catch (error) {
-    if (error.code === 21) {
-      // Block not found
-      return null;
-    }
-    // Re-throw other errors
-    throw error;
-  }
-}
-```
-
-### Error Recovery with Retry
-
-```typescript
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  options = { retries: 3, delay: 1000 }
-): Promise<T> {
-  let lastError: Error | null = null;
-
-  for (let i = 0; i <= options.retries; i++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error;
-
-      // Don't retry for certain error codes
-      if (error.code === -32602) {  // Invalid params
-        throw error;
-      }
-
-      if (i < options.retries) {
-        await new Promise(r => setTimeout(r, options.delay * Math.pow(2, i)));
-      }
-    }
-  }
-
-  throw lastError;
-}
-
-// Usage
-const result = await withRetry(() =>
-  provider.request(Starknet.CallRequest(params, 'latest'))
-);
-```
-
-## Common Recipes
+## Recipes
 
 ### Get Account State
 
 ```typescript
-async function getAccountState(provider: Provider, address: string) {
+async function getAccountState(provider, address: string) {
   const [nonce, classHash] = await Promise.all([
-    provider.request(Starknet.GetNonceRequest('latest', address)),
-    provider.request(Starknet.GetClassHashAtRequest('latest', address))
-      .catch(() => null)  // Returns null if not deployed
+    provider.request(Rpc.GetNonceRequest('latest', address)),
+    provider.request(Rpc.GetClassHashAtRequest('latest', address))
+      .catch(() => null)
   ]);
 
-  return {
-    address,
-    nonce,
-    classHash,
-    isDeployed: classHash !== null
-  };
+  return { address, nonce, classHash, isDeployed: classHash !== null };
 }
 ```
 
-### Wait for Transaction
+### Wait for Transaction (Polling)
 
 ```typescript
-async function waitForTransaction(
-  provider: Provider,
-  txHash: string,
-  options = { pollInterval: 3000, timeout: 120000 }
-): Promise<TransactionReceipt> {
-  const startTime = Date.now();
+async function waitForTransaction(provider, txHash: string) {
+  const timeout = 120_000;
+  const poll = 3_000;
+  const start = Date.now();
 
-  while (Date.now() - startTime < options.timeout) {
+  while (Date.now() - start < timeout) {
     try {
       const status = await provider.request(
-        Starknet.GetTransactionStatusRequest(txHash)
+        Rpc.GetTransactionStatusRequest(txHash)
       );
-
       if (status.finality_status === 'ACCEPTED_ON_L2' ||
           status.finality_status === 'ACCEPTED_ON_L1') {
-        return provider.request(
-          Starknet.GetTransactionReceiptRequest(txHash)
-        );
+        return provider.request(Rpc.GetTransactionReceiptRequest(txHash));
       }
-
       if (status.finality_status === 'REJECTED') {
-        throw new Error(`Transaction rejected: ${status.execution_status}`);
+        throw new Error('Transaction rejected');
       }
-    } catch (e) {
-      // Transaction not yet visible, continue polling
+    } catch {
+      // Not yet visible, keep polling
     }
-
-    await new Promise(r => setTimeout(r, options.pollInterval));
+    await new Promise(r => setTimeout(r, poll));
   }
 
   throw new Error('Transaction confirmation timeout');
 }
 ```
 
-### Paginate Through Events
+### Paginate Events
 
 ```typescript
-async function getAllEvents(
-  provider: Provider,
-  filter: EventFilter,
-  options = { chunkSize: 100 }
-): Promise<Event[]> {
-  const allEvents: Event[] = [];
-  let continuationToken: string | undefined;
+async function getAllEvents(provider, filter) {
+  const events = [];
+  let token;
 
   do {
     const response = await provider.request(
-      Starknet.GetEventsRequest({
-        filter: {
-          ...filter,
-          chunk_size: options.chunkSize,
-          continuation_token: continuationToken
-        }
+      Rpc.GetEventsRequest({
+        filter: { ...filter, chunk_size: 100, continuation_token: token }
       })
     );
+    events.push(...response.events);
+    token = response.continuation_token;
+  } while (token);
 
-    allEvents.push(...response.events);
-    continuationToken = response.continuation_token;
-  } while (continuationToken);
-
-  return allEvents;
+  return events;
 }
-```
-
-### Monitor Contract in Real-time
-
-```typescript
-async function monitorContract(
-  ws: WebSocketProvider,
-  contractAddress: string,
-  onEvent: (event: Event) => void
-) {
-  await ws.connect();
-
-  for await (const event of ws.events.events({
-    from_address: contractAddress,
-    keys: [],  // All events
-    block_id: 'latest'
-  })) {
-    onEvent(event);
-  }
-}
-
-// Usage
-const ws = new WebSocketProvider({ url: 'wss://...' });
-await monitorContract(ws, '0x123...', (event) => {
-  console.log('Event received:', event);
-});
 ```
 
 ### Multi-Provider Fallback
 
 ```typescript
-class FallbackProvider {
-  constructor(private providers: Provider[]) {}
-
-  async request<T>(args: RequestArguments): Promise<T> {
-    let lastError: Error | null = null;
-
-    for (const provider of this.providers) {
-      try {
-        return await provider.request<T>(args);
-      } catch (error) {
-        lastError = error;
-        console.warn('Provider failed, trying next:', error.message);
-      }
+async function requestWithFallback(providers, args) {
+  for (const provider of providers) {
+    try {
+      return await provider.request(args);
+    } catch {
+      continue;
     }
-
-    throw lastError ?? new Error('All providers failed');
   }
+  throw new Error('All providers failed');
 }
 
-// Usage
-const fallback = new FallbackProvider([
-  new HttpProvider({ url: 'https://primary.rpc.com' }),
-  new HttpProvider({ url: 'https://backup.rpc.com' })
-]);
-```
-
-## Best Practices
-
-### 1. Use Parallel Requests
-
-```typescript
-// Always batch independent requests
-const [a, b, c] = await Promise.all([
-  provider.request(reqA),
-  provider.request(reqB),
-  provider.request(reqC)
-]);
-```
-
-### 2. Configure Appropriate Timeouts
-
-```typescript
-// Default timeout for most requests
-const provider = new HttpProvider({ url, timeout: 30_000 });
-
-// Longer timeout for heavy operations
-const result = await provider.request(heavyRequest, { timeout: 60_000 });
-```
-
-### 3. Use WebSocket for Real-time
-
-```typescript
-// Prefer subscriptions over polling
-for await (const head of ws.events.newHeads()) {
-  // React to new blocks immediately
-}
-
-// Instead of polling
-while (true) {
-  const block = await provider.request(...);
-  await sleep(5000);
-}
-```
-
-### 4. Handle Errors Gracefully
-
-```typescript
-try {
-  const result = await provider.request(...);
-} catch (e) {
-  // Handle specific error codes
-  if (e.code === 21) {
-    // Block not found
-  } else if (e.code === 25) {
-    // Transaction not found
-  }
-}
-```
-
-### 5. Clean Up Resources
-
-```typescript
-// Always disconnect WebSocket when done
-const ws = new WebSocketProvider({ url });
-try {
-  await ws.connect();
-  // ... use provider
-} finally {
-  ws.disconnect();
-}
+const result = await requestWithFallback(
+  [
+    new HttpProvider({ url: 'https://primary.rpc.com' }),
+    new HttpProvider({ url: 'https://backup.rpc.com' })
+  ],
+  Rpc.BlockNumberRequest()
+);
 ```
 
 ## Related
 
 <CardGroup cols={2}>
-  <Card title="Provider API" icon="plug" href="/typescript/api/provider">
+  <Card title="Architecture" icon="sitemap" href="/overview/architecture">
+    How providers fit in the layered stack.
+  </Card>
+  <Card title="Provider API" icon="plug" href="/api/provider">
     Complete provider API reference.
   </Card>
-  <Card title="Transport Guide" icon="layer-group" href="/typescript/guides/provider/transport">
-    Understanding the transport layer.
+  <Card title="JSON-RPC Reference" icon="code" href="/api/jsonrpc">
+    Request builders and method list.
   </Card>
-  <Card title="HTTP Provider Skill" icon="server" href="/typescript/skills/http-provider">
-    Copy-paste provider implementation.
-  </Card>
-  <Card title="WebSocket Provider Skill" icon="satellite" href="/typescript/skills/websocket-provider">
-    Copy-paste WebSocket implementation.
+  <Card title="Domain Primitives" icon="cube" href="/primitives/domain-primitives">
+    fromRpc/toRpc codec reference.
   </Card>
 </CardGroup>

@@ -52,8 +52,8 @@ const queue = new Utils.AsyncQueue(
 const receipt = await Utils.pollForReceipt(
   txHash,
   async (hash) => {
-    const response = await provider.starknet_getTransactionReceipt(hash);
-    return response.error ? null : response.result;
+    const receipt = await provider.request(Rpc.GetTransactionReceiptRequest(hash));
+    return receipt;
   },
   { interval: 1000, timeout: 60_000 }
 );
