@@ -1,0 +1,51 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Replaced Abi-Wan Kanabi typing integration with Kundera-native ABI inference, removed cast-based fake safety in contract skill, and cleaned docs/examples to match the new API.
+now: Commit the rewrite as breaking changes and decide whether to refresh lockfiles; then continue ABI runtime completeness work (event enum/nested/flat decoding) if desired.
+test: pnpm --filter @kundera-sn/kundera-ts typecheck && pnpm --filter @kundera-sn/kundera-ts test:run src/abi/index.test.ts src/abi/integer-types.test.ts && pnpm --filter @kundera-sn/kundera-effect typecheck
+
+done_this_session:
+  - task: Added native ABI type inference module and moved ABI exports to it (no kanabi type imports in source)
+    files: [packages/kundera-ts/src/abi/abi-type-inference.ts, packages/kundera-ts/src/abi/index.ts, packages/kundera-ts/src/abi/calldata.ts]
+  - task: Removed deprecated kanabi typing artifacts and build-path hacks
+    files: [packages/kundera-ts/src/abi/kanabi-config.d.ts, packages/kundera-ts/src/abi/kanabi-types.ts, packages/kundera-ts/tsconfig.build.json, packages/kundera-ts/package.json, packages/kundera-effect/package.json]
+  - task: Migrated kundera-effect type layer from kanabi imports to kundera-ts ABI exports
+    files: [packages/kundera-effect/src/abi/index.ts, packages/kundera-effect/src/services/Contract/ContractTypes.ts]
+  - task: Removed contract-skill cast shortcuts and aligned API/docs with infer-based signatures
+    files: [packages/kundera-ts/docs/skills/get-contract.ts, packages/kundera-ts/docs/skills/get-contract.mdx]
+  - task: Cleaned remaining docs/examples references to abi-wan-kanabi and updated wording to Kundera ABI inference
+    files: [docs/index.mdx, docs/effect/modules/abi.mdx, docs/effect/services/contract.mdx, packages/kundera-effect/docs/services/contract.mdx, packages/kundera-effect/docs/comparisons.md, examples/kdex/src/config.ts, examples/kdex/src/index.ts, examples/kdex/src/commands/balance.ts]
+  - task: Consolidated duplicate parser entry point to single canonical parse implementation surface
+    files: [packages/kundera-ts/src/abi/parse.ts]
+
+blockers: []
+
+questions: [Should we refresh lockfiles in this same change set, or keep this PR focused on source/docs only?]
+
+decisions:
+  - remove_kanabi_source_dependency: Keep only Kundera-native ABI typing in source; allow lockfile/transitive mentions to remain until dependency refresh.
+  - no_consumer_cast_shortcuts: Consumer-facing examples and helpers must compile without type assertions for ABI name/args/return typing.
+  - truthful_zero_output_return: Zero-output function return type is null (not void) to match decodeOutput runtime behavior.
+  - no_ast_parser_now: Defer tokenizer/AST parser work; prioritize user-facing API quality and inference ergonomics.
+
+findings:
+  - cast_shortcut_root_cause: Previous casts in get-contract were caused by mismatched generics between wrapper signatures and calldata infer signatures.
+  - runtime_type_mismatch: FunctionRet used void for empty outputs while runtime decode returned null, creating unsound typing until fixed.
+  - parser_duplication_risk: parse.ts and parse/* duplicated parser logic; reducing parse.ts to re-export avoids drift.
+
+worked: [InferFunctionName/InferArgs/InferReturn across public APIs, replacing wrapper casts with signature alignment, typecheck plus focused ABI tests after each refactor]
+failed: [Early cast-based path in get-contract.ts was fast but produced fake safety and was removed]
+
+next:
+  - Stage and commit this rewrite as a breaking ABI typing migration.
+  - Optionally refresh lockfiles to reflect removed direct abi-wan-kanabi dependencies.
+  - If continuing ABI work, implement full runtime event enum/nested/flat decoding semantics.
+
+files:
+  created: [packages/kundera-ts/src/abi/abi-type-inference.ts, thoughts/shared/handoffs/general/2026-02-06_22-39_kundera-abi-native-inference-rewrite.yaml]
+  modified: [packages/kundera-ts/src/abi/calldata.ts, packages/kundera-ts/src/abi/encode.ts, packages/kundera-ts/src/abi/index.ts, packages/kundera-ts/src/abi/parse.ts, packages/kundera-ts/src/abi/types.ts, packages/kundera-ts/src/abi/integer-types.test.ts, packages/kundera-ts/docs/skills/get-contract.ts, packages/kundera-ts/docs/skills/get-contract.mdx, packages/kundera-ts/tsconfig.build.json, packages/kundera-ts/package.json, packages/kundera-effect/src/abi/index.ts, packages/kundera-effect/src/services/Contract/ContractTypes.ts, packages/kundera-effect/package.json, docs/index.mdx, docs/effect/modules/abi.mdx, docs/effect/services/contract.mdx, packages/kundera-effect/docs/services/contract.mdx, packages/kundera-effect/docs/comparisons.md, examples/kdex/src/config.ts, examples/kdex/src/index.ts, examples/kdex/src/commands/balance.ts]

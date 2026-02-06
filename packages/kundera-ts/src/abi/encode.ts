@@ -347,7 +347,7 @@ function encodeEnum(
  */
 export function encodeArgs(
 	inputs: readonly AbiMember[],
-	args: CairoValue[],
+	args: readonly CairoValue[],
 	abi: ParsedAbi,
 ): Result<bigint[]> {
 	if (args.length !== inputs.length) {

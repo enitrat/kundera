@@ -1,8 +1,7 @@
 /**
  * Integer Types Integration Test
  *
- * Verifies that kanabi-config.d.ts properly registers all integer types
- * with abi-wan-kanabi for ABI encoding/decoding.
+ * Verifies ABI encoding/decoding support for all integer primitive wrappers.
  */
 
 import { describe, expect, it } from "vitest";
@@ -11,7 +10,6 @@ import {
 	encodeCalldata,
 	decodeCalldata,
 	decodeOutput,
-	type Abi,
 } from "./index.js";
 import * as Uint8 from "../primitives/Uint8/index.js";
 import type { Uint8Type } from "../primitives/Uint8/index.js";
@@ -36,7 +34,7 @@ import type { Int64Type } from "../primitives/Int64/index.js";
 import * as Int128 from "../primitives/Int128/index.js";
 import type { Int128Type } from "../primitives/Int128/index.js";
 
-const TEST_ABI: Abi = [
+const TEST_ABI = [
 	{
 		type: "function",
 		name: "test_all_integers",
@@ -53,18 +51,10 @@ const TEST_ABI: Abi = [
 			{ name: "j", type: "core::integer::i64" },
 			{ name: "k", type: "core::integer::i128" },
 		],
-		outputs: [{ name: "result", type: "core::integer::u256" }],
+		outputs: [{ type: "core::integer::u256" }],
 		state_mutability: "view",
 	},
-	{
-		type: "struct",
-		name: "core::integer::u256",
-		members: [
-			{ name: "low", type: "core::integer::u128" },
-			{ name: "high", type: "core::integer::u128" },
-		],
-	},
-];
+] as const;
 
 describe("Integer Types - ABI Integration", () => {
 	it("should encode all integer types", () => {
@@ -100,7 +90,7 @@ describe("Integer Types - ABI Integration", () => {
 			Int32.from(-100000),
 			Int64.from(-10000000000n),
 			Int128.from(-1000000000n),
-		];
+		] as const;
 
 		const encoded = encodeCalldata(TEST_ABI, "test_all_integers", args);
 		expect(encoded.error).toBeNull();
@@ -137,7 +127,9 @@ describe("Integer Types - ABI Integration", () => {
 		expect(result.error).toBeNull();
 		expect(result.result).toBeDefined();
 		// decodeOutput unwraps single output to scalar
-		expect(Uint256.toBigInt(result.result!)).toBe(1000000000000000000n);
+		expect(Uint256.toBigInt(result.result! as Uint256Type)).toBe(
+			1000000000000000000n,
+		);
 	});
 
 	it("should handle edge cases", () => {

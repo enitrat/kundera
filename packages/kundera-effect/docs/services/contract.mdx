@@ -62,8 +62,7 @@ const program = Effect.gen(function* () {
 
 `ContractFactory` generates a type-safe API surface from an `as const` ABI, while internally
 keeping runtime encoding flexible. This mirrors Voltaire’s pattern: strict types at the edge,
-`unknown[]` inside. Under the hood we use abi-wan-kanabi for typing only and keep Kundera’s
-runtime ABI handling for compatibility.
+`unknown[]` inside. Under the hood, Kundera uses its own ABI parser and type inference.
 
 ```ts
 import { Effect } from "effect";

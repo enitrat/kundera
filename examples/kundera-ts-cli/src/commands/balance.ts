@@ -6,11 +6,12 @@ import {
 } from "@kundera-sn/kundera-ts/abi";
 import type { HttpProvider } from "@kundera-sn/kundera-ts/provider";
 import { TOKENS } from "../config.js";
+import { ContractAddress } from "@kundera-sn/kundera-ts/ContractAddress";
 
 // Minimal ERC-20 ABI for balanceOf
 const ERC20_ABI = [
   {
-    type: "function" as const,
+    type: "function",
     name: "balanceOf",
     inputs: [
       {
@@ -19,9 +20,9 @@ const ERC20_ABI = [
       },
     ],
     outputs: [{ type: "core::integer::u256" }],
-    state_mutability: "view" as const,
+    state_mutability: "view",
   },
-];
+] as const;
 
 export async function balance(
   provider: HttpProvider,
@@ -38,7 +39,7 @@ export async function balance(
   }
 
   // Encode calldata using ABI
-  const encoded = encodeCalldata(ERC20_ABI, "balanceOf", [BigInt(address)]);
+  const encoded = encodeCalldata(ERC20_ABI, "balanceOf", [ContractAddress(address)]);
   if (encoded.error) throw encoded.error;
 
   const result = await provider.request(
@@ -56,7 +57,7 @@ export async function balance(
   const decoded = decodeOutput(ERC20_ABI, "balanceOf", result.map(BigInt));
   if (decoded.error) throw decoded.error;
 
-  const rawBalance = decoded.result as bigint;
+  const rawBalance = decoded.result
 
   // Both ETH and STRK use 18 decimals
   const decimals = 18;

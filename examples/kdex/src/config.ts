@@ -133,7 +133,7 @@ export const TransportLayerOrDie = (network: Network): Layer.Layer<TransportServ
 
 /**
  * Minimal ERC20 ABI for balance queries.
- * The `as const` assertion enables abi-wan-kanabi type inference.
+ * The `as const` assertion enables Kundera ABI type inference.
  */
 export const ERC20_ABI = [
   {

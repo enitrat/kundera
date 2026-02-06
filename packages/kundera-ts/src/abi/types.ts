@@ -190,7 +190,7 @@ export interface AbiEventEnumEntry {
 }
 
 /**
- * ABI event entry (discriminated union matching kanabi)
+ * ABI event entry (discriminated union)
  */
 export type AbiEventEntry = AbiEventStructEntry | AbiEventEnumEntry;
 

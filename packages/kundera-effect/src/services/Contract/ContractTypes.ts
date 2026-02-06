@@ -1,12 +1,12 @@
 import type * as Effect from "effect/Effect";
 import type {
-  Abi as KanabiAbi,
+  StarknetAbi,
   ExtractAbiFunction,
   ExtractAbiFunctionNames,
   ExtractAbiFunctions,
   ExtractArgs,
   FunctionRet
-} from "abi-wan-kanabi/kanabi";
+} from "@kundera-sn/kundera-ts/abi";
 import type { ContractAddressType } from "@kundera-sn/kundera-ts/ContractAddress";
 import type { ResourceBoundsInput } from "../Account/AccountService.js";
 import type { AddInvokeTransactionResult } from "@kundera-sn/kundera-ts/jsonrpc";
@@ -14,7 +14,7 @@ import type { ContractError, ContractService } from "./ContractService.js";
 import type { ContractWriteError, ContractWriteService } from "../ContractWrite/ContractWriteService.js";
 import type { NonceManagerService } from "../NonceManager/NonceManagerService.js";
 
-export type StarknetAbi = KanabiAbi;
+export type { StarknetAbi };
 
 type ExtractViewFunctions<TAbi extends StarknetAbi> = Extract<
   ExtractAbiFunctions<TAbi>,
@@ -30,7 +30,7 @@ type FunctionReturn<
   TAbi extends StarknetAbi,
   TFunctionName extends ExtractAbiFunctionNames<TAbi>
 > = ExtractAbiFunction<TAbi, TFunctionName>["outputs"] extends readonly []
-  ? void
+  ? null
   : ExtractAbiFunction<TAbi, TFunctionName>["outputs"] extends readonly [any]
     ? FunctionRet<TAbi, TFunctionName>
     : readonly unknown[];

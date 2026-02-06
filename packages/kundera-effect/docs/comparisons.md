@@ -248,7 +248,7 @@ const erc20Abi = [
 ] as const;
 
 const program = Effect.gen(function* () {
-  // Encode calldata (type-safe with kanabi)
+  // Encode calldata (type-safe with Kundera ABI inference)
   const calldata = yield* Abi.encodeCalldata(
     erc20Abi,
     "transfer",

@@ -206,7 +206,7 @@ program
   .name("kdex")
   .description(
     "A cast-like CLI for Starknet using Kundera Effect\n\n" +
-      "Showcases typed contract calls with abi-wan-kanabi, " +
+      "Showcases typed contract calls with Kundera ABI inference, " +
       "Effect services, and proper error handling."
   )
   .version("0.1.0");

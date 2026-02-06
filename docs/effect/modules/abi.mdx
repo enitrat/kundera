@@ -26,7 +26,7 @@ const calldata = Abi.encodeCalldata(abi, 'transfer', [recipient, amount]);
 - No silent failures or runtime exceptions
 
 <Info>
-Kundera uses **abi-wan-kanabi** under the hood—a Cairo ABI parser and encoder that handles both legacy and modern ABIs.
+Kundera uses its own ABI parser and encoder to support Starknet ABIs directly.
 </Info>
 
 ## Encoding Calldata

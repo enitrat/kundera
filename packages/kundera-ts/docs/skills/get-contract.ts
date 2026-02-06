@@ -2,21 +2,18 @@
  * Get Contract Skill
  *
  * Type-safe contract factory with full type inference.
- * Demonstrates FunctionRet/FunctionArgs for typed read/write.
+ * Demonstrates InferArgs/InferReturn for typed reads.
  */
 
 import {
   encodeCalldata,
   decodeOutput,
   getFunctionSelectorHex,
-  type KanabiAbi,
-  type AbiLike,
-  type CairoValue,
+  type StarknetAbi,
   type Result,
-  type ExtractAbiFunctionNames,
-  type ExtractAbiFunction,
-  type ExtractArgs,
-  type FunctionRet,
+  type InferFunctionName,
+  type InferArgs,
+  type InferReturn,
 } from '@kundera-sn/kundera-ts/abi';
 import { Felt252 } from '@kundera-sn/kundera-ts';
 import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
@@ -32,7 +29,7 @@ async function send<T>(transport: Transport, req: { method: string; params?: unk
 
 // ============ Types ============
 
-export interface ContractConfig<TAbi extends KanabiAbi> {
+export interface ContractConfig<TAbi extends StarknetAbi> {
   abi: TAbi;
   address: string;
   transport: Transport;
@@ -51,7 +48,7 @@ export type ContractResult<T> = Result<T, ContractError>;
 
 // ============ Contract Instance ============
 
-export interface Contract<TAbi extends KanabiAbi> {
+export interface Contract<TAbi extends StarknetAbi> {
   address: string;
   abi: TAbi;
 
@@ -61,14 +58,14 @@ export interface Contract<TAbi extends KanabiAbi> {
    * @example
    * ```ts
    * const balance = await contract.read('balance_of', [accountAddress]);
-   * // balance is typed as FunctionRet<TAbi, 'balance_of'>
+   * // balance is typed as InferReturn<TAbi, 'balance_of'>
    * ```
    */
-  read<TFunctionName extends ExtractAbiFunctionNames<TAbi>>(
+  read<TFunctionName extends InferFunctionName<TAbi> & string>(
     functionName: TFunctionName,
-    args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>,
+    args: InferArgs<TAbi, TFunctionName>,
     options?: ReadOptions
-  ): Promise<ContractResult<FunctionRet<TAbi, TFunctionName>>>;
+  ): Promise<ContractResult<InferReturn<TAbi, TFunctionName>>>;
 }
 
 // ============ Implementation ============
@@ -98,7 +95,7 @@ function err<T>(code: ContractError['code'], message: string): ContractResult<T>
  * const balance = await contract.read('balance_of', ['0x123...']);
  * ```
  */
-export function getContract<TAbi extends KanabiAbi>(
+export function getContract<TAbi extends StarknetAbi>(
   config: ContractConfig<TAbi>
 ): Contract<TAbi> {
   const { abi, address, transport } = config;
@@ -107,17 +104,12 @@ export function getContract<TAbi extends KanabiAbi>(
     address,
     abi,
 
-    async read<TFunctionName extends ExtractAbiFunctionNames<TAbi>>(
+    async read<TFunctionName extends InferFunctionName<TAbi> & string>(
       functionName: TFunctionName,
-      args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>,
+      args: InferArgs<TAbi, TFunctionName>,
       options?: ReadOptions
-    ): Promise<ContractResult<FunctionRet<TAbi, TFunctionName>>> {
-      // Use untyped overload at runtime — type safety is at the read() signature.
-      const calldataResult = encodeCalldata(
-        abi as AbiLike,
-        functionName as string,
-        args as CairoValue[]
-      );
+    ): Promise<ContractResult<InferReturn<TAbi, TFunctionName>>> {
+      const calldataResult = encodeCalldata(abi, functionName, args);
       if (calldataResult.error) {
         return err('ENCODE_ERROR', calldataResult.error.message);
       }
@@ -137,16 +129,12 @@ export function getContract<TAbi extends KanabiAbi>(
         const output = await send<string[]>(transport, Rpc.CallRequest(call, options?.blockId));
         const outputFelts = output.map((v) => BigInt(v));
 
-        const decoded = decodeOutput(
-          abi as AbiLike,
-          functionName as string,
-          outputFelts
-        );
+        const decoded = decodeOutput(abi, functionName, outputFelts);
         if (decoded.error) {
           return err('DECODE_ERROR', decoded.error.message);
         }
 
-        return ok(decoded.result as FunctionRet<TAbi, TFunctionName>);
+        return ok(decoded.result);
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
         return err('RPC_ERROR', message);

@@ -71,7 +71,7 @@ const parseAddress = Effect.fn("kdex.parseAddress")(function* (
  * Uses ContractRegistryService for pre-configured contract instances:
  * - Contracts are defined in ContractsLayer (see config.ts)
  * - No inline contract creation - cleaner Effect.gen
- * - TypeScript enforces correct argument types via abi-wan-kanabi
+ * - TypeScript enforces correct argument types via Kundera ABI inference
  */
 export const balance = (address: string, token: Token, _network: Network) =>
   Effect.gen(function* () {

@@ -44,8 +44,8 @@ export const classHash = Effect.fn("kdex.classHash")(function* (
 
   const hash = yield* Rpc.starknet_getClassHashAt(
     transport,
-    contractAddress,
-    "latest"
+    "latest",
+    contractAddress.toHex(),
   ).pipe(
     Effect.catchTag("RpcError", (error) =>
       Effect.fail(

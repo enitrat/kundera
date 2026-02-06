@@ -42,8 +42,8 @@ export const nonce = Effect.fn("kdex.nonce")(function* (address: string) {
 
   const nonceValue = yield* Rpc.starknet_getNonce(
     transport,
+    "pending",
     contractAddress.toHex(),
-    "pending"
   );
 
   const nonceInt = parseInt(nonceValue, 16);

@@ -1,13 +1,11 @@
 import { Effect } from "effect";
-import type {
-  Abi as KanabiAbi,
-  ExtractAbiFunction,
-  ExtractAbiFunctionNames,
-  ExtractArgs
-} from "abi-wan-kanabi/kanabi";
 import {
   abiError,
   type Abi,
+  type StarknetAbi,
+  type ExtractAbiFunction,
+  type ExtractAbiFunctionNames,
+  type ExtractArgs,
   type AbiError,
   type AbiErrorCode,
   type AbiEntry,
@@ -103,7 +101,7 @@ const decodeOutputBaseUntyped = decodeOutputBase as (
   abi: Abi,
   fnName: string,
   output: bigint[]
-) => Result<CairoValue[], AbiError>;
+) => Result<CairoValue, AbiError>;
 
 const decodeOutputObjectBaseUntyped = decodeOutputObjectBase as (
   abi: Abi,
@@ -235,7 +233,7 @@ export const decodeOutputsObject = (
 ) => fromResult(decodeOutputsObjectBase(data, outputs, abi));
 
 export function encodeCalldata<
-  TAbi extends KanabiAbi,
+  TAbi extends StarknetAbi,
   TFunctionName extends ExtractAbiFunctionNames<TAbi>
 >(
   abi: TAbi,
@@ -269,7 +267,7 @@ export const decodeOutput = (abi: Abi, fnName: string, output: bigint[]) =>
 export const decodeOutputObject = (abi: Abi, fnName: string, output: bigint[]) =>
   fromResult(decodeOutputObjectBaseUntyped(abi, fnName, output));
 export function compileCalldata<
-  TAbi extends KanabiAbi,
+  TAbi extends StarknetAbi,
   TFunctionName extends ExtractAbiFunctionNames<TAbi>
 >(
   abi: TAbi,

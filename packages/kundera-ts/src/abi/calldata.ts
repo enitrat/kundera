@@ -13,12 +13,10 @@ import {
 	ok,
 } from "./types.js";
 import type {
-	Abi as KanabiAbi,
-	ExtractAbiFunction,
-	ExtractAbiFunctionNames,
-	ExtractArgs,
-	FunctionRet,
-} from "abi-wan-kanabi/kanabi";
+	InferArgs,
+	InferFunctionName,
+	InferReturn,
+} from "./abi-type-inference.js";
 import { parseAbi, getFunction, computeSelector } from "./parse.js";
 import { encodeArgs, encodeArgsObject } from "./encode.js";
 import {
@@ -28,10 +26,16 @@ import {
 	decodeOutputsObject,
 } from "./decode.js";
 
+function isArgsArray(
+	args: readonly CairoValue[] | Record<string, CairoValue>,
+): args is readonly CairoValue[] {
+	return Array.isArray(args);
+}
+
 function encodeCalldataInternal(
 	abi: AbiLike,
 	fnName: string,
-	args: CairoValue[] | Record<string, CairoValue>,
+	args: readonly CairoValue[] | Record<string, CairoValue>,
 ): Result<bigint[]> {
 	// Parse ABI
 	const parsedResult = getParsedAbi(abi);
@@ -48,7 +52,7 @@ function encodeCalldataInternal(
 	const fn = fnResult.result;
 
 	// Encode arguments
-	if (Array.isArray(args)) {
+	if (isArgsArray(args)) {
 		return encodeArgs(fn.entry.inputs, args, parsed);
 	} else {
 		return encodeArgsObject(fn.entry.inputs, args, parsed);
@@ -98,22 +102,12 @@ function getParsedAbi(abi: AbiLike): Result<ParsedAbi> {
  * ```
  */
 export function encodeCalldata<
-	TAbi extends KanabiAbi,
-	TFunctionName extends ExtractAbiFunctionNames<TAbi>,
+	TAbi extends AbiLike,
+	TFunctionName extends InferFunctionName<TAbi> & string,
 >(
 	abi: TAbi,
 	fnName: TFunctionName,
-	args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>,
-): Result<bigint[]>;
-export function encodeCalldata(
-	abi: AbiLike,
-	fnName: string,
-	args: CairoValue[] | Record<string, CairoValue>,
-): Result<bigint[]>;
-export function encodeCalldata(
-	abi: AbiLike,
-	fnName: string,
-	args: CairoValue[] | Record<string, CairoValue>,
+	args: InferArgs<TAbi, TFunctionName>,
 ): Result<bigint[]> {
 	return encodeCalldataInternal(abi, fnName, args);
 }
@@ -187,47 +181,39 @@ export function decodeCalldataObject(
  * @returns Decoded return values, or error
  */
 export function decodeOutput<
-	TAbi extends KanabiAbi,
-	TFunctionName extends ExtractAbiFunctionNames<TAbi>,
+	TAbi extends AbiLike,
+	TFunctionName extends InferFunctionName<TAbi> & string,
 >(
 	abi: TAbi,
 	fnName: TFunctionName,
 	output: bigint[],
-): Result<FunctionRet<TAbi, TFunctionName>>;
-export function decodeOutput(
-	abi: AbiLike,
-	fnName: string,
-	output: bigint[],
-): Result<CairoValue>;
-export function decodeOutput(
-	abi: AbiLike,
-	fnName: string,
-	output: bigint[],
-): Result<CairoValue> {
+): Result<InferReturn<TAbi, TFunctionName>> {
+	type Ret = Result<InferReturn<TAbi, TFunctionName>>;
+
 	// Parse ABI
 	const parsedResult = getParsedAbi(abi);
 	if (parsedResult.error) {
-		return parsedResult as Result<CairoValue>;
+		return parsedResult as Ret;
 	}
 	const parsed = parsedResult.result;
 
 	// Get function
 	const fnResult = getFunction(parsed, fnName);
 	if (fnResult.error) {
-		return fnResult as Result<CairoValue>;
+		return fnResult as Ret;
 	}
 	const fn = fnResult.result;
 
 	const arrayResult = decodeOutputs(output, fn.entry.outputs, parsed);
 	if (arrayResult.error) {
-		return arrayResult as Result<CairoValue>;
+		return arrayResult as Ret;
 	}
 
 	// Unwrap: 0 outputs → null, 1 output → scalar, 2+ → array
 	const arr = arrayResult.result;
-	if (arr.length === 0) return ok(null);
-	if (arr.length === 1) return ok(arr[0]!);
-	return ok(arr);
+	if (arr.length === 0) return ok(null) as Ret;
+	if (arr.length === 1) return ok(arr[0]!) as Ret;
+	return ok(arr) as Ret;
 }
 
 /**
@@ -239,21 +225,11 @@ export function decodeOutput(
  * @returns Decoded return values as object with output names, or error
  */
 export function decodeOutputObject<
-	TAbi extends KanabiAbi,
-	TFunctionName extends ExtractAbiFunctionNames<TAbi>,
+	TAbi extends AbiLike,
+	TFunctionName extends InferFunctionName<TAbi> & string,
 >(
 	abi: TAbi,
 	fnName: TFunctionName,
-	output: bigint[],
-): Result<{ [key: string]: FunctionRet<TAbi, TFunctionName> }>;
-export function decodeOutputObject(
-	abi: AbiLike,
-	fnName: string,
-	output: bigint[],
-): Result<DecodedStruct>;
-export function decodeOutputObject(
-	abi: AbiLike,
-	fnName: string,
 	output: bigint[],
 ): Result<DecodedStruct> {
 	// Parse ABI
@@ -304,22 +280,12 @@ export function getFunctionSelectorHex(fnName: string): string {
  * @returns { selector, calldata } or error
  */
 export function compileCalldata<
-	TAbi extends KanabiAbi,
-	TFunctionName extends ExtractAbiFunctionNames<TAbi>,
+	TAbi extends AbiLike,
+	TFunctionName extends InferFunctionName<TAbi> & string,
 >(
 	abi: TAbi,
 	fnName: TFunctionName,
-	args: ExtractArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>>,
-): Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }>;
-export function compileCalldata(
-	abi: AbiLike,
-	fnName: string,
-	args: CairoValue[] | Record<string, CairoValue>,
-): Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }>;
-export function compileCalldata(
-	abi: AbiLike,
-	fnName: string,
-	args: CairoValue[] | Record<string, CairoValue>,
+	args: InferArgs<TAbi, TFunctionName>,
 ): Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }> {
 	const encoded = encodeCalldataInternal(abi, fnName, args);
 	if (encoded.error) {

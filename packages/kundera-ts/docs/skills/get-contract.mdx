@@ -47,25 +47,25 @@ const contract = getContract({
 });
 
 // Fully typed - function name autocompletes, args/return inferred
-const { result, error } = await contract.read('balance_of', ['0x123...']);
+const { result, error } = await contract.read('balance_of', [ContractAddress('0x123...')]);
 //     ^? Uint256Type (inferred from ABI)
 ```
 
 ## How Type Inference Works
 
-The magic comes from `FunctionRet` and `FunctionArgs` types from `abi-wan-kanabi`:
+The magic comes from Kundera's `InferReturn`, `InferArgs`, and `InferFunctionName` utility types:
 
 ```ts
-import type { FunctionRet, FunctionArgs, ExtractAbiFunctionNames } from '@kundera-sn/kundera-ts/abi';
+import type { InferReturn, InferArgs, InferFunctionName } from '@kundera-sn/kundera-ts/abi';
 
 // Given an ABI and function name, extract types:
-type BalanceArgs = FunctionArgs<typeof ERC20_ABI, 'balance_of'>;
-//   ^? ContractAddressType  (single-arg tuples are unwrapped)
+type BalanceArgs = InferArgs<typeof ERC20_ABI, 'balance_of'>;
+//   ^? [ContractAddressType]
 
-type BalanceRet = FunctionRet<typeof ERC20_ABI, 'balance_of'>;
+type BalanceRet = InferReturn<typeof ERC20_ABI, 'balance_of'>;
 //   ^? Uint256Type
 
-type FnNames = ExtractAbiFunctionNames<typeof ERC20_ABI>;
+type FnNames = InferFunctionName<typeof ERC20_ABI>;
 //   ^? 'balance_of' | 'transfer'
 ```
 
@@ -126,16 +126,23 @@ The type system needs the literal `'foo'` to map function names to their signatu
 ### Add Write Support
 
 ```ts
-interface Contract<TAbi extends KanabiAbi> {
-  read<TFn extends ExtractAbiFunctionNames<TAbi>>(
+import type {
+  StarknetAbi,
+  InferFunctionName,
+  InferArgs,
+  InferReturn
+} from '@kundera-sn/kundera-ts/abi';
+
+interface Contract<TAbi extends StarknetAbi> {
+  read<TFn extends InferFunctionName<TAbi> & string>(
     fn: TFn,
-    args: FunctionArgs<TAbi, TFn>
-  ): Promise<ContractResult<FunctionRet<TAbi, TFn>>>;
+    args: InferArgs<TAbi, TFn>
+  ): Promise<ContractResult<InferReturn<TAbi, TFn>>>;
 
   // Add write with account
-  write<TFn extends ExtractAbiFunctionNames<TAbi>>(
+  write<TFn extends InferFunctionName<TAbi> & string>(
     fn: TFn,
-    args: FunctionArgs<TAbi, TFn>,
+    args: InferArgs<TAbi, TFn>,
     account: Account
   ): Promise<ContractResult<TransactionHash>>;
 }
@@ -144,9 +151,13 @@ interface Contract<TAbi extends KanabiAbi> {
 ### Add Event Decoding
 
 ```ts
-import type { ExtractAbiEventNames, AbiEventArgs } from 'abi-wan-kanabi/kanabi';
+import type {
+  StarknetAbi,
+  ExtractAbiEventNames,
+  AbiEventArgs
+} from '@kundera-sn/kundera-ts/abi';
 
-interface Contract<TAbi extends KanabiAbi> {
+interface Contract<TAbi extends StarknetAbi> {
   // ...existing methods
 
   decodeEvent<TEvent extends ExtractAbiEventNames<TAbi>>(

@@ -18,8 +18,6 @@
  * ```
  */
 
-/// <reference path="./kanabi-config.d.ts" />
-
 // Types
 export type {
 	// Result types
@@ -69,107 +67,25 @@ export type {
 // Result helpers
 export { ok, err, abiError } from "./types.js";
 
-import type {
-	Abi as KanabiAbi,
-	ExtractAbiFunctionNames,
-	ExtractAbiFunction,
-	StringToPrimitiveType as KanabiStringToPrimitiveType,
-	ContractFunctions,
-} from "abi-wan-kanabi/kanabi";
-import type { Felt252Type } from "../primitives/Felt252/types.js";
-import type { ContractAddressType } from "../primitives/ContractAddress/types.js";
-import type { EthAddressType } from "../primitives/EthAddress/types.js";
-import type { ClassHashType } from "../primitives/ClassHash/types.js";
-import type { Uint256Type } from "../primitives/Uint256/types.js";
-
-/**
- * Map Cairo type strings to kundera branded primitives.
- *
- * kanabi's Config augmentation (kanabi-config.d.ts) doesn't reliably affect
- * type resolution in practice. This explicit mapping is the single source of
- * truth for Cairo type → TypeScript type.
- */
-type MapAbiPrimitive<
-	TAbi extends KanabiAbi,
-	TType extends string,
-> = TType extends "core::felt252"
-	? Felt252Type
-	: TType extends "core::starknet::contract_address::ContractAddress"
-		? ContractAddressType
-		: TType extends "core::starknet::eth_address::EthAddress"
-			? EthAddressType
-			: TType extends "core::starknet::class_hash::ClassHash"
-				? ClassHashType
-				: TType extends "core::integer::u256"
-					? Uint256Type
-					: KanabiStringToPrimitiveType<TAbi, TType>;
-
-type BuildArgs<
-	TAbi extends KanabiAbi,
-	TInputs extends readonly { type: string }[],
-	R extends unknown[] = [],
-> = number extends TInputs["length"]
-	? // Generic array (non-const ABI) → bail so typed overload doesn't match
-		never
-	: R["length"] extends TInputs["length"]
-		? R
-		: BuildArgs<
-				TAbi,
-				TInputs,
-				[...R, MapAbiPrimitive<TAbi, TInputs[R["length"]]["type"]>]
-			>;
-
-// Re-export kanabi structural types.
+// Re-export kundera's ABI inference types.
 export type {
-	KanabiAbi,
+	StarknetAbi,
 	ExtractAbiFunctionNames,
 	ExtractAbiFunction,
+	ExtractAbiFunctions,
+	ExtractAbiEventNames,
+	ExtractAbiEvent,
+	AbiEventArgs,
 	ContractFunctions,
-};
-
-export type StringToPrimitiveType<
-	TAbi extends KanabiAbi,
-	T extends string,
-> = MapAbiPrimitive<TAbi, T>;
-
-/**
- * Typed args for a function - always a tuple.
- * Used by encodeCalldata typed overload and contract.read().
- */
-export type ExtractArgs<
-	TAbi extends KanabiAbi,
-	TAbiFunction extends { inputs: readonly { type: string }[] },
-> = BuildArgs<TAbi, TAbiFunction["inputs"]>;
-
-/**
- * Return type for a function.
- * Maps outputs through our branded type system.
- */
-export type FunctionRet<
-	TAbi extends KanabiAbi,
-	TFunctionName extends ExtractAbiFunctionNames<TAbi>,
-> = ExtractAbiFunction<TAbi, TFunctionName>["outputs"] extends readonly []
-	? void
-	: ExtractAbiFunction<TAbi, TFunctionName>["outputs"][0] extends {
-				type: infer TType extends string;
-			}
-		? MapAbiPrimitive<TAbi, TType>
-		: never;
-
-/**
- * Convenience type that unwraps single-arg tuples.
- * Useful for documenting "what type does this function accept?"
- */
-export type FunctionArgs<
-	TAbi extends KanabiAbi,
-	TFunctionName extends ExtractAbiFunctionNames<TAbi>,
-> = ExtractAbiFunction<TAbi, TFunctionName>["inputs"] extends readonly []
-	? []
-	: BuildArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>["inputs"]> extends [
-				infer TSingle,
-			]
-		? TSingle
-		: BuildArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>["inputs"]>;
+	MapAbiPrimitive,
+	StringToPrimitiveType,
+	ExtractArgs,
+	FunctionRet,
+	FunctionArgs,
+	InferFunctionName,
+	InferArgs,
+	InferReturn,
+} from "./abi-type-inference.js";
 
 // Parsing
 export {
