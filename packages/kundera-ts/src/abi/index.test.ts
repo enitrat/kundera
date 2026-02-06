@@ -347,6 +347,70 @@ describeIfCrypto('Output Decoding', () => {
     expect(result.error).toBeNull();
     expect(result.result).toBe(true);
   });
+
+  it('should return array for multi-output function (2+ outputs)', () => {
+    const MULTI_OUTPUT_ABI: Abi = [
+      {
+        type: 'function',
+        name: 'get_pair',
+        inputs: [],
+        outputs: [
+          { name: 'a', type: 'core::felt252' },
+          { name: 'b', type: 'core::felt252' },
+        ],
+        state_mutability: 'view',
+      },
+    ];
+
+    const result = decodeOutput(MULTI_OUTPUT_ABI, 'get_pair', [42n, 99n]);
+    expect(result.error).toBeNull();
+    expect(result.result).toEqual([42n, 99n]);
+  });
+
+  it('should return null for zero-output function', () => {
+    const VOID_ABI: Abi = [
+      {
+        type: 'function',
+        name: 'do_nothing',
+        inputs: [],
+        outputs: [],
+        state_mutability: 'external',
+      },
+    ];
+
+    const result = decodeOutput(VOID_ABI, 'do_nothing', []);
+    expect(result.error).toBeNull();
+    expect(result.result).toBeNull();
+  });
+
+  it('should return array for 3+ outputs with mixed types', () => {
+    const TRIPLE_ABI: Abi = [
+      {
+        type: 'struct',
+        name: 'core::integer::u256',
+        members: [
+          { name: 'low', type: 'core::integer::u128' },
+          { name: 'high', type: 'core::integer::u128' },
+        ],
+      },
+      {
+        type: 'function',
+        name: 'get_info',
+        inputs: [],
+        outputs: [
+          { name: 'owner', type: 'core::felt252' },
+          { name: 'balance', type: 'core::integer::u256' },
+          { name: 'active', type: 'core::bool' },
+        ],
+        state_mutability: 'view',
+      },
+    ];
+
+    // felt252, u256(low=500, high=0), bool=true
+    const result = decodeOutput(TRIPLE_ABI, 'get_info', [0xABCn, 500n, 0n, 1n]);
+    expect(result.error).toBeNull();
+    expect(result.result).toEqual([0xABCn, 500n, true]);
+  });
 });
 
 // ============ Event Decoding Tests ============
