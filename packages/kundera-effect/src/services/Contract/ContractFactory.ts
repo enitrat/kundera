@@ -25,15 +25,6 @@ const isWriteOptions = (value: unknown): value is WriteOptions =>
   "resourceBounds" in value &&
   typeof (value as { resourceBounds?: unknown }).resourceBounds === "object";
 
-const normalizeReturn = (
-  fn: AbiFunctionEntry,
-  decoded: CairoValue[]
-): CairoValue | readonly CairoValue[] | undefined => {
-  const outputCount = fn.outputs?.length ?? 0;
-  if (outputCount === 0) return undefined;
-  if (outputCount === 1) return decoded[0];
-  return decoded;
-};
 
 const getFunctionEntries = (abi: readonly AbiEntry[]) =>
   abi.filter((entry): entry is AbiFunctionEntry => entry.type === "function");
@@ -81,7 +72,7 @@ export const ContractFactory: ContractFactory = <TAbi extends StarknetAbi>(
               })
           )
         );
-        return normalizeReturn(fn, decoded);
+        return decoded;
       });
   }
 
@@ -113,7 +104,7 @@ export const ContractFactory: ContractFactory = <TAbi extends StarknetAbi>(
               })
           )
         );
-        return normalizeReturn(fn, decoded);
+        return decoded;
       });
   }
 
