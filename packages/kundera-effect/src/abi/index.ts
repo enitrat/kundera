@@ -79,10 +79,12 @@ import {
   classHashFromSierra as classHashFromSierraBase,
   compiledClassHashFromCasm as compiledClassHashFromCasmBase,
   extractAbi as extractAbiBase,
+} from "@kundera-sn/kundera-ts/abi";
+import {
   encodeShortString,
   decodeShortString,
   MAX_SHORT_STRING_LENGTH
-} from "@kundera-sn/kundera-ts/abi";
+} from "@kundera-sn/kundera-ts";
 import { fromResult } from "../utils/fromResult.js";
 
 const encodeCalldataBaseUntyped = encodeCalldataBase as (

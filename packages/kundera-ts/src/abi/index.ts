@@ -216,12 +216,7 @@ export {
 	getEventSelectorHex,
 } from "./events.js";
 
-// Short string utilities (re-exported from primitives)
-export {
-	encodeShortString,
-	decodeShortString,
-	MAX_SHORT_STRING_LENGTH,
-} from "../primitives/index.js";
+// Short string utilities live in primitives — import from '@kundera-sn/kundera-ts' directly
 
 // Class hash utilities (moved from contract module)
 export type {

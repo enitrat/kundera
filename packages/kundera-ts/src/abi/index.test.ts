@@ -17,10 +17,9 @@ import {
 	getEventSelector,
 	encodeValue,
 	decodeValue,
-	encodeShortString,
-	decodeShortString,
 	type Abi,
 } from "./index.js";
+import { encodeShortString } from "../primitives/index.js";
 
 const describeIfCrypto = describe;
 
@@ -867,9 +866,4 @@ describeIfCrypto("Short String Encoding/Decoding", () => {
 		expect(result.result).toBe("my_token");
 	});
 
-	it("re-exports encodeShortString/decodeShortString from primitives", () => {
-		// Verify the re-exports work
-		expect(encodeShortString("test").toBigInt()).toBe(1952805748n);
-		expect(decodeShortString(1952805748n)).toBe("test");
-	});
 });

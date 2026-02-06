@@ -1,19 +1,27 @@
 import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc";
-import { computeSelectorHex } from "@kundera-sn/kundera-ts/abi";
+import {
+  computeSelectorHex,
+  encodeCalldata,
+  decodeOutput,
+} from "@kundera-sn/kundera-ts/abi";
 import type { HttpProvider } from "@kundera-sn/kundera-ts/provider";
 import { TOKENS } from "../config.js";
 
-// FEEDBACK: The quickstart hardcodes the balanceOf selector as a hex literal.
-// Had to dig into ABI API doc to find computeSelectorHex for computing it.
-// A "How to call a contract" recipe that computes selectors would help.
-//
-// FEEDBACK: Docs say Rpc.CallRequest takes (functionCall, blockId).
-// FunctionCall shape is { contract_address, entry_point_selector, calldata }.
-// This is shown in quickstart but param names aren't in the jsonrpc method table.
-//
-// FEEDBACK: Call result is string[] (hex strings). Docs show BigInt(result[0])
-// for manual parsing. No doc mentions using deserializeU256 from serde on call results.
-// The serde doc assumes bigint inputs, but call returns hex strings.
+// Minimal ERC-20 ABI for balanceOf
+const ERC20_ABI = [
+  {
+    type: "function" as const,
+    name: "balanceOf",
+    inputs: [
+      {
+        name: "account",
+        type: "core::starknet::contract_address::ContractAddress",
+      },
+    ],
+    outputs: [{ type: "core::integer::u256" }],
+    state_mutability: "view" as const,
+  },
+];
 
 export async function balance(
   provider: HttpProvider,
@@ -23,27 +31,32 @@ export async function balance(
   const tokenKey = token.toUpperCase();
   const tokenAddress = TOKENS[tokenKey];
   if (!tokenAddress) {
-    console.error(`Unknown token: ${token}. Available: ${Object.keys(TOKENS).join(", ")}`);
+    console.error(
+      `Unknown token: ${token}. Available: ${Object.keys(TOKENS).join(", ")}`,
+    );
     process.exit(1);
   }
 
-  const balanceOfSelector = computeSelectorHex("balanceOf");
+  // Encode calldata using ABI
+  const encoded = encodeCalldata(ERC20_ABI, "balanceOf", [BigInt(address)]);
+  if (encoded.error) throw encoded.error;
 
   const result = await provider.request(
     Rpc.CallRequest(
       {
         contract_address: tokenAddress,
-        entry_point_selector: balanceOfSelector,
-        calldata: [address],
+        entry_point_selector: computeSelectorHex("balanceOf"),
+        calldata: encoded.result!.map((v) => "0x" + v.toString(16)),
       },
       "latest",
     ),
   );
 
-  // u256 = [low, high] — manual parsing as shown in quickstart
-  const low = BigInt(result[0]);
-  const high = BigInt(result[1]);
-  const rawBalance = low + (high << 128n);
+  // Decode output using ABI (handles u256 = [low, high] automatically)
+  const decoded = decodeOutput(ERC20_ABI, "balanceOf", result.map(BigInt));
+  if (decoded.error) throw decoded.error;
+
+  const rawBalance = decoded.result as bigint;
 
   // Both ETH and STRK use 18 decimals
   const decimals = 18;

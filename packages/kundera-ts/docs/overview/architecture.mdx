@@ -1,247 +1,253 @@
 ---
 title: Architecture
-description: How Kundera's modules fit together.
+description: How Kundera is built, and why.
 ---
 
-Kundera is organized into independent, tree-shakeable modules that compose together.
+Kundera is a Starknet library built on two convictions: your bundler should only ship what you use, and your types should never lie to you. Every design decision flows from these principles.
 
-## Module Overview
+## The Stack
+
+The library is organized as a layered stack where each layer has a single responsibility and knows nothing about the layers above it.
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         Skills                              │
-│  (Copy-paste patterns: providers, accounts, contracts)      │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      Application Layer                       │
-├───────────────┬───────────────┬───────────────┬─────────────┤
-│      JSON-RPC      │      ABI      │     Serde     │  Transport  │
-│  (Methods)    │  (Encoding)   │ (Serializing) │  (Network)  │
-└───────────────┴───────────────┴───────────────┴─────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                        Core Layer                           │
-├─────────────────────────────┬───────────────────────────────┤
-│        Primitives           │            Crypto             │
-│  (Felt, Address, Hash)      │  (Pedersen, Poseidon, ECDSA)  │
-└─────────────────────────────┴───────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                       Crypto Backend                         │
-├─────────────────────────────┬───────────────────────────────┤
-│          Native             │             WASM              │
-│   (Rust FFI, Bun/Node)      │    (Browser, portable)        │
-└─────────────────────────────┴───────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         Your Code                               │
+│  Call providers, decode responses, build transactions            │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │
+┌──────────────────────────────▼──────────────────────────────────┐
+│                    Domain Primitives                             │
+│  fromRpc() / toRpc() — convert wire ↔ rich types                │
+│  (BlockHeader, Transaction, Receipt, Event, …)                  │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │
+┌──────────────────────────────▼──────────────────────────────────┐
+│                 Provider + RPC Schema                            │
+│  TypedProvider<StarknetRpcSchema> — typed request/response       │
+│  Rpc.* request builders — construct { method, params }           │
+└──────────────────┬──────────────────────┬───────────────────────┘
+                   │                      │
+┌──────────────────▼──────┐  ┌────────────▼───────────────────────┐
+│       Transport         │  │         ABI + Serde                 │
+│  HTTP / WebSocket       │  │  Encode calldata, serialize Cairo   │
+└──────────────────┬──────┘  └────────────────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────────────────────────┐
+│                     Core Primitives                              │
+│  Felt252, ContractAddress, ClassHash, StorageKey, …              │
+│  Branded types — compile-time safety, zero runtime cost          │
+└──────────────────┬──────────────────────────────────────────────┘
+                   │
+┌──────────────────▼──────────────────────────────────────────────┐
+│                     Crypto Backend                               │
+│  Native (Rust FFI) │ WASM │ Pure JS fallback                    │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-## Core Layer
+Information flows downward. Your code talks to providers and domain primitives. Providers talk to transports. Transports talk to the network. Nothing below ever imports from above.
 
-The foundation—types and cryptography with no external dependencies.
+## Core Primitives
 
-### Primitives (`@kundera-sn/kundera-ts`)
+The foundation is a set of branded types that represent Starknet values. A `Felt252` is a `bigint` at runtime, but TypeScript's type system prevents you from accidentally passing a `ClassHash` where a `ContractAddress` is expected. The brand is phantom — it costs nothing at runtime.
 
-Branded types for Starknet values:
+```typescript
+import { Felt252, ContractAddress, ClassHash } from '@kundera-sn/kundera-ts';
 
-| Type | Description |
-|------|-------------|
-| `Felt252` | 252-bit field element |
-| `ContractAddress` | Contract address (validated) |
-| `ClassHash` | Contract class hash |
-| `StorageKey` | Storage slot key |
+const felt = Felt252("0x123");           // bigint & { __tag: "Felt" }
+const addr = ContractAddress("0xabc");   // bigint & { __tag: "ContractAddress" }
 
-All types share the same underlying representation (`Uint8Array`) but are distinguished at the type level.
+// Type error at compile time — different brands
+// someFunction(addr) where Felt252Type is expected → TS error
+```
 
-### Crypto (`@kundera-sn/kundera-ts/crypto`)
+Each primitive lives in its own directory (`primitives/Felt252/`, `primitives/ContractAddress/`, etc.) with one function per file. This structure means bundlers can eliminate any function you don't call.
 
-Cryptographic operations with pluggable backends:
+## Transport
 
-| Function | Description |
-|----------|-------------|
-| `pedersen(a, b)` | Pedersen hash of two felts |
-| `poseidon(values)` | Poseidon hash of array |
-| `sign(privateKey, hash)` | ECDSA signature |
-| `verify(publicKey, hash, signature)` | Verify signature |
-| `getPublicKey(privateKey)` | Derive public key |
-
-The crypto module auto-selects the fastest available backend (native > WASM > JS fallback).
-
-## Application Layer
-
-Higher-level modules that compose primitives and crypto.
-
-### Transport (`@kundera-sn/kundera-ts/transport`)
-
-Network communication with Starknet nodes:
+Transports are the lowest networking layer. They accept a JSON-RPC request object and return a JSON-RPC response object. Nothing more.
 
 ```typescript
 import { httpTransport } from '@kundera-sn/kundera-ts/transport';
 
-const transport = httpTransport(
-  'https://api.zan.top/public/starknet-sepolia',
-  { timeout: 30_000 }
-);
+const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
 ```
 
-Features:
-- HTTP and WebSocket transports
-- JSON-RPC request batching
-- Subscription support over WebSocket
+HTTP and WebSocket transports are available. They handle framing and connection lifecycle, but have no awareness of Starknet-specific methods or types.
 
-### JSON-RPC (`@kundera-sn/kundera-ts/jsonrpc`)
+## Provider
 
-Tree-shakeable JSON-RPC methods:
+A provider wraps a transport and adds operational concerns: request ID management, retry logic, timeout handling, and event emission. The base `Provider` interface is deliberately untyped — its `request()` method returns `Promise<unknown>`.
 
 ```typescript
-import { starknet_call, starknet_getTransactionReceipt } from '@kundera-sn/kundera-ts/jsonrpc';
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
 
-// Each method is independently importable
-const result = await starknet_call(transport, request);
+const provider = new HttpProvider({ url: 'https://api.zan.top/public/starknet-sepolia' });
+const result = await provider.request({ method: 'starknet_chainId', params: [] });
+// result: unknown
 ```
 
-Every Starknet JSON-RPC method is a separate export—import only what you use.
+This is honest. The provider is a transport wrapper. It doesn't know what `starknet_chainId` returns, so it doesn't pretend to.
 
-### ABI (`@kundera-sn/kundera-ts/abi`)
+## TypedProvider and the RPC Schema
 
-Encode and decode calldata:
+Type safety for RPC calls comes from a separate, compile-time-only layer. The `StarknetRpcSchema` is a readonly tuple type that maps each of the 37 Starknet JSON-RPC methods to its parameter types and wire return type. `TypedProvider` is a generic interface parameterized by this schema.
+
+```typescript
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import type { TypedProvider, StarknetRpcSchema } from '@kundera-sn/kundera-ts/provider';
+
+const provider = new HttpProvider({
+  url: 'https://api.zan.top/public/starknet-sepolia'
+}) as TypedProvider<StarknetRpcSchema>;
+
+// TypeScript infers the return type from the literal method string
+const chainId = await provider.request({ method: 'starknet_chainId', params: [] });
+// chainId: string ✓ (inferred from schema)
+
+const block = await provider.request({
+  method: 'starknet_getBlockWithTxHashes',
+  params: [{ block_number: 12345 }]
+});
+// block: BlockWithTxHashes ✓ (wire type from jsonrpc/types.ts)
+```
+
+The key insight is that the `<TMethod>` generic lives on the `request()` call, not on the class. A single provider instance handles all 37 methods — TypeScript narrows the return type per call based on the literal method string you pass.
+
+This system has zero runtime cost. `HttpProvider` ships the same JavaScript whether you cast it to `TypedProvider` or not. The schema exists only in TypeScript's type checker.
+
+### Type Honesty
+
+The schema declares **wire types** — the shapes that come back from the JSON-RPC node. When the spec says `starknet_getBlockWithTxHashes` returns a `BlockWithTxHashes`, the schema says exactly that. It does not claim the return is a rich domain type with `Felt252` fields and convenience methods. That would be a lie.
+
+Wire types are defined in `jsonrpc/types.ts` and use plain strings for hex values, numbers for indices, and nested objects matching the Starknet JSON-RPC specification. They are stable protocol definitions — they change only when the spec changes.
+
+## Request Builders
+
+Writing `{ method: 'starknet_getNonce', params: [blockId, address] }` by hand is tedious and error-prone. Request builders are convenience functions that construct these objects for you.
+
+```typescript
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
+
+const request = Rpc.GetNonceRequest({ block_number: 123 }, '0xabc...');
+// { method: 'starknet_getNonce', params: [{ block_number: 123 }, '0xabc...'] }
+
+const result = await provider.request(request);
+```
+
+Each builder lives in its own file under `jsonrpc/starknet/` and is re-exported through the `Rpc` namespace. Import `Rpc` and you get autocomplete for all 37 methods. Import nothing you don't use and your bundle stays small.
+
+Builders are intentionally simple. They construct `{ method, params }` and return a plain `RequestArguments` object. They do not carry return type information — that responsibility belongs to the schema system described above.
+
+## Domain Primitives
+
+Wire types use hex strings, not branded `Felt252` values. Domain primitives bridge this gap with explicit `fromRpc()` and `toRpc()` codec functions.
+
+Eight domain primitive modules exist: `BlockHeader`, `Block`, `Transaction`, `Receipt`, `Event`, `StateUpdate`, `FeeEstimate`, and `Trace`. Each provides typed conversions between wire format and rich application types.
+
+```typescript
+import type { TypedProvider, StarknetRpcSchema } from '@kundera-sn/kundera-ts/provider';
+import { blockHeaderFromRpc } from '@kundera-sn/kundera-ts/BlockHeader';
+
+const provider = new HttpProvider({ url: '...' }) as TypedProvider<StarknetRpcSchema>;
+
+// Wire type comes back from the node
+const wire = await provider.request({
+  method: 'starknet_getBlockWithTxHashes',
+  params: [{ block_number: 12345 }]
+});
+
+// You decide when to convert
+const header = blockHeaderFromRpc(wire);
+// header.blockNumber: number
+// header.parentHash: Felt252Type
+// header.sequencerAddress: ContractAddressType
+```
+
+The conversion is explicit and user-controlled. The provider doesn't secretly transform responses — you call `fromRpc()` when you want rich types and work with wire types when you don't. This is the lesson learned from killing the previous `RpcCodec` system, which tried to auto-convert everything at the provider level and created type lies in the process.
+
+Each domain primitive is available as a separate subpath import (`@kundera-sn/kundera-ts/BlockHeader`, `@kundera-sn/kundera-ts/Transaction`, etc.) so you only pay for the codecs you actually use.
+
+## ABI Encoding
+
+The ABI module encodes TypeScript values into Starknet calldata and decodes return values back. It works with Cairo ABIs directly.
 
 ```typescript
 import { encodeCalldata, decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
 
 const encoded = encodeCalldata(abi, 'transfer', [recipient, amount]);
-if (encoded.error) {
-  throw encoded.error;
-}
-const calldata = encoded.result;
+if (encoded.error) throw encoded.error;
+
 const decoded = decodeOutputObject(abi, 'balanceOf', response.map(BigInt));
-if (decoded.error) {
-  throw decoded.error;
-}
-const result = decoded.result;
+if (decoded.error) throw decoded.error;
 ```
 
-### Serde (`@kundera-sn/kundera-ts/serde`)
+The ABI module operates on primitives and has no dependency on the provider or transport layers.
 
-Serialize Cairo types to felts:
+## Crypto
+
+Cryptographic operations (Pedersen, Poseidon, ECDSA) are implemented in Rust and consumed through pluggable backends. You explicitly choose your backend — there is no magic auto-detection.
 
 ```typescript
-import { serialize, deserialize } from '@kundera-sn/kundera-ts/serde';
+// Native FFI (Bun/Node — fastest)
+import '@kundera-sn/kundera-ts/native';
 
-// Cairo struct → felt array
-const felts = serialize(schema, { x: 1n, y: 2n });
-
-// Felt array → Cairo struct
-const point = deserialize(schema, felts);
-```
-
-## Crypto Backend
-
-Pluggable backend for cryptographic operations.
-
-### Native (`@kundera-sn/kundera-ts/native`)
-
-Uses Rust FFI for maximum performance. Available in:
-- **Bun** (built-in FFI)
-- **Node.js** (requires `koffi`)
-
-```typescript
-import { isNativeAvailable } from '@kundera-sn/kundera-ts/native';
-
-if (isNativeAvailable()) {
-  // Using native crypto
-}
-```
-
-### WASM (`@kundera-sn/kundera-ts/wasm`)
-
-WebAssembly module for browsers and portable environments:
-
-```typescript
-import { loadWasmCrypto, isWasmLoaded } from '@kundera-sn/kundera-ts/wasm';
-
-await loadWasmCrypto();
-// Now crypto functions use WASM backend
-```
-
-## Skills Layer
-
-Pre-built patterns that combine the modules above. Copy them into your project and adapt as needed.
-
-| Skill | Modules Used |
-|-------|--------------|
-| HTTP Provider | Transport + JSON-RPC |
-| Contract Read | Transport + JSON-RPC + ABI |
-| Account Invoke | Transport + JSON-RPC + ABI + Crypto |
-
-Skills are not published as packages—they're documented code you own.
-
-## Data Flow Example
-
-Reading an ERC-20 balance:
-
-```
-┌─────────────┐
-│  Your Code  │
-└──────┬──────┘
-       │ ContractAddress('0x...')
-       ▼
-┌─────────────┐
-│ Primitives  │ Creates branded type
-└──────┬──────┘
-       │ ContractAddressType
-       ▼
-┌─────────────┐
-│     ABI     │ Encodes calldata
-└──────┬──────┘
-       │ ['0x123', '0x456']
-       ▼
-┌─────────────┐
-│     JSON-RPC     │ Builds JSON-RPC request
-└──────┬──────┘
-       │ { method: 'starknet_call', params: [...] }
-       ▼
-┌─────────────┐
-│  Transport  │ Sends HTTP request
-└──────┬──────┘
-       │ HTTP POST
-       ▼
-   [Starknet Node]
-```
-
-## Import Patterns
-
-### Minimal (just primitives)
-
-```typescript
-import { Felt252, ContractAddress } from '@kundera-sn/kundera-ts';
-```
-
-### Read-only app
-
-```typescript
-import { ContractAddress } from '@kundera-sn/kundera-ts';
-import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
-import { httpTransport } from '@kundera-sn/kundera-ts/transport';
-```
-
-### Full signing capability
-
-```typescript
-import { ContractAddress } from '@kundera-sn/kundera-ts';
-import { sign, pedersen } from '@kundera-sn/kundera-ts/crypto';
+// WASM (browsers, portable)
 import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+await loadWasmCrypto();
+
+// Then use crypto functions normally
+import { pedersen, poseidon, sign } from '@kundera-sn/kundera-ts/crypto';
 ```
 
-## Related
+Rust is the single source of truth for all cryptographic implementations. Fix a bug in Rust, and every backend gets the fix. We don't reimplement audited cryptography in TypeScript.
+
+## Design Principles
+
+**Tree-shaking first.** Implementation files use `.js` with JSDoc types. Type definitions use `.ts`. One function per file. Bundlers can eliminate anything you don't import.
+
+**Zero-cost type safety.** Branded types, the RPC schema, and `TypedProvider` exist only in TypeScript's type system. They vanish completely in compiled JavaScript.
+
+**Explicit over magic.** You choose your crypto backend. You choose when to convert wire types to domain types. You choose whether to use typed or untyped providers. Nothing happens behind your back.
+
+**Layers don't skip.** Your code doesn't talk to transports directly, and transports don't know about Starknet methods. Each layer has a single job.
+
+## Putting It Together
+
+A complete read flow looks like this:
+
+```typescript
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import type { TypedProvider, StarknetRpcSchema } from '@kundera-sn/kundera-ts/provider';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
+import { blockWithTxHashesFromRpc } from '@kundera-sn/kundera-ts/Block';
+
+// 1. Create a typed provider
+const provider = new HttpProvider({
+  url: 'https://api.zan.top/public/starknet-sepolia'
+}) as TypedProvider<StarknetRpcSchema>;
+
+// 2. Build and send a request (wire types returned)
+const wire = await provider.request(
+  Rpc.GetBlockWithTxHashesRequest({ block_number: 12345 })
+);
+
+// 3. Convert to domain types when you need them
+const block = blockWithTxHashesFromRpc(wire);
+```
+
+Each step is visible, each import is intentional, and each type is honest about what it represents.
 
 <CardGroup cols={2}>
   <Card title="Quick Start" icon="rocket" href="/getting-started/quickstart">
-    Get up and running in 5 minutes.
+    Build your first Starknet query.
   </Card>
-  <Card title="Branded Types" icon="tag" href="/concepts/branded-types">
-    Why branded types prevent bugs.
+  <Card title="Provider Guide" icon="plug" href="/guides/provider/providers">
+    Provider configuration and usage patterns.
+  </Card>
+  <Card title="JSON-RPC Reference" icon="code" href="/api/jsonrpc">
+    Request builders and wire types.
+  </Card>
+  <Card title="Domain Primitives" icon="cube" href="/primitives/domain-primitives">
+    fromRpc/toRpc codec reference.
   </Card>
 </CardGroup>
