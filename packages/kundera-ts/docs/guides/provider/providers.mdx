@@ -182,7 +182,7 @@ This conversion is always opt-in. Many use cases — forwarding data to a fronte
 
 ## Error Handling
 
-All JSON-RPC errors come through as thrown exceptions with a `code` property matching the Starknet JSON-RPC error codes.
+JSON-RPC errors are thrown as **plain objects** `{ code: number, message: string }`, not `Error` instances. Use a type guard or check for the `code` property:
 
 ```typescript
 try {
@@ -190,9 +190,13 @@ try {
     Rpc.GetTransactionReceiptRequest(txHash)
   );
 } catch (error) {
-  if (error.code === 25) {
-    // Transaction not found — might still be pending
-    return null;
+  // RPC errors are plain objects, not Error instances
+  if (typeof error === 'object' && error !== null && 'code' in error) {
+    const rpcError = error as { code: number; message: string };
+    if (rpcError.code === 25) {
+      // Transaction not found — might still be pending
+      return null;
+    }
   }
   throw error;
 }

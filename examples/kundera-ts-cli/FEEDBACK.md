@@ -5,29 +5,12 @@ Everything below is a friction point I hit along the way.
 
 ---
 
-## F2: JSON-RPC errors are plain objects, not Error instances
-
-**Problem**: Provider API doc says "thrown exceptions with a `code` property" and shows:
-```typescript
-try { ... } catch (error) { error.code; error.message; }
-```
-In reality, JSON-RPC errors are thrown as plain `{ code: number, message: string }` objects —
-NOT `Error` instances. So `error instanceof Error` is `false`.
-
-**Why confusing**: The doc uses the word "exceptions" and shows `catch (error)` patterns
-that imply standard Error objects. No mention of the actual thrown shape.
-
-**How I resolved**: Added a second check for plain objects with `code` and `message` props.
-
-**Suggested fix**: Export a `RpcError extends Error` class and throw that.
-
----
-
 ## Resolved
 
 | # | Issue | Resolution |
 |---|-------|------------|
 | F1 | `request()` returns unknown | Fixed: JSDoc literal method types + TypedProvider |
+| F2 | JSON-RPC errors are plain objects | Fixed: docs now document actual `{ code, message }` shape |
 | F3 | Inconsistent HttpProvider constructor | Fixed: domain-primitives.mdx uses options object |
 | F4 | Param ordering inconsistent | Resolved: strong typing provides hints |
 | F5 | No selector computation in quickstart | Fixed: quickstart uses `computeSelectorHex` |
