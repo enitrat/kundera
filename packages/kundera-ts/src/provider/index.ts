@@ -34,6 +34,25 @@ export type { RequestOptions as ProviderRequestOptions } from "./request/Request
 export type { RequestArguments as ProviderRequestArguments } from "./request/RequestArguments.js";
 
 export type { StarknetRpcSchema } from "./schemas/index.js";
+export type {
+	WalletRpcSchema,
+	WalletCall,
+	WalletInvokeParams,
+	WalletDeclareParams,
+	WalletTypedData,
+	WalletDeploymentData,
+	WalletWatchAssetParams,
+	WalletAddChainParams,
+	WalletSwitchChainParams,
+} from "./schemas/index.js";
+
+export type {
+	StarknetWindowObject,
+	WalletIcon,
+	WalletEvent,
+	WalletEventMap,
+	WalletRequestArguments,
+} from "./wallet/types.js";
 
 export type { HttpProviderOptions } from "./HttpProvider.js";
 export { HttpProvider } from "./HttpProvider.js";

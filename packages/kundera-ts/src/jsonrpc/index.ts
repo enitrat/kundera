@@ -5,6 +5,8 @@
  */
 
 export * as Rpc from "./starknet/methods.js";
+export * as WalletRpc from "./wallet/methods.js";
+export { WalletErrorCode } from "./wallet/errors.js";
 
 export type { BlockHashAndNumber } from "./types.js";
 export type { EventsFilter } from "./types.js";

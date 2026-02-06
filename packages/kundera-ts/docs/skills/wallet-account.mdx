@@ -1,0 +1,134 @@
+---
+title: "Wallet Account"
+description: "Execute transactions through a browser wallet (ArgentX, Braavos) using wallet_* RPC primitives."
+---
+
+This skill wraps a `StarknetWindowObject` into a wallet account. Reads go to an RPC node. Writes delegate to the wallet via `wallet_*` RPC methods.
+
+## Quick Start
+
+```bash
+cp -r examples/skills/wallet-account src/skills/
+```
+
+## Usage
+
+```ts
+import { createWalletAccount } from './skills/wallet-account';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+
+// swo comes from get-starknet, starknetkit, or window.starknet_argentX
+const account = createWalletAccount({
+  swo: window.starknet_argentX,
+  transport: httpTransport('https://starknet-mainnet.public.blastapi.io'),
+});
+
+// Connect — prompts the wallet popup
+const accounts = await account.connect();
+console.log('Connected:', accounts[0]);
+
+// Execute a transaction — wallet signs + submits
+const { transaction_hash } = await account.execute({
+  contractAddress: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+  entrypoint: 'transfer',
+  calldata: ['0x123', '0x456', '0x0'],
+});
+```
+
+## Multicall
+
+```ts
+const { transaction_hash } = await account.execute([
+  {
+    contractAddress: TOKEN,
+    entrypoint: 'approve',
+    calldata: [ROUTER, AMOUNT],
+  },
+  {
+    contractAddress: ROUTER,
+    entrypoint: 'swap',
+    calldata: [TOKEN_A, TOKEN_B, AMOUNT, MIN_OUT],
+  },
+]);
+```
+
+## Sign Typed Data (SNIP-12)
+
+```ts
+const signature = await account.signTypedData({
+  types: {
+    StarkNetDomain: [
+      { name: 'name', type: 'felt' },
+      { name: 'version', type: 'felt' },
+      { name: 'chainId', type: 'felt' },
+    ],
+    Message: [{ name: 'content', type: 'felt' }],
+  },
+  primaryType: 'Message',
+  domain: { name: 'MyDapp', version: '1', chainId: 'SN_MAIN' },
+  message: { content: '0x48656c6c6f' },
+});
+```
+
+## Listen to Wallet Events
+
+```ts
+import { onAccountsChanged, onNetworkChanged } from './skills/wallet-account';
+
+const unsub1 = onAccountsChanged(swo, (accounts) => {
+  console.log('Accounts changed:', accounts);
+});
+
+const unsub2 = onNetworkChanged(swo, (chainId) => {
+  console.log('Network changed:', chainId);
+});
+
+// Cleanup
+unsub1();
+unsub2();
+```
+
+## Using Raw Request Builders
+
+For operations not covered by `createWalletAccount`, use `WalletRpc` builders directly:
+
+```ts
+import { WalletRpc } from '@kundera-sn/kundera-ts/jsonrpc';
+
+// Switch network
+await swo.request({ type: 'wallet_switchStarknetChain', params: { chainId: '0x534e5f4d41494e' } });
+
+// Or use the builder + manual translation
+const req = WalletRpc.SwitchStarknetChainRequest({ chainId: '0x534e5f4d41494e' });
+await swo.request({ type: req.method, params: req.params[0] });
+
+// Watch a token
+const watchReq = WalletRpc.WatchAssetRequest({
+  type: 'ERC20',
+  options: { address: '0xtoken', symbol: 'ETH', decimals: 18 },
+});
+await swo.request({ type: watchReq.method, params: watchReq.params[0] });
+```
+
+## Architecture
+
+```
+┌─────────────────────────────────────────┐
+│          createWalletAccount()          │
+├──────────────┬──────────────────────────┤
+│  Reads       │  Writes                  │
+│  ↓           │  ↓                       │
+│  Transport   │  SWO (wallet extension)  │
+│  (RPC node)  │  via WalletRpc builders  │
+└──────────────┴──────────────────────────┘
+```
+
+- **Reads** (`call`): go directly to the RPC node via your transport — no wallet popup.
+- **Writes** (`execute`, `signTypedData`): delegate to the wallet via `wallet_addInvokeTransaction` / `wallet_signTypedData` — wallet handles signing and fee estimation.
+
+## Notes
+
+- **No fee estimation through wallet** — the wallet API has no `wallet_estimateFee` method. The wallet handles fees internally.
+- **Field name translation** — the skill translates dapp-style `contractAddress`/`entrypoint` (camelCase) to the wallet API's `contract_address`/`entry_point` (snake\_case).
+- **SWO uses `type`, not `method`** — the adapter translates `{ method, params }` from the request builders to `{ type, params }` for the SWO.
+- Pair with `wallet-modal` skill for wallet discovery/connection, or access `window.starknet_*` directly.
