@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { HttpProvider } from './HttpProvider.js';
+import { Rpc } from '../jsonrpc/index.js';
 
 const makeJsonResponse = (payload: unknown) =>
   Promise.resolve({
@@ -44,11 +45,10 @@ describe('HttpProvider', () => {
     });
   });
 
-  it('wraps starknet_* methods as Response<T>', async () => {
+  it('works with Rpc request builders', async () => {
     const provider = new HttpProvider('http://localhost:9545');
-    const response = await provider.starknet_blockNumber();
-    expect(response.error).toBeUndefined();
-    expect(response.result).toBe(123);
+    const result = await provider.request(Rpc.BlockNumberRequest());
+    expect(result).toBe(123);
   });
 
   it('request() throws on JSON-RPC error response', async () => {

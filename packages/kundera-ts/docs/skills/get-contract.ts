@@ -19,9 +19,16 @@ import {
   type FunctionRet,
 } from '@kundera-sn/kundera-ts/abi';
 import { Felt252 } from '@kundera-sn/kundera-ts';
-import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { BlockId, FunctionCall } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { Transport } from '@kundera-sn/kundera-ts/transport';
+
+/** Send a request-builder result through a transport and unwrap the response. */
+async function send<T>(transport: Transport, req: { method: string; params?: unknown[] | Record<string, unknown> }): Promise<T> {
+  const response = await transport.request({ jsonrpc: '2.0', id: 1, method: req.method, params: req.params ?? [] });
+  if ('error' in response) throw new Error(response.error.message);
+  return response.result as T;
+}
 
 // ============ Types ============
 
@@ -127,11 +134,7 @@ export function getContract<TAbi extends KanabiAbi>(
 
       // Execute call
       try {
-        const output = (await starknet_call(
-          transport,
-          call,
-          options?.blockId
-        )) as string[];
+        const output = await send<string[]>(transport, Rpc.CallRequest(call, options?.blockId));
         const outputFelts = output.map((v) => BigInt(v));
 
         const decoded = decodeOutput(

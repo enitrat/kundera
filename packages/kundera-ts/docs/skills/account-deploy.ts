@@ -5,11 +5,7 @@
  */
 
 import type { Transport } from '@kundera-sn/kundera-ts/transport';
-import {
-  starknet_chainId,
-  starknet_addDeployAccountTransaction,
-  starknet_estimateFee,
-} from '@kundera-sn/kundera-ts/jsonrpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { AddDeployAccountTransactionResult, BroadcastedDeployAccountTxn, FeeEstimate, SimulationFlag } from '@kundera-sn/kundera-ts/jsonrpc';
 import {
   computeContractAddress,
@@ -23,6 +19,13 @@ import {
   type UniversalDetails,
 } from '@kundera-sn/kundera-ts/crypto';
 import { Felt252, type Felt252Input } from '@kundera-sn/kundera-ts';
+
+/** Send a request-builder result through a transport and unwrap the response. */
+async function send<T>(transport: Transport, req: { method: string; params?: unknown[] | Record<string, unknown> }): Promise<T> {
+  const response = await transport.request({ jsonrpc: '2.0', id: 1, method: req.method, params: req.params ?? [] });
+  if ('error' in response) throw new Error(response.error.message);
+  return response.result as T;
+}
 
 export type SignTransaction = (
   hash: Felt252Input,
@@ -50,7 +53,7 @@ export async function deployAccount(
   payload: DeployAccountPayload,
   details?: UniversalDetails,
 ): Promise<AddDeployAccountTransactionResult> {
-  const chainId = await starknet_chainId(options.transport);
+  const chainId = await send<string>(options.transport, Rpc.ChainIdRequest());
   const nonce = details?.nonce ?? 0n;
 
   const constructorCalldata = (payload.constructorCalldata ?? []).map((c) =>
@@ -80,11 +83,11 @@ export async function deployAccount(
   const txHash = computeDeployAccountV3Hash(tx, contractAddress, chainId);
   const signature = await options.signTransaction(txHash);
 
-  return starknet_addDeployAccountTransaction(options.transport, {
+  return send<AddDeployAccountTransactionResult>(options.transport, Rpc.AddDeployAccountTransactionRequest({
     type: 'DEPLOY_ACCOUNT',
     ...formatDeployAccountForRpc(tx),
     signature: signature.map((s) => Felt252(s).toHex()),
-  } as BroadcastedDeployAccountTxn);
+  } as BroadcastedDeployAccountTxn));
 }
 
 export async function estimateDeployAccountFee(
@@ -111,11 +114,13 @@ export async function estimateDeployAccountFee(
   };
 
   const simulationFlags: SimulationFlag[] = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
-  const estimates = await starknet_estimateFee(
+  const estimates = await send<FeeEstimate[]>(
     options.transport,
-    [{ type: 'DEPLOY_ACCOUNT', ...formatDeployAccountForRpc(tx), signature: [] } as unknown as BroadcastedDeployAccountTxn],
-    simulationFlags,
-    'pending',
+    Rpc.EstimateFeeRequest(
+      [{ type: 'DEPLOY_ACCOUNT', ...formatDeployAccountForRpc(tx), signature: [] } as unknown as BroadcastedDeployAccountTxn],
+      simulationFlags,
+      'pending',
+    ),
   );
 
   const estimate = estimates[0];

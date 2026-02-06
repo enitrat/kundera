@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import * as Rpc from "../../src/jsonrpc/index";
+import { Rpc } from "../../src/jsonrpc/index";
 
 describe("docs/skills/websocket-provider", () => {
-  it("exposes subscription helpers", () => {
-    expect(typeof Rpc.starknet_subscribeNewHeads).toBe("function");
-    expect(typeof Rpc.starknet_subscribeEvents).toBe("function");
-    expect(typeof Rpc.starknet_unsubscribe).toBe("function");
+  it("exposes subscription request builders", () => {
+    expect(typeof Rpc.SubscribeNewHeadsRequest).toBe("function");
+    expect(typeof Rpc.SubscribeEventsRequest).toBe("function");
+    expect(typeof Rpc.UnsubscribeRequest).toBe("function");
   });
 });

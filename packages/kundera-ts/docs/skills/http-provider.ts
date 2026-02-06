@@ -6,36 +6,7 @@
  */
 
 import { httpTransport, type HttpTransportOptions, type Transport } from '@kundera-sn/kundera-ts/transport';
-import {
-  starknet_chainId,
-  starknet_blockNumber,
-  starknet_blockHashAndNumber,
-  starknet_specVersion,
-  starknet_getBlockWithTxHashes,
-  starknet_getBlockWithTxs,
-  starknet_getBlockWithReceipts,
-  starknet_getStateUpdate,
-  starknet_getStorageAt,
-  starknet_getClass,
-  starknet_getClassHashAt,
-  starknet_getClassAt,
-  starknet_getBlockTransactionCount,
-  starknet_call,
-  starknet_estimateFee,
-  starknet_estimateMessageFee,
-  starknet_getTransactionByHash,
-  starknet_getTransactionReceipt,
-  starknet_getTransactionStatus,
-  starknet_getEvents,
-  starknet_getNonce,
-  starknet_getStorageProof,
-  starknet_addInvokeTransaction,
-  starknet_addDeclareTransaction,
-  starknet_addDeployAccountTransaction,
-  starknet_simulateTransactions,
-  starknet_traceTransaction,
-  starknet_traceBlockTransactions,
-} from '@kundera-sn/kundera-ts/jsonrpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import type {
   BlockId,
   BroadcastedTxn,
@@ -48,6 +19,13 @@ import type {
   SimulationFlag,
 } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { ContractAddressType, ClassHashType, Felt252Type } from '@kundera-sn/kundera-ts';
+
+/** Send a request-builder result through a transport and unwrap the response. */
+async function send<T>(transport: Transport, req: { method: string; params?: unknown[] | Record<string, unknown> }): Promise<T> {
+  const response = await transport.request({ jsonrpc: '2.0', id: 1, method: req.method, params: req.params ?? [] });
+  if ('error' in response) throw new Error(response.error.message);
+  return response.result as T;
+}
 
 export interface HttpProviderOptions {
   /** RPC endpoint URL (used if transport is not provided) */
@@ -133,52 +111,51 @@ export function createHttpProvider(options: HttpProviderOptions): HttpProvider {
 
   return {
     transport,
-    specVersion: () => starknet_specVersion(transport),
-    chainId: () => starknet_chainId(transport),
-    blockNumber: () => starknet_blockNumber(transport),
-    blockHashAndNumber: () => starknet_blockHashAndNumber(transport),
-    getBlockWithTxHashes: (blockId) => starknet_getBlockWithTxHashes(transport, blockId),
-    getBlockWithTxs: (blockId) => starknet_getBlockWithTxs(transport, blockId),
-    getBlockWithReceipts: (blockId) => starknet_getBlockWithReceipts(transport, blockId),
-    getStateUpdate: (blockId) => starknet_getStateUpdate(transport, blockId),
+    specVersion: () => send(transport, Rpc.SpecVersionRequest()),
+    chainId: () => send(transport, Rpc.ChainIdRequest()),
+    blockNumber: () => send(transport, Rpc.BlockNumberRequest()),
+    blockHashAndNumber: () => send(transport, Rpc.BlockHashAndNumberRequest()),
+    getBlockWithTxHashes: (blockId) => send(transport, Rpc.GetBlockWithTxHashesRequest(blockId)),
+    getBlockWithTxs: (blockId) => send(transport, Rpc.GetBlockWithTxsRequest(blockId)),
+    getBlockWithReceipts: (blockId) => send(transport, Rpc.GetBlockWithReceiptsRequest(blockId)),
+    getStateUpdate: (blockId) => send(transport, Rpc.GetStateUpdateRequest(blockId)),
     getStorageAt: (contractAddress, key, blockId) =>
-      starknet_getStorageAt(transport, contractAddress, key, blockId),
-    getClass: (classHash, blockId) => starknet_getClass(transport, classHash, blockId),
+      send(transport, Rpc.GetStorageAtRequest(String(contractAddress), String(key), blockId)),
+    getClass: (classHash, blockId) => send(transport, Rpc.GetClassRequest(blockId ?? 'latest', String(classHash))),
     getClassHashAt: (contractAddress, blockId) =>
-      starknet_getClassHashAt(transport, contractAddress, blockId),
+      send(transport, Rpc.GetClassHashAtRequest(blockId ?? 'latest', String(contractAddress))),
     getClassAt: (contractAddress, blockId) =>
-      starknet_getClassAt(transport, contractAddress, blockId),
+      send(transport, Rpc.GetClassAtRequest(blockId ?? 'latest', String(contractAddress))),
     getBlockTransactionCount: (blockId) =>
-      starknet_getBlockTransactionCount(transport, blockId),
-    call: (request, blockId) => starknet_call(transport, request, blockId),
+      send(transport, Rpc.GetBlockTransactionCountRequest(blockId)),
+    call: (request, blockId) => send(transport, Rpc.CallRequest(request, blockId)),
     estimateFee: (transactions, simulationFlags, blockId) =>
-      starknet_estimateFee(transport, transactions, simulationFlags, blockId),
+      send(transport, Rpc.EstimateFeeRequest(transactions, simulationFlags, blockId)),
     estimateMessageFee: (message, blockId) =>
-      starknet_estimateMessageFee(transport, message as any, blockId),
-    getTransactionByHash: (txHash) => starknet_getTransactionByHash(transport, txHash),
-    getTransactionReceipt: (txHash) => starknet_getTransactionReceipt(transport, txHash),
-    getTransactionStatus: (txHash) => starknet_getTransactionStatus(transport, txHash),
-    getEvents: (filter) => starknet_getEvents(transport, filter),
+      send(transport, Rpc.EstimateMessageFeeRequest(message as any, blockId)),
+    getTransactionByHash: (txHash) => send(transport, Rpc.GetTransactionByHashRequest(txHash)),
+    getTransactionReceipt: (txHash) => send(transport, Rpc.GetTransactionReceiptRequest(txHash)),
+    getTransactionStatus: (txHash) => send(transport, Rpc.GetTransactionStatusRequest(txHash)),
+    getEvents: (filter) => send(transport, Rpc.GetEventsRequest(filter)),
     getNonce: (contractAddress, blockId) =>
-      starknet_getNonce(transport, contractAddress, blockId),
+      send(transport, Rpc.GetNonceRequest(blockId ?? 'pending', String(contractAddress))),
     getStorageProof: (blockId, classHashes, contractAddresses, contractStorageKeys) =>
-      starknet_getStorageProof(
-        transport,
+      send(transport, Rpc.GetStorageProofRequest(
         blockId,
         classHashes,
         contractAddresses,
         contractStorageKeys,
-      ),
+      )),
     addInvokeTransaction: (transaction) =>
-      starknet_addInvokeTransaction(transport, transaction),
+      send(transport, Rpc.AddInvokeTransactionRequest(transaction)),
     addDeclareTransaction: (transaction) =>
-      starknet_addDeclareTransaction(transport, transaction),
+      send(transport, Rpc.AddDeclareTransactionRequest(transaction)),
     addDeployAccountTransaction: (transaction) =>
-      starknet_addDeployAccountTransaction(transport, transaction),
+      send(transport, Rpc.AddDeployAccountTransactionRequest(transaction)),
     simulateTransactions: (blockId, transactions, simulationFlags) =>
-      starknet_simulateTransactions(transport, blockId, transactions, simulationFlags),
-    traceTransaction: (txHash) => starknet_traceTransaction(transport, txHash),
+      send(transport, Rpc.SimulateTransactionsRequest(blockId, transactions, simulationFlags)),
+    traceTransaction: (txHash) => send(transport, Rpc.TraceTransactionRequest(txHash)),
     traceBlockTransactions: (blockId) =>
-      starknet_traceBlockTransactions(transport, blockId),
+      send(transport, Rpc.TraceBlockTransactionsRequest(blockId)),
   };
 }

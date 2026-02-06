@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as Effect from "effect/Effect";
 import * as Either from "effect/Either";
-import { ContractAddress } from "@kundera-sn/kundera-ts/ContractAddress";
-import { Felt252 } from "@kundera-sn/kundera-ts/Felt252";
 import type {
   JsonRpcRequest,
   JsonRpcResponse,
@@ -40,7 +38,7 @@ describe("rpc effect wrappers", () => {
     expect(result).toBe("0x534e5f4d41494e");
   });
 
-  it("starknet_getNonce formats address and uses pending default", async () => {
+  it("starknet_getNonce sends correct method and params", async () => {
     let captured: JsonRpcRequest | null = null;
     const transport = createMockTransport((request) => {
       captured = request;
@@ -51,15 +49,14 @@ describe("rpc effect wrappers", () => {
       };
     });
 
-    const address = ContractAddress(0x123n);
-    await Effect.runPromise(Rpc.starknet_getNonce(transport, address));
+    await Effect.runPromise(Rpc.starknet_getNonce(transport, "pending", "0x123"));
 
     expect(captured).not.toBeNull();
     expect(captured!.method).toBe("starknet_getNonce");
-    expect(captured!.params).toEqual(["pending", address.toHex()]);
+    expect(captured!.params).toEqual(["pending", "0x123"]);
   });
 
-  it("starknet_getStorageAt formats key", async () => {
+  it("starknet_getStorageAt sends correct params with default blockId", async () => {
     let captured: JsonRpcRequest | null = null;
     const transport = createMockTransport((request) => {
       captured = request;
@@ -70,11 +67,10 @@ describe("rpc effect wrappers", () => {
       };
     });
 
-    const key = Felt252(1n);
-    await Effect.runPromise(Rpc.starknet_getStorageAt(transport, "0xabc", key));
+    await Effect.runPromise(Rpc.starknet_getStorageAt(transport, "0xabc", "0x1"));
 
     expect(captured).not.toBeNull();
-    expect(captured!.params).toEqual(["0xabc", key.toHex(), "latest"]);
+    expect(captured!.params).toEqual(["0xabc", "0x1", "latest"]);
   });
 
   it("errors are mapped to RpcError", async () => {

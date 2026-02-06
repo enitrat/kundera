@@ -48,6 +48,11 @@
       "import": "./dist/jsonrpc/index.js",
       "require": "./dist/jsonrpc/index.cjs"
     },
+    "./rpc": {
+      "types": "./dist/jsonrpc/rpc/index.d.ts",
+      "import": "./dist/jsonrpc/rpc/index.js",
+      "require": "./dist/jsonrpc/rpc/index.cjs"
+    },
     "./abi": {
       "types": "./dist/abi/index.d.ts",
       "import": "./dist/abi/index.js",

@@ -1,13 +1,13 @@
 /**
  * Starknet RPC Module
  *
- * Tree-shakeable JSON-RPC methods for Starknet.
+ * Tree-shakeable JSON-RPC request builders for Starknet.
  */
 
-export * from './methods/index.js';
-export * as Rpc from './namespace.js';
+export * as Rpc from './starknet/methods.js';
+export * as RpcCodec from './rpc/index.js';
 
-export type { BlockHashAndNumber } from './methods/blockHashAndNumber.js';
+export type { BlockHashAndNumber } from './types.js';
 export type { EventsFilter } from './types.js';
 
 export type {
@@ -71,3 +71,64 @@ export type {
   TxnFinalityStatusWithoutL1,
   ReceiptFinalityStatus,
 } from './types.js';
+
+// Rich types (branded primitives)
+export type {
+  RichResourcePrice,
+  RichResourceBounds,
+  RichResourceBoundsMapping,
+  RichFeePayment,
+  RichBlockHeader,
+  RichBlockHeaderWithCommitments,
+  RichBlockWithTxHashes,
+  RichBlockWithTxs,
+  RichBlockWithReceipts,
+  RichTxnWithReceipt,
+  RichInvokeTxnV0,
+  RichInvokeTxnV1,
+  RichInvokeTxnV3,
+  RichInvokeTxn,
+  RichL1HandlerTxn,
+  RichDeclareTxnV0,
+  RichDeclareTxnV1,
+  RichDeclareTxnV2,
+  RichDeclareTxnV3,
+  RichDeclareTxn,
+  RichDeployAccountTxnV1,
+  RichDeployAccountTxnV3,
+  RichDeployAccountTxn,
+  RichTxn,
+  RichTxnWithHash,
+  RichEvent,
+  RichMsgToL1,
+  RichExecutionResources,
+  RichTxnReceiptCommon,
+  RichInvokeTxnReceipt,
+  RichL1HandlerTxnReceipt,
+  RichDeclareTxnReceipt,
+  RichDeployAccountTxnReceipt,
+  RichTxnReceipt,
+  RichTxnReceiptWithBlockInfo,
+  RichEmittedEvent,
+  RichEventsResponse,
+  RichContractStorageDiffItem,
+  RichDeployedContractItem,
+  RichDeclaredClassItem,
+  RichReplacedClassItem,
+  RichNonceUpdateItem,
+  RichStateDiff,
+  RichStateUpdate,
+  RichFeeEstimate,
+  RichOrderedEvent,
+  RichOrderedMessage,
+  RichInnerCallExecutionResources,
+  RichFunctionInvocation,
+  RichRevertibleFunctionInvocation,
+  RichInvokeTxnTrace,
+  RichDeclareTxnTrace,
+  RichDeployAccountTxnTrace,
+  RichL1HandlerTxnTrace,
+  RichTransactionTrace,
+  RichBlockTransactionTrace,
+  RichSimulatedTransaction,
+} from './rich.js';

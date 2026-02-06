@@ -80,7 +80,10 @@ export enum StarknetRpcErrorCode {
   NoTraceAvailable = 10,
 }
 
-export type { BlockHashAndNumber } from './methods/blockHashAndNumber.js';
+export interface BlockHashAndNumber {
+  block_hash: string;
+  block_number: number;
+}
 export interface EventsFilter {
   from_block?: BlockId;
   to_block?: BlockId;

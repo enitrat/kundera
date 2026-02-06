@@ -1,169 +1,279 @@
 import { Effect } from "effect";
-import * as Rpc from "@kundera-sn/kundera-ts/jsonrpc";
+import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc";
+import type {
+  Transport,
+  JsonRpcRequest,
+} from "@kundera-sn/kundera-ts/transport";
+import { isJsonRpcError } from "@kundera-sn/kundera-ts/transport";
+import type {
+  BlockId,
+  FunctionCall,
+  BroadcastedTxn,
+  BroadcastedInvokeTxn,
+  BroadcastedDeclareTxn,
+  BroadcastedDeployAccountTxn,
+  SimulationFlag,
+  MsgFromL1,
+  ContractClass,
+  EventsFilter,
+  EventsSubscriptionParams,
+  NewHeadsSubscriptionParams,
+  PendingTransactionsSubscriptionParams,
+  TransactionReceiptsSubscriptionParams,
+} from "@kundera-sn/kundera-ts/jsonrpc";
+import type { RequestArguments } from "@kundera-sn/kundera-ts/provider";
 import { RpcError } from "../errors.js";
 
-const tryRpc = <T>(
-  operation: string,
-  input: unknown,
-  thunk: () => Promise<T>
+let _requestId = 0;
+function nextRequestId(): number {
+  return ++_requestId;
+}
+
+/**
+ * Send a JSON-RPC request through a Transport, returning an Effect.
+ *
+ * Handles id assignment, error discrimination, and Effect wrapping.
+ */
+const send = <T>(
+  transport: Transport,
+  args: RequestArguments,
 ): Effect.Effect<T, RpcError> =>
   Effect.tryPromise({
-    try: thunk,
-    catch: (error) =>
-      new RpcError({
+    try: async () => {
+      const request: JsonRpcRequest = {
+        jsonrpc: "2.0",
+        id: nextRequestId(),
+        method: args.method,
+      };
+      if (args.params !== undefined) {
+        request.params = args.params;
+      }
+      const response = await transport.request<T>(request);
+      if (isJsonRpcError(response)) {
+        throw new RpcError({
+          message: response.error.message,
+          operation: args.method,
+          input: args.params,
+          expected: "JSON-RPC success response",
+          cause: response.error,
+        });
+      }
+      return response.result;
+    },
+    catch: (error) => {
+      if (error instanceof RpcError) return error;
+      return new RpcError({
         message: error instanceof Error ? error.message : "RPC call failed",
-        operation,
-        input,
+        operation: args.method,
+        input: args.params,
         expected: "JSON-RPC success response",
-        cause: error instanceof Error ? error : undefined
-      })
+        cause: error instanceof Error ? error : undefined,
+      });
+    },
   });
 
-const wrapRpcMethod = <Args extends readonly unknown[], T>(
-  operation: string,
-  fn: (...args: Args) => Promise<T>
-) =>
-  (...args: Args) =>
-    tryRpc(operation, args, () => fn(...args));
+// ── Read API ──────────────────────────────────────────────
+
+export const starknet_specVersion = (transport: Transport) =>
+  send<string>(transport, Rpc.SpecVersionRequest());
+
+export const starknet_blockNumber = (transport: Transport) =>
+  send<number>(transport, Rpc.BlockNumberRequest());
+
+export const starknet_blockHashAndNumber = (transport: Transport) =>
+  send<{ block_hash: string; block_number: number }>(transport, Rpc.BlockHashAndNumberRequest());
+
+export const starknet_chainId = (transport: Transport) =>
+  send<string>(transport, Rpc.ChainIdRequest());
+
+export const starknet_syncing = (transport: Transport) =>
+  send<boolean | object>(transport, Rpc.SyncingRequest());
+
+export const starknet_call = (
+  transport: Transport,
+  request: FunctionCall,
+  blockId?: BlockId,
+) => send<string[]>(transport, Rpc.CallRequest(request, blockId));
+
+export const starknet_estimateFee = (
+  transport: Transport,
+  transactions: BroadcastedTxn[],
+  simulationFlags?: SimulationFlag[],
+  blockId?: BlockId,
+) => send<unknown[]>(transport, Rpc.EstimateFeeRequest(transactions, simulationFlags, blockId));
+
+export const starknet_estimateMessageFee = (
+  transport: Transport,
+  message: MsgFromL1,
+  blockId?: BlockId,
+) => send<unknown>(transport, Rpc.EstimateMessageFeeRequest(message, blockId));
+
+export const starknet_getBlockWithTxHashes = (
+  transport: Transport,
+  blockId?: BlockId,
+) => send<unknown>(transport, Rpc.GetBlockWithTxHashesRequest(blockId));
+
+export const starknet_getBlockWithTxs = (
+  transport: Transport,
+  blockId?: BlockId,
+) => send<unknown>(transport, Rpc.GetBlockWithTxsRequest(blockId));
+
+export const starknet_getBlockWithReceipts = (
+  transport: Transport,
+  blockId?: BlockId,
+) => send<unknown>(transport, Rpc.GetBlockWithReceiptsRequest(blockId));
+
+export const starknet_getBlockTransactionCount = (
+  transport: Transport,
+  blockId?: BlockId,
+) => send<number>(transport, Rpc.GetBlockTransactionCountRequest(blockId));
+
+export const starknet_getStateUpdate = (
+  transport: Transport,
+  blockId?: BlockId,
+) => send<unknown>(transport, Rpc.GetStateUpdateRequest(blockId));
+
+export const starknet_getStorageAt = (
+  transport: Transport,
+  contractAddress: string,
+  key: string,
+  blockId?: BlockId,
+) => send<string>(transport, Rpc.GetStorageAtRequest(contractAddress, key, blockId));
+
+export const starknet_getTransactionStatus = (
+  transport: Transport,
+  transactionHash: string,
+) => send<unknown>(transport, Rpc.GetTransactionStatusRequest(transactionHash));
+
+export const starknet_getMessagesStatus = (
+  transport: Transport,
+  l1TransactionHash: string,
+) => send<unknown>(transport, Rpc.GetMessagesStatusRequest(l1TransactionHash));
+
+export const starknet_getTransactionByHash = (
+  transport: Transport,
+  transactionHash: string,
+) => send<unknown>(transport, Rpc.GetTransactionByHashRequest(transactionHash));
+
+export const starknet_getTransactionByBlockIdAndIndex = (
+  transport: Transport,
+  blockId: BlockId,
+  index: number,
+) => send<unknown>(transport, Rpc.GetTransactionByBlockIdAndIndexRequest(blockId, index));
+
+export const starknet_getTransactionReceipt = (
+  transport: Transport,
+  transactionHash: string,
+) => send<unknown>(transport, Rpc.GetTransactionReceiptRequest(transactionHash));
+
+export const starknet_getClass = (
+  transport: Transport,
+  blockId: BlockId,
+  classHash: string,
+) => send<unknown>(transport, Rpc.GetClassRequest(blockId, classHash));
+
+export const starknet_getClassHashAt = (
+  transport: Transport,
+  blockId: BlockId,
+  contractAddress: string,
+) => send<string>(transport, Rpc.GetClassHashAtRequest(blockId, contractAddress));
+
+export const starknet_getClassAt = (
+  transport: Transport,
+  blockId: BlockId,
+  contractAddress: string,
+) => send<unknown>(transport, Rpc.GetClassAtRequest(blockId, contractAddress));
+
+export const starknet_getEvents = (
+  transport: Transport,
+  filter: EventsFilter,
+) => send<unknown>(transport, Rpc.GetEventsRequest(filter));
+
+export const starknet_getNonce = (
+  transport: Transport,
+  blockId: BlockId,
+  contractAddress: string,
+) => send<string>(transport, Rpc.GetNonceRequest(blockId, contractAddress));
+
+export const starknet_getStorageProof = (
+  transport: Transport,
+  blockId: BlockId,
+  classHashes: string[],
+  contractAddresses: string[],
+  contractStorageKeys: Array<{ contract_address: string; storage_keys: string[] }>,
+) => send<unknown>(transport, Rpc.GetStorageProofRequest(blockId, classHashes, contractAddresses, contractStorageKeys));
+
+// ── Write API ─────────────────────────────────────────────
+
+export const starknet_addInvokeTransaction = (
+  transport: Transport,
+  transaction: BroadcastedInvokeTxn,
+) => send<{ transaction_hash: string }>(transport, Rpc.AddInvokeTransactionRequest(transaction));
+
+export const starknet_addDeclareTransaction = (
+  transport: Transport,
+  transaction: BroadcastedDeclareTxn,
+) => send<{ transaction_hash: string; class_hash: string }>(transport, Rpc.AddDeclareTransactionRequest(transaction));
+
+export const starknet_addDeployAccountTransaction = (
+  transport: Transport,
+  transaction: BroadcastedDeployAccountTxn,
+) => send<{ transaction_hash: string; contract_address: string }>(transport, Rpc.AddDeployAccountTransactionRequest(transaction));
+
+// ── Trace API ─────────────────────────────────────────────
+
+export const starknet_traceTransaction = (
+  transport: Transport,
+  transactionHash: string,
+) => send<unknown>(transport, Rpc.TraceTransactionRequest(transactionHash));
+
+export const starknet_simulateTransactions = (
+  transport: Transport,
+  blockId: BlockId,
+  transactions: BroadcastedTxn[],
+  simulationFlags?: SimulationFlag[],
+) => send<unknown[]>(transport, Rpc.SimulateTransactionsRequest(blockId, transactions, simulationFlags));
+
+export const starknet_traceBlockTransactions = (
+  transport: Transport,
+  blockId: BlockId,
+) => send<unknown[]>(transport, Rpc.TraceBlockTransactionsRequest(blockId));
+
+// ── WebSocket API ─────────────────────────────────────────
+
+export const starknet_subscribeNewHeads = (
+  transport: Transport,
+  params?: NewHeadsSubscriptionParams,
+) => send<string>(transport, Rpc.SubscribeNewHeadsRequest(params));
+
+export const starknet_subscribeEvents = (
+  transport: Transport,
+  params?: EventsSubscriptionParams,
+) => send<string>(transport, Rpc.SubscribeEventsRequest(params));
+
+export const starknet_subscribeTransactionStatus = (
+  transport: Transport,
+  transactionHash: string,
+) => send<string>(transport, Rpc.SubscribeTransactionStatusRequest(transactionHash));
+
+export const starknet_subscribeNewTransactions = (
+  transport: Transport,
+  params?: PendingTransactionsSubscriptionParams,
+) => send<string>(transport, Rpc.SubscribeNewTransactionsRequest(params));
+
+export const starknet_subscribeNewTransactionReceipts = (
+  transport: Transport,
+  params?: TransactionReceiptsSubscriptionParams,
+) => send<string>(transport, Rpc.SubscribeNewTransactionReceiptsRequest(params));
+
+export const starknet_unsubscribe = (
+  transport: Transport,
+  subscriptionId: string,
+) => send<boolean>(transport, Rpc.UnsubscribeRequest(subscriptionId));
+
+// ── Re-exports ────────────────────────────────────────────
 
 export { RpcError } from "../errors.js";
-
-export const starknet_specVersion = wrapRpcMethod(
-  "starknet_specVersion",
-  Rpc.starknet_specVersion
-);
-export const starknet_getBlockWithTxHashes = wrapRpcMethod(
-  "starknet_getBlockWithTxHashes",
-  Rpc.starknet_getBlockWithTxHashes
-);
-export const starknet_getBlockWithTxs = wrapRpcMethod(
-  "starknet_getBlockWithTxs",
-  Rpc.starknet_getBlockWithTxs
-);
-export const starknet_getBlockWithReceipts = wrapRpcMethod(
-  "starknet_getBlockWithReceipts",
-  Rpc.starknet_getBlockWithReceipts
-);
-export const starknet_getStateUpdate = wrapRpcMethod(
-  "starknet_getStateUpdate",
-  Rpc.starknet_getStateUpdate
-);
-export const starknet_getStorageAt = wrapRpcMethod(
-  "starknet_getStorageAt",
-  Rpc.starknet_getStorageAt
-);
-export const starknet_getTransactionStatus = wrapRpcMethod(
-  "starknet_getTransactionStatus",
-  Rpc.starknet_getTransactionStatus
-);
-export const starknet_getMessagesStatus = wrapRpcMethod(
-  "starknet_getMessagesStatus",
-  Rpc.starknet_getMessagesStatus
-);
-export const starknet_getTransactionByHash = wrapRpcMethod(
-  "starknet_getTransactionByHash",
-  Rpc.starknet_getTransactionByHash
-);
-export const starknet_getTransactionByBlockIdAndIndex = wrapRpcMethod(
-  "starknet_getTransactionByBlockIdAndIndex",
-  Rpc.starknet_getTransactionByBlockIdAndIndex
-);
-export const starknet_getTransactionReceipt = wrapRpcMethod(
-  "starknet_getTransactionReceipt",
-  Rpc.starknet_getTransactionReceipt
-);
-export const starknet_getClass = wrapRpcMethod(
-  "starknet_getClass",
-  Rpc.starknet_getClass
-);
-export const starknet_getClassHashAt = wrapRpcMethod(
-  "starknet_getClassHashAt",
-  Rpc.starknet_getClassHashAt
-);
-export const starknet_getClassAt = wrapRpcMethod(
-  "starknet_getClassAt",
-  Rpc.starknet_getClassAt
-);
-export const starknet_getBlockTransactionCount = wrapRpcMethod(
-  "starknet_getBlockTransactionCount",
-  Rpc.starknet_getBlockTransactionCount
-);
-export const starknet_call = wrapRpcMethod("starknet_call", Rpc.starknet_call);
-export const starknet_estimateFee = wrapRpcMethod(
-  "starknet_estimateFee",
-  Rpc.starknet_estimateFee
-);
-export const starknet_estimateMessageFee = wrapRpcMethod(
-  "starknet_estimateMessageFee",
-  Rpc.starknet_estimateMessageFee
-);
-export const starknet_blockNumber = wrapRpcMethod(
-  "starknet_blockNumber",
-  Rpc.starknet_blockNumber
-);
-export const starknet_blockHashAndNumber = wrapRpcMethod(
-  "starknet_blockHashAndNumber",
-  Rpc.starknet_blockHashAndNumber
-);
-export const starknet_chainId = wrapRpcMethod("starknet_chainId", Rpc.starknet_chainId);
-export const starknet_syncing = wrapRpcMethod("starknet_syncing", Rpc.starknet_syncing);
-export const starknet_getEvents = wrapRpcMethod(
-  "starknet_getEvents",
-  Rpc.starknet_getEvents
-);
-export const starknet_getNonce = wrapRpcMethod("starknet_getNonce", Rpc.starknet_getNonce);
-export const starknet_getStorageProof = wrapRpcMethod(
-  "starknet_getStorageProof",
-  Rpc.starknet_getStorageProof
-);
-export const starknet_addInvokeTransaction = wrapRpcMethod(
-  "starknet_addInvokeTransaction",
-  Rpc.starknet_addInvokeTransaction
-);
-export const starknet_addDeclareTransaction = wrapRpcMethod(
-  "starknet_addDeclareTransaction",
-  Rpc.starknet_addDeclareTransaction
-);
-export const starknet_addDeployAccountTransaction = wrapRpcMethod(
-  "starknet_addDeployAccountTransaction",
-  Rpc.starknet_addDeployAccountTransaction
-);
-export const starknet_traceTransaction = wrapRpcMethod(
-  "starknet_traceTransaction",
-  Rpc.starknet_traceTransaction
-);
-export const starknet_simulateTransactions = wrapRpcMethod(
-  "starknet_simulateTransactions",
-  Rpc.starknet_simulateTransactions
-);
-export const starknet_traceBlockTransactions = wrapRpcMethod(
-  "starknet_traceBlockTransactions",
-  Rpc.starknet_traceBlockTransactions
-);
-export const starknet_subscribeNewHeads = wrapRpcMethod(
-  "starknet_subscribeNewHeads",
-  Rpc.starknet_subscribeNewHeads
-);
-export const starknet_subscribeEvents = wrapRpcMethod(
-  "starknet_subscribeEvents",
-  Rpc.starknet_subscribeEvents
-);
-export const starknet_subscribeTransactionStatus = wrapRpcMethod(
-  "starknet_subscribeTransactionStatus",
-  Rpc.starknet_subscribeTransactionStatus
-);
-export const starknet_subscribeNewTransactionReceipts = wrapRpcMethod(
-  "starknet_subscribeNewTransactionReceipts",
-  Rpc.starknet_subscribeNewTransactionReceipts
-);
-export const starknet_subscribeNewTransactions = wrapRpcMethod(
-  "starknet_subscribeNewTransactions",
-  Rpc.starknet_subscribeNewTransactions
-);
-export const starknet_unsubscribe = wrapRpcMethod(
-  "starknet_unsubscribe",
-  Rpc.starknet_unsubscribe
-);
 
 export type { BlockHashAndNumber } from "@kundera-sn/kundera-ts/jsonrpc";
 export type { EventsFilter } from "@kundera-sn/kundera-ts/jsonrpc";
@@ -225,5 +335,5 @@ export type {
   PendingTransactionsSubscriptionParams,
   TransactionReceiptsSubscriptionParams,
   TxnFinalityStatusWithoutL1,
-  ReceiptFinalityStatus
+  ReceiptFinalityStatus,
 } from "@kundera-sn/kundera-ts/jsonrpc";

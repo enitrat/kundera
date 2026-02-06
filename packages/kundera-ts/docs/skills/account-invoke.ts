@@ -5,12 +5,7 @@
  */
 
 import type { Transport } from '@kundera-sn/kundera-ts/transport';
-import {
-  starknet_chainId,
-  starknet_getNonce,
-  starknet_addInvokeTransaction,
-  starknet_estimateFee,
-} from '@kundera-sn/kundera-ts/jsonrpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { AddInvokeTransactionResult, BroadcastedInvokeTxn, FeeEstimate, SimulationFlag } from '@kundera-sn/kundera-ts/jsonrpc';
 import {
   computeInvokeV3Hash,
@@ -24,6 +19,13 @@ import {
   type SignatureArray,
 } from '@kundera-sn/kundera-ts/crypto';
 import { Felt252, type Felt252Input } from '@kundera-sn/kundera-ts';
+
+/** Send a request-builder result through a transport and unwrap the response. */
+async function send<T>(transport: Transport, req: { method: string; params?: unknown[] | Record<string, unknown> }): Promise<T> {
+  const response = await transport.request({ jsonrpc: '2.0', id: 1, method: req.method, params: req.params ?? [] });
+  if ('error' in response) throw new Error(response.error.message);
+  return response.result as T;
+}
 
 export type SignTransaction = (
   hash: Felt252Input,
@@ -61,8 +63,8 @@ export async function invoke(
   details?: UniversalDetails,
 ): Promise<AddInvokeTransactionResult> {
   const callsArray = Array.isArray(calls) ? calls : [calls];
-  const chainId = await starknet_chainId(options.transport);
-  const nonce = details?.nonce ?? BigInt(await starknet_getNonce(options.transport, options.address));
+  const chainId = await send<string>(options.transport, Rpc.ChainIdRequest());
+  const nonce = details?.nonce ?? BigInt(await send<string>(options.transport, Rpc.GetNonceRequest('pending', options.address)));
 
   const calldata = encodeExecuteCalldata(callsArray);
 
@@ -82,11 +84,11 @@ export async function invoke(
   const txHash = computeInvokeV3Hash(tx, chainId);
   const signature = await options.signTransaction(txHash);
 
-  return starknet_addInvokeTransaction(options.transport, {
+  return send<AddInvokeTransactionResult>(options.transport, Rpc.AddInvokeTransactionRequest({
     type: 'INVOKE',
     ...formatInvokeForRpc(tx),
     signature: signature.map((s) => Felt252(s).toHex()),
-  } as BroadcastedInvokeTxn);
+  } as BroadcastedInvokeTxn));
 }
 
 /**
@@ -98,7 +100,7 @@ export async function estimateInvokeFee(
   details?: UniversalDetails,
 ): Promise<FeeEstimate> {
   const callsArray = Array.isArray(calls) ? calls : [calls];
-  const nonce = details?.nonce ?? BigInt(await starknet_getNonce(options.transport, options.address));
+  const nonce = details?.nonce ?? BigInt(await send<string>(options.transport, Rpc.GetNonceRequest('pending', options.address)));
 
   const calldata = encodeExecuteCalldata(callsArray);
 
@@ -116,11 +118,13 @@ export async function estimateInvokeFee(
   };
 
   const simulationFlags: SimulationFlag[] = details?.skipValidate ? ['SKIP_VALIDATE'] : [];
-  const estimates = await starknet_estimateFee(
+  const estimates = await send<FeeEstimate[]>(
     options.transport,
-    [{ type: 'INVOKE', ...formatInvokeForRpc(tx), signature: [] } as unknown as BroadcastedInvokeTxn],
-    simulationFlags,
-    'pending',
+    Rpc.EstimateFeeRequest(
+      [{ type: 'INVOKE', ...formatInvokeForRpc(tx), signature: [] } as unknown as BroadcastedInvokeTxn],
+      simulationFlags,
+      'pending',
+    ),
   );
 
   const estimate = estimates[0];

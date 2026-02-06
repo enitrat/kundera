@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import * as Rpc from "../../src/jsonrpc/index";
+import { Rpc } from "../../src/jsonrpc/index";
 
 describe("docs/skills/http-provider", () => {
-  it("exposes JSON-RPC methods used by the provider skill", () => {
-    expect(typeof Rpc.starknet_chainId).toBe("function");
-    expect(typeof Rpc.starknet_blockNumber).toBe("function");
-    expect(typeof Rpc.starknet_call).toBe("function");
-    expect(typeof Rpc.starknet_addInvokeTransaction).toBe("function");
+  it("exposes JSON-RPC request builders used by the provider skill", () => {
+    expect(typeof Rpc.ChainIdRequest).toBe("function");
+    expect(typeof Rpc.BlockNumberRequest).toBe("function");
+    expect(typeof Rpc.CallRequest).toBe("function");
+    expect(typeof Rpc.AddInvokeTransactionRequest).toBe("function");
   });
 });
