@@ -146,6 +146,7 @@
     "starknet": "6.23.1",
     "tsup": "^8.0.0",
     "typescript": "^5.7.0",
+    "vite-tsconfig-paths": "^6.0.5",
     "vitest": "^4.0.0"
   },
   "optionalDependencies": {
