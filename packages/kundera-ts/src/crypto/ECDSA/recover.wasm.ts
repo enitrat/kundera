@@ -1,7 +1,12 @@
-import type { Felt252Type } from '../../primitives/Felt252/types.js';
+import type { Felt252Type } from "../../primitives/Felt252/types.js";
 
 type WasmLib = {
-  wasmRecover: (messageHash: Felt252Type, r: Felt252Type, s: Felt252Type, v: Felt252Type) => Felt252Type;
+	wasmRecover: (
+		messageHash: Felt252Type,
+		r: Felt252Type,
+		s: Felt252Type,
+		v: Felt252Type,
+	) => Felt252Type;
 };
 
 let wasmLib: WasmLib | null = null;
@@ -11,27 +16,27 @@ let wasmLib: WasmLib | null = null;
  * Must be called before using recoverSync.
  */
 export async function ensureLoaded(): Promise<WasmLib> {
-  if (!wasmLib) {
-    const wasm = await import('../../wasm-loader/index.js');
-    await wasm.loadWasmCrypto();
-    wasmLib = {
-      wasmRecover: wasm.wasmRecover,
-    };
-  }
-  return wasmLib;
+	if (!wasmLib) {
+		const wasm = await import("../../wasm-loader/index.js");
+		await wasm.loadWasmCrypto();
+		wasmLib = {
+			wasmRecover: wasm.wasmRecover,
+		};
+	}
+	return wasmLib;
 }
 
 /**
  * Recover public key from signature (async, loads WASM if needed)
  */
 export async function recover(
-  messageHash: Felt252Type,
-  r: Felt252Type,
-  s: Felt252Type,
-  v: Felt252Type
+	messageHash: Felt252Type,
+	r: Felt252Type,
+	s: Felt252Type,
+	v: Felt252Type,
 ): Promise<Felt252Type> {
-  const lib = await ensureLoaded();
-  return lib.wasmRecover(messageHash, r, s, v);
+	const lib = await ensureLoaded();
+	return lib.wasmRecover(messageHash, r, s, v);
 }
 
 /**
@@ -39,20 +44,20 @@ export async function recover(
  * @throws Error if WASM not loaded
  */
 export function recoverSync(
-  messageHash: Felt252Type,
-  r: Felt252Type,
-  s: Felt252Type,
-  v: Felt252Type
+	messageHash: Felt252Type,
+	r: Felt252Type,
+	s: Felt252Type,
+	v: Felt252Type,
 ): Felt252Type {
-  if (!wasmLib) {
-    throw new Error('WASM not loaded - call ensureLoaded() first');
-  }
-  return wasmLib.wasmRecover(messageHash, r, s, v);
+	if (!wasmLib) {
+		throw new Error("WASM not loaded - call ensureLoaded() first");
+	}
+	return wasmLib.wasmRecover(messageHash, r, s, v);
 }
 
 /**
  * Check if WASM is loaded
  */
 export function isLoaded(): boolean {
-  return wasmLib !== null;
+	return wasmLib !== null;
 }

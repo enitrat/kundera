@@ -4,7 +4,7 @@
  * Encode data availability modes into a single felt.
  */
 
-import type { DataAvailabilityMode } from '../account-types.js';
+import type { DataAvailabilityMode } from "../account-types.js";
 
 /**
  * Encode data availability modes into a single felt
@@ -14,8 +14,8 @@ import type { DataAvailabilityMode } from '../account-types.js';
  * (both currently 0 for L1 mode)
  */
 export function encodeDAModes(
-  nonceDAMode: DataAvailabilityMode,
-  feeDAMode: DataAvailabilityMode
+	nonceDAMode: DataAvailabilityMode,
+	feeDAMode: DataAvailabilityMode,
 ): bigint {
-  return (BigInt(nonceDAMode) << 32n) | BigInt(feeDAMode);
+	return (BigInt(nonceDAMode) << 32n) | BigInt(feeDAMode);
 }

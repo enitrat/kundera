@@ -11,6 +11,14 @@ export const method = "starknet_getStorageProof";
  * @param {{ contract_address: string; storage_keys: string[] }[]} contractStorageKeys
  * @returns {RequestArguments}
  */
-export function GetStorageProofRequest(blockId, classHashes, contractAddresses, contractStorageKeys) {
-  return { method, params: [blockId, classHashes, contractAddresses, contractStorageKeys] };
+export function GetStorageProofRequest(
+	blockId,
+	classHashes,
+	contractAddresses,
+	contractStorageKeys,
+) {
+	return {
+		method,
+		params: [blockId, classHashes, contractAddresses, contractStorageKeys],
+	};
 }

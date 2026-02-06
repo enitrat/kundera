@@ -2,16 +2,18 @@
  * Crypto Helper Utilities
  */
 
-import { getNative, getWasm } from './state.js';
+import { getNative, getWasm } from "./state.js";
 
 /**
  * Error thrown when crypto operations are attempted without initialization
  */
 export class CryptoNotInitializedError extends Error {
-  constructor() {
-    super('Crypto backend not initialized - call loadWasmCrypto() first or use Bun runtime');
-    this.name = 'CryptoNotInitializedError';
-  }
+	constructor() {
+		super(
+			"Crypto backend not initialized - call loadWasmCrypto() first or use Bun runtime",
+		);
+		this.name = "CryptoNotInitializedError";
+	}
 }
 
 /**
@@ -25,16 +27,16 @@ export class CryptoNotInitializedError extends Error {
  * });
  */
 export function withCrypto<Args extends any[], R>(operation: {
-  native: (impl: NonNullable<ReturnType<typeof getNative>>, ...args: Args) => R;
-  wasm: (impl: NonNullable<ReturnType<typeof getWasm>>, ...args: Args) => R;
+	native: (impl: NonNullable<ReturnType<typeof getNative>>, ...args: Args) => R;
+	wasm: (impl: NonNullable<ReturnType<typeof getWasm>>, ...args: Args) => R;
 }): (...args: Args) => R {
-  return (...args: Args) => {
-    const n = getNative();
-    if (n) return operation.native(n, ...args);
+	return (...args: Args) => {
+		const n = getNative();
+		if (n) return operation.native(n, ...args);
 
-    const w = getWasm();
-    if (w) return operation.wasm(w, ...args);
+		const w = getWasm();
+		if (w) return operation.wasm(w, ...args);
 
-    throw new CryptoNotInitializedError();
-  };
+		throw new CryptoNotInitializedError();
+	};
 }

@@ -4,8 +4,8 @@
  * Namespace object for Pedersen hash operations.
  */
 
-import { pedersenHash } from '../hash.js';
+import { pedersenHash } from "../hash.js";
 
 export const Pedersen = {
-  hash: pedersenHash,
+	hash: pedersenHash,
 } as const;

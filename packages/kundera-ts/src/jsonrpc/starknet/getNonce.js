@@ -10,5 +10,5 @@ export const method = "starknet_getNonce";
  * @returns {RequestArguments}
  */
 export function GetNonceRequest(blockId, contractAddress) {
-  return { method, params: [blockId, contractAddress] };
+	return { method, params: [blockId, contractAddress] };
 }

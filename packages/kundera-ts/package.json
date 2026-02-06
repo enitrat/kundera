@@ -48,10 +48,45 @@
       "import": "./dist/jsonrpc/index.js",
       "require": "./dist/jsonrpc/index.cjs"
     },
-    "./rpc": {
-      "types": "./dist/jsonrpc/rpc/index.d.ts",
-      "import": "./dist/jsonrpc/rpc/index.js",
-      "require": "./dist/jsonrpc/rpc/index.cjs"
+    "./BlockHeader": {
+      "types": "./dist/primitives/BlockHeader/index.d.ts",
+      "import": "./dist/primitives/BlockHeader/index.js",
+      "require": "./dist/primitives/BlockHeader/index.cjs"
+    },
+    "./Block": {
+      "types": "./dist/primitives/Block/index.d.ts",
+      "import": "./dist/primitives/Block/index.js",
+      "require": "./dist/primitives/Block/index.cjs"
+    },
+    "./Transaction": {
+      "types": "./dist/primitives/Transaction/index.d.ts",
+      "import": "./dist/primitives/Transaction/index.js",
+      "require": "./dist/primitives/Transaction/index.cjs"
+    },
+    "./Receipt": {
+      "types": "./dist/primitives/Receipt/index.d.ts",
+      "import": "./dist/primitives/Receipt/index.js",
+      "require": "./dist/primitives/Receipt/index.cjs"
+    },
+    "./Event": {
+      "types": "./dist/primitives/Event/index.d.ts",
+      "import": "./dist/primitives/Event/index.js",
+      "require": "./dist/primitives/Event/index.cjs"
+    },
+    "./StateUpdate": {
+      "types": "./dist/primitives/StateUpdate/index.d.ts",
+      "import": "./dist/primitives/StateUpdate/index.js",
+      "require": "./dist/primitives/StateUpdate/index.cjs"
+    },
+    "./FeeEstimate": {
+      "types": "./dist/primitives/FeeEstimate/index.d.ts",
+      "import": "./dist/primitives/FeeEstimate/index.js",
+      "require": "./dist/primitives/FeeEstimate/index.cjs"
+    },
+    "./Trace": {
+      "types": "./dist/primitives/Trace/index.d.ts",
+      "import": "./dist/primitives/Trace/index.js",
+      "require": "./dist/primitives/Trace/index.cjs"
     },
     "./abi": {
       "types": "./dist/abi/index.d.ts",

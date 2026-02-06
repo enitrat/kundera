@@ -8,5 +8,5 @@ export const method = "starknet_unsubscribe";
  * @returns {RequestArguments}
  */
 export function UnsubscribeRequest(subscriptionId) {
-  return { method, params: [subscriptionId] };
+	return { method, params: [subscriptionId] };
 }

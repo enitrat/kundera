@@ -1,4 +1,4 @@
-import { keccak_256 } from '@noble/hashes/sha3.js';
+import { keccak_256 } from "@noble/hashes/sha3.js";
 
 /**
  * Keccak256 hash (pure JS)
@@ -6,10 +6,9 @@ import { keccak_256 } from '@noble/hashes/sha3.js';
  * @returns {import('./types.js').Keccak256Hash} 32-byte hash
  */
 export function hash(data) {
-  const bytes = typeof data === 'string'
-    ? new TextEncoder().encode(data)
-    : data;
-  return /** @type {any} */ (keccak_256(bytes));
+	const bytes =
+		typeof data === "string" ? new TextEncoder().encode(data) : data;
+	return /** @type {any} */ (keccak_256(bytes));
 }
 
 /**
@@ -18,6 +17,11 @@ export function hash(data) {
  * @returns {string} Hex string with 0x prefix
  */
 export function hashHex(data) {
-  const h = hash(data);
-  return '0x' + Array.from(h).map(b => b.toString(16).padStart(2, '0')).join('');
+	const h = hash(data);
+	return (
+		"0x" +
+		Array.from(h)
+			.map((b) => b.toString(16).padStart(2, "0"))
+			.join("")
+	);
 }

@@ -14,15 +14,15 @@ type Brand<T, B extends string> = T & { readonly [__brand]: B };
  * - pendingWordLen: Number of bytes in pendingWord (0-30)
  */
 export interface ByteArrayData {
-  /** Full 31-byte words, each stored as bigint */
-  readonly data: readonly bigint[];
-  /** Partial word (< 31 bytes) as bigint */
-  readonly pendingWord: bigint;
-  /** Number of bytes in pendingWord (0-30) */
-  readonly pendingWordLen: number;
+	/** Full 31-byte words, each stored as bigint */
+	readonly data: readonly bigint[];
+	/** Partial word (< 31 bytes) as bigint */
+	readonly pendingWord: bigint;
+	/** Number of bytes in pendingWord (0-30) */
+	readonly pendingWordLen: number;
 }
 
-export type ByteArrayType = Brand<ByteArrayData, 'ByteArray'>;
+export type ByteArrayType = Brand<ByteArrayData, "ByteArray">;
 
 /**
  * Input types that can be converted to ByteArray

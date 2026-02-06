@@ -9,5 +9,5 @@ export const method = "starknet_getEvents";
  * @returns {RequestArguments}
  */
 export function GetEventsRequest(filter) {
-  return { method, params: [filter] };
+	return { method, params: [filter] };
 }

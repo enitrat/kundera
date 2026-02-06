@@ -7,5 +7,5 @@ export const method = "starknet_syncing";
  * @returns {RequestArguments}
  */
 export function SyncingRequest() {
-  return { method, params: [] };
+	return { method, params: [] };
 }

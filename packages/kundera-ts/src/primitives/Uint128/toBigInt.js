@@ -5,5 +5,5 @@
  * @returns {bigint} bigint value
  */
 export function toBigInt(uint) {
-  return /** @type {bigint} */ (uint);
+	return /** @type {bigint} */ (uint);
 }

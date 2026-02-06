@@ -1,5 +1,5 @@
-import { Felt252 } from '../Felt252/index.js';
-import { LOW_MASK } from './constants.js';
+import { Felt252 } from "../Felt252/index.js";
+import { LOW_MASK } from "./constants.js";
 
 /**
  * Convert Uint256 to two Felt252 values [low, high]
@@ -14,9 +14,9 @@ import { LOW_MASK } from './constants.js';
  * @returns {[import('../Felt252/types.js').Felt252Type, import('../Felt252/types.js').Felt252Type]} Tuple of [low, high] Felt252 values
  */
 export function toFelts(uint) {
-  const value = /** @type {bigint} */ (uint);
-  const low = value & LOW_MASK;
-  const high = value >> 128n;
+	const value = /** @type {bigint} */ (uint);
+	const low = value & LOW_MASK;
+	const high = value >> 128n;
 
-  return [Felt252.fromBigInt(low), Felt252.fromBigInt(high)];
+	return [Felt252.fromBigInt(low), Felt252.fromBigInt(high)];
 }

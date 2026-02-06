@@ -9,4 +9,4 @@ type Brand<T, B extends string> = T & { readonly [__brand]: B };
  * CRITICAL: In Cairo, u256 is serialized as TWO felt252 values: [low, high]
  * where value = low + high * 2^128
  */
-export type Uint256Type = Brand<bigint, 'Uint256'>;
+export type Uint256Type = Brand<bigint, "Uint256">;

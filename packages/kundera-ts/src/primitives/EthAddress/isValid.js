@@ -1,5 +1,5 @@
-import { Felt252 } from '../Felt252/index.js';
-import { MAX_ETH_ADDRESS } from './constants.js';
+import { Felt252 } from "../Felt252/index.js";
+import { MAX_ETH_ADDRESS } from "./constants.js";
 
 /**
  * Check if a value is a valid EthAddress (< 2^160)
@@ -7,5 +7,5 @@ import { MAX_ETH_ADDRESS } from './constants.js';
  * @returns {boolean}
  */
 export function isValid(felt) {
-  return Felt252(felt).toBigInt() < MAX_ETH_ADDRESS;
+	return Felt252(felt).toBigInt() < MAX_ETH_ADDRESS;
 }

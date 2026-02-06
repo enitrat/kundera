@@ -1,5 +1,5 @@
-import { PRIME } from './constants.js';
-import { Felt252 } from '../Felt252/index.js';
+import { PRIME } from "./constants.js";
+import { Felt252 } from "../Felt252/index.js";
 
 /**
  * Convert an Int128 to a Felt252 using Cairo field encoding.
@@ -17,13 +17,13 @@ import { Felt252 } from '../Felt252/index.js';
  * @returns {import('../Felt252/index.js').Felt252Type} The Felt252 representation for Cairo
  */
 export function toFelt(value) {
-  const bigintValue = /** @type {bigint} */ (value);
+	const bigintValue = /** @type {bigint} */ (value);
 
-  if (bigintValue >= 0n) {
-    return Felt252.fromBigInt(bigintValue);
-  }
+	if (bigintValue >= 0n) {
+		return Felt252.fromBigInt(bigintValue);
+	}
 
-  // Negative: encode as PRIME + value
-  // e.g., -1 becomes PRIME - 1
-  return Felt252.fromBigInt(PRIME + bigintValue);
+	// Negative: encode as PRIME + value
+	// e.g., -1 becomes PRIME - 1
+	return Felt252.fromBigInt(PRIME + bigintValue);
 }

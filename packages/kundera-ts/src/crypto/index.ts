@@ -12,27 +12,36 @@
  * For native/wasm, use explicit imports.
  */
 
-import type { Felt252Type } from '../primitives/index.js';
+import type { Felt252Type } from "../primitives/index.js";
 
 // ============ Pure JS Hash Functions (Default) ============
 
 // Re-export from new modules
-export { Keccak256 } from './Keccak256/index.js';
-export { hash as keccak256, hashHex as keccak256Hex } from './Keccak256/index.js';
-export type { Keccak256Hash } from './Keccak256/index.js';
+export { Keccak256 } from "./Keccak256/index.js";
+export {
+	hash as keccak256,
+	hashHex as keccak256Hex,
+} from "./Keccak256/index.js";
+export type { Keccak256Hash } from "./Keccak256/index.js";
 
-export { Pedersen } from './Pedersen/index.js';
-export { hash as pedersenHash, hashMany as pedersenHashMany } from './Pedersen/index.js';
-export type { PedersenHash } from './Pedersen/index.js';
+export { Pedersen } from "./Pedersen/index.js";
+export {
+	hash as pedersenHash,
+	hashMany as pedersenHashMany,
+} from "./Pedersen/index.js";
+export type { PedersenHash } from "./Pedersen/index.js";
 
-export { Poseidon } from './Poseidon/index.js';
-export { hash as poseidonHash, hashMany as poseidonHashMany } from './Poseidon/index.js';
-export type { PoseidonHash } from './Poseidon/index.js';
+export { Poseidon } from "./Poseidon/index.js";
+export {
+	hash as poseidonHash,
+	hashMany as poseidonHashMany,
+} from "./Poseidon/index.js";
+export type { PoseidonHash } from "./Poseidon/index.js";
 
 // ============ Starknet Keccak (truncated to 250 bits) ============
 
-import { keccak_256 } from '@noble/hashes/sha3.js';
-import { Felt252 } from '../primitives/index.js';
+import { keccak_256 } from "@noble/hashes/sha3.js";
+import { Felt252 } from "../primitives/index.js";
 
 /** Mask for 250 bits (Starknet selector) */
 const MASK_250 = (1n << 250n) - 1n;
@@ -44,85 +53,94 @@ const MASK_250 = (1n << 250n) - 1n;
  * Pure JS implementation using @noble/hashes.
  */
 export function snKeccak(data: Uint8Array | string): Felt252Type {
-  const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
-  const hash = keccak_256(bytes);
-  // Convert to bigint and mask to 250 bits
-  let result = 0n;
-  for (let i = 0; i < hash.length; i++) {
-    result = (result << 8n) | BigInt(hash[i]!);
-  }
-  return Felt252(result & MASK_250);
+	const bytes =
+		typeof data === "string" ? new TextEncoder().encode(data) : data;
+	const hash = keccak_256(bytes);
+	// Convert to bigint and mask to 250 bits
+	let result = 0n;
+	for (let i = 0; i < hash.length; i++) {
+		result = (result << 8n) | BigInt(hash[i]!);
+	}
+	return Felt252(result & MASK_250);
 }
 
 // ============ Felt Arithmetic ============
 
 export {
-  feltAdd,
-  feltSub,
-  feltMul,
-  feltDiv,
-  feltNeg,
-  feltInverse,
-  feltPow,
-  feltSqrt,
-} from './arithmetic.js';
+	feltAdd,
+	feltSub,
+	feltMul,
+	feltDiv,
+	feltNeg,
+	feltInverse,
+	feltPow,
+	feltSqrt,
+} from "./arithmetic.js";
 
 // ============ ECDSA ============
 
-export { ECDSA } from './ECDSA/index.js';
-export { sign, verify, getPublicKey, recover } from './ECDSA/index.js';
-export type { Signature } from './ECDSA/index.js';
+export { ECDSA } from "./ECDSA/index.js";
+export { sign, verify, getPublicKey, recover } from "./ECDSA/index.js";
+export type { Signature } from "./ECDSA/index.js";
 
 // ============ Signer ============
 
-export { signRaw, signTypedData, hashTypedData } from './signer/index.js';
+export { signRaw, signTypedData, hashTypedData } from "./signer/index.js";
 
 // ============ Backend Status ============
 
 export {
-  loadWasmCrypto,
-  isNativeAvailable,
-  isWasmAvailable,
-  isWasmLoaded,
-} from './availability.js';
+	loadWasmCrypto,
+	isNativeAvailable,
+	isWasmAvailable,
+	isWasmLoaded,
+} from "./availability.js";
 
 // ============ StarkCurve Namespace ============
 
-export { StarkCurve } from './namespaces/StarkCurve.js';
+export { StarkCurve } from "./namespaces/StarkCurve.js";
 
 // ============ Account Hash Functions ============
 
 export {
-  hashTipAndResourceBounds,
-  encodeDAModes,
-  hashCalldata,
-  computeInvokeV3Hash,
-  computeDeclareV3Hash,
-  computeDeployAccountV3Hash,
-  computeContractAddress,
-  computeSelector,
-  EXECUTE_SELECTOR,
-} from './account/index.js';
+	hashTipAndResourceBounds,
+	encodeDAModes,
+	hashCalldata,
+	computeInvokeV3Hash,
+	computeDeclareV3Hash,
+	computeDeployAccountV3Hash,
+	computeContractAddress,
+	computeSelector,
+	EXECUTE_SELECTOR,
+} from "./account/index.js";
 
 // Re-export account types and constants
-export * from './account-types.js';
+export * from "./account-types.js";
 
 // ============ Extended Felt Namespace ============
 
-import { Felt as FeltPrimitives } from '../primitives/index.js';
-import { feltAdd, feltSub, feltMul, feltDiv, feltNeg, feltInverse, feltPow, feltSqrt } from './arithmetic.js';
+import { Felt as FeltPrimitives } from "../primitives/index.js";
+import {
+	feltAdd,
+	feltSub,
+	feltMul,
+	feltDiv,
+	feltNeg,
+	feltInverse,
+	feltPow,
+	feltSqrt,
+} from "./arithmetic.js";
 
-const FeltBase = ((
-  value: Parameters<typeof FeltPrimitives>[0],
-) => FeltPrimitives(value)) as typeof FeltPrimitives;
+const FeltBase = ((value: Parameters<typeof FeltPrimitives>[0]) =>
+	FeltPrimitives(value)) as typeof FeltPrimitives;
 
 export const Felt = Object.assign(FeltBase, FeltPrimitives, {
-  add: feltAdd,
-  sub: feltSub,
-  mul: feltMul,
-  div: feltDiv,
-  neg: feltNeg,
-  inverse: feltInverse,
-  pow: feltPow,
-  sqrt: feltSqrt,
+	add: feltAdd,
+	sub: feltSub,
+	mul: feltMul,
+	div: feltDiv,
+	neg: feltNeg,
+	inverse: feltInverse,
+	pow: feltPow,
+	sqrt: feltSqrt,
 } as const);

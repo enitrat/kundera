@@ -9,5 +9,5 @@ export const method = "starknet_addInvokeTransaction";
  * @returns {RequestArguments}
  */
 export function AddInvokeTransactionRequest(transaction) {
-  return { method, params: [transaction] };
+	return { method, params: [transaction] };
 }

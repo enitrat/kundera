@@ -8,5 +8,5 @@ export const method = "starknet_subscribeTransactionStatus";
  * @returns {RequestArguments}
  */
 export function SubscribeTransactionStatusRequest(transactionHash) {
-  return { method, params: [transactionHash] };
+	return { method, params: [transactionHash] };
 }

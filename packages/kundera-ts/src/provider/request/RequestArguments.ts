@@ -6,12 +6,16 @@
  * @module provider/request/RequestArguments
  */
 
-import type { RpcMethodNames, RpcMethodParameters, RpcSchema } from '../RpcSchema.js';
+import type {
+	RpcMethodNames,
+	RpcMethodParameters,
+	RpcSchema,
+} from "../RpcSchema.js";
 
 export interface RequestArguments<
-  TRpcSchema extends RpcSchema,
-  TMethod extends RpcMethodNames<TRpcSchema> = RpcMethodNames<TRpcSchema>,
+	TRpcSchema extends RpcSchema,
+	TMethod extends RpcMethodNames<TRpcSchema> = RpcMethodNames<TRpcSchema>,
 > {
-  readonly method: TMethod;
-  readonly params?: RpcMethodParameters<TRpcSchema, TMethod>;
+	readonly method: TMethod;
+	readonly params?: RpcMethodParameters<TRpcSchema, TMethod>;
 }

@@ -8,11 +8,11 @@
  * @returns {string} Hexadecimal string (e.g., "0xff" or "-0x1")
  */
 export function toHex(value) {
-  const bigintValue = /** @type {bigint} */ (value);
+	const bigintValue = /** @type {bigint} */ (value);
 
-  if (bigintValue < 0n) {
-    return '-0x' + (-bigintValue).toString(16);
-  }
+	if (bigintValue < 0n) {
+		return "-0x" + (-bigintValue).toString(16);
+	}
 
-  return '0x' + bigintValue.toString(16);
+	return "0x" + bigintValue.toString(16);
 }

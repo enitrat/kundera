@@ -9,15 +9,15 @@ export const method = "starknet_subscribeEvents";
  * @returns {RequestArguments}
  */
 export function SubscribeEventsRequest(params) {
-  /** @type {unknown[]} */
-  const requestParams = [];
-  if (params) {
-    requestParams.push(params.from_address ?? null);
-    requestParams.push(params.keys ?? null);
-    requestParams.push(params.block_id ?? null);
-    if (params.finality_status !== undefined) {
-      requestParams.push(params.finality_status);
-    }
-  }
-  return { method, params: requestParams };
+	/** @type {unknown[]} */
+	const requestParams = [];
+	if (params) {
+		requestParams.push(params.from_address ?? null);
+		requestParams.push(params.keys ?? null);
+		requestParams.push(params.block_id ?? null);
+		if (params.finality_status !== undefined) {
+			requestParams.push(params.finality_status);
+		}
+	}
+	return { method, params: requestParams };
 }

@@ -11,29 +11,29 @@
  * Base RPC schema type
  */
 export type RpcSchema = readonly {
-  Method: string;
-  Parameters?: unknown;
-  ReturnType: unknown;
+	Method: string;
+	Parameters?: unknown;
+	ReturnType: unknown;
 }[];
 
 /**
  * Extract method names from schema
  */
 export type RpcMethodNames<TSchema extends RpcSchema> =
-  TSchema[number]['Method'];
+	TSchema[number]["Method"];
 
 /**
  * Extract parameters for specific method
  */
 export type RpcMethodParameters<
-  TSchema extends RpcSchema,
-  TMethod extends RpcMethodNames<TSchema>,
-> = Extract<TSchema[number], { Method: TMethod }>['Parameters'];
+	TSchema extends RpcSchema,
+	TMethod extends RpcMethodNames<TSchema>,
+> = Extract<TSchema[number], { Method: TMethod }>["Parameters"];
 
 /**
  * Extract return type for specific method
  */
 export type RpcMethodReturnType<
-  TSchema extends RpcSchema,
-  TMethod extends RpcMethodNames<TSchema>,
-> = Extract<TSchema[number], { Method: TMethod }>['ReturnType'];
+	TSchema extends RpcSchema,
+	TMethod extends RpcMethodNames<TSchema>,
+> = Extract<TSchema[number], { Method: TMethod }>["ReturnType"];

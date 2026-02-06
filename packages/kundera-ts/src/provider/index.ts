@@ -7,31 +7,36 @@
  * @module provider
  */
 
-export type { Provider } from './Provider.js';
-export type { TypedProvider, StarknetProvider } from './TypedProvider.js';
+export type { Provider } from "./Provider.js";
+export type { TypedProvider, StarknetProvider } from "./TypedProvider.js";
 
 export type {
-  ProviderEvent,
-  ProviderEventMap,
-  ProviderEvents,
-  ProviderConnectInfo,
-  ProviderMessage,
-  RequestArguments,
-  RequestOptions,
-  RpcError,
-  Response,
-} from './types.js';
+	ProviderEvent,
+	ProviderEventMap,
+	ProviderEvents,
+	ProviderConnectInfo,
+	ProviderMessage,
+	RequestArguments,
+	RequestOptions,
+	RpcError,
+	Response,
+} from "./types.js";
 
-export type { RpcSchema, RpcMethodNames, RpcMethodParameters, RpcMethodReturnType } from './RpcSchema.js';
+export type {
+	RpcSchema,
+	RpcMethodNames,
+	RpcMethodParameters,
+	RpcMethodReturnType,
+} from "./RpcSchema.js";
 
-export type { RequestFn } from './request/RequestFn.js';
-export type { RequestOptions as ProviderRequestOptions } from './request/RequestOptions.js';
-export type { RequestArguments as ProviderRequestArguments } from './request/RequestArguments.js';
+export type { RequestFn } from "./request/RequestFn.js";
+export type { RequestOptions as ProviderRequestOptions } from "./request/RequestOptions.js";
+export type { RequestArguments as ProviderRequestArguments } from "./request/RequestArguments.js";
 
-export type { StarknetRpcSchema } from './schemas/index.js';
+export type { StarknetRpcSchema } from "./schemas/index.js";
 
-export type { HttpProviderOptions } from './HttpProvider.js';
-export { HttpProvider } from './HttpProvider.js';
+export type { HttpProviderOptions } from "./HttpProvider.js";
+export { HttpProvider } from "./HttpProvider.js";
 
-export type { WebSocketProviderOptions } from './WebSocketProvider.js';
-export { WebSocketProvider } from './WebSocketProvider.js';
+export type { WebSocketProviderOptions } from "./WebSocketProvider.js";
+export { WebSocketProvider } from "./WebSocketProvider.js";

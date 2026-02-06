@@ -8,5 +8,5 @@ export const method = "starknet_getTransactionReceipt";
  * @returns {RequestArguments}
  */
 export function GetTransactionReceiptRequest(transactionHash) {
-  return { method, params: [transactionHash] };
+	return { method, params: [transactionHash] };
 }

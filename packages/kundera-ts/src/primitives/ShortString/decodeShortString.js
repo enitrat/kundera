@@ -11,25 +11,25 @@
  * ```
  */
 export function decodeShortString(felt) {
-  /** @type {bigint} */
-  let value;
-  if (typeof felt === 'bigint') {
-    value = felt;
-  } else if (typeof felt === 'string') {
-    value = BigInt(felt.startsWith('0x') ? felt : '0x' + felt);
-  } else {
-    value = felt.toBigInt();
-  }
+	/** @type {bigint} */
+	let value;
+	if (typeof felt === "bigint") {
+		value = felt;
+	} else if (typeof felt === "string") {
+		value = BigInt(felt.startsWith("0x") ? felt : "0x" + felt);
+	} else {
+		value = felt.toBigInt();
+	}
 
-  if (value === 0n) return '';
+	if (value === 0n) return "";
 
-  let str = '';
-  while (value > 0n) {
-    const charCode = Number(value & 0xffn);
-    if (charCode !== 0) {
-      str = String.fromCharCode(charCode) + str;
-    }
-    value >>= 8n;
-  }
-  return str;
+	let str = "";
+	while (value > 0n) {
+		const charCode = Number(value & 0xffn);
+		if (charCode !== 0) {
+			str = String.fromCharCode(charCode) + str;
+		}
+		value >>= 8n;
+	}
+	return str;
 }

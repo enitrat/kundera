@@ -45,23 +45,33 @@ import * as _unsubscribe from "./unsubscribe.js";
 // Read API
 export const SpecVersionRequest = _specVersion.SpecVersionRequest;
 export const BlockNumberRequest = _blockNumber.BlockNumberRequest;
-export const BlockHashAndNumberRequest = _blockHashAndNumber.BlockHashAndNumberRequest;
+export const BlockHashAndNumberRequest =
+	_blockHashAndNumber.BlockHashAndNumberRequest;
 export const ChainIdRequest = _chainId.ChainIdRequest;
 export const SyncingRequest = _syncing.SyncingRequest;
 export const CallRequest = _call.CallRequest;
 export const EstimateFeeRequest = _estimateFee.EstimateFeeRequest;
-export const EstimateMessageFeeRequest = _estimateMessageFee.EstimateMessageFeeRequest;
-export const GetBlockWithTxHashesRequest = _getBlockWithTxHashes.GetBlockWithTxHashesRequest;
+export const EstimateMessageFeeRequest =
+	_estimateMessageFee.EstimateMessageFeeRequest;
+export const GetBlockWithTxHashesRequest =
+	_getBlockWithTxHashes.GetBlockWithTxHashesRequest;
 export const GetBlockWithTxsRequest = _getBlockWithTxs.GetBlockWithTxsRequest;
-export const GetBlockWithReceiptsRequest = _getBlockWithReceipts.GetBlockWithReceiptsRequest;
-export const GetBlockTransactionCountRequest = _getBlockTransactionCount.GetBlockTransactionCountRequest;
+export const GetBlockWithReceiptsRequest =
+	_getBlockWithReceipts.GetBlockWithReceiptsRequest;
+export const GetBlockTransactionCountRequest =
+	_getBlockTransactionCount.GetBlockTransactionCountRequest;
 export const GetStateUpdateRequest = _getStateUpdate.GetStateUpdateRequest;
 export const GetStorageAtRequest = _getStorageAt.GetStorageAtRequest;
-export const GetTransactionStatusRequest = _getTransactionStatus.GetTransactionStatusRequest;
-export const GetMessagesStatusRequest = _getMessagesStatus.GetMessagesStatusRequest;
-export const GetTransactionByHashRequest = _getTransactionByHash.GetTransactionByHashRequest;
-export const GetTransactionByBlockIdAndIndexRequest = _getTransactionByBlockIdAndIndex.GetTransactionByBlockIdAndIndexRequest;
-export const GetTransactionReceiptRequest = _getTransactionReceipt.GetTransactionReceiptRequest;
+export const GetTransactionStatusRequest =
+	_getTransactionStatus.GetTransactionStatusRequest;
+export const GetMessagesStatusRequest =
+	_getMessagesStatus.GetMessagesStatusRequest;
+export const GetTransactionByHashRequest =
+	_getTransactionByHash.GetTransactionByHashRequest;
+export const GetTransactionByBlockIdAndIndexRequest =
+	_getTransactionByBlockIdAndIndex.GetTransactionByBlockIdAndIndexRequest;
+export const GetTransactionReceiptRequest =
+	_getTransactionReceipt.GetTransactionReceiptRequest;
 export const GetClassRequest = _getClass.GetClassRequest;
 export const GetClassHashAtRequest = _getClassHashAt.GetClassHashAtRequest;
 export const GetClassAtRequest = _getClassAt.GetClassAtRequest;
@@ -70,19 +80,29 @@ export const GetNonceRequest = _getNonce.GetNonceRequest;
 export const GetStorageProofRequest = _getStorageProof.GetStorageProofRequest;
 
 // Write API
-export const AddInvokeTransactionRequest = _addInvokeTransaction.AddInvokeTransactionRequest;
-export const AddDeclareTransactionRequest = _addDeclareTransaction.AddDeclareTransactionRequest;
-export const AddDeployAccountTransactionRequest = _addDeployAccountTransaction.AddDeployAccountTransactionRequest;
+export const AddInvokeTransactionRequest =
+	_addInvokeTransaction.AddInvokeTransactionRequest;
+export const AddDeclareTransactionRequest =
+	_addDeclareTransaction.AddDeclareTransactionRequest;
+export const AddDeployAccountTransactionRequest =
+	_addDeployAccountTransaction.AddDeployAccountTransactionRequest;
 
 // Trace API
-export const TraceTransactionRequest = _traceTransaction.TraceTransactionRequest;
-export const SimulateTransactionsRequest = _simulateTransactions.SimulateTransactionsRequest;
-export const TraceBlockTransactionsRequest = _traceBlockTransactions.TraceBlockTransactionsRequest;
+export const TraceTransactionRequest =
+	_traceTransaction.TraceTransactionRequest;
+export const SimulateTransactionsRequest =
+	_simulateTransactions.SimulateTransactionsRequest;
+export const TraceBlockTransactionsRequest =
+	_traceBlockTransactions.TraceBlockTransactionsRequest;
 
 // WebSocket API
-export const SubscribeNewHeadsRequest = _subscribeNewHeads.SubscribeNewHeadsRequest;
+export const SubscribeNewHeadsRequest =
+	_subscribeNewHeads.SubscribeNewHeadsRequest;
 export const SubscribeEventsRequest = _subscribeEvents.SubscribeEventsRequest;
-export const SubscribeTransactionStatusRequest = _subscribeTransactionStatus.SubscribeTransactionStatusRequest;
-export const SubscribeNewTransactionsRequest = _subscribeNewTransactions.SubscribeNewTransactionsRequest;
-export const SubscribeNewTransactionReceiptsRequest = _subscribeNewTransactionReceipts.SubscribeNewTransactionReceiptsRequest;
+export const SubscribeTransactionStatusRequest =
+	_subscribeTransactionStatus.SubscribeTransactionStatusRequest;
+export const SubscribeNewTransactionsRequest =
+	_subscribeNewTransactions.SubscribeNewTransactionsRequest;
+export const SubscribeNewTransactionReceiptsRequest =
+	_subscribeNewTransactionReceipts.SubscribeNewTransactionReceiptsRequest;
 export const UnsubscribeRequest = _unsubscribe.UnsubscribeRequest;

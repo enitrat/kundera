@@ -1,4 +1,4 @@
-import { BYTES_PER_WORD } from './constants.js';
+import { BYTES_PER_WORD } from "./constants.js";
 
 /**
  * Get the total byte length of a ByteArray
@@ -7,5 +7,5 @@ import { BYTES_PER_WORD } from './constants.js';
  * @returns {number}
  */
 export function length(byteArray) {
-  return byteArray.data.length * BYTES_PER_WORD + byteArray.pendingWordLen;
+	return byteArray.data.length * BYTES_PER_WORD + byteArray.pendingWordLen;
 }

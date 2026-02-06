@@ -1,4 +1,4 @@
-import { from } from './from.js';
+import { from } from "./from.js";
 
 /**
  * Create ByteArray from UTF-8 string
@@ -7,6 +7,6 @@ import { from } from './from.js';
  * @returns {import('./types.js').ByteArrayType}
  */
 export function fromString(str) {
-  const encoder = new TextEncoder();
-  return from(encoder.encode(str));
+	const encoder = new TextEncoder();
+	return from(encoder.encode(str));
 }

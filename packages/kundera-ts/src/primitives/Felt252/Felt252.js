@@ -1,13 +1,13 @@
-import { FIELD_PRIME, MAX_SHORT_STRING_LENGTH } from './constants.js';
-import { from } from './from.js';
-import { fromHex } from './fromHex.js';
-import { fromBigInt } from './fromBigInt.js';
-import { fromBytes } from './fromBytes.js';
+import { FIELD_PRIME, MAX_SHORT_STRING_LENGTH } from "./constants.js";
+import { from } from "./from.js";
+import { fromHex } from "./fromHex.js";
+import { fromBigInt } from "./fromBigInt.js";
+import { fromBytes } from "./fromBytes.js";
 import {
-  encodeShortString,
-  encodeShortStringHex,
-  decodeShortString,
-} from '../ShortString/index.js';
+	encodeShortString,
+	encodeShortStringHex,
+	decodeShortString,
+} from "../ShortString/index.js";
 
 const feltZero = from(0n);
 const feltOne = from(1n);
@@ -36,29 +36,29 @@ const feltTwo = from(2n);
  * }}
  */
 export const Felt252 = Object.assign(from, {
-  from,
-  fromHex,
-  fromBigInt,
-  fromBytes,
-  /** @param {import('./types.js').Felt252Type} felt */
-  isValid: (felt) => felt.isValid(),
-  /** @param {import('./types.js').Felt252Type} felt */
-  isZero: (felt) => felt.isZero(),
-  /**
-   * @param {import('./types.js').Felt252Type} a
-   * @param {import('./types.js').Felt252Type} b
-   */
-  equals: (a, b) => a.equals(b),
-  /** @param {import('./types.js').Felt252Type} felt */
-  toHex: (felt) => felt.toHex(),
-  /** @param {import('./types.js').Felt252Type} felt */
-  toBigInt: (felt) => felt.toBigInt(),
-  ZERO: feltZero,
-  ONE: feltOne,
-  TWO: feltTwo,
-  PRIME: FIELD_PRIME,
-  MAX_SHORT_STRING_LENGTH,
-  encodeShortString,
-  encodeShortStringHex,
-  decodeShortString,
+	from,
+	fromHex,
+	fromBigInt,
+	fromBytes,
+	/** @param {import('./types.js').Felt252Type} felt */
+	isValid: (felt) => felt.isValid(),
+	/** @param {import('./types.js').Felt252Type} felt */
+	isZero: (felt) => felt.isZero(),
+	/**
+	 * @param {import('./types.js').Felt252Type} a
+	 * @param {import('./types.js').Felt252Type} b
+	 */
+	equals: (a, b) => a.equals(b),
+	/** @param {import('./types.js').Felt252Type} felt */
+	toHex: (felt) => felt.toHex(),
+	/** @param {import('./types.js').Felt252Type} felt */
+	toBigInt: (felt) => felt.toBigInt(),
+	ZERO: feltZero,
+	ONE: feltOne,
+	TWO: feltTwo,
+	PRIME: FIELD_PRIME,
+	MAX_SHORT_STRING_LENGTH,
+	encodeShortString,
+	encodeShortStringHex,
+	decodeShortString,
 });

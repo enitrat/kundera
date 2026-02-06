@@ -12,6 +12,10 @@ export const method = "starknet_simulateTransactions";
  * @param {SimulationFlag[]} [simulationFlags=[]]
  * @returns {RequestArguments}
  */
-export function SimulateTransactionsRequest(blockId, transactions, simulationFlags = []) {
-  return { method, params: [blockId, transactions, simulationFlags] };
+export function SimulateTransactionsRequest(
+	blockId,
+	transactions,
+	simulationFlags = [],
+) {
+	return { method, params: [blockId, transactions, simulationFlags] };
 }

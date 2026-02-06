@@ -7,5 +7,5 @@ export const method = "starknet_specVersion";
  * @returns {RequestArguments}
  */
 export function SpecVersionRequest() {
-  return { method, params: [] };
+	return { method, params: [] };
 }

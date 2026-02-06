@@ -10,47 +10,47 @@
  * Voltaire-style result type for all public API
  */
 export type Result<T, E = AbiError> =
-  | { result: T; error: null }
-  | { result: null; error: E };
+	| { result: T; error: null }
+	| { result: null; error: E };
 
 /**
  * Create a success result
  */
 export function ok<T>(result: T): Result<T, never> {
-  return { result, error: null };
+	return { result, error: null };
 }
 
 /**
  * Create an error result
  */
 export function err<E>(error: E): Result<never, E> {
-  return { result: null, error };
+	return { result: null, error };
 }
 
 // ============ Error Types ============
 
 export type AbiErrorCode =
-  | 'INVALID_ABI'
-  | 'FUNCTION_NOT_FOUND'
-  | 'EVENT_NOT_FOUND'
-  | 'INVALID_ARGS'
-  | 'DECODE_ERROR'
-  | 'ENCODE_ERROR'
-  | 'ACCOUNT_REQUIRED'
-  | 'RPC_ERROR';
+	| "INVALID_ABI"
+	| "FUNCTION_NOT_FOUND"
+	| "EVENT_NOT_FOUND"
+	| "INVALID_ARGS"
+	| "DECODE_ERROR"
+	| "ENCODE_ERROR"
+	| "ACCOUNT_REQUIRED"
+	| "RPC_ERROR";
 
 export interface AbiError {
-  code: AbiErrorCode;
-  message: string;
-  details?: unknown;
+	code: AbiErrorCode;
+	message: string;
+	details?: unknown;
 }
 
 export function abiError(
-  code: AbiErrorCode,
-  message: string,
-  details?: unknown
+	code: AbiErrorCode,
+	message: string,
+	details?: unknown,
 ): AbiError {
-  return { code, message, details };
+	return { code, message, details };
 }
 
 // ============ Cairo Type System ============
@@ -59,37 +59,37 @@ export function abiError(
  * Cairo type string representations
  */
 export type CairoType =
-  | 'felt252'
-  | 'core::felt252'
-  | 'core::integer::u8'
-  | 'core::integer::u16'
-  | 'core::integer::u32'
-  | 'core::integer::u64'
-  | 'core::integer::u128'
-  | 'core::integer::u256'
-  | 'core::integer::i8'
-  | 'core::integer::i16'
-  | 'core::integer::i32'
-  | 'core::integer::i64'
-  | 'core::integer::i128'
-  | 'core::bool'
-  | 'core::starknet::contract_address::ContractAddress'
-  | 'core::starknet::class_hash::ClassHash'
-  | 'core::byte_array::ByteArray'
-  | string; // For arrays, structs, tuples, enums
+	| "felt252"
+	| "core::felt252"
+	| "core::integer::u8"
+	| "core::integer::u16"
+	| "core::integer::u32"
+	| "core::integer::u64"
+	| "core::integer::u128"
+	| "core::integer::u256"
+	| "core::integer::i8"
+	| "core::integer::i16"
+	| "core::integer::i32"
+	| "core::integer::i64"
+	| "core::integer::i128"
+	| "core::bool"
+	| "core::starknet::contract_address::ContractAddress"
+	| "core::starknet::class_hash::ClassHash"
+	| "core::byte_array::ByteArray"
+	| string; // For arrays, structs, tuples, enums
 
 /**
  * Parsed Cairo type information
  */
 export interface ParsedType {
-  kind: 'primitive' | 'array' | 'tuple' | 'struct' | 'enum' | 'option' | 'span';
-  name: string;
-  /** For arrays/spans: the element type */
-  inner?: ParsedType;
-  /** For tuples: member types */
-  members?: ParsedType[];
-  /** For structs/enums: the full type path */
-  path?: string;
+	kind: "primitive" | "array" | "tuple" | "struct" | "enum" | "option" | "span";
+	name: string;
+	/** For arrays/spans: the element type */
+	inner?: ParsedType;
+	/** For tuples: member types */
+	members?: ParsedType[];
+	/** For structs/enums: the full type path */
+	path?: string;
 }
 
 // ============ ABI Entry Types ============
@@ -97,96 +97,96 @@ export interface ParsedType {
 /**
  * Function state mutability
  */
-export type StateMutability = 'view' | 'external';
+export type StateMutability = "view" | "external";
 
 /**
  * ABI member (function input)
  */
 export interface AbiMember {
-  name: string;
-  type: string;
+	name: string;
+	type: string;
 }
 
 /**
  * ABI output (name is optional per Starknet spec)
  */
 export interface AbiOutput {
-  name?: string;
-  type: string;
+	name?: string;
+	type: string;
 }
 
 /**
  * ABI function entry
  */
 export interface AbiFunctionEntry {
-  type: 'function';
-  name: string;
-  inputs: readonly AbiMember[];
-  outputs: readonly AbiOutput[];
-  state_mutability: StateMutability;
+	type: "function";
+	name: string;
+	inputs: readonly AbiMember[];
+	outputs: readonly AbiOutput[];
+	state_mutability: StateMutability;
 }
 
 /**
  * ABI struct member
  */
 export interface AbiStructMember {
-  name: string;
-  type: string;
+	name: string;
+	type: string;
 }
 
 /**
  * ABI struct entry
  */
 export interface AbiStructEntry {
-  type: 'struct';
-  name: string;
-  members: readonly AbiStructMember[];
+	type: "struct";
+	name: string;
+	members: readonly AbiStructMember[];
 }
 
 /**
  * ABI enum variant
  */
 export interface AbiEnumVariant {
-  name: string;
-  type: string;
+	name: string;
+	type: string;
 }
 
 /**
  * ABI enum entry
  */
 export interface AbiEnumEntry {
-  type: 'enum';
-  name: string;
-  variants: readonly AbiEnumVariant[];
+	type: "enum";
+	name: string;
+	variants: readonly AbiEnumVariant[];
 }
 
 /**
  * ABI event member
  */
 export interface AbiEventMember {
-  name: string;
-  type: string;
-  kind: 'key' | 'data' | 'nested' | 'flat';
+	name: string;
+	type: string;
+	kind: "key" | "data" | "nested" | "flat";
 }
 
 /**
  * ABI event struct entry (discriminated by kind)
  */
 export interface AbiEventStructEntry {
-  type: 'event';
-  name: string;
-  kind: 'struct';
-  members: readonly AbiEventMember[];
+	type: "event";
+	name: string;
+	kind: "struct";
+	members: readonly AbiEventMember[];
 }
 
 /**
  * ABI event enum entry (discriminated by kind)
  */
 export interface AbiEventEnumEntry {
-  type: 'event';
-  name: string;
-  kind: 'enum';
-  variants: readonly AbiEventMember[];
+	type: "event";
+	name: string;
+	kind: "enum";
+	variants: readonly AbiEventMember[];
 }
 
 /**
@@ -198,51 +198,51 @@ export type AbiEventEntry = AbiEventStructEntry | AbiEventEnumEntry;
  * ABI L1 handler entry
  */
 export interface AbiL1HandlerEntry {
-  type: 'l1_handler';
-  name: string;
-  inputs: readonly AbiMember[];
-  outputs: readonly AbiOutput[];
-  state_mutability: StateMutability;
+	type: "l1_handler";
+	name: string;
+	inputs: readonly AbiMember[];
+	outputs: readonly AbiOutput[];
+	state_mutability: StateMutability;
 }
 
 /**
  * ABI constructor entry
  */
 export interface AbiConstructorEntry {
-  type: 'constructor';
-  name: 'constructor';
-  inputs: readonly AbiMember[];
+	type: "constructor";
+	name: "constructor";
+	inputs: readonly AbiMember[];
 }
 
 /**
  * ABI interface entry
  */
 export interface AbiInterfaceEntry {
-  type: 'interface';
-  name: string;
-  items: readonly AbiFunctionEntry[];
+	type: "interface";
+	name: string;
+	items: readonly AbiFunctionEntry[];
 }
 
 /**
  * ABI impl entry
  */
 export interface AbiImplEntry {
-  type: 'impl';
-  name: string;
-  interface_name: string;
+	type: "impl";
+	name: string;
+	interface_name: string;
 }
 
 /**
  * Any ABI entry
  */
 export type AbiEntry =
-  | AbiFunctionEntry
-  | AbiStructEntry
-  | AbiEnumEntry
-  | AbiEventEntry
-  | AbiConstructorEntry
-  | AbiInterfaceEntry
-  | AbiImplEntry;
+	| AbiFunctionEntry
+	| AbiStructEntry
+	| AbiEnumEntry
+	| AbiEventEntry
+	| AbiConstructorEntry
+	| AbiInterfaceEntry
+	| AbiImplEntry;
 
 /**
  * Full ABI (array of entries)
@@ -270,54 +270,54 @@ export type AbiLike = Abi | AbiWithL1Handler;
  * Indexed function for quick lookup
  */
 export interface IndexedFunction {
-  entry: AbiFunctionEntry;
-  selector: bigint;
-  selectorHex: string;
+	entry: AbiFunctionEntry;
+	selector: bigint;
+	selectorHex: string;
 }
 
 /**
  * Indexed event for quick lookup
  */
 export interface IndexedEvent {
-  entry: AbiEventEntry;
-  selector: bigint;
-  selectorHex: string;
+	entry: AbiEventEntry;
+	selector: bigint;
+	selectorHex: string;
 }
 
 /**
  * Indexed struct for quick lookup
  */
 export interface IndexedStruct {
-  entry: AbiStructEntry;
+	entry: AbiStructEntry;
 }
 
 /**
  * Indexed enum for quick lookup
  */
 export interface IndexedEnum {
-  entry: AbiEnumEntry;
+	entry: AbiEnumEntry;
 }
 
 /**
  * Parsed and indexed ABI for efficient access
  */
 export interface ParsedAbi {
-  /** Original ABI */
-  raw: AbiLike;
-  /** Functions by name (overloads are indexed as name_0, name_1, etc.) */
-  functions: Map<string, IndexedFunction>;
-  /** Functions by selector hex */
-  functionsBySelector: Map<string, IndexedFunction>;
-  /** Events by name */
-  events: Map<string, IndexedEvent>;
-  /** Events by selector hex */
-  eventsBySelector: Map<string, IndexedEvent>;
-  /** Structs by name */
-  structs: Map<string, IndexedStruct>;
-  /** Enums by name */
-  enums: Map<string, IndexedEnum>;
-  /** Constructor if present */
-  constructor?: AbiConstructorEntry;
+	/** Original ABI */
+	raw: AbiLike;
+	/** Functions by name (overloads are indexed as name_0, name_1, etc.) */
+	functions: Map<string, IndexedFunction>;
+	/** Functions by selector hex */
+	functionsBySelector: Map<string, IndexedFunction>;
+	/** Events by name */
+	events: Map<string, IndexedEvent>;
+	/** Events by selector hex */
+	eventsBySelector: Map<string, IndexedEvent>;
+	/** Structs by name */
+	structs: Map<string, IndexedStruct>;
+	/** Enums by name */
+	enums: Map<string, IndexedEnum>;
+	/** Constructor if present */
+	constructor?: AbiConstructorEntry;
 }
 
 // ============ Value Types ============
@@ -326,37 +326,37 @@ export interface ParsedAbi {
  * Cairo value types for encoding/decoding
  */
 export type CairoValue =
-  | bigint
-  | number
-  | string
-  | boolean
-  | Uint8Array
-  | null
-  | CairoValue[]
-  | { [key: string]: CairoValue }
-  | CairoEnumValue;
+	| bigint
+	| number
+	| string
+	| boolean
+	| Uint8Array
+	| null
+	| CairoValue[]
+	| { [key: string]: CairoValue }
+	| CairoEnumValue;
 
 /**
  * Enum value representation
  */
 export interface CairoEnumValue {
-  variant: string;
-  value: CairoValue;
+	variant: string;
+	value: CairoValue;
 }
 
 /**
  * Decoded struct value
  */
 export interface DecodedStruct {
-  [key: string]: CairoValue;
+	[key: string]: CairoValue;
 }
 
 /**
  * Decoded event
  */
 export interface DecodedEvent {
-  name: string;
-  args: DecodedStruct;
+	name: string;
+	args: DecodedStruct;
 }
 
 // ============ Contract Types ============
@@ -365,16 +365,16 @@ export interface DecodedEvent {
  * Call object for transaction population
  */
 export interface Call {
-  contractAddress: string;
-  entrypoint: string;
-  calldata: bigint[];
+	contractAddress: string;
+	entrypoint: string;
+	calldata: bigint[];
 }
 
 /**
  * Fee estimate result
  */
 export interface FeeEstimate {
-  gasConsumed: bigint;
-  gasPrice: bigint;
-  overallFee: bigint;
+	gasConsumed: bigint;
+	gasPrice: bigint;
+	overallFee: bigint;
 }

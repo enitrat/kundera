@@ -12,6 +12,10 @@ export const method = "starknet_estimateFee";
  * @param {BlockId} [blockId='latest']
  * @returns {RequestArguments}
  */
-export function EstimateFeeRequest(transactions, simulationFlags = [], blockId = 'latest') {
-  return { method, params: [transactions, simulationFlags, blockId] };
+export function EstimateFeeRequest(
+	transactions,
+	simulationFlags = [],
+	blockId = "latest",
+) {
+	return { method, params: [transactions, simulationFlags, blockId] };
 }

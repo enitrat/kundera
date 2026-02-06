@@ -6,13 +6,13 @@
  * @module abi/classHash
  */
 
-import { poseidonHashMany, snKeccak } from '../crypto/index.js';
+import { poseidonHashMany, snKeccak } from "../crypto/index.js";
 import {
-  Felt252,
-  type Felt252Type,
-  encodeShortString as encodeShortStringPrimitive,
-} from '../primitives/index.js';
-import { type Result, ok, err, abiError, type AbiLike } from './types.js';
+	Felt252,
+	type Felt252Type,
+	encodeShortString as encodeShortStringPrimitive,
+} from "../primitives/index.js";
+import { type Result, ok, err, abiError, type AbiLike } from "./types.js";
 
 // ============ Empty Array Hash Constant ============
 
@@ -23,18 +23,17 @@ import { type Result, ok, err, abiError, type AbiLike } from './types.js';
  *
  * FFI doesn't support empty arrays, so we use this precomputed value.
  */
-const POSEIDON_EMPTY_ARRAY_HASH = Felt252(
-  0x2272be0f580fd156823304800919530eaa97430e972d7213ee13f4fbf7a5dbcn
-);
+const POSEIDON_EMPTY_ARRAY_HASH =
+	Felt252(0x2272be0f580fd156823304800919530eaa97430e972d7213ee13f4fbf7a5dbcn);
 
 /**
  * Safe wrapper for poseidonHashMany that handles empty arrays
  */
 function safePoseidonHashMany(values: bigint[]): Felt252Type {
-  if (values.length === 0) {
-    return POSEIDON_EMPTY_ARRAY_HASH;
-  }
-  return poseidonHashMany(values.map((v) => Felt252(v)));
+	if (values.length === 0) {
+		return POSEIDON_EMPTY_ARRAY_HASH;
+	}
+	return poseidonHashMany(values.map((v) => Felt252(v)));
 }
 
 // ============ Constants ============
@@ -42,12 +41,12 @@ function safePoseidonHashMany(values: bigint[]): Felt252Type {
 /**
  * Contract class version for Sierra contracts
  */
-const CONTRACT_CLASS_VERSION = 'CONTRACT_CLASS_V0.1.0';
+const CONTRACT_CLASS_VERSION = "CONTRACT_CLASS_V0.1.0";
 
 /**
  * Compiled class version for CASM
  */
-const COMPILED_CLASS_VERSION = 'COMPILED_CLASS_V1';
+const COMPILED_CLASS_VERSION = "COMPILED_CLASS_V1";
 
 // ============ Types ============
 
@@ -55,59 +54,59 @@ const COMPILED_CLASS_VERSION = 'COMPILED_CLASS_V1';
  * Sierra entry point structure
  */
 export interface SierraEntryPoint {
-  selector: string;
-  function_idx: number;
+	selector: string;
+	function_idx: number;
 }
 
 /**
  * Sierra entry points by type
  */
 export interface SierraEntryPoints {
-  CONSTRUCTOR: SierraEntryPoint[];
-  EXTERNAL: SierraEntryPoint[];
-  L1_HANDLER: SierraEntryPoint[];
+	CONSTRUCTOR: SierraEntryPoint[];
+	EXTERNAL: SierraEntryPoint[];
+	L1_HANDLER: SierraEntryPoint[];
 }
 
 /**
  * Compiled Sierra (Sierra artifact)
  */
 export interface CompiledSierra {
-  sierra_program: string[];
-  sierra_program_debug_info?: unknown;
-  contract_class_version: string;
-  entry_points_by_type: SierraEntryPoints;
-  abi: AbiLike | string;
+	sierra_program: string[];
+	sierra_program_debug_info?: unknown;
+	contract_class_version: string;
+	entry_points_by_type: SierraEntryPoints;
+	abi: AbiLike | string;
 }
 
 /**
  * CASM entry point structure
  */
 export interface CasmEntryPoint {
-  selector: string;
-  offset: number;
-  builtins: string[];
+	selector: string;
+	offset: number;
+	builtins: string[];
 }
 
 /**
  * CASM entry points by type
  */
 export interface CasmEntryPoints {
-  CONSTRUCTOR: CasmEntryPoint[];
-  EXTERNAL: CasmEntryPoint[];
-  L1_HANDLER: CasmEntryPoint[];
+	CONSTRUCTOR: CasmEntryPoint[];
+	EXTERNAL: CasmEntryPoint[];
+	L1_HANDLER: CasmEntryPoint[];
 }
 
 /**
  * Compiled Sierra CASM (CASM artifact)
  */
 export interface CompiledSierraCasm {
-  prime: string;
-  compiler_version: string;
-  bytecode: string[];
-  bytecode_segment_lengths?: number[];
-  hints: unknown[];
-  pythonic_hints?: unknown[];
-  entry_points_by_type: CasmEntryPoints;
+	prime: string;
+	compiler_version: string;
+	bytecode: string[];
+	bytecode_segment_lengths?: number[];
+	hints: unknown[];
+	pythonic_hints?: unknown[];
+	entry_points_by_type: CasmEntryPoints;
 }
 
 // ============ Short String Encoding ============
@@ -116,8 +115,8 @@ export interface CompiledSierraCasm {
  * Encode a short string to felt (hex string)
  */
 function encodeShortStringHex(str: string): string {
-  const value = encodeShortStringPrimitive(str);
-  return '0x' + value.toBigInt().toString(16);
+	const value = encodeShortStringPrimitive(str);
+	return "0x" + value.toBigInt().toString(16);
 }
 
 // ============ JSON Formatting ============
@@ -127,40 +126,40 @@ function encodeShortStringHex(str: string): string {
  * Adds space after colons and commas (outside of strings)
  */
 function formatSpaces(json: string): string {
-  let insideQuotes = false;
-  const result: string[] = [];
+	let insideQuotes = false;
+	const result: string[] = [];
 
-  for (let i = 0; i < json.length; i++) {
-    const char = json[i] ?? '';
-    const prevChar = i > 0 ? json[i - 1] ?? '' : '';
+	for (let i = 0; i < json.length; i++) {
+		const char = json[i] ?? "";
+		const prevChar = i > 0 ? (json[i - 1] ?? "") : "";
 
-    // Toggle quote state (but not for escaped quotes)
-    if (char === '"' && prevChar !== '\\') {
-      insideQuotes = !insideQuotes;
-    }
+		// Toggle quote state (but not for escaped quotes)
+		if (char === '"' && prevChar !== "\\") {
+			insideQuotes = !insideQuotes;
+		}
 
-    if (insideQuotes) {
-      result.push(char);
-    } else {
-      // Add space after colon and comma
-      if (char === ':') {
-        result.push(': ');
-      } else if (char === ',') {
-        result.push(', ');
-      } else {
-        result.push(char);
-      }
-    }
-  }
+		if (insideQuotes) {
+			result.push(char);
+		} else {
+			// Add space after colon and comma
+			if (char === ":") {
+				result.push(": ");
+			} else if (char === ",") {
+				result.push(", ");
+			} else {
+				result.push(char);
+			}
+		}
+	}
 
-  return result.join('');
+	return result.join("");
 }
 
 /**
  * Stringify JSON without whitespace, matching starknet.js format
  */
 function stringify(obj: unknown): string {
-  return JSON.stringify(obj, null, 0);
+	return JSON.stringify(obj, null, 0);
 }
 
 // ============ Entry Point Hashing ============
@@ -170,16 +169,16 @@ function stringify(obj: unknown): string {
  * Flattens [selector, function_idx] pairs and hashes with Poseidon
  */
 function hashEntryPointsSierra(entryPoints: SierraEntryPoint[]): bigint {
-  if (entryPoints.length === 0) {
-    return safePoseidonHashMany([]).toBigInt();
-  }
+	if (entryPoints.length === 0) {
+		return safePoseidonHashMany([]).toBigInt();
+	}
 
-  const flat: bigint[] = entryPoints.flatMap((ep) => [
-    BigInt(ep.selector),
-    BigInt(ep.function_idx),
-  ]);
+	const flat: bigint[] = entryPoints.flatMap((ep) => [
+		BigInt(ep.selector),
+		BigInt(ep.function_idx),
+	]);
 
-  return safePoseidonHashMany(flat).toBigInt();
+	return safePoseidonHashMany(flat).toBigInt();
 }
 
 /**
@@ -187,17 +186,17 @@ function hashEntryPointsSierra(entryPoints: SierraEntryPoint[]): bigint {
  * Flattens [selector, offset, builtinsHash] triples and hashes with Poseidon
  */
 function hashEntryPointsCasm(entryPoints: CasmEntryPoint[]): bigint {
-  if (entryPoints.length === 0) {
-    return safePoseidonHashMany([]).toBigInt();
-  }
+	if (entryPoints.length === 0) {
+		return safePoseidonHashMany([]).toBigInt();
+	}
 
-  const flat: bigint[] = entryPoints.flatMap((ep) => [
-    BigInt(ep.selector),
-    BigInt(ep.offset),
-    hashBuiltins(ep.builtins),
-  ]);
+	const flat: bigint[] = entryPoints.flatMap((ep) => [
+		BigInt(ep.selector),
+		BigInt(ep.offset),
+		hashBuiltins(ep.builtins),
+	]);
 
-  return safePoseidonHashMany(flat).toBigInt();
+	return safePoseidonHashMany(flat).toBigInt();
 }
 
 /**
@@ -205,15 +204,15 @@ function hashEntryPointsCasm(entryPoints: CasmEntryPoint[]): bigint {
  * Each builtin name is encoded as short string and hashed together
  */
 function hashBuiltins(builtins: string[]): bigint {
-  if (builtins.length === 0) {
-    return safePoseidonHashMany([]).toBigInt();
-  }
+	if (builtins.length === 0) {
+		return safePoseidonHashMany([]).toBigInt();
+	}
 
-  const encoded: bigint[] = builtins.map((b) =>
-    BigInt(encodeShortStringHex(b))
-  );
+	const encoded: bigint[] = builtins.map((b) =>
+		BigInt(encodeShortStringHex(b)),
+	);
 
-  return safePoseidonHashMany(encoded).toBigInt();
+	return safePoseidonHashMany(encoded).toBigInt();
 }
 
 /**
@@ -221,18 +220,18 @@ function hashBuiltins(builtins: string[]): bigint {
  * ABI is formatted with proper spacing and hashed with keccak
  */
 function hashAbi(abi: AbiLike | string): bigint {
-  const abiString = typeof abi === 'string' ? abi : stringify(abi);
-  const formatted = formatSpaces(abiString);
-  const hash = snKeccak(formatted);
-  return hash.toBigInt();
+	const abiString = typeof abi === "string" ? abi : stringify(abi);
+	const formatted = formatSpaces(abiString);
+	const hash = snKeccak(formatted);
+	return hash.toBigInt();
 }
 
 /**
  * Hash Sierra program
  */
 function hashSierraProgram(program: string[]): bigint {
-  const felts = program.map((p) => BigInt(p));
-  return safePoseidonHashMany(felts).toBigInt();
+	const felts = program.map((p) => BigInt(p));
+	return safePoseidonHashMany(felts).toBigInt();
 }
 
 /**
@@ -241,27 +240,33 @@ function hashSierraProgram(program: string[]): bigint {
  * When bytecode_segment_lengths is present, the bytecode is divided
  * into segments and hashed as: 1 + poseidon([len1, hash1, len2, hash2, ...])
  */
-function hashByteCodeSegments(bytecode: string[], segmentLengths: number[]): bigint {
-  const bytecodeBigints = bytecode.map((b) => BigInt(b));
+function hashByteCodeSegments(
+	bytecode: string[],
+	segmentLengths: number[],
+): bigint {
+	const bytecodeBigints = bytecode.map((b) => BigInt(b));
 
-  let segmentStart = 0;
-  const hashLeaves: bigint[] = segmentLengths.flatMap((len) => {
-    const segment = bytecodeBigints.slice(segmentStart, segmentStart + len);
-    segmentStart += len;
-    return [BigInt(len), safePoseidonHashMany(segment).toBigInt()];
-  });
+	let segmentStart = 0;
+	const hashLeaves: bigint[] = segmentLengths.flatMap((len) => {
+		const segment = bytecodeBigints.slice(segmentStart, segmentStart + len);
+		segmentStart += len;
+		return [BigInt(len), safePoseidonHashMany(segment).toBigInt()];
+	});
 
-  return 1n + safePoseidonHashMany(hashLeaves).toBigInt();
+	return 1n + safePoseidonHashMany(hashLeaves).toBigInt();
 }
 
 /**
  * Hash bytecode (flat or segmented)
  */
 function hashBytecode(casm: CompiledSierraCasm): bigint {
-  if (casm.bytecode_segment_lengths && casm.bytecode_segment_lengths.length > 0) {
-    return hashByteCodeSegments(casm.bytecode, casm.bytecode_segment_lengths);
-  }
-  return safePoseidonHashMany(casm.bytecode.map((b) => BigInt(b))).toBigInt();
+	if (
+		casm.bytecode_segment_lengths &&
+		casm.bytecode_segment_lengths.length > 0
+	) {
+		return hashByteCodeSegments(casm.bytecode, casm.bytecode_segment_lengths);
+	}
+	return safePoseidonHashMany(casm.bytecode.map((b) => BigInt(b))).toBigInt();
 }
 
 // ============ Public API ============
@@ -293,45 +298,53 @@ function hashBytecode(casm: CompiledSierraCasm): bigint {
  * ```
  */
 export function classHashFromSierra(sierra: CompiledSierra): Result<string> {
-  try {
-    // Validate required fields
-    if (!sierra.entry_points_by_type) {
-      return err(abiError('INVALID_ABI', 'Missing entry_points_by_type'));
-    }
-    if (!sierra.sierra_program) {
-      return err(abiError('INVALID_ABI', 'Missing sierra_program'));
-    }
-    if (sierra.abi === undefined) {
-      return err(abiError('INVALID_ABI', 'Missing abi'));
-    }
+	try {
+		// Validate required fields
+		if (!sierra.entry_points_by_type) {
+			return err(abiError("INVALID_ABI", "Missing entry_points_by_type"));
+		}
+		if (!sierra.sierra_program) {
+			return err(abiError("INVALID_ABI", "Missing sierra_program"));
+		}
+		if (sierra.abi === undefined) {
+			return err(abiError("INVALID_ABI", "Missing abi"));
+		}
 
-    // Compute components
-    const compiledClassVersion = BigInt(encodeShortStringHex(CONTRACT_CLASS_VERSION));
-    const externalHash = hashEntryPointsSierra(sierra.entry_points_by_type.EXTERNAL || []);
-    const l1HandlerHash = hashEntryPointsSierra(sierra.entry_points_by_type.L1_HANDLER || []);
-    const constructorHash = hashEntryPointsSierra(sierra.entry_points_by_type.CONSTRUCTOR || []);
-    const abiHash = hashAbi(sierra.abi);
-    const programHash = hashSierraProgram(sierra.sierra_program);
+		// Compute components
+		const compiledClassVersion = BigInt(
+			encodeShortStringHex(CONTRACT_CLASS_VERSION),
+		);
+		const externalHash = hashEntryPointsSierra(
+			sierra.entry_points_by_type.EXTERNAL || [],
+		);
+		const l1HandlerHash = hashEntryPointsSierra(
+			sierra.entry_points_by_type.L1_HANDLER || [],
+		);
+		const constructorHash = hashEntryPointsSierra(
+			sierra.entry_points_by_type.CONSTRUCTOR || [],
+		);
+		const abiHash = hashAbi(sierra.abi);
+		const programHash = hashSierraProgram(sierra.sierra_program);
 
-    // Combine with Poseidon
-    const classHash = safePoseidonHashMany([
-      compiledClassVersion,
-      externalHash,
-      l1HandlerHash,
-      constructorHash,
-      abiHash,
-      programHash,
-    ]);
+		// Combine with Poseidon
+		const classHash = safePoseidonHashMany([
+			compiledClassVersion,
+			externalHash,
+			l1HandlerHash,
+			constructorHash,
+			abiHash,
+			programHash,
+		]);
 
-    return ok(classHash.toHex());
-  } catch (error) {
-    return err(
-      abiError(
-        'ENCODE_ERROR',
-        `Failed to compute class hash: ${error instanceof Error ? error.message : String(error)}`
-      )
-    );
-  }
+		return ok(classHash.toHex());
+	} catch (error) {
+		return err(
+			abiError(
+				"ENCODE_ERROR",
+				`Failed to compute class hash: ${error instanceof Error ? error.message : String(error)}`,
+			),
+		);
+	}
 }
 
 /**
@@ -359,41 +372,51 @@ export function classHashFromSierra(sierra: CompiledSierra): Result<string> {
  * }
  * ```
  */
-export function compiledClassHashFromCasm(casm: CompiledSierraCasm): Result<string> {
-  try {
-    // Validate required fields
-    if (!casm.entry_points_by_type) {
-      return err(abiError('INVALID_ABI', 'Missing entry_points_by_type'));
-    }
-    if (!casm.bytecode) {
-      return err(abiError('INVALID_ABI', 'Missing bytecode'));
-    }
+export function compiledClassHashFromCasm(
+	casm: CompiledSierraCasm,
+): Result<string> {
+	try {
+		// Validate required fields
+		if (!casm.entry_points_by_type) {
+			return err(abiError("INVALID_ABI", "Missing entry_points_by_type"));
+		}
+		if (!casm.bytecode) {
+			return err(abiError("INVALID_ABI", "Missing bytecode"));
+		}
 
-    // Compute components
-    const compiledClassVersion = BigInt(encodeShortStringHex(COMPILED_CLASS_VERSION));
-    const externalHash = hashEntryPointsCasm(casm.entry_points_by_type.EXTERNAL || []);
-    const l1HandlerHash = hashEntryPointsCasm(casm.entry_points_by_type.L1_HANDLER || []);
-    const constructorHash = hashEntryPointsCasm(casm.entry_points_by_type.CONSTRUCTOR || []);
-    const bytecodeHash = hashBytecode(casm);
+		// Compute components
+		const compiledClassVersion = BigInt(
+			encodeShortStringHex(COMPILED_CLASS_VERSION),
+		);
+		const externalHash = hashEntryPointsCasm(
+			casm.entry_points_by_type.EXTERNAL || [],
+		);
+		const l1HandlerHash = hashEntryPointsCasm(
+			casm.entry_points_by_type.L1_HANDLER || [],
+		);
+		const constructorHash = hashEntryPointsCasm(
+			casm.entry_points_by_type.CONSTRUCTOR || [],
+		);
+		const bytecodeHash = hashBytecode(casm);
 
-    // Combine with Poseidon
-    const compiledClassHash = safePoseidonHashMany([
-      compiledClassVersion,
-      externalHash,
-      l1HandlerHash,
-      constructorHash,
-      bytecodeHash,
-    ]);
+		// Combine with Poseidon
+		const compiledClassHash = safePoseidonHashMany([
+			compiledClassVersion,
+			externalHash,
+			l1HandlerHash,
+			constructorHash,
+			bytecodeHash,
+		]);
 
-    return ok(compiledClassHash.toHex());
-  } catch (error) {
-    return err(
-      abiError(
-        'ENCODE_ERROR',
-        `Failed to compute compiled class hash: ${error instanceof Error ? error.message : String(error)}`
-      )
-    );
-  }
+		return ok(compiledClassHash.toHex());
+	} catch (error) {
+		return err(
+			abiError(
+				"ENCODE_ERROR",
+				`Failed to compute compiled class hash: ${error instanceof Error ? error.message : String(error)}`,
+			),
+		);
+	}
 }
 
 /**
@@ -415,34 +438,34 @@ export function compiledClassHashFromCasm(casm: CompiledSierraCasm): Result<stri
 export type AbiArtifact = CompiledSierra | { abi: AbiLike | string };
 
 export function extractAbi(artifact: AbiArtifact): Result<AbiLike> {
-  try {
-    // Check for Sierra artifact
-    if (artifact && typeof artifact === 'object' && 'abi' in artifact) {
-      const abi = (artifact as { abi: AbiLike | string }).abi;
+	try {
+		// Check for Sierra artifact
+		if (artifact && typeof artifact === "object" && "abi" in artifact) {
+			const abi = (artifact as { abi: AbiLike | string }).abi;
 
-      // ABI might be a string (JSON) or already parsed
-      if (typeof abi === 'string') {
-        try {
-          return ok(JSON.parse(abi) as AbiLike);
-        } catch {
-          return err(abiError('INVALID_ABI', 'ABI string is not valid JSON'));
-        }
-      }
+			// ABI might be a string (JSON) or already parsed
+			if (typeof abi === "string") {
+				try {
+					return ok(JSON.parse(abi) as AbiLike);
+				} catch {
+					return err(abiError("INVALID_ABI", "ABI string is not valid JSON"));
+				}
+			}
 
-      if (Array.isArray(abi)) {
-        return ok(abi);
-      }
+			if (Array.isArray(abi)) {
+				return ok(abi);
+			}
 
-      return err(abiError('INVALID_ABI', 'ABI is not an array'));
-    }
+			return err(abiError("INVALID_ABI", "ABI is not an array"));
+		}
 
-    return err(abiError('INVALID_ABI', 'Artifact does not contain ABI'));
-  } catch (error) {
-    return err(
-      abiError(
-        'INVALID_ABI',
-        `Failed to extract ABI: ${error instanceof Error ? error.message : String(error)}`
-      )
-    );
-  }
+		return err(abiError("INVALID_ABI", "Artifact does not contain ABI"));
+	} catch (error) {
+		return err(
+			abiError(
+				"INVALID_ABI",
+				`Failed to extract ABI: ${error instanceof Error ? error.message : String(error)}`,
+			),
+		);
+	}
 }

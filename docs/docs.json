@@ -105,7 +105,8 @@
                   "typescript/primitives/class-hash",
                   "typescript/primitives/storage-key",
                   "typescript/primitives/eth-address",
-                  "typescript/primitives/short-strings"
+                  "typescript/primitives/short-strings",
+                  "typescript/primitives/domain-primitives"
                 ]
               },
               {

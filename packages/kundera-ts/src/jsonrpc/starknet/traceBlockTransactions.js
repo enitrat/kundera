@@ -9,5 +9,5 @@ export const method = "starknet_traceBlockTransactions";
  * @returns {RequestArguments}
  */
 export function TraceBlockTransactionsRequest(blockId) {
-  return { method, params: [blockId] };
+	return { method, params: [blockId] };
 }

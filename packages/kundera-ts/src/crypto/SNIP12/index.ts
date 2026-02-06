@@ -34,45 +34,45 @@
 
 // Types
 export type {
-  Domain,
-  TypeProperty,
-  TypeDefinitions,
-  PrimitiveValue,
-  MessageValue,
-  Message,
-  TypedData,
-} from './types.js';
+	Domain,
+	TypeProperty,
+	TypeDefinitions,
+	PrimitiveValue,
+	MessageValue,
+	Message,
+	TypedData,
+} from "./types.js";
 
 // Errors
 export {
-  Snip12Error,
-  Snip12TypeNotFoundError,
-  Snip12InvalidMessageError,
-  Snip12InvalidDomainError,
-  Snip12EncodingError,
-} from './errors.js';
+	Snip12Error,
+	Snip12TypeNotFoundError,
+	Snip12InvalidMessageError,
+	Snip12InvalidDomainError,
+	Snip12EncodingError,
+} from "./errors.js";
 
 // Functions
-export { encodeType } from './encodeType.js';
-export { hashType } from './hashType.js';
-export { hashStruct } from './hashStruct.js';
-export { hashDomain } from './hashDomain.js';
-export { hashTypedData } from './hashTypedData.js';
+export { encodeType } from "./encodeType.js";
+export { hashType } from "./hashType.js";
+export { hashStruct } from "./hashStruct.js";
+export { hashDomain } from "./hashDomain.js";
+export { hashTypedData } from "./hashTypedData.js";
 
 // Namespace export for convenient usage
-import { encodeType } from './encodeType.js';
-import { hashType } from './hashType.js';
-import { hashStruct } from './hashStruct.js';
-import { hashDomain } from './hashDomain.js';
-import { hashTypedData } from './hashTypedData.js';
+import { encodeType } from "./encodeType.js";
+import { hashType } from "./hashType.js";
+import { hashStruct } from "./hashStruct.js";
+import { hashDomain } from "./hashDomain.js";
+import { hashTypedData } from "./hashTypedData.js";
 
 /**
  * SNIP-12 namespace with all functions
  */
 export const SNIP12 = {
-  encodeType,
-  hashType,
-  hashStruct,
-  hashDomain,
-  hashTypedData,
+	encodeType,
+	hashType,
+	hashStruct,
+	hashDomain,
+	hashTypedData,
 } as const;

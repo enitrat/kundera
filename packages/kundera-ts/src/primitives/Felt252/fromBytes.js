@@ -1,4 +1,4 @@
-import { withFeltPrototype } from './internal.js';
+import { withFeltPrototype } from "./internal.js";
 
 /**
  * Create Felt252 from Uint8Array bytes
@@ -6,8 +6,8 @@ import { withFeltPrototype } from './internal.js';
  * @returns {import('./types.js').Felt252Type}
  */
 export function fromBytes(bytes) {
-  if (bytes.length !== 32) {
-    throw new Error('Felt252 must be exactly 32 bytes');
-  }
-  return withFeltPrototype(new Uint8Array(bytes));
+	if (bytes.length !== 32) {
+		throw new Error("Felt252 must be exactly 32 bytes");
+	}
+	return withFeltPrototype(new Uint8Array(bytes));
 }

@@ -8,12 +8,12 @@
  * @see https://github.com/starknet-io/SNIPs/blob/main/SNIPS/snip-12.md
  */
 
-import type { Felt252Type } from '../../primitives/index.js';
-import { Felt252 } from '../../primitives/index.js';
-import { poseidonHashMany } from '../hash.js';
-import { hashDomain } from './hashDomain.js';
-import { hashStruct } from './hashStruct.js';
-import type { TypedData } from './types.js';
+import type { Felt252Type } from "../../primitives/index.js";
+import { Felt252 } from "../../primitives/index.js";
+import { poseidonHashMany } from "../hash.js";
+import { hashDomain } from "./hashDomain.js";
+import { hashStruct } from "./hashStruct.js";
+import type { TypedData } from "./types.js";
 
 /**
  * SNIP-12 message prefix: "StarkNet Message"
@@ -21,7 +21,7 @@ import type { TypedData } from './types.js';
  * This is the literal string encoded as a felt.
  */
 const STARKNET_MESSAGE_PREFIX = Felt252(
-  0x537461726b4e6574204d657373616765n, // "StarkNet Message"
+	0x537461726b4e6574204d657373616765n, // "StarkNet Message"
 );
 
 /**
@@ -60,29 +60,30 @@ const STARKNET_MESSAGE_PREFIX = Felt252(
  * ```
  */
 export function hashTypedData(
-  typedData: TypedData,
-  accountAddress: string | bigint | Felt252Type,
+	typedData: TypedData,
+	accountAddress: string | bigint | Felt252Type,
 ): Felt252Type {
-  // Hash domain separator
-  const domainHash = hashDomain(typedData.domain);
+	// Hash domain separator
+	const domainHash = hashDomain(typedData.domain);
 
-  // Hash message struct
-  const messageHash = hashStruct(
-    typedData.primaryType,
-    typedData.message,
-    typedData.types,
-  );
+	// Hash message struct
+	const messageHash = hashStruct(
+		typedData.primaryType,
+		typedData.message,
+		typedData.types,
+	);
 
-  // Convert account address to felt
-  const account = typeof accountAddress === 'object' && 'toBigInt' in accountAddress
-    ? accountAddress
-    : Felt252(accountAddress);
+	// Convert account address to felt
+	const account =
+		typeof accountAddress === "object" && "toBigInt" in accountAddress
+			? accountAddress
+			: Felt252(accountAddress);
 
-  // Final hash: hash_array(prefix, domain_hash, account, message_hash)
-  return poseidonHashMany([
-    STARKNET_MESSAGE_PREFIX,
-    domainHash,
-    account,
-    messageHash,
-  ]);
+	// Final hash: hash_array(prefix, domain_hash, account, message_hash)
+	return poseidonHashMany([
+		STARKNET_MESSAGE_PREFIX,
+		domainHash,
+		account,
+		messageHash,
+	]);
 }

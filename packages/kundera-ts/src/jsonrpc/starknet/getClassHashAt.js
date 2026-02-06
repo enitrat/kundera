@@ -10,5 +10,5 @@ export const method = "starknet_getClassHashAt";
  * @returns {RequestArguments}
  */
 export function GetClassHashAtRequest(blockId, contractAddress) {
-  return { method, params: [blockId, contractAddress] };
+	return { method, params: [blockId, contractAddress] };
 }

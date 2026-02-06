@@ -1,4 +1,4 @@
-import { BYTES_PER_WORD } from './constants.js';
+import { BYTES_PER_WORD } from "./constants.js";
 
 /**
  * Convert ByteArray to Uint8Array
@@ -7,22 +7,28 @@ import { BYTES_PER_WORD } from './constants.js';
  * @returns {Uint8Array}
  */
 export function toBytes(byteArray) {
-  const totalLen = byteArray.data.length * BYTES_PER_WORD + byteArray.pendingWordLen;
-  const result = new Uint8Array(totalLen);
-  let offset = 0;
+	const totalLen =
+		byteArray.data.length * BYTES_PER_WORD + byteArray.pendingWordLen;
+	const result = new Uint8Array(totalLen);
+	let offset = 0;
 
-  // Write full words
-  for (const word of byteArray.data) {
-    bigIntToBytes(word, result, offset, BYTES_PER_WORD);
-    offset += BYTES_PER_WORD;
-  }
+	// Write full words
+	for (const word of byteArray.data) {
+		bigIntToBytes(word, result, offset, BYTES_PER_WORD);
+		offset += BYTES_PER_WORD;
+	}
 
-  // Write pending word
-  if (byteArray.pendingWordLen > 0) {
-    bigIntToBytes(byteArray.pendingWord, result, offset, byteArray.pendingWordLen);
-  }
+	// Write pending word
+	if (byteArray.pendingWordLen > 0) {
+		bigIntToBytes(
+			byteArray.pendingWord,
+			result,
+			offset,
+			byteArray.pendingWordLen,
+		);
+	}
 
-  return result;
+	return result;
 }
 
 /**
@@ -33,8 +39,8 @@ export function toBytes(byteArray) {
  * @param {number} len
  */
 function bigIntToBytes(value, out, offset, len) {
-  for (let i = len - 1; i >= 0; i--) {
-    out[offset + i] = Number(value & 0xffn);
-    value >>= 8n;
-  }
+	for (let i = len - 1; i >= 0; i--) {
+		out[offset + i] = Number(value & 0xffn);
+		value >>= 8n;
+	}
 }

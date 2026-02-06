@@ -4,7 +4,7 @@
  * Global state for the WASM crypto module.
  */
 
-import type { WasmInstance } from './types.js';
+import type { WasmInstance } from "./types.js";
 
 /** Default heap start offset (64KB) */
 export const DEFAULT_HEAP_BASE = 65536;
@@ -25,12 +25,12 @@ export let memoryOffset = 0;
  * Set the WASM instance
  */
 export function setWasmInstance(instance: WasmInstance | null): void {
-  wasmInstance = instance;
+	wasmInstance = instance;
 }
 
 /**
  * Set the memory offset
  */
 export function setMemoryOffset(offset: number): void {
-  memoryOffset = offset;
+	memoryOffset = offset;
 }

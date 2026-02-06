@@ -8,5 +8,5 @@ export const method = "starknet_traceTransaction";
  * @returns {RequestArguments}
  */
 export function TraceTransactionRequest(transactionHash) {
-  return { method, params: [transactionHash] };
+	return { method, params: [transactionHash] };
 }

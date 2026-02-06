@@ -1,4 +1,4 @@
-import { toBytes } from './toBytes.js';
+import { toBytes } from "./toBytes.js";
 
 /**
  * Convert ByteArray to UTF-8 string
@@ -7,6 +7,6 @@ import { toBytes } from './toBytes.js';
  * @returns {string}
  */
 export function toString(byteArray) {
-  const decoder = new TextDecoder();
-  return decoder.decode(toBytes(byteArray));
+	const decoder = new TextDecoder();
+	return decoder.decode(toBytes(byteArray));
 }

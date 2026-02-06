@@ -1,9 +1,9 @@
-import type { Felt252Type } from '../../primitives/index.js';
+import type { Felt252Type } from "../../primitives/index.js";
 
 /**
  * STARK curve ECDSA signature
  */
 export interface Signature {
-  readonly r: Felt252Type;
-  readonly s: Felt252Type;
+	readonly r: Felt252Type;
+	readonly s: Felt252Type;
 }

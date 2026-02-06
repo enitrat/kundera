@@ -5,5 +5,5 @@
  * @returns {string} hex string with 0x prefix
  */
 export function toHex(uint) {
-  return '0x' + /** @type {bigint} */ (uint).toString(16);
+	return "0x" + /** @type {bigint} */ (uint).toString(16);
 }

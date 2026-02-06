@@ -1,7 +1,7 @@
-import { from } from './from.js';
-import { fromHex } from './fromHex.js';
-import { isValid } from './isValid.js';
-import { MAX_CONTRACT_ADDRESS } from './constants.js';
+import { from } from "./from.js";
+import { fromHex } from "./fromHex.js";
+import { isValid } from "./isValid.js";
+import { MAX_CONTRACT_ADDRESS } from "./constants.js";
 
 /**
  * ContractAddress namespace with constructor and utilities
@@ -13,8 +13,8 @@ import { MAX_CONTRACT_ADDRESS } from './constants.js';
  * }}
  */
 export const ContractAddress = Object.assign(from, {
-  from,
-  fromHex,
-  isValid,
-  MAX: MAX_CONTRACT_ADDRESS,
+	from,
+	fromHex,
+	isValid,
+	MAX: MAX_CONTRACT_ADDRESS,
 });

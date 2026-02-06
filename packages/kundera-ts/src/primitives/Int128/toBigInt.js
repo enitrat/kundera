@@ -5,5 +5,5 @@
  * @returns {bigint} The signed bigint value
  */
 export function toBigInt(value) {
-  return /** @type {bigint} */ (value);
+	return /** @type {bigint} */ (value);
 }

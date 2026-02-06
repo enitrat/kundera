@@ -4,8 +4,8 @@
  * Namespace object for Pedersen hash operations using WASM.
  */
 
-import { pedersenHash } from '../crypto.js';
+import { pedersenHash } from "../crypto.js";
 
 export const Pedersen = {
-  hash: pedersenHash,
+	hash: pedersenHash,
 } as const;

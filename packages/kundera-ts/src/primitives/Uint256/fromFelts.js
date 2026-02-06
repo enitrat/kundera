@@ -1,5 +1,5 @@
-import { Felt252 } from '../Felt252/index.js';
-import { from } from './from.js';
+import { Felt252 } from "../Felt252/index.js";
+import { from } from "./from.js";
 
 /**
  * Create Uint256 from two Felt252 values [low, high]
@@ -12,9 +12,9 @@ import { from } from './from.js';
  * @returns {import('./types.js').Uint256Type} Uint256 value
  */
 export function fromFelts(low, high) {
-  const lowBigInt = Felt252.toBigInt(low);
-  const highBigInt = Felt252.toBigInt(high);
+	const lowBigInt = Felt252.toBigInt(low);
+	const highBigInt = Felt252.toBigInt(high);
 
-  const value = lowBigInt + (highBigInt << 128n);
-  return from(value);
+	const value = lowBigInt + (highBigInt << 128n);
+	return from(value);
 }

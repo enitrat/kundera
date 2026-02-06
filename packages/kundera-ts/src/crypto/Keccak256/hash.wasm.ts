@@ -7,8 +7,8 @@
  * For standard Keccak256, use the pure JS backend which uses @noble/hashes.
  */
 
-import type { Keccak256Hash } from './types.js';
-import { hash as pureHash, hashHex as pureHashHex } from './hash.js';
+import type { Keccak256Hash } from "./types.js";
+import { hash as pureHash, hashHex as pureHashHex } from "./hash.js";
 
 let loaded = false;
 
@@ -16,16 +16,16 @@ let loaded = false;
  * Ensure WASM module is loaded (no-op for Keccak256, kept for API consistency)
  */
 export async function ensureLoaded(): Promise<void> {
-  // WASM doesn't have standard Keccak256, so we use pure JS
-  // This function exists for API consistency with other crypto backends
-  loaded = true;
+	// WASM doesn't have standard Keccak256, so we use pure JS
+	// This function exists for API consistency with other crypto backends
+	loaded = true;
 }
 
 /**
  * Check if backend is loaded
  */
 export function isLoaded(): boolean {
-  return loaded;
+	return loaded;
 }
 
 /**
@@ -34,8 +34,8 @@ export function isLoaded(): boolean {
  * @returns 32-byte hash
  */
 export async function hash(data: Uint8Array | string): Promise<Keccak256Hash> {
-  await ensureLoaded();
-  return pureHash(data);
+	await ensureLoaded();
+	return pureHash(data);
 }
 
 /**
@@ -44,20 +44,20 @@ export async function hash(data: Uint8Array | string): Promise<Keccak256Hash> {
  * @returns 32-byte hash
  */
 export function hashSync(data: Uint8Array | string): Keccak256Hash {
-  return pureHash(data);
+	return pureHash(data);
 }
 
 /**
  * Keccak256 hash returning hex string (async)
  */
 export async function hashHex(data: Uint8Array | string): Promise<string> {
-  await ensureLoaded();
-  return pureHashHex(data);
+	await ensureLoaded();
+	return pureHashHex(data);
 }
 
 /**
  * Keccak256 hash returning hex string (sync)
  */
 export function hashHexSync(data: Uint8Array | string): string {
-  return pureHashHex(data);
+	return pureHashHex(data);
 }

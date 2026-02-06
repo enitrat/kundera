@@ -1,5 +1,5 @@
-import { from } from './from.js';
-import { fromHex } from './fromHex.js';
+import { from } from "./from.js";
+import { fromHex } from "./fromHex.js";
 
 /**
  * ClassHash namespace with constructor
@@ -9,6 +9,6 @@ import { fromHex } from './fromHex.js';
  * }}
  */
 export const ClassHash = Object.assign(from, {
-  from,
-  fromHex,
+	from,
+	fromHex,
 });

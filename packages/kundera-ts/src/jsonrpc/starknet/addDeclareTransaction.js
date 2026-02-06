@@ -9,5 +9,5 @@ export const method = "starknet_addDeclareTransaction";
  * @returns {RequestArguments}
  */
 export function AddDeclareTransactionRequest(transaction) {
-  return { method, params: [transaction] };
+	return { method, params: [transaction] };
 }

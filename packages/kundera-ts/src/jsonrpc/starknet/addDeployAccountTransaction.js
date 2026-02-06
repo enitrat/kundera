@@ -9,5 +9,5 @@ export const method = "starknet_addDeployAccountTransaction";
  * @returns {RequestArguments}
  */
 export function AddDeployAccountTransactionRequest(transaction) {
-  return { method, params: [transaction] };
+	return { method, params: [transaction] };
 }

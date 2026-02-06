@@ -1,1 +1,1 @@
-export type { StarknetRpcSchema } from './StarknetRpcSchema.js';
+export type { StarknetRpcSchema } from "./StarknetRpcSchema.js";

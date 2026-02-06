@@ -11,7 +11,7 @@ type Brand<T, B extends string> = T & { readonly [__brand]: B };
  * IMPORTANT: Cairo uses prime field encoding for negative values,
  * NOT two's complement. Use toFelt() for Cairo-compatible encoding.
  */
-export type Int32Type = Brand<bigint, 'Int32'>;
+export type Int32Type = Brand<bigint, "Int32">;
 
 /**
  * Input types that can be converted to Int32

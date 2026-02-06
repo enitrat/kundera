@@ -4,76 +4,98 @@
  * Cryptographic hash functions via WASM.
  */
 
-import type { Felt252Type } from '../primitives/index.js';
-import { wasmInstance, FELT_SIZE } from './state.js';
-import { malloc, resetAllocator, writeFelt, readFelt, checkResult } from './memory.js';
+import type { Felt252Type } from "../primitives/index.js";
+import { wasmInstance, FELT_SIZE } from "./state.js";
+import {
+	malloc,
+	resetAllocator,
+	writeFelt,
+	readFelt,
+	checkResult,
+} from "./memory.js";
 
 export function wasmPedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type {
-  if (!wasmInstance) throw new Error('WASM not loaded');
-  resetAllocator();
+	if (!wasmInstance) throw new Error("WASM not loaded");
+	resetAllocator();
 
-  const ptrA = malloc(FELT_SIZE);
-  const ptrB = malloc(FELT_SIZE);
-  const ptrOut = malloc(FELT_SIZE);
+	const ptrA = malloc(FELT_SIZE);
+	const ptrB = malloc(FELT_SIZE);
+	const ptrOut = malloc(FELT_SIZE);
 
-  writeFelt(a, ptrA);
-  writeFelt(b, ptrB);
+	writeFelt(a, ptrA);
+	writeFelt(b, ptrB);
 
-  const result = wasmInstance.exports.starknet_pedersen_hash(ptrA, ptrB, ptrOut);
-  checkResult(result);
+	const result = wasmInstance.exports.starknet_pedersen_hash(
+		ptrA,
+		ptrB,
+		ptrOut,
+	);
+	checkResult(result);
 
-  return readFelt(ptrOut);
+	return readFelt(ptrOut);
 }
 
 export function wasmPoseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type {
-  if (!wasmInstance) throw new Error('WASM not loaded');
-  resetAllocator();
+	if (!wasmInstance) throw new Error("WASM not loaded");
+	resetAllocator();
 
-  const ptrA = malloc(FELT_SIZE);
-  const ptrB = malloc(FELT_SIZE);
-  const ptrOut = malloc(FELT_SIZE);
+	const ptrA = malloc(FELT_SIZE);
+	const ptrB = malloc(FELT_SIZE);
+	const ptrOut = malloc(FELT_SIZE);
 
-  writeFelt(a, ptrA);
-  writeFelt(b, ptrB);
+	writeFelt(a, ptrA);
+	writeFelt(b, ptrB);
 
-  const result = wasmInstance.exports.starknet_poseidon_hash(ptrA, ptrB, ptrOut);
-  checkResult(result);
+	const result = wasmInstance.exports.starknet_poseidon_hash(
+		ptrA,
+		ptrB,
+		ptrOut,
+	);
+	checkResult(result);
 
-  return readFelt(ptrOut);
+	return readFelt(ptrOut);
 }
 
 export function wasmPoseidonHashMany(inputs: Felt252Type[]): Felt252Type {
-  if (!wasmInstance) throw new Error('WASM not loaded');
-  resetAllocator();
+	if (!wasmInstance) throw new Error("WASM not loaded");
+	resetAllocator();
 
-  // Pack inputs into contiguous buffer
-  const ptrInputs = malloc(inputs.length * FELT_SIZE);
-  for (let i = 0; i < inputs.length; i++) {
-    const input = inputs[i]!;
-    writeFelt(input, ptrInputs + i * FELT_SIZE);
-  }
+	// Pack inputs into contiguous buffer
+	const ptrInputs = malloc(inputs.length * FELT_SIZE);
+	for (let i = 0; i < inputs.length; i++) {
+		const input = inputs[i]!;
+		writeFelt(input, ptrInputs + i * FELT_SIZE);
+	}
 
-  const ptrOut = malloc(FELT_SIZE);
+	const ptrOut = malloc(FELT_SIZE);
 
-  const result = wasmInstance.exports.starknet_poseidon_hash_many(ptrInputs, inputs.length, ptrOut);
-  checkResult(result);
+	const result = wasmInstance.exports.starknet_poseidon_hash_many(
+		ptrInputs,
+		inputs.length,
+		ptrOut,
+	);
+	checkResult(result);
 
-  return readFelt(ptrOut);
+	return readFelt(ptrOut);
 }
 
 export function wasmKeccak256(data: Uint8Array): Felt252Type {
-  if (!wasmInstance) throw new Error('WASM not loaded');
-  resetAllocator();
+	if (!wasmInstance) throw new Error("WASM not loaded");
+	resetAllocator();
 
-  // Allocate and write input data
-  const ptrData = malloc(data.length);
-  const view = new Uint8Array(wasmInstance.memory.buffer, ptrData, data.length);
-  view.set(data);
+	// Allocate and write input data
+	const ptrData = malloc(data.length);
+	const view = new Uint8Array(wasmInstance.memory.buffer, ptrData, data.length);
+	view.set(data);
 
-  const ptrOut = malloc(FELT_SIZE);
+	const ptrOut = malloc(FELT_SIZE);
 
-  const result = wasmInstance.exports.starknet_keccak256(ptrData, data.length, ptrOut);
-  checkResult(result);
+	const result = wasmInstance.exports.starknet_keccak256(
+		ptrData,
+		data.length,
+		ptrOut,
+	);
+	checkResult(result);
 
-  return readFelt(ptrOut);
+	return readFelt(ptrOut);
 }

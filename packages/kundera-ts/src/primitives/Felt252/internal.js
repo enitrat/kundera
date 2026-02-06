@@ -1,4 +1,4 @@
-import { FIELD_PRIME } from './constants.js';
+import { FIELD_PRIME } from "./constants.js";
 
 /**
  * Convert bytes to hex string
@@ -6,12 +6,12 @@ import { FIELD_PRIME } from './constants.js';
  * @returns {string}
  */
 export function bytesToHex(bytes) {
-  return (
-    '0x' +
-    Array.from(bytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('')
-  );
+	return (
+		"0x" +
+		Array.from(bytes)
+			.map((b) => b.toString(16).padStart(2, "0"))
+			.join("")
+	);
 }
 
 /**
@@ -20,53 +20,53 @@ export function bytesToHex(bytes) {
  * @returns {bigint}
  */
 export function toBigIntInternal(bytes) {
-  return BigInt(bytesToHex(bytes));
+	return BigInt(bytesToHex(bytes));
 }
 
 /** @type {import('./types.js').FeltMethods} */
 const feltPrototype = Object.create(Uint8Array.prototype);
 
 Object.defineProperties(feltPrototype, {
-  toHex: {
-    /** @this {Uint8Array} */
-    value: function toHex() {
-      return bytesToHex(this);
-    },
-  },
-  toBigInt: {
-    /** @this {Uint8Array} */
-    value: function toBigInt() {
-      return toBigIntInternal(this);
-    },
-  },
-  isValid: {
-    /** @this {Uint8Array} */
-    value: function isValid() {
-      return toBigIntInternal(this) < FIELD_PRIME;
-    },
-  },
-  isZero: {
-    /** @this {Uint8Array} */
-    value: function isZero() {
-      for (const byte of this) {
-        if (byte !== 0) return false;
-      }
-      return true;
-    },
-  },
-  equals: {
-    /**
-     * @this {Uint8Array}
-     * @param {import('./types.js').Felt252Type} other
-     */
-    value: function equals(other) {
-      if (this.length !== other.length) return false;
-      for (let i = 0; i < this.length; i++) {
-        if (this[i] !== other[i]) return false;
-      }
-      return true;
-    },
-  },
+	toHex: {
+		/** @this {Uint8Array} */
+		value: function toHex() {
+			return bytesToHex(this);
+		},
+	},
+	toBigInt: {
+		/** @this {Uint8Array} */
+		value: function toBigInt() {
+			return toBigIntInternal(this);
+		},
+	},
+	isValid: {
+		/** @this {Uint8Array} */
+		value: function isValid() {
+			return toBigIntInternal(this) < FIELD_PRIME;
+		},
+	},
+	isZero: {
+		/** @this {Uint8Array} */
+		value: function isZero() {
+			for (const byte of this) {
+				if (byte !== 0) return false;
+			}
+			return true;
+		},
+	},
+	equals: {
+		/**
+		 * @this {Uint8Array}
+		 * @param {import('./types.js').Felt252Type} other
+		 */
+		value: function equals(other) {
+			if (this.length !== other.length) return false;
+			for (let i = 0; i < this.length; i++) {
+				if (this[i] !== other[i]) return false;
+			}
+			return true;
+		},
+	},
 });
 
 /**
@@ -75,8 +75,8 @@ Object.defineProperties(feltPrototype, {
  * @returns {import('./types.js').Felt252Type}
  */
 export function withFeltPrototype(bytes) {
-  if (Object.getPrototypeOf(bytes) !== feltPrototype) {
-    Object.setPrototypeOf(bytes, feltPrototype);
-  }
-  return /** @type {import('./types.js').Felt252Type} */ (bytes);
+	if (Object.getPrototypeOf(bytes) !== feltPrototype) {
+		Object.setPrototypeOf(bytes, feltPrototype);
+	}
+	return /** @type {import('./types.js').Felt252Type} */ (bytes);
 }

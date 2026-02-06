@@ -8,6 +8,6 @@ export const method = "starknet_getBlockWithTxHashes";
  * @param {BlockId} [blockId='latest']
  * @returns {RequestArguments}
  */
-export function GetBlockWithTxHashesRequest(blockId = 'latest') {
-  return { method, params: [blockId] };
+export function GetBlockWithTxHashesRequest(blockId = "latest") {
+	return { method, params: [blockId] };
 }

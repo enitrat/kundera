@@ -92,6 +92,23 @@ EthAddress(1n << 160n);                // Error: EthAddress must be < 2^160
 
 For detailed error messages and validation patterns, see each type's documentation.
 
+## Domain Primitives
+
+Domain primitives convert JSON-RPC wire-format responses (hex strings) into branded types. Each is a separate tree-shakeable entry point:
+
+| Primitive | Import |
+|-----------|--------|
+| BlockHeader | `@kundera-sn/kundera-ts/BlockHeader` |
+| Block | `@kundera-sn/kundera-ts/Block` |
+| Transaction | `@kundera-sn/kundera-ts/Transaction` |
+| Receipt | `@kundera-sn/kundera-ts/Receipt` |
+| Event | `@kundera-sn/kundera-ts/Event` |
+| StateUpdate | `@kundera-sn/kundera-ts/StateUpdate` |
+| FeeEstimate | `@kundera-sn/kundera-ts/FeeEstimate` |
+| Trace | `@kundera-sn/kundera-ts/Trace` |
+
+See [Domain Primitives](/typescript/primitives/domain-primitives) for usage and codec reference.
+
 ## Related
 
 <CardGroup cols={2}>
@@ -101,8 +118,8 @@ For detailed error messages and validation patterns, see each type's documentati
   <Card title="ContractAddress" icon="file-contract" href="/typescript/primitives/contract-address">
     Starknet contract addresses.
   </Card>
-  <Card title="ClassHash" icon="fingerprint" href="/typescript/primitives/class-hash">
-    Contract class identifiers.
+  <Card title="Domain Primitives" icon="arrow-right-arrow-left" href="/typescript/primitives/domain-primitives">
+    Wire-format to branded type codecs.
   </Card>
   <Card title="Short Strings" icon="text" href="/typescript/primitives/short-strings">
     Encode/decode Cairo short strings.

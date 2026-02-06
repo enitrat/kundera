@@ -6,4 +6,4 @@ type Brand<T, B extends string> = T & { readonly [__brand]: B };
  * Uint8 - 8-bit unsigned integer
  * Range: 0 to 255
  */
-export type Uint8Type = Brand<bigint, 'Uint8'>;
+export type Uint8Type = Brand<bigint, "Uint8">;

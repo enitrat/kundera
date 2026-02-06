@@ -7,5 +7,5 @@ export const method = "starknet_blockNumber";
  * @returns {RequestArguments}
  */
 export function BlockNumberRequest() {
-  return { method, params: [] };
+	return { method, params: [] };
 }

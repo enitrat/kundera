@@ -1,14 +1,14 @@
-export type { Signature } from './types.js';
+export type { Signature } from "./types.js";
 
-export { sign } from './sign.js';
-export { verify } from './verify.js';
-export { getPublicKey, getPublicKeyFull } from './getPublicKey.js';
-export { recover } from './recover.js';
+export { sign } from "./sign.js";
+export { verify } from "./verify.js";
+export { getPublicKey, getPublicKeyFull } from "./getPublicKey.js";
+export { recover } from "./recover.js";
 
-import { sign } from './sign.js';
-import { verify } from './verify.js';
-import { getPublicKey, getPublicKeyFull } from './getPublicKey.js';
-import { recover } from './recover.js';
+import { sign } from "./sign.js";
+import { verify } from "./verify.js";
+import { getPublicKey, getPublicKeyFull } from "./getPublicKey.js";
+import { recover } from "./recover.js";
 
 /**
  * ECDSA namespace with all functions
@@ -19,9 +19,9 @@ import { recover } from './recover.js';
  * - '@kundera-sn/kundera-ts/crypto/ECDSA/sign.wasm'
  */
 export const ECDSA = {
-  sign,
-  verify,
-  getPublicKey,
-  getPublicKeyFull,
-  recover,
+	sign,
+	verify,
+	getPublicKey,
+	getPublicKeyFull,
+	recover,
 } as const;

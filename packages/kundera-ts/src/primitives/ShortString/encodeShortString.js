@@ -1,5 +1,5 @@
-import { MAX_SHORT_STRING_LENGTH } from '../Felt252/constants.js';
-import { Felt252 } from '../Felt252/index.js';
+import { MAX_SHORT_STRING_LENGTH } from "../Felt252/constants.js";
+import { Felt252 } from "../Felt252/index.js";
 
 /**
  * Check if string contains only ASCII characters
@@ -7,10 +7,10 @@ import { Felt252 } from '../Felt252/index.js';
  * @returns {boolean}
  */
 function isASCII(str) {
-  for (let i = 0; i < str.length; i++) {
-    if (str.charCodeAt(i) > 127) return false;
-  }
-  return true;
+	for (let i = 0; i < str.length; i++) {
+		if (str.charCodeAt(i) > 127) return false;
+	}
+	return true;
 }
 
 /**
@@ -28,15 +28,15 @@ function isASCII(str) {
  * ```
  */
 export function encodeShortString(str) {
-  if (!isASCII(str)) {
-    throw new Error(`${str} is not an ASCII string`);
-  }
-  if (str.length > MAX_SHORT_STRING_LENGTH) {
-    throw new Error(`${str} is too long for short string (max 31 chars)`);
-  }
-  let result = 0n;
-  for (let i = 0; i < str.length; i++) {
-    result = (result << 8n) | BigInt(str.charCodeAt(i));
-  }
-  return Felt252(result);
+	if (!isASCII(str)) {
+		throw new Error(`${str} is not an ASCII string`);
+	}
+	if (str.length > MAX_SHORT_STRING_LENGTH) {
+		throw new Error(`${str} is too long for short string (max 31 chars)`);
+	}
+	let result = 0n;
+	for (let i = 0; i < str.length; i++) {
+		result = (result << 8n) | BigInt(str.charCodeAt(i));
+	}
+	return Felt252(result);
 }

@@ -1,0 +1,108 @@
+---
+title: Domain Primitives
+description: Convert JSON-RPC wire-format responses to branded domain types.
+---
+
+# Domain Primitives
+
+Domain primitives convert between raw JSON-RPC wire format (hex strings) and branded Kundera types (`Felt252Type`, `ContractAddressType`, etc.).
+
+## Available Codecs
+
+| Primitive | Import | fromRpc | toRpc |
+|-----------|--------|---------|-------|
+| BlockHeader | `@kundera-sn/kundera-ts/BlockHeader` | `blockHeaderFromRpc` | `blockHeaderToRpc` |
+| Block | `@kundera-sn/kundera-ts/Block` | `blockFromRpc` | `blockToRpc` |
+| Transaction | `@kundera-sn/kundera-ts/Transaction` | `transactionFromRpc` | `transactionToRpc` |
+| Receipt | `@kundera-sn/kundera-ts/Receipt` | `receiptFromRpc` | `receiptToRpc` |
+| Event | `@kundera-sn/kundera-ts/Event` | `eventFromRpc` | `eventToRpc` |
+| StateUpdate | `@kundera-sn/kundera-ts/StateUpdate` | `stateUpdateFromRpc` | `stateUpdateToRpc` |
+| FeeEstimate | `@kundera-sn/kundera-ts/FeeEstimate` | `feeEstimateFromRpc` | `feeEstimateToRpc` |
+| Trace | `@kundera-sn/kundera-ts/Trace` | `transactionTraceFromRpc` | `transactionTraceToRpc` |
+
+## Usage
+
+```typescript
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
+import { blockHeaderFromRpc } from '@kundera-sn/kundera-ts/BlockHeader';
+import { transactionFromRpc } from '@kundera-sn/kundera-ts/Transaction';
+import { receiptFromRpc } from '@kundera-sn/kundera-ts/Receipt';
+
+const provider = new HttpProvider('https://api.zan.top/public/starknet-sepolia');
+
+// Fetch raw wire-format response
+const rawBlock = await provider.request(Rpc.GetBlockWithTxHashesRequest('latest'));
+
+// Convert to branded domain types
+const header = blockHeaderFromRpc(rawBlock);
+header.block_hash.toBigInt();     // Felt252Type — not a raw string
+header.sequencer_address.toHex(); // ContractAddressType
+```
+
+## Wire Format vs Domain Types
+
+JSON-RPC returns hex strings. Domain primitives give you branded types with methods:
+
+```typescript
+// Wire format (raw RPC response)
+{
+  block_hash: "0x04a3...",          // string
+  sequencer_address: "0x01176...",  // string
+  l1_gas_price: { price_in_wei: "0x3b9aca00" }
+}
+
+// Domain type (after fromRpc)
+{
+  block_hash: Felt252Type,          // .toBigInt(), .toHex(), .equals()
+  sequencer_address: ContractAddressType,
+  l1_gas_price: { price_in_wei: Felt252Type }
+}
+```
+
+## Round-Trip Conversion
+
+Convert back to wire format with `toRpc`:
+
+```typescript
+import { blockHeaderFromRpc, blockHeaderToRpc } from '@kundera-sn/kundera-ts/BlockHeader';
+
+const header = blockHeaderFromRpc(rawBlock);
+// ... work with branded types ...
+const wireFormat = blockHeaderToRpc(header);
+// Back to hex strings for RPC calls
+```
+
+## Sub-Type Exports
+
+Some primitives export shared sub-type converters:
+
+```typescript
+// BlockHeader exports ResourcePrice codec
+import { resourcePriceFromRpc } from '@kundera-sn/kundera-ts/BlockHeader';
+
+// Transaction exports ResourceBounds codec
+import { resourceBoundsFromRpc, resourceBoundsMappingFromRpc } from '@kundera-sn/kundera-ts/Transaction';
+
+// Receipt exports FeePayment and MsgToL1 codecs
+import { feePaymentFromRpc, msgToL1FromRpc } from '@kundera-sn/kundera-ts/Receipt';
+```
+
+## Tree-Shaking
+
+Each primitive is a separate entry point. Import only what you need:
+
+```typescript
+// Only BlockHeader codec enters your bundle
+import { blockHeaderFromRpc } from '@kundera-sn/kundera-ts/BlockHeader';
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Primitives Overview" icon="cube" href="/typescript/primitives/index">
+    Core branded types (Felt252, ContractAddress, etc.).
+  </Card>
+  <Card title="JSON-RPC API" icon="code" href="/typescript/api/jsonrpc">
+    Request builders for all Starknet RPC methods.
+  </Card>
+</CardGroup>

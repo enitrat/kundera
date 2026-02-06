@@ -1,4 +1,4 @@
-import { encodeShortString } from './encodeShortString.js';
+import { encodeShortString } from "./encodeShortString.js";
 
 /**
  * Encode a short string to hex
@@ -7,6 +7,6 @@ import { encodeShortString } from './encodeShortString.js';
  * @returns {string} Hex-encoded felt representation (unpadded)
  */
 export function encodeShortStringHex(str) {
-  const felt = encodeShortString(str);
-  return '0x' + felt.toBigInt().toString(16);
+	const felt = encodeShortString(str);
+	return "0x" + felt.toBigInt().toString(16);
 }

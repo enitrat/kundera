@@ -1,6 +1,6 @@
-import { Signature } from '@scure/starknet';
-import { Felt252, toBigIntInternal } from '../../primitives/Felt252/index.js';
-import { feltToHex64, hexToBytes } from './utils.js';
+import { Signature } from "@scure/starknet";
+import { Felt252, toBigIntInternal } from "../../primitives/Felt252/index.js";
+import { feltToHex64, hexToBytes } from "./utils.js";
 
 /**
  * Recover public key from signature (pure JS)
@@ -16,21 +16,21 @@ import { feltToHex64, hexToBytes } from './utils.js';
  * @throws {Error} If recovery fails
  */
 export function recover(messageHash, r, s, v) {
-  const rBigInt = toBigIntInternal(r);
-  const sBigInt = toBigIntInternal(s);
-  const vNum = Number(toBigIntInternal(v));
+	const rBigInt = toBigIntInternal(r);
+	const sBigInt = toBigIntInternal(s);
+	const vNum = Number(toBigIntInternal(v));
 
-  if (vNum !== 0 && vNum !== 1) {
-    throw new Error(`Invalid recovery parameter v: ${vNum} (expected 0 or 1)`);
-  }
+	if (vNum !== 0 && vNum !== 1) {
+		throw new Error(`Invalid recovery parameter v: ${vNum} (expected 0 or 1)`);
+	}
 
-  const msgHex = feltToHex64(messageHash);
-  const msgBytes = hexToBytes(msgHex);
+	const msgHex = feltToHex64(messageHash);
+	const msgBytes = hexToBytes(msgHex);
 
-  const sig = new Signature(rBigInt, sBigInt);
-  const sigWithRecovery = sig.addRecoveryBit(vNum);
-  const recoveredPoint = sigWithRecovery.recoverPublicKey(msgBytes);
-  const recoveredAffine = recoveredPoint.toAffine();
+	const sig = new Signature(rBigInt, sBigInt);
+	const sigWithRecovery = sig.addRecoveryBit(vNum);
+	const recoveredPoint = sigWithRecovery.recoverPublicKey(msgBytes);
+	const recoveredAffine = recoveredPoint.toAffine();
 
-  return Felt252(recoveredAffine.x);
+	return Felt252(recoveredAffine.x);
 }

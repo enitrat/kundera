@@ -10,5 +10,5 @@ export const method = "starknet_getTransactionByBlockIdAndIndex";
  * @returns {RequestArguments}
  */
 export function GetTransactionByBlockIdAndIndexRequest(blockId, index) {
-  return { method, params: [blockId, index] };
+	return { method, params: [blockId, index] };
 }

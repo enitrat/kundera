@@ -4,12 +4,19 @@
  * Poseidon-based hash computation for DECLARE_V3 transactions.
  */
 
-import { Felt252, type Felt252Type, type Felt252Input } from '../../primitives/index.js';
-import { poseidonHashMany } from '../hash.js';
-import { TRANSACTION_HASH_PREFIX, type DeclareTransactionV3 } from '../account-types.js';
-import { hashTipAndResourceBounds } from './hashTipAndResourceBounds.js';
-import { encodeDAModes } from './encodeDAModes.js';
-import { hashCalldata } from './hashCalldata.js';
+import {
+	Felt252,
+	type Felt252Type,
+	type Felt252Input,
+} from "../../primitives/index.js";
+import { poseidonHashMany } from "../hash.js";
+import {
+	TRANSACTION_HASH_PREFIX,
+	type DeclareTransactionV3,
+} from "../account-types.js";
+import { hashTipAndResourceBounds } from "./hashTipAndResourceBounds.js";
+import { encodeDAModes } from "./encodeDAModes.js";
+import { hashCalldata } from "./hashCalldata.js";
 
 /**
  * Compute transaction hash for DECLARE_V3
@@ -30,30 +37,33 @@ import { hashCalldata } from './hashCalldata.js';
  * ]
  */
 export function computeDeclareV3Hash(
-  tx: DeclareTransactionV3,
-  chainId: Felt252Input
+	tx: DeclareTransactionV3,
+	chainId: Felt252Input,
 ): Felt252Type {
-  const tipAndResourceBoundsHash = hashTipAndResourceBounds(tx.tip, tx.resource_bounds);
-  const paymasterDataHash = hashCalldata(tx.paymaster_data);
-  const accountDeploymentDataHash = hashCalldata(tx.account_deployment_data);
-  const daModes = encodeDAModes(
-    tx.nonce_data_availability_mode,
-    tx.fee_data_availability_mode
-  );
+	const tipAndResourceBoundsHash = hashTipAndResourceBounds(
+		tx.tip,
+		tx.resource_bounds,
+	);
+	const paymasterDataHash = hashCalldata(tx.paymaster_data);
+	const accountDeploymentDataHash = hashCalldata(tx.account_deployment_data);
+	const daModes = encodeDAModes(
+		tx.nonce_data_availability_mode,
+		tx.fee_data_availability_mode,
+	);
 
-  const elements: Felt252Input[] = [
-    TRANSACTION_HASH_PREFIX.DECLARE,
-    BigInt(tx.version),
-    tx.sender_address,
-    tipAndResourceBoundsHash,
-    paymasterDataHash,
-    chainId,
-    tx.nonce,
-    daModes,
-    accountDeploymentDataHash,
-    tx.class_hash,
-    tx.compiled_class_hash,
-  ];
+	const elements: Felt252Input[] = [
+		TRANSACTION_HASH_PREFIX.DECLARE,
+		BigInt(tx.version),
+		tx.sender_address,
+		tipAndResourceBoundsHash,
+		paymasterDataHash,
+		chainId,
+		tx.nonce,
+		daModes,
+		accountDeploymentDataHash,
+		tx.class_hash,
+		tx.compiled_class_hash,
+	];
 
-  return poseidonHashMany(elements.map((e) => Felt252(e)));
+	return poseidonHashMany(elements.map((e) => Felt252(e)));
 }

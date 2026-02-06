@@ -1,5 +1,9 @@
-import { MAX } from './constants.js';
-import { Uint32NegativeError, Uint32NotIntegerError, Uint32OverflowError } from './errors.js';
+import { MAX } from "./constants.js";
+import {
+	Uint32NegativeError,
+	Uint32NotIntegerError,
+	Uint32OverflowError,
+} from "./errors.js";
 
 /**
  * Create Uint32 from bigint, number, or string
@@ -11,27 +15,27 @@ import { Uint32NegativeError, Uint32NotIntegerError, Uint32OverflowError } from 
  * @throws {Uint32OverflowError} If value exceeds maximum
  */
 export function from(value) {
-  /** @type {bigint} */
-  let bigintValue;
+	/** @type {bigint} */
+	let bigintValue;
 
-  if (typeof value === 'string') {
-    bigintValue = BigInt(value);
-  } else if (typeof value === 'number') {
-    if (!Number.isInteger(value)) {
-      throw new Uint32NotIntegerError(value);
-    }
-    bigintValue = BigInt(value);
-  } else {
-    bigintValue = value;
-  }
+	if (typeof value === "string") {
+		bigintValue = BigInt(value);
+	} else if (typeof value === "number") {
+		if (!Number.isInteger(value)) {
+			throw new Uint32NotIntegerError(value);
+		}
+		bigintValue = BigInt(value);
+	} else {
+		bigintValue = value;
+	}
 
-  if (bigintValue < 0n) {
-    throw new Uint32NegativeError(bigintValue);
-  }
+	if (bigintValue < 0n) {
+		throw new Uint32NegativeError(bigintValue);
+	}
 
-  if (bigintValue > MAX) {
-    throw new Uint32OverflowError(bigintValue);
-  }
+	if (bigintValue > MAX) {
+		throw new Uint32OverflowError(bigintValue);
+	}
 
-  return /** @type {import('./types.js').Uint32Type} */ (bigintValue);
+	return /** @type {import('./types.js').Uint32Type} */ (bigintValue);
 }

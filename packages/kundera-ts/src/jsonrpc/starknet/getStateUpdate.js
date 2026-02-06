@@ -8,6 +8,6 @@ export const method = "starknet_getStateUpdate";
  * @param {BlockId} [blockId='latest']
  * @returns {RequestArguments}
  */
-export function GetStateUpdateRequest(blockId = 'latest') {
-  return { method, params: [blockId] };
+export function GetStateUpdateRequest(blockId = "latest") {
+	return { method, params: [blockId] };
 }
