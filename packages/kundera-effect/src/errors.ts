@@ -6,6 +6,8 @@ export class TransportError extends Data.TaggedError("TransportError")<{
   readonly cause?: unknown;
 }> {}
 
+// Alias the wire-shape type from kundera-ts as `RpcErrorResponse` when imported
+// together with this class to avoid naming collisions.
 export class RpcError extends Data.TaggedError("RpcError")<{
   readonly method: string;
   readonly code: number;
@@ -37,6 +39,13 @@ export class ContractError extends Data.TaggedError("ContractError")<{
   readonly functionName: string;
   readonly stage: "encode" | "request" | "decode";
   readonly message: string;
-  readonly details?: unknown;
   readonly cause?: unknown;
 }> {}
+
+export type KunderaError =
+  | TransportError
+  | RpcError
+  | WalletError
+  | TransactionError
+  | NonceError
+  | ContractError;
