@@ -1,21 +1,37 @@
 ---
 title: Kundera
-description: Type-safe Starknet primitives and tooling with Effect-TS integration
+description: Type-safe Starknet primitives for TypeScript
 ---
 
 <img src="/logo.svg" alt="Kundera" width="200" />
 
 # Kundera
 
-**Type-safe Starknet primitives and tooling with Effect-TS integration**
+**Type-safe Starknet primitives for TypeScript**
 
-Kundera provides strongly-typed Starknet primitives, cryptography, and RPC tooling with first-class Effect-TS support for composable, error-safe blockchain development.
+Kundera provides strongly-typed Starknet primitives, cryptography, and RPC tooling. Use it with vanilla TypeScript or with Effect-TS for composable, error-safe workflows.
 
 ## Quick Start
 
 <CardGroup cols={2}>
+  <Card title="TypeScript" icon="code" href="/getting-started/typescript-quickstart">
+    Vanilla TypeScript with branded types and tree-shakeable imports
+    ```typescript
+    import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
+    import { httpTransport } from "@kundera-sn/kundera-ts/transport"
+    import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc"
+
+    const provider = new HttpProvider({
+      transport: httpTransport("https://...")
+    })
+    const blockNumber = await provider.request(
+      Rpc.BlockNumberRequest()
+    )
+    ```
+  </Card>
+
   <Card title="Effect Integration" icon="sparkles" href="/getting-started/quickstart">
-    **Recommended:** Type-safe, composable services with automatic error handling
+    Effect-TS services with typed errors and dependency injection
     ```typescript
     import { ProviderService } from "@kundera-sn/kundera-effect/services"
     import { Effect } from "effect"
@@ -27,75 +43,59 @@ Kundera provides strongly-typed Starknet primitives, cryptography, and RPC tooli
     )
     ```
   </Card>
-
-  <Card title="TypeScript" icon="code" href="/getting-started/typescript-quickstart">
-    Vanilla TypeScript with branded types and runtime validation
-    ```typescript
-    import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
-
-    const provider = new HttpProvider("https://...")
-    const block = await provider.getBlockNumber()
-    ```
-  </Card>
 </CardGroup>
 
-## Why Effect?
+## Choose Your Style
 
-<AccordionGroup>
-  <Accordion title="Type-Safe Error Handling">
-    Effect tracks all possible errors at the type level. No more catching generic errors or missing edge cases:
+<Tabs>
+  <Tab title="TypeScript">
+    **Direct, familiar, zero extra dependencies.**
 
-    ```typescript
-    // Errors are tracked in the type system
-    type Program = Effect.Effect<
-      BlockNumber,  // Success type
-      NetworkError | ValidationError,  // All possible errors
-      ProviderService  // Required dependencies
-    >
-    ```
-  </Accordion>
-
-  <Accordion title="Composable Services">
-    Build complex workflows by composing simple services:
+    Kundera's core library (`@kundera-sn/kundera-ts`) gives you branded types, tree-shakeable imports, and a straightforward async/await API. If you're comfortable with standard TypeScript patterns, start here.
 
     ```typescript
-    const deployAndVerify = Effect.gen(function* () {
-      const account = yield* AccountService
-      const contract = yield* ContractService
+    import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
+    import { httpTransport } from "@kundera-sn/kundera-ts/transport"
+    import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc"
 
-      const deployment = yield* account.deploy(...)
-      const verification = yield* contract.verify(...)
-
-      return { deployment, verification }
+    const provider = new HttpProvider({
+      transport: httpTransport("https://starknet-mainnet.public.blastapi.io/rpc/v0_7")
     })
-    ```
-  </Accordion>
 
-  <Accordion title="Dependency Injection">
-    Test and mock services easily with Effect's layer system:
+    try {
+      const blockNumber = await provider.request(Rpc.BlockNumberRequest())
+      console.log(`Block: ${blockNumber}`)
+    } catch (error) {
+      console.error("RPC failed:", error)
+    }
+    ```
+  </Tab>
+
+  <Tab title="Effect">
+    **Typed errors, dependency injection, composable services.**
+
+    The Effect integration (`@kundera-sn/kundera-effect`) wraps the core library with Effect-TS services. Errors are tracked at the type level, dependencies are injected via layers, and resources are managed automatically.
 
     ```typescript
-    // Production
-    const live = ProviderService.layer({ url: "https://..." })
+    import { ProviderService } from "@kundera-sn/kundera-effect/services"
+    import { Effect } from "effect"
 
-    // Testing
-    const test = ProviderService.test({ blockNumber: 123n })
+    const program = Effect.gen(function* () {
+      const provider = yield* ProviderService
+      const blockNumber = yield* provider.getBlockNumber()
+      yield* Effect.log(`Block: ${blockNumber}`)
+    }).pipe(
+      Effect.catchAll(error =>
+        Effect.logError(`Failed: ${error._tag}`)
+      )
+    )
 
-    Effect.provide(program, test) // Swap implementations
+    await Effect.runPromise(
+      program.pipe(Effect.provide(ProviderService.layer))
+    )
     ```
-  </Accordion>
-
-  <Accordion title="Resource Management">
-    Automatic cleanup of connections, subscriptions, and resources:
-
-    ```typescript
-    const stream = ProviderService.subscribeToBlocks().pipe(
-      Stream.take(10),
-      Stream.runCollect
-    ) // Connection auto-closed after 10 blocks
-    ```
-  </Accordion>
-</AccordionGroup>
+  </Tab>
+</Tabs>
 
 ## Features
 
@@ -108,12 +108,12 @@ Kundera provides strongly-typed Starknet primitives, cryptography, and RPC tooli
     Fast native crypto with WASM fallback for browsers
   </Card>
 
-  <Card title="ABI Codec" icon="binary" href="/effect/modules/abi">
+  <Card title="ABI Codec" icon="binary" href="/typescript/api/abi">
     Type-safe encoding/decoding with Kundera ABI
   </Card>
 
-  <Card title="RPC Services" icon="server" href="/effect/services/provider">
-    Complete Starknet RPC with Effect services
+  <Card title="JSON-RPC" icon="server" href="/typescript/api/jsonrpc">
+    Complete Starknet JSON-RPC with typed request builders
   </Card>
 
   <Card title="Account Abstraction" icon="user-lock" href="/effect/services/account">
@@ -127,28 +127,72 @@ Kundera provides strongly-typed Starknet primitives, cryptography, and RPC tooli
 
 ## Installation
 
-<CodeGroup>
-```bash npm
-npm install @kundera-sn/kundera-effect effect
-```
+<Tabs>
+  <Tab title="TypeScript">
+    <CodeGroup>
+    ```bash npm
+    npm install @kundera-sn/kundera-ts
+    ```
 
-```bash pnpm
-pnpm add @kundera-sn/kundera-effect effect
-```
+    ```bash pnpm
+    pnpm add @kundera-sn/kundera-ts
+    ```
 
-```bash bun
-bun add @kundera-sn/kundera-effect effect
-```
-</CodeGroup>
+    ```bash bun
+    bun add @kundera-sn/kundera-ts
+    ```
+    </CodeGroup>
+  </Tab>
 
-<Note>
-  The Effect integration is **recommended** for new projects. If you need vanilla TypeScript, install `@kundera-sn/kundera-ts` instead.
-</Note>
+  <Tab title="Effect">
+    <CodeGroup>
+    ```bash npm
+    npm install @kundera-sn/kundera-effect effect
+    ```
+
+    ```bash pnpm
+    pnpm add @kundera-sn/kundera-effect effect
+    ```
+
+    ```bash bun
+    bun add @kundera-sn/kundera-effect effect
+    ```
+    </CodeGroup>
+
+    `@kundera-sn/kundera-effect` includes `@kundera-sn/kundera-ts` as a dependency -- you get both.
+  </Tab>
+</Tabs>
 
 ## Comparison with starknet.js
 
 <Tabs>
-  <Tab title="Kundera Effect">
+  <Tab title="Kundera (TypeScript)">
+    ```typescript
+    import { httpTransport } from "@kundera-sn/kundera-ts/transport"
+    import { getContract } from "./skills/get-contract"
+
+    const ERC20_ABI = [
+      {
+        type: "function", name: "balance_of",
+        inputs: [{ name: "account", type: "core::starknet::contract_address::ContractAddress" }],
+        outputs: [{ type: "core::integer::u256" }],
+        state_mutability: "view",
+      },
+    ] as const
+
+    const contract = getContract({
+      abi: ERC20_ABI,
+      address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+      transport: httpTransport("https://..."),
+    })
+
+    // Fully typed — function name autocompletes, args & return inferred
+    const { result, error } = await contract.read("balance_of", [owner])
+    //     ^? Uint256Type
+    ```
+  </Tab>
+
+  <Tab title="Kundera (Effect)">
     ```typescript
     import { ProviderService, ContractService } from "@kundera-sn/kundera-effect/services"
     import { Effect } from "effect"
@@ -172,7 +216,6 @@ bun add @kundera-sn/kundera-effect effect
       )
     )
 
-    // Run with dependencies
     const result = await Effect.runPromise(
       program.pipe(Effect.provide(ProviderService.layer))
     )
@@ -197,23 +240,23 @@ bun add @kundera-sn/kundera-effect effect
   </Tab>
 </Tabs>
 
-**Key differences:**
-- ✅ **Type-safe errors** - All error cases tracked at type level
-- ✅ **Dependency injection** - Easy testing and mocking
-- ✅ **Composability** - Chain operations with automatic error propagation
-- ✅ **Resource safety** - Automatic cleanup of connections
+**Key differences from starknet.js:**
+- **ABI type inference** -- function names autocomplete, args and returns are inferred from ABI
+- **Branded types** -- `Felt252`, `ContractAddress`, `ClassHash` are distinct types, not raw strings
+- **Tree-shakeable** -- import only what you use, no monolithic bundle
+- **Rust crypto** -- Pedersen, Poseidon, ECDSA via native FFI or WASM, not JS reimplementations
 
-[See full comparison →](/guides/comparisons)
+[See full comparison](/guides/comparisons)
 
 ## Next Steps
 
 <CardGroup cols={2}>
-  <Card title="Effect Quickstart" icon="rocket" href="/getting-started/quickstart">
-    Get started with Effect in 5 minutes
+  <Card title="TypeScript Quickstart" icon="rocket" href="/getting-started/typescript-quickstart">
+    Get started with vanilla TypeScript
   </Card>
 
-  <Card title="Services Guide" icon="server" href="/effect/services/provider">
-    Learn about Effect services and layers
+  <Card title="Effect Quickstart" icon="sparkles" href="/getting-started/quickstart">
+    Get started with Effect-TS services
   </Card>
 
   <Card title="Migration Guide" icon="arrow-right-arrow-left" href="/guides/migration-from-starknetjs">

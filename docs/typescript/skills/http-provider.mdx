@@ -27,11 +27,11 @@ const chainId = await provider.chainId();
 const block = await provider.blockNumber();
 const nonce = await provider.getNonce('latest', address);
 
-// Or use request() directly
-const result = await provider.request({
-  method: 'starknet_call',
-  params: [{ contract_address: '...', entry_point_selector: '...', calldata: [] }, 'latest']
-});
+// Or use request() with Rpc builders
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
+const result = await provider.request(
+  Rpc.CallRequest({ contract_address: '...', entry_point_selector: '...', calldata: [] }, 'latest')
+);
 ```
 
 ## Implementation Pattern

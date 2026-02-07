@@ -35,7 +35,9 @@ Kundera is a **low-level primitives library** for Starknet. Think of it as the T
 ```typescript
 import { ContractAddress, ClassHash } from '@kundera-sn/kundera-ts';
 import { pedersen } from '@kundera-sn/kundera-ts/crypto';
-import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
+import { httpTransport } from '@kundera-sn/kundera-ts/transport';
 
 // Type-safe primitives
 const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
@@ -45,10 +47,9 @@ const classHash = ClassHash('0x...');
 const hash = pedersen(a, b);
 
 // Tree-shakeable JSON-RPC
-const result = await starknet_call(
-  transport,
-  { contract_address, entry_point_selector, calldata },
-  'latest'
+const provider = new HttpProvider({ transport: httpTransport('https://...') });
+const result = await provider.request(
+  Rpc.CallRequest({ contract_address, entry_point_selector, calldata }, 'latest')
 );
 ```
 
@@ -100,12 +101,15 @@ const result = await starknet_call(
 Read an ERC-20 balance:
 
 ```typescript
+import { HttpProvider } from '@kundera-sn/kundera-ts/provider';
 import { httpTransport } from '@kundera-sn/kundera-ts/transport';
-import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import { decodeOutputObject } from '@kundera-sn/kundera-ts/abi';
 import { ContractAddress } from '@kundera-sn/kundera-ts';
 
-const transport = httpTransport('https://api.zan.top/public/starknet-sepolia');
+const provider = new HttpProvider({
+  transport: httpTransport('https://api.zan.top/public/starknet-sepolia')
+});
 
 const call = {
   contract_address: ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7'),
@@ -113,7 +117,7 @@ const call = {
   calldata: [accountAddress]
 };
 
-const result = await starknet_call(transport, call, 'latest');
+const result = await provider.request(Rpc.CallRequest(call, 'latest'));
 const decoded = decodeOutputObject(erc20Abi, 'balanceOf', result.map(BigInt));
 
 if (decoded.error) throw decoded.error;

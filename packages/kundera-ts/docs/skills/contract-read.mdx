@@ -3,7 +3,7 @@ title: "Contract Read"
 description: "Read-only contract calls with ABI encoding/decoding."
 ---
 
-A minimal read-only contract helper built on `starknet_call`. These calls don't modify state and don't require an account.
+A minimal read-only contract helper built on `Rpc.CallRequest`. These calls don't modify state and don't require an account.
 
 ## Quick Start
 
@@ -44,7 +44,7 @@ const [name, symbol, decimals] = await Promise.all([
 When you call `readContract`:
 
 1. **Encode** - Arguments are ABI-encoded into Starknet calldata
-2. **Call** - `starknet_call` is sent to the provider
+2. **Call** - `Rpc.CallRequest` is sent to the provider via `provider.request()`
 3. **Decode** - Return data is ABI-decoded to JavaScript types
 
 ```ts

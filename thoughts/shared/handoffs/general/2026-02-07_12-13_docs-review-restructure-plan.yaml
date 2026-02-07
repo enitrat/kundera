@@ -1,0 +1,65 @@
+---
+session: general
+date: 2026-02-07
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Full review of kundera-ts docs — clarity, repetition, narrative flow, accuracy
+now: Implement doc restructuring based on review findings (fix stale code, merge duplicates, add narrative arc)
+
+test: pnpm docs:build
+
+done_this_session:
+  - task: Read all ~50 doc files across packages/kundera-ts/docs/ and docs/typescript/
+    files: [packages/kundera-ts/docs/**/*.mdx, docs/typescript/**/*.mdx, docs/index.mdx, docs/docs.json]
+  - task: Identified 4 P0 broken/stale issues, 5 P1 structural problems, 5 P2 moderate issues, 4 P3 minor issues
+    files: []
+  - task: Proposed new doc structure with clear learning path narrative
+    files: []
+
+blockers: []
+
+questions:
+  - "Are branded types bigint-based or Uint8Array-based? Docs contradict — architecture.mdx says bigint, concepts/branded-types.mdx says Uint8Array. Must verify actual implementation before fixing docs."
+  - "Should the site-level docs/index.mdx remain Effect-first, or become neutral? Affects entire information architecture."
+  - "Old wallet-modal.ts/mdx still exists alongside new split (starknetkit + get-starknet) — delete old combined one?"
+
+decisions:
+  - review_scope: Focused on packages/kundera-ts/docs/ (the source) and docs/typescript/ (the rendered site), excluded auto-generated API docs and Effect docs
+  - report_format: Categorized findings by severity (P0-P3) with actionable fixes per issue
+
+findings:
+  - stale_api_in_landing_page: "overview.mdx and index.mdx still use killed starknet_call(transport,...) API from pre-Rpc refactoring. Architecture page correctly uses Rpc.CallRequest(). packages/kundera-ts/docs/overview.mdx:38-52"
+  - fake_api_in_site_index: "docs/index.mdx:38 shows provider.getBlockNumber() which doesn't exist on HttpProvider"
+  - missing_symlinks: "wallet-modal-starknetkit.mdx, wallet-modal-get-starknet.mdx, wallet-account.mdx exist in packages/kundera-ts/docs/skills/ but NOT in docs/typescript/skills/ — 3 nav links are 404s"
+  - contradictory_types: "branded-types described as Uint8Array in concepts/, bigint in architecture.mdx, and Uint8Array in comparisons.mdx — must unify"
+  - triple_branded_types: "getting-started/branded-types.mdx, concepts/branded-types.mdx, shared/branded-types.mdx all explain same concept differently"
+  - comparison_table_5x: "Kundera vs starknet.js table appears in docs/index, typescript/index, why-kundera, quickstart, comparisons — 5 copies with different columns"
+  - skills_lack_narrative: "Skills index is a flat card grid. Missing: philosophy paragraph, composition diagram (transport -> provider -> readContract -> getContract), end-to-end dapp tutorial"
+  - abi_inference_buried: "InferArgs/InferReturn/InferFunctionName generic system only documented in get-contract.mdx skill page — deserves first-class concept page"
+  - from_vs_constructor: "Some docs use ContractAddress.from(), others use ContractAddress() — CLAUDE.md says prefer constructor form"
+
+worked:
+  - Reading all docs in parallel batches to build complete picture before writing report
+  - Checking for symlink/copy discrepancies between packages/ and docs/ directories
+  - Cross-referencing docs.json navigation against actual file existence
+
+failed: []
+
+next:
+  - Fix P0s first — update stale starknet_call examples to Rpc.CallRequest pattern in overview.mdx and index.mdx
+  - Fix site-level docs/index.mdx — replace provider.getBlockNumber() with provider.request(Rpc.BlockNumberRequest())
+  - Fix missing symlinks — run docs:setup or manually add wallet-* skill mdx files to docs/typescript/skills/
+  - Unify branded types description — verify actual implementation, then pick ONE truth and update all pages
+  - Merge getting-started/branded-types + concepts/branded-types + shared/branded-types into one canonical page
+  - Consolidate comparison table to one page (comparisons.mdx), link from elsewhere
+  - Add skills composition narrative and diagram to skills/index.mdx
+  - Create new concept page for ABI type inference (InferArgs, InferReturn, as const pattern)
+  - Create "Build a dapp in 15 minutes" tutorial showing skill composition end-to-end
+  - Standardize constructor API (ContractAddress() not .from()) across all examples
+
+files:
+  created:
+    - thoughts/shared/handoffs/general/2026-02-07_12-13_docs-review-restructure-plan.yaml
+  modified: []

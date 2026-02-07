@@ -13,19 +13,24 @@ Kundera provides two crypto backends with **identical APIs**. The same code work
 | **WASM** | Browser, Node, Bun, Deno | Frontend dApps, portable environments |
 
 ```typescript
-// Native - Rust FFI (fastest)
-import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
-await loadWasmCrypto(); // Load once at startup
-
-// Both use the same crypto functions
+// Native (Rust FFI) — synchronous, no loading step
 import { pedersen, sign } from '@kundera-sn/kundera-ts/crypto';
 
-const hash = pedersen(a, b);
-const signature = sign(privateKey, messageHash);
+const hash = pedersen(a, b);       // works immediately
+const signature = sign(pk, msg);
+```
+
+```typescript
+// WASM — must load async before use
+import { loadWasmCrypto } from '@kundera-sn/kundera-ts/wasm';
+import { pedersen, sign } from '@kundera-sn/kundera-ts/crypto';
+
+await loadWasmCrypto(); // load once at startup
+const hash = pedersen(a, b);       // works after loading
 ```
 
 <Note>
-Both backends export identical crypto APIs. Switch implementations by changing your initialization - no code changes required.
+Both backends export the same crypto API via `@kundera-sn/kundera-ts/crypto`. Native works immediately; WASM requires an async `loadWasmCrypto()` call before any crypto operation.
 </Note>
 
 ## Native (Rust FFI)

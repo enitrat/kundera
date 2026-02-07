@@ -14,7 +14,7 @@ No auto-detection of backends. You import pure TS, native FFI, or WASM explicitl
 
 ### Zero-Cost Type Safety
 
-Branded types (`FeltType = bigint & { [brand]: "Felt" }`) give compile-time safety with no runtime cost. The brand is phantom—it doesn't exist in JavaScript. You get type safety of wrapper classes with performance of raw primitives.
+Branded types (`Felt252Type = Brand<Uint8Array, "Felt252"> & FeltMethods`) give compile-time safety with no runtime cost. The brand is phantom—it doesn't exist in JavaScript. You get type safety of wrapper classes with performance of raw primitives.
 
 ### Tree-Shaking First
 
@@ -159,11 +159,12 @@ pnpm release                      # Build + publish
 Data-first branded primitives with tree-shakable namespace methods:
 
 ```typescript
-// Type def (FeltType.ts)
-export type FeltType = bigint & { readonly __tag: "Felt" };
+// Type def (types.ts)
+type Brand<T, B> = T & { readonly [brand]: B };
+export type Felt252Type = Brand<Uint8Array, "Felt252"> & FeltMethods;
 
 // Internal method (toHex.js - NOTE .js extension!)
-export function toHex(data: FeltType): Hex { ... }
+export function toHex(data: Felt252Type): Hex { ... }
 
 // Index: dual export (index.ts)
 export { toHex as _toHex } from "./toHex.js";   // Internal API
@@ -180,8 +181,8 @@ Felt._toHex(felt)           // Advanced (internal, no conversion)
 **File organization**:
 
 ```
-Felt/
-├── FeltType.ts       # Type definition
+Felt252/
+├── types.ts          # Type definition (Felt252Type, FeltMethods, Brand)
 ├── from.js           # Constructor (no wrapper needed)
 ├── toHex.js          # Internal method
 ├── equals.js         # Internal method

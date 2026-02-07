@@ -15,8 +15,10 @@ Already using `@kundera-sn/kundera-ts`? This guide shows you how to upgrade to E
 
     **Before (TypeScript):**
     ```typescript
+    import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc"
+
     try {
-      const result = await provider.getBlockNumber()
+      const result = await provider.request(Rpc.BlockNumberRequest())
       return result
     } catch (error) {
       // What kind of error? Unknown!
@@ -95,9 +97,10 @@ npm install @kundera-sn/kundera-effect effect
 **Before:**
 ```typescript
 import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
+import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc"
 
 const provider = new HttpProvider({ url: "..." })
-const blockNumber = await provider.getBlockNumber()
+const blockNumber = await provider.request(Rpc.BlockNumberRequest())
 ```
 
 **After:**

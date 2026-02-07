@@ -1,0 +1,49 @@
+---
+title: "Wallet Modal: get-starknet"
+description: "Connect to browser wallets using get-starknet's modal."
+---
+
+Connect to ArgentX, Braavos, and other Starknet wallets using [get-starknet](https://github.com/starknet-io/get-starknet).
+
+## Install
+
+```bash
+npm install get-starknet
+```
+
+## Quick Start
+
+```ts
+import { connectWallet, disconnectWallet } from './skills/wallet-modal-get-starknet';
+import { createWalletAccount } from './skills/wallet-account';
+
+// Open modal
+const { result, error } = await connectWallet({ chainId: 'SN_MAIN' });
+if (error) throw new Error(error.message);
+
+// result.swo passes directly to wallet-account — no cast needed
+const account = createWalletAccount({
+  swo: result.swo,
+  transport: result.transport,
+});
+
+await account.connect();
+console.log('Connected:', result.address);
+
+// Later...
+await disconnectWallet();
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `walletIds` | `string[]` | all | Filter to specific wallet IDs |
+| `rpcUrl` | `string` | public blast | Custom RPC endpoint for read calls |
+| `chainId` | `'SN_MAIN' \| 'SN_SEPOLIA'` | `'SN_MAIN'` | Target chain |
+
+## Notes
+
+- Returns a `StarknetWindowObject` that composes directly with the `wallet-account` skill.
+- Lighter than StarknetKit — get-starknet is a thin wallet discovery layer.
+- See also: [`wallet-modal-starknetkit`](/typescript/skills/wallet-modal-starknetkit) for the StarknetKit alternative.

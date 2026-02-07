@@ -100,9 +100,7 @@
                 "group": "Overview",
                 "icon": "house",
                 "pages": [
-                  "typescript/overview/architecture",
-                  "typescript/overview/why-kundera",
-                  "typescript/comparisons"
+                  "typescript/overview/architecture"
                 ]
               },
               {
@@ -110,7 +108,6 @@
                 "icon": "rocket",
                 "pages": [
                   "typescript/getting-started/quickstart",
-                  "typescript/getting-started/branded-types",
                   "typescript/getting-started/agentic-coding",
                   "typescript/getting-started/runtime-implementations"
                 ]
@@ -133,7 +130,6 @@
                 "group": "Concepts",
                 "icon": "lightbulb",
                 "pages": [
-                  "typescript/concepts/branded-types",
                   "typescript/concepts/tree-shakeable-api",
                   "typescript/concepts/type-safe-values",
                   "typescript/concepts/error-handling",
@@ -197,7 +193,10 @@
                   "typescript/api/jsonrpc",
                   "typescript/api/abi"
                 ]
-              }
+              },
+              "typescript/skills/wallet-modal",
+              "typescript/comparisons",
+              "typescript/overview/why-kundera"
             ]
           },
           {

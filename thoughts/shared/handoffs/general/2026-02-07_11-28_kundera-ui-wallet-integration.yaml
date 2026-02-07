@@ -1,0 +1,85 @@
+---
+session: general
+date: 2026-02-07
+status: complete
+outcome: PARTIAL_PLUS
+---
+
+goal: Create kundera-ui example app + fix wallet integration skills and docs
+now: Manual browser test of wallet connect flow, then commit
+
+test: cd examples/kundera-ui && npx tsc --noEmit && npx vite build
+
+done_this_session:
+  - task: Created examples/kundera-ui React+Vite app for browser wallet testing
+    files: [examples/kundera-ui/package.json, examples/kundera-ui/tsconfig.json, examples/kundera-ui/vite.config.ts, examples/kundera-ui/index.html, examples/kundera-ui/src/main.tsx, examples/kundera-ui/src/App.tsx]
+  - task: Split wallet-modal skill into one-per-provider (starknetkit + get-starknet)
+    files: [packages/kundera-ts/docs/skills/wallet-modal-starknetkit.ts, packages/kundera-ts/docs/skills/wallet-modal-starknetkit.mdx, packages/kundera-ts/docs/skills/wallet-modal-get-starknet.ts, packages/kundera-ts/docs/skills/wallet-modal-get-starknet.mdx]
+  - task: Fixed wallet-modal type mismatch — returns StarknetWindowObject instead of custom StarknetWalletProvider
+    files: [packages/kundera-ts/docs/skills/wallet-modal.ts, packages/kundera-ts/docs/skills/wallet-modal.mdx]
+  - task: Fixed NO_WALLET_FOUND bug — added wallet_requestAccounts fallback
+    files: [packages/kundera-ts/docs/skills/wallet-modal-starknetkit.ts, packages/kundera-ts/docs/skills/wallet-modal-get-starknet.ts]
+  - task: Fixed typescript-quickstart to use actual Rpc.XxxRequest() API
+    files: [docs/getting-started/typescript-quickstart.mdx]
+  - task: Created wallet integration guide
+    files: [docs/typescript/guides/wallet-integration.mdx]
+  - task: Replaced all BlastAPI URLs with zan.top across skills and docs
+    files: [packages/kundera-ts/docs/skills/*.ts, docs/**/*.mdx]
+  - task: Updated docs.json navigation with new skills and guide
+    files: [docs/docs.json]
+
+blockers: []
+
+questions:
+  - WSS blastapi URLs still in docs/effect/services.mdx and docs/effect/modules/transport.mdx — need a working WSS provider
+  - Old combined wallet-modal.ts still exists at source — delete or keep for backwards compat?
+
+decisions:
+  - one_skill_per_modal_provider: Eliminates Vite import analysis crashes on uninstalled optional deps. No externalization hacks needed.
+  - swo_field_not_walletProvider: wallet-modal now returns `swo` (StarknetWindowObject from kundera-ts/provider) so skills compose without casts
+  - zan_top_rpc: BlastAPI deprecated, zan.top is free and works
+  - pinned_react_19_2_3: pnpm hoisted mismatched patch versions (react 19.2.3 vs react-dom 19.2.4)
+
+findings:
+  - starknetkit_bundle_2mb: starknetkit bundles ~2.2MB regardless of dynamic import claims
+  - swo_account_not_populated: After StarknetKit connect(), swo.account?.address is often null — must call wallet_requestAccounts
+  - vite_import_analysis: Vite crashes on unresolved dynamic imports even inside try/catch — fundamentally incompatible with optional peer dep pattern in a single file
+
+worked:
+  - Split skills per provider — clean, no hacks
+  - wallet_requestAccounts fallback for address resolution
+  - React version pinning to fix mismatch
+
+failed:
+  - Vite externalize plugin approach — works but is a hack users shouldn't need
+  - Relying on swo.account?.address after StarknetKit connect — not populated reliably
+
+next:
+  - Manual browser test of full flow (connect, balance, transfer, sign)
+  - Consider deleting old combined wallet-modal.ts
+  - Fix WSS URLs in effect docs
+  - Commit all changes
+
+files:
+  created:
+    - examples/kundera-ui/ (full directory)
+    - packages/kundera-ts/docs/skills/wallet-modal-starknetkit.ts
+    - packages/kundera-ts/docs/skills/wallet-modal-starknetkit.mdx
+    - packages/kundera-ts/docs/skills/wallet-modal-starknetkit.test.ts
+    - packages/kundera-ts/docs/skills/wallet-modal-get-starknet.ts
+    - packages/kundera-ts/docs/skills/wallet-modal-get-starknet.mdx
+    - packages/kundera-ts/docs/skills/wallet-modal-get-starknet.test.ts
+    - docs/typescript/guides/wallet-integration.mdx
+  modified:
+    - packages/kundera-ts/docs/skills/wallet-modal.ts
+    - packages/kundera-ts/docs/skills/wallet-modal.mdx
+    - packages/kundera-ts/docs/skills/wallet-account.ts
+    - packages/kundera-ts/docs/skills/wallet-account.mdx
+    - docs/getting-started/typescript-quickstart.mdx
+    - docs/docs.json
+    - docs/getting-started/quickstart.mdx
+    - docs/effect/overview.mdx
+    - docs/effect/services.mdx
+    - docs/effect/guides/react-integration.mdx
+    - docs/effect/guides/testing.mdx
+    - docs/effect/modules/transport.mdx

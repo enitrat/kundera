@@ -3,7 +3,9 @@ title: Skills
 description: Copy-paste examples for common Starknet patterns.
 ---
 
-Skills are self-contained code examples that you copy into your project. They're not published packages—just well-tested patterns you can adapt to your needs.
+Skills are copy-paste patterns for common Starknet tasks. Each skill is a self-contained recipe that composes Kundera's primitives into a working solution. Start with a transport, add a provider, then build up to contract reads, writes, and account operations.
+
+**Composition Flow:** Transport → Provider → Contract Read/Write → Account Operations
 
 ## Why Skills?
 
@@ -14,7 +16,13 @@ Skills are self-contained code examples that you copy into your project. They're
 | **Well-tested** | Each skill includes a test suite |
 | **Tree-shakeable** | Import only what you use |
 
+<Tip>
+For **type-safe** contract interaction with auto-completed function names and inferred argument types, start with the [Get Contract](/typescript/skills/get-contract) skill. It uses ABI type inference (`InferArgs`, `InferReturn`, `InferFunctionName`) to catch errors at compile time.
+</Tip>
+
 ## Available Skills
+
+### Setup & Transport
 
 <CardGroup cols={2}>
   <Card title="HTTP Transport" icon="network-wired" href="/typescript/skills/http-transport">
@@ -26,14 +34,13 @@ Skills are self-contained code examples that you copy into your project. They're
   <Card title="WebSocket Provider" icon="satellite" href="/typescript/skills/websocket-provider">
     Real-time subscriptions with WebSocket transport.
   </Card>
-  <Card title="Account Invoke" icon="bolt" href="/typescript/skills/account-invoke">
-    Execute invoke transactions with a signer.
-  </Card>
-  <Card title="Account Declare" icon="file-signature" href="/typescript/skills/account-declare">
-    Declare contract classes with a signer.
-  </Card>
-  <Card title="Account Deploy" icon="rocket" href="/typescript/skills/account-deploy">
-    Deploy account contracts with a signer.
+</CardGroup>
+
+### Contract Interaction
+
+<CardGroup cols={2}>
+  <Card title="Get Contract" icon="file-contract" href="/typescript/skills/get-contract">
+    Type-safe contract instance with ABI inference.
   </Card>
   <Card title="Contract Read" icon="eye" href="/typescript/skills/contract-read">
     Read-only contract calls with ABI decoding.
@@ -44,17 +51,41 @@ Skills are self-contained code examples that you copy into your project. They're
   <Card title="Contract Multicall" icon="layer-group" href="/typescript/skills/contract-multicall">
     Batch multiple read calls with requestBatch.
   </Card>
+</CardGroup>
+
+### Account Operations
+
+<CardGroup cols={2}>
+  <Card title="Account Invoke" icon="bolt" href="/typescript/skills/account-invoke">
+    Execute invoke transactions with a signer.
+  </Card>
+  <Card title="Account Declare" icon="file-signature" href="/typescript/skills/account-declare">
+    Declare contract classes with a signer.
+  </Card>
+  <Card title="Account Deploy" icon="rocket" href="/typescript/skills/account-deploy">
+    Deploy account contracts with a signer.
+  </Card>
+</CardGroup>
+
+### Events
+
+<CardGroup cols={2}>
   <Card title="Event Filtering" icon="filter" href="/typescript/skills/event-filtering">
     Decode and filter receipt events using ABI metadata.
   </Card>
-  <Card title="Fee Estimation" icon="calculator" href="/typescript/skills/fee-estimation">
-    Estimate transaction fees before sending.
+</CardGroup>
+
+### Wallet Integration
+
+<CardGroup cols={2}>
+  <Card title="Wallet Modal (StarknetKit)" icon="wallet" href="/typescript/skills/wallet-modal-starknetkit">
+    Connect to wallets using StarknetKit modal.
   </Card>
-  <Card title="Wallet Modal" icon="wallet" href="/typescript/skills/wallet-modal">
-    Connect to wallets using StarknetKit or get-starknet modals.
+  <Card title="Wallet Modal (get-starknet)" icon="wallet" href="/typescript/skills/wallet-modal-get-starknet">
+    Connect to wallets using get-starknet modal.
   </Card>
-  <Card title="Viem-Style Contract" icon="file-contract" href="/typescript/skills/contract-viem">
-    Viem-style contract helpers built on transports + rpc.
+  <Card title="Wallet Account" icon="user" href="/typescript/skills/wallet-account">
+    Use a connected wallet as an account for transactions.
   </Card>
 </CardGroup>
 

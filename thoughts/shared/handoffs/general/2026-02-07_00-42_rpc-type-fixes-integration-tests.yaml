@@ -1,0 +1,69 @@
+---
+session: general
+date: 2026-02-07
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Fix BlockHeader/FeeEstimate type correctness, rewrite integration tests with exact assertions
+now: Add l1_data_gas to ResourceBoundsMapping (v0.10 drift), check other wire type gaps
+
+test: cd packages/kundera-ts && npx vitest run src/__tests__/rpc-integration.test.ts && npx vitest run src/primitives/FeeEstimate/fromRpc.test.ts && npx tsc --noEmit
+
+done_this_session:
+  - task: "Reverted false optionality in BlockHeaderWithCommitments — commitments are REQUIRED"
+    files:
+      - packages/kundera-ts/src/jsonrpc/types.ts
+      - packages/kundera-ts/src/primitives/BlockHeader/types.ts
+      - packages/kundera-ts/src/primitives/BlockHeader/fromRpc.js
+      - packages/kundera-ts/src/primitives/BlockHeader/toRpc.js
+  - task: "Updated FeeEstimate domain type/codecs/tests from v0.7 to v0.10 field names"
+    files:
+      - packages/kundera-ts/src/primitives/FeeEstimate/types.ts
+      - packages/kundera-ts/src/primitives/FeeEstimate/fromRpc.js
+      - packages/kundera-ts/src/primitives/FeeEstimate/toRpc.js
+      - packages/kundera-ts/src/primitives/FeeEstimate/fromRpc.test.ts
+  - task: "Rewrote rpc-integration.test.ts with exact fixture value assertions (15 tests, all passing)"
+    files: [packages/kundera-ts/src/__tests__/rpc-integration.test.ts]
+
+blockers: []
+
+questions:
+  - ResourceBoundsMapping missing l1_data_gas field (v0.10 has it, our wire type doesn't) — should it be added?
+  - Are there other wire types that drifted between v0.7→v0.10? (TransactionReceipt execution_resources shape?)
+  - Should MessageFeeEstimate also be updated? (still uses gas_consumed/gas_price)
+
+decisions:
+  - commitments_required: "BlockHeaderWithCommitments must have required commitment fields. Previous session made them optional claiming 'real nodes omit them' but all 3 recorded fixtures (Alchemy v0.10, block 800000) include every commitment field. Optional commitments made the type name a lie."
+  - fee_estimate_v0_10: "FeeEstimate uses l1_gas_consumed/l1_gas_price/l2_gas_consumed/l2_gas_price/l1_data_gas_consumed/l1_data_gas_price (6 fields, not 4)"
+  - exact_assertions: "Integration tests must assert exact values from fixtures, not toBeGreaterThan(0) hand-waving"
+
+findings:
+  - vitest_no_typecheck: "vitest run does NOT typecheck — tests can 'pass' with completely wrong field names because the test constructs its own objects. Always run pnpm typecheck separately."
+  - blockWithReceipts_shape: "In BlockWithReceipts, transaction_hash and type live on the receipt object, not the transaction object"
+  - resource_bounds_v0_10: "v0.10 adds l1_data_gas to ResourceBoundsMapping but our wire type only has l1_gas + l2_gas"
+
+worked:
+  - Checking fixture JSON files to verify claims before accepting them
+  - Running typecheck + tests together to catch mismatches
+
+failed:
+  - Previous session trusted hypothesis ("nodes omit commitments") without evidence from recorded data
+
+next:
+  - Add l1_data_gas to ResourceBoundsMapping in jsonrpc/types.ts (v0.10 spec)
+  - Check if MessageFeeEstimate needs v0.10 field name update
+  - Audit remaining wire types for v0.7→v0.10 drift (execution_resources in Receipt, etc.)
+  - Consider adding DECLARE tx fixture (currently only INVOKE_V3)
+
+files:
+  modified:
+    - packages/kundera-ts/src/jsonrpc/types.ts
+    - packages/kundera-ts/src/primitives/BlockHeader/types.ts
+    - packages/kundera-ts/src/primitives/BlockHeader/fromRpc.js
+    - packages/kundera-ts/src/primitives/BlockHeader/toRpc.js
+    - packages/kundera-ts/src/primitives/FeeEstimate/types.ts
+    - packages/kundera-ts/src/primitives/FeeEstimate/fromRpc.js
+    - packages/kundera-ts/src/primitives/FeeEstimate/toRpc.js
+    - packages/kundera-ts/src/primitives/FeeEstimate/fromRpc.test.ts
+    - packages/kundera-ts/src/__tests__/rpc-integration.test.ts

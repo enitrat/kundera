@@ -48,13 +48,13 @@ Information flows downward. Your code talks to providers and domain primitives. 
 
 ## Core Primitives
 
-The foundation is a set of branded types that represent Starknet values. A `Felt252` is a `bigint` at runtime, but TypeScript's type system prevents you from accidentally passing a `ClassHash` where a `ContractAddress` is expected. The brand is phantom — it costs nothing at runtime.
+The foundation is a set of branded types that represent Starknet values. A `Felt252` is a `Uint8Array` at runtime (32 bytes, big-endian), but TypeScript's type system prevents you from accidentally passing a `ClassHash` where a `ContractAddress` is expected. The brand is phantom — it costs nothing at runtime.
 
 ```typescript
 import { Felt252, ContractAddress, ClassHash } from '@kundera-sn/kundera-ts';
 
-const felt = Felt252("0x123");           // bigint & { __tag: "Felt" }
-const addr = ContractAddress("0xabc");   // bigint & { __tag: "ContractAddress" }
+const felt = Felt252("0x123");           // Uint8Array & { [brand]: "Felt252" } & FeltMethods
+const addr = ContractAddress("0xabc");   // Uint8Array & { [brand]: "ContractAddress" } & FeltMethods
 
 // Type error at compile time — different brands
 // someFunction(addr) where Felt252Type is expected → TS error

@@ -1,17 +1,13 @@
 ---
-title: Safe Starknet
-description: Modern type safety with branded types
+title: Branded Types
+description: Zero-overhead type safety for Starknet primitives
 ---
 
-Kundera provides runtime safety without third-party validation libraries. Every primitive validates at construction, giving you type-safe, runtime-verified values.
+Starknet uses 252-bit field elements for everything -- addresses, class hashes, storage keys. They're all the same size, but mixing them is a bug. Kundera's branded types prevent this at compile time with zero runtime cost.
 
 ## The Problem
 
-### Type Confusion
-
-Starknet uses 252-bit field elements for everything—addresses, class hashes, storage keys. They're all the same size, but mixing them is a bug.
-
-TypeScript's structural typing means types with the same structure are interchangeable:
+TypeScript's structural typing means types with the same shape are interchangeable:
 
 ```typescript
 type ContractAddress = `0x${string}`;
@@ -22,108 +18,165 @@ function deployContract(classHash: ClassHash, address: ContractAddress) { }
 const address: ContractAddress = "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
 const classHash: ClassHash = "0x052c7f38c1b29c15bdb4e7f6d6e2d6e4e5f6e7f8e9f0f1f2f3f4f5f6f7f8f9fa";
 
-// Arguments swapped - compiles fine, breaks at runtime!
-deployContract(address, classHash); // ✓ No error
+// Arguments swapped -- compiles fine, breaks at runtime
+deployContract(address, classHash); // No error
 ```
 
-### Casing Bugs
-
-String-based addresses have casing inconsistencies:
+String-based values also have casing bugs:
 
 ```typescript
-const addr1 = "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"; // lowercase
-const addr2 = "0x049D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7"; // uppercase
-addr1 === addr2; // false - same address!
+const a = "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
+const b = "0x049D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7";
+a === b; // false -- same address!
 ```
 
-## The Solution
+## How Branded Types Work
 
-[Branded types](https://prosopo.io/blog/typescript-branding/) add compile-time tags that prevent mixing incompatible types:
+A branded type adds a compile-time tag to a base type. At runtime, it's a `Uint8Array`. The brand is a phantom type -- it only exists in TypeScript's type system.
+
+```typescript
+declare const __brand: unique symbol;
+type Brand<T, B extends string> = T & { readonly [__brand]: B };
+
+// Each primitive is a Uint8Array with a unique brand + prototype methods
+type Felt252Type = Brand<Uint8Array, "Felt252"> & FeltMethods;
+type ContractAddressType = Brand<Uint8Array, "ContractAddress"> & FeltMethods;
+type ClassHashType = Brand<Uint8Array, "ClassHash"> & FeltMethods;
+```
+
+TypeScript sees different types. JavaScript sees identical `Uint8Array` instances:
+
+```typescript
+const addr = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+
+addr instanceof Uint8Array;  // true
+addr.length;                  // 32
+addr.toHex();                 // "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+```
+
+## Compile-Time Safety
+
+Swapped arguments become compile errors:
 
 ```typescript
 import { ContractAddress, ClassHash } from '@kundera-sn/kundera-ts';
 
-function deployContract(classHash: ClassHash, address: ContractAddress) { }
+function deployContract(classHash: ClassHashType, address: ContractAddressType) { }
 
-const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7')
-const classHash = ClassHash('0x052c7f38c1b29c15bdb4e7f6d6e2d6e4e5f6e7f8e9f0f1f2f3f4f5f6f7f8f9fa')
+const address = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+const classHash = ClassHash('0x052c7f38c1b29c15bdb4e7f6d6e2d6e4e5f6e7f8e9f0f1f2f3f4f5f6f7f8f9fa');
 
-deployContract(address, classHash)
-// Error: Type 'ContractAddress' is not assignable to type 'ClassHash'
+deployContract(address, classHash);
+// Error: Type 'ContractAddressType' is not assignable to type 'ClassHashType'
 ```
 
-For casing, Kundera normalizes addresses internally:
+Casing is irrelevant -- values are stored as bytes:
 
 ```typescript
-const addr1 = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7')
-const addr2 = ContractAddress('0x049D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7')
-addr1.equals(addr2) // true
+const addr1 = ContractAddress('0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7');
+const addr2 = ContractAddress('0x049D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7');
+addr1.equals(addr2); // true
 ```
 
 ## Validation at Construction
 
-Invalid inputs throw immediately:
+If construction succeeds, the value is guaranteed valid. Invalid inputs throw immediately:
 
 ```typescript
-ContractAddress('0xnot_valid_hex')     // Error: Invalid hex character
-ContractAddress('0x123')               // Error: Invalid address length
-ContractAddress('invalid')             // Error: Must start with 0x
+ContractAddress('not_valid');            // Error: Must start with 0x
+ContractAddress('0xnot_valid_hex');      // Error: Invalid hex character
+ContractAddress('0x' + 'f'.repeat(65));  // Error: Exceeds max value
 ```
 
 <Warning>
-**If you see a branded type, it's validated.** Any `ContractAddress` value is guaranteed valid.
+**If you have a branded type, it's valid.** No downstream validation needed.
 </Warning>
 
-## All Primitives Are Branded
+## Available Types
 
-Kundera brands all Starknet primitives:
+| Type | Description | Underlying | Max Value |
+|------|-------------|------------|-----------|
+| `Felt252Type` | 252-bit field element | `Uint8Array` (32 bytes) | < 2^251 + 17*2^192 + 1 |
+| `ContractAddressType` | Starknet contract address | `Uint8Array` (32 bytes) | < 2^251 |
+| `ClassHashType` | Contract class identifier | `Uint8Array` (32 bytes) | < 2^251 + 17*2^192 + 1 |
+| `StorageKeyType` | Storage slot address | `Uint8Array` (32 bytes) | < 2^251 + 17*2^192 + 1 |
+| `EthAddressType` | L1 Ethereum address | `Uint8Array` (20 bytes) | < 2^160 |
 
-| Type | What it prevents |
-|------|------------------|
-| `Felt252` | Generic felt mixups |
-| `ContractAddress` | Address used as class hash |
-| `ClassHash` | Class hash used as address |
-| `StorageKey` | Storage key used as address |
-| `TransactionHash` | Transaction hash mixups |
+All share `FeltMethods`: `.toHex()`, `.toBigInt()`, `.equals()`, `.isZero()`, `.isValid()`.
+
+## Constructors
+
+Direct constructor call is the recommended pattern:
 
 ```typescript
-import { ContractAddress, ClassHash, StorageKey } from '@kundera-sn/kundera-ts';
+import { Felt252, ContractAddress, ClassHash, StorageKey, EthAddress } from '@kundera-sn/kundera-ts';
 
-const addr = ContractAddress('0x...');
-const hash = ClassHash('0x...');
-const key = StorageKey('0x...');
-
-// TypeScript prevents all cross-type usage
-function readStorage(contract: ContractAddress, slot: StorageKey) { }
-
-readStorage(addr, hash);  // Error: ClassHash not assignable to StorageKey
-readStorage(hash, key);   // Error: ClassHash not assignable to ContractAddress
+// Direct call (preferred)
+const felt = Felt252('0x123');
+const addr = ContractAddress('0x049d36570d4e...');
+const hash = ClassHash('0x052c7f38c1b2...');
+const key  = StorageKey('0x01');
+const eth  = EthAddress('0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae');
 ```
 
-## Benefits
+Each namespace also exposes specialized constructors:
+
+```typescript
+Felt252.fromHex('0x123');
+Felt252.fromBigInt(123n);
+Felt252.fromBytes(new Uint8Array(32));
+```
+
+## Subpath Imports
+
+For tree-shaking, import individual primitives via subpaths:
+
+```typescript
+import { ContractAddress } from '@kundera-sn/kundera-ts/ContractAddress';
+import { ClassHash } from '@kundera-sn/kundera-ts/ClassHash';
+import { Felt252 } from '@kundera-sn/kundera-ts/Felt252';
+```
+
+## Converting External Data
+
+RPC responses and user input arrive as raw hex strings. Always construct a branded type before using them:
+
+```typescript
+// RPC returns raw hex
+const rawAddress = '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7';
+
+// Convert to branded type
+const address = ContractAddress(rawAddress);
+// Now type-safe and validated
+```
+
+## Using in Function Signatures
+
+```typescript
+import type { ContractAddressType } from '@kundera-sn/kundera-ts/ContractAddress';
+import type { ClassHashType } from '@kundera-sn/kundera-ts/ClassHash';
+import type { Felt252Type } from '@kundera-sn/kundera-ts/Felt252';
+
+function declareAndDeploy(
+  address: ContractAddressType,
+  classHash: ClassHashType,
+  salt: Felt252Type
+) {
+  // No runtime validation needed -- types guarantee validity
+}
+```
 
 <CardGroup cols={2}>
   <Card title="Type Safety" icon="lock">
     Can't mix ContractAddress with ClassHash or StorageKey
   </Card>
   <Card title="Zero Runtime Cost" icon="gauge">
-    Brand only exists in TypeScript's type checker
+    Brand only exists in TypeScript's type checker -- runtime is plain Uint8Array
   </Card>
-  <Card title="LLM-Friendly" icon="robot">
-    Compile errors help AI assistants self-correct
+  <Card title="Validated by Construction" icon="shield-check">
+    Invalid values throw at creation, not downstream
   </Card>
-  <Card title="No Zod Needed" icon="shield-check">
-    Validation built into constructors
-  </Card>
-</CardGroup>
-
-## Learn More
-
-<CardGroup cols={2}>
-  <Card title="Primitives API" icon="cube" href="/typescript/api/primitives">
-    Complete primitives reference
-  </Card>
-  <Card title="Architecture" icon="sitemap" href="/typescript/overview/architecture">
-    How modules fit together
+  <Card title="Tree-Shakeable" icon="leaf">
+    Subpath imports for minimal bundle size
   </Card>
 </CardGroup>

@@ -1,0 +1,77 @@
+---
+session: general
+date: 2026-02-07
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Add walletTransport/WalletProvider primitives, make contract skills type-safe, add tree-shakeable subpath exports
+now: Fix example App.tsx to use branded constructors (ContractAddress, Uint256) with typed readContract/writeContract
+
+test: cd packages/kundera-ts && npx tsc --noEmit && pnpm test:run
+
+done_this_session:
+  - task: Implemented walletTransport(swo) — adapts SWO {type,params} into JSON-RPC 2.0 Transport
+    files: [packages/kundera-ts/src/transport/wallet.ts, packages/kundera-ts/src/transport/wallet.test.ts]
+  - task: Implemented WalletProvider — TypedProvider<WalletRpcSchema> backed by wallet transport
+    files: [packages/kundera-ts/src/provider/WalletProvider.ts, packages/kundera-ts/src/provider/WalletProvider.test.ts]
+  - task: Wired exports into transport/provider barrels
+    files: [packages/kundera-ts/src/transport/index.ts, packages/kundera-ts/src/provider/index.ts]
+  - task: Rewrote wallet-account skill to compose from primitives, implements AccountExecutor
+    files: [packages/kundera-ts/docs/skills/wallet-account.ts]
+  - task: Made readContract/writeContract generic over TAbi with InferArgs/InferReturn/InferFunctionName
+    files: [packages/kundera-ts/docs/skills/contract-read.ts, packages/kundera-ts/docs/skills/contract-write.ts]
+  - task: Added tree-shakeable subpath exports for all integer + ByteArray primitives
+    files: [packages/kundera-ts/package.json, packages/kundera-ts/tsup.config.ts]
+  - task: Created kundera-ui example app with wallet + contract skills integration
+    files: [examples/kundera-ui/]
+
+blockers: []
+
+questions:
+  - Example App.tsx still uses raw string for args — needs ContractAddress()/Uint256() to satisfy typed skills. Deliberate for now (shows the type errors work) but should be fixed.
+  - Old combined wallet-modal.ts/mdx still exists — delete or keep for backwards compat?
+  - get-contract.ts only has .read() — should .write() be added using AccountExecutor?
+
+decisions:
+  - wallet_transport_as_primitive: walletTransport is a Transport impl (same level as httpTransport), not a skill
+  - wallet_provider_as_primitive: WalletProvider mirrors HttpProvider pattern, owns SWO events
+  - account_executor_interface: WalletAccount extends AccountExecutor from contract-write, enabling composition
+  - generic_abi_inference: readContract/writeContract use InferArgs<TAbi,TFunctionName> — degrades to CairoValue[] when ABI not const
+  - felt252_subpath_import: contract-read uses @kundera-sn/kundera-ts/Felt252 not root barrel (avoids native FFI in browser)
+
+findings:
+  - root_barrel_pulls_native: Importing from '@kundera-sn/kundera-ts' drags in native FFI (fs/path/url) — Vite build fails for browser
+  - swo_type_vs_method: SWO uses {type, params} not {method, params} — transport adapter flattens single-element param arrays
+  - wallet_provider_event_map: TypedProvider generic constraint requires index signature — used type alias with [key:string] instead of interface
+
+worked:
+  - walletTransport as thin adapter (40 lines) — all infrastructure was already in place
+  - AccountExecutor interface for wallet↔contract skill composition
+  - Generic TAbi inference with graceful degradation to CairoValue[]
+
+failed:
+  - Inline feltToHex helper in example (bad — should use proper Felt252 from subpath)
+  - WalletProviderEventMap as interface (TS error — needs index signature for Record constraint)
+
+next:
+  - Fix example App.tsx to use branded constructors: ContractAddress(addr), Uint256(0n)
+  - Consider adding .write() to get-contract.ts using AccountExecutor
+  - Delete old combined wallet-modal.ts if not needed
+  - Browser test full flow: connect → readContract(balance_of) → writeContract(transfer) → sign
+
+files:
+  created:
+    - packages/kundera-ts/src/transport/wallet.ts
+    - packages/kundera-ts/src/transport/wallet.test.ts
+    - packages/kundera-ts/src/provider/WalletProvider.ts
+    - packages/kundera-ts/src/provider/WalletProvider.test.ts
+    - examples/kundera-ui/ (full directory)
+  modified:
+    - packages/kundera-ts/src/transport/index.ts
+    - packages/kundera-ts/src/provider/index.ts
+    - packages/kundera-ts/docs/skills/wallet-account.ts
+    - packages/kundera-ts/docs/skills/contract-read.ts
+    - packages/kundera-ts/docs/skills/contract-write.ts
+    - packages/kundera-ts/package.json
+    - packages/kundera-ts/tsup.config.ts
