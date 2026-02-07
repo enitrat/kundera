@@ -1,6 +1,6 @@
 {
   "name": "@kundera-sn/kundera-ts",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "private": false,
   "description": "Starknet primitives and cryptography library with TypeScript implementations and native Rust FFI bindings",
   "keywords": [
