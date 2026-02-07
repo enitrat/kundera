@@ -30,31 +30,6 @@ importers:
         specifier: ^4.9.0
         version: 4.9.0(typedoc@0.28.16(typescript@5.9.3))
 
-  examples/kdex:
-    dependencies:
-      '@kundera-sn/kundera-effect':
-        specifier: workspace:*
-        version: link:../../packages/kundera-effect
-      '@kundera-sn/kundera-ts':
-        specifier: workspace:*
-        version: link:../../packages/kundera-ts
-      commander:
-        specifier: ^12.1.0
-        version: 12.1.0
-      effect:
-        specifier: ^3.19.0
-        version: 3.19.15
-    devDependencies:
-      '@types/node':
-        specifier: ^22.10.2
-        version: 22.19.8
-      tsx:
-        specifier: ^4.19.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
   examples/kundera-ts-cli:
     dependencies:
       '@kundera-sn/kundera-ts':
@@ -10559,7 +10534,7 @@ snapshots:
       '@wallet-standard/wallet': 1.1.0
       '@walletconnect/logger': 3.0.2
       '@walletconnect/universal-provider': 2.23.2(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      valtio: 2.1.7(@types/react@19.2.11)(react@19.2.3)
+      valtio: 2.1.7(@types/react@19.2.11)(react@18.3.1)
       viem: 2.45.1(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
     optionalDependencies:
       '@base-org/account': 2.4.0(@types/react@19.2.11)(bufferutil@4.1.0)(immer@9.0.21)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(utf-8-validate@5.0.10)(zod@3.25.76)
