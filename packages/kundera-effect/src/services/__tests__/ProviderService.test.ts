@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "@effect/vitest";
+import { afterEach, vi } from "vitest";
 import { Effect } from "effect";
 
 import { FallbackHttpProviderLive, ProviderService } from "../ProviderService.js";

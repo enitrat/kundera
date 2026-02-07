@@ -71,6 +71,7 @@
     "effect": "^3.19.0"
   },
   "devDependencies": {
+    "@effect/vitest": "^0.27.0",
     "@kundera-sn/kundera-ts": "workspace:*",
     "effect": "^3.19.0",
     "tsup": "^8.4.0",

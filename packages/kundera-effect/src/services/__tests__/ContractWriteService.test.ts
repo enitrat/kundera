@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { ContractAddress } from "@kundera-sn/kundera-ts";
 import type { Abi } from "@kundera-sn/kundera-ts/abi";

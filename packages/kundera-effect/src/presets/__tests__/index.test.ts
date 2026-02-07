@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "@effect/vitest";
+import { afterEach, vi } from "vitest";
 import { Effect } from "effect";
 import { ContractAddress } from "@kundera-sn/kundera-ts";
 import type {
@@ -126,7 +127,7 @@ describe("presets", () => {
     expect(result.hasFeeEstimator).toBe(true);
   });
 
-  it("wallet stack wires signer write flow", async () => {
+  it("wallet stack wires transaction and contract write flow", async () => {
     vi.stubGlobal("fetch", mockedFetch);
 
     mockedFetch.mockImplementation(async (_input, init) => {
@@ -164,10 +165,10 @@ describe("presets", () => {
     });
 
     const program = Effect.gen(function* () {
-      const signer = yield* Services.SignerService;
+      const transactions = yield* Services.TransactionService;
       const writer = yield* Services.ContractWriteService;
 
-      const signerResult = yield* signer.sendInvokeAndWait({
+      const transactionResult = yield* transactions.sendInvokeAndWait({
         calls: [
           {
             contract_address: "0x123",
@@ -187,13 +188,13 @@ describe("presets", () => {
         ],
       });
 
-      return { signerResult, writerResult };
+      return { transactionResult, writerResult };
     }).pipe(Effect.provide(stack));
 
     const result = await Effect.runPromise(program);
 
-    expect(result.signerResult.transactionHash).toBe("0xbeef");
-    expect(result.signerResult.receipt.transaction_hash).toBe("0xbeef");
+    expect(result.transactionResult.transactionHash).toBe("0xbeef");
+    expect(result.transactionResult.receipt.transaction_hash).toBe("0xbeef");
     expect(result.writerResult.transactionHash).toBe("0xbeef");
     expect(result.writerResult.receipt.transaction_hash).toBe("0xbeef");
   });

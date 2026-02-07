@@ -44,13 +44,6 @@ export {
 } from "./WalletProviderService.js";
 
 export {
-  RawProviderLive,
-  RawProviderService,
-  type RawProviderServiceShape,
-  type RawRequestArguments,
-} from "./RawProviderService.js";
-
-export {
   Contract,
   ContractLive,
   ContractService,
@@ -105,20 +98,12 @@ export {
   type WaitForReceiptOptions,
 } from "./TransactionService.js";
 
-export {
-  SignerLive,
-  SignerService,
-  type SignerServiceShape,
-} from "./SignerService.js";
-
 import { ContractLive } from "./ContractService.js";
 import { ContractWriteLive } from "./ContractWriteService.js";
 import { DefaultNonceManagerLive } from "./NonceManagerService.js";
 import { ChainLive } from "./ChainService.js";
 import { FeeEstimatorLive } from "./FeeEstimatorService.js";
 import { HttpProviderLive } from "./ProviderService.js";
-import { RawProviderLive } from "./RawProviderService.js";
-import { SignerLive } from "./SignerService.js";
 import { TransactionLive } from "./TransactionService.js";
 import { WalletProviderLive } from "./WalletProviderService.js";
 
@@ -134,7 +119,6 @@ export const WalletBaseStack = (
   import("./ProviderService.js").ProviderService |
     import("./WalletProviderService.js").WalletProviderService |
     import("./ContractService.js").ContractService |
-    import("./RawProviderService.js").RawProviderService |
     import("./NonceManagerService.js").NonceManagerService |
     import("./FeeEstimatorService.js").FeeEstimatorService |
     import("./ChainService.js").ChainService
@@ -144,7 +128,6 @@ export const WalletBaseStack = (
   const baseDependencies = Layer.merge(providerLayer, walletLayer);
 
   const contractLayer = ContractLive.pipe(Layer.provide(baseDependencies));
-  const rawLayer = RawProviderLive.pipe(Layer.provide(baseDependencies));
   const nonceLayer = DefaultNonceManagerLive.pipe(Layer.provide(baseDependencies));
   const feeLayer = FeeEstimatorLive.pipe(Layer.provide(baseDependencies));
   const chainLayer = ChainLive({ rpcUrl: options.rpcUrl }).pipe(
@@ -154,7 +137,6 @@ export const WalletBaseStack = (
   return Layer.mergeAll(
     baseDependencies,
     contractLayer,
-    rawLayer,
     nonceLayer,
     feeLayer,
     chainLayer,
@@ -165,12 +147,10 @@ export const WalletTransactionStack = (
   options: WalletTransactionStackOptions,
 ): Layer.Layer<
   import("./ContractWriteService.js").ContractWriteService |
-  import("./SignerService.js").SignerService |
   import("./TransactionService.js").TransactionService |
   import("./ProviderService.js").ProviderService |
   import("./WalletProviderService.js").WalletProviderService |
   import("./ContractService.js").ContractService |
-  import("./RawProviderService.js").RawProviderService |
   import("./NonceManagerService.js").NonceManagerService |
   import("./FeeEstimatorService.js").FeeEstimatorService |
   import("./ChainService.js").ChainService
@@ -180,7 +160,6 @@ export const WalletTransactionStack = (
   const contractWriteLayer = ContractWriteLive.pipe(
     Layer.provide(Layer.merge(base, txLayer)),
   );
-  const signerLayer = SignerLive.pipe(Layer.provide(Layer.merge(base, txLayer)));
 
-  return Layer.mergeAll(base, txLayer, contractWriteLayer, signerLayer);
+  return Layer.mergeAll(base, txLayer, contractWriteLayer);
 };

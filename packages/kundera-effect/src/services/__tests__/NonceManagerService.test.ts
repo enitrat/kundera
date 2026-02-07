@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { ContractAddress, Felt252 } from "@kundera-sn/kundera-ts";
 
