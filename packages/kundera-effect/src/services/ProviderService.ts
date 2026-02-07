@@ -1,4 +1,4 @@
-import { Context, Effect, Layer } from "effect";
+import { Context, Effect, Layer, Ref, Schedule } from "effect";
 import {
   createRequest,
   httpTransport,
@@ -69,96 +69,112 @@ const isRetryableRpcError = (error: { code: number; message: string }): boolean 
   error.message.toLowerCase().includes("temporarily") ||
   error.message.toLowerCase().includes("unavailable");
 
+const isNoSuchElementException = (
+  error: unknown,
+): error is { readonly _tag: "NoSuchElementException" } =>
+  typeof error === "object" &&
+  error !== null &&
+  "_tag" in error &&
+  error._tag === "NoSuchElementException";
+
 export const FallbackHttpProviderLive = (
   endpoints: readonly [FallbackProviderEndpoint, ...FallbackProviderEndpoint[]],
-): Layer.Layer<ProviderService> => {
-  const transports = endpoints.map((endpoint) => ({
-    endpoint,
-    transport: httpTransport(endpoint.url, endpoint.transportOptions),
-  }));
+): Layer.Layer<ProviderService> =>
+  Layer.effect(
+    ProviderService,
+    Effect.gen(function* () {
+      const transports = endpoints.map((endpoint) => ({
+        endpoint,
+        transport: httpTransport(endpoint.url, endpoint.transportOptions),
+      }));
+      const requestIdRef = yield* Ref.make(0);
 
-  let requestId = 0;
+      const nextRequestId = Ref.updateAndGet(requestIdRef, (n) => n + 1);
 
-  return Layer.succeed(ProviderService, {
-    request: <T>(
-      method: string,
-      params?: readonly unknown[],
-      options?: RequestOptions,
-    ): Effect.Effect<T, TransportErrorData | RpcErrorData> =>
-      Effect.gen(function* () {
-        let lastTransportError: TransportErrorData | undefined;
+      const makeEndpointRequest = <T>(
+        endpoint: FallbackProviderEndpoint,
+        transport: ReturnType<typeof httpTransport>,
+        method: string,
+        params?: readonly unknown[],
+        options?: RequestOptions,
+      ): Effect.Effect<T, TransportErrorData | RpcErrorData> => {
+        const attempts = Math.max(endpoint.attempts ?? 1, 1);
+        const retryDelayMs = Math.max(endpoint.retryDelayMs ?? 0, 0);
 
-        for (const { endpoint, transport } of transports) {
-          const attempts = Math.max(endpoint.attempts ?? 1, 1);
-          const retryDelayMs = Math.max(endpoint.retryDelayMs ?? 0, 0);
+        const requestOnce: Effect.Effect<T, TransportErrorData | RpcErrorData> =
+          Effect.gen(function* () {
+          const id = yield* nextRequestId;
+          const payload = createRequest(method, params ? [...params] : [], id);
 
-          for (let attempt = 1; attempt <= attempts; attempt += 1) {
-            const payload = createRequest(method, params ? [...params] : [], ++requestId);
-
-            const attemptResult = yield* Effect.either(
-              Effect.tryPromise({
-                try: () =>
-                  transport.request<T>(
-                    payload,
-                    options?.timeoutMs ? { timeout: options.timeoutMs } : undefined,
-                  ),
-                catch: (cause) =>
-                  new TransportErrorData({
-                    operation: `${method}@${endpoint.url}`,
-                    message: "Provider endpoint request failed",
-                    cause,
-                  }),
+          const response = yield* Effect.tryPromise({
+            try: () =>
+              transport.request<T>(
+                payload,
+                options?.timeoutMs ? { timeout: options.timeoutMs } : undefined,
+              ),
+            catch: (cause) =>
+              new TransportErrorData({
+                operation: `${method}@${endpoint.url}`,
+                message: "Provider endpoint request failed",
+                cause,
               }),
-            );
+          });
 
-            if (attemptResult._tag === "Left") {
-              lastTransportError = attemptResult.left;
-              if (attempt < attempts) {
-                yield* Effect.sleep(`${retryDelayMs} millis`);
-                continue;
-              }
-              break;
+          if (isJsonRpcError(response)) {
+            if (isRetryableRpcError(response.error)) {
+              return yield* Effect.fail(
+                new TransportErrorData({
+                  operation: `${method}@${endpoint.url}`,
+                  message: `Retryable RPC error: ${response.error.message}`,
+                  cause: response.error,
+                }),
+              );
             }
 
-            const response = attemptResult.right;
-
-            if (isJsonRpcError(response)) {
-              const rpcError = new RpcErrorData({
+            return yield* Effect.fail(
+              new RpcErrorData({
                 method,
                 code: response.error.code,
                 message: response.error.message,
                 data: response.error.data,
-              });
-
-              if (isRetryableRpcError(response.error) && attempt < attempts) {
-                yield* Effect.sleep(`${retryDelayMs} millis`);
-                continue;
-              }
-
-              if (isRetryableRpcError(response.error)) {
-                break;
-              }
-
-              return yield* Effect.fail(rpcError);
-            }
+              }),
+            );
+          }
 
             return response.result as T;
-          }
-        }
+          });
 
-        if (lastTransportError) {
-          return yield* Effect.fail(lastTransportError);
-        }
-
-        return yield* Effect.fail(
-          new TransportErrorData({
-            operation: method,
-            message: "All fallback provider endpoints failed",
+        return requestOnce.pipe(
+          Effect.retry({
+            times: attempts - 1,
+            schedule: Schedule.spaced(`${retryDelayMs} millis`),
+            while: (error: TransportErrorData | RpcErrorData) =>
+              error._tag === "TransportError",
           }),
         );
-      }),
-  });
-};
+      };
+
+      return {
+        request: <T>(method: string, params?: readonly unknown[], options?: RequestOptions) =>
+          Effect.firstSuccessOf(
+            transports.map(({ endpoint, transport }) =>
+              makeEndpointRequest<T>(endpoint, transport, method, params, options),
+            ),
+          ).pipe(
+            Effect.catchAll((error): Effect.Effect<T, TransportErrorData | RpcErrorData> =>
+              isNoSuchElementException(error)
+                ? Effect.fail(
+                    new TransportErrorData({
+                      operation: method,
+                      message: "All fallback provider endpoints failed",
+                    }),
+                  )
+                : Effect.fail(error as TransportErrorData | RpcErrorData),
+            ),
+          ),
+      } satisfies ProviderServiceShape;
+    }),
+  );
 
 export const FallbackHttpProviderFromUrls = (
   urls: readonly [string, ...string[]],

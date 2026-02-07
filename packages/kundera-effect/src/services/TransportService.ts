@@ -1,4 +1,4 @@
-import { Context, Effect, FiberRef, Layer, Ref } from "effect";
+import { Context, Effect, FiberRef, Layer, Ref, Schedule } from "effect";
 import {
   createRequest,
   httpTransport,
@@ -140,30 +140,22 @@ const attemptRequest = <T>(
   execute: () => Promise<T>,
   retries: number,
   retryDelayMs: number,
-): Effect.Effect<T, TransportError> => {
-  const loop = (remaining: number): Effect.Effect<T, TransportError> =>
-    Effect.tryPromise({
-      try: execute,
-      catch: (cause) =>
-        new TransportError({
-          operation,
-          message: "Transport request failed",
-          cause,
-        }),
-    }).pipe(
-      Effect.catchTag("TransportError", (error) => {
-        if (remaining <= 0) {
-          return Effect.fail(error);
-        }
-
-        return Effect.sleep(`${retryDelayMs} millis`).pipe(
-          Effect.zipRight(loop(remaining - 1)),
-        );
+): Effect.Effect<T, TransportError> =>
+  Effect.tryPromise({
+    try: execute,
+    catch: (cause) =>
+      new TransportError({
+        operation,
+        message: "Transport request failed",
+        cause,
       }),
-    );
-
-  return loop(retries);
-};
+  }).pipe(
+    Effect.retry(
+      Schedule.recurs(retries).pipe(
+        Schedule.addDelay(() => `${retryDelayMs} millis`),
+      ),
+    ),
+  );
 
 const makeTransportService = (
   transport: Transport,

@@ -1,4 +1,4 @@
-import { Context, Effect, Layer } from "effect";
+import { Context, Effect, Layer, Schedule } from "effect";
 import type { Felt252Type } from "@kundera-sn/kundera-ts";
 import type { WalletInvokeParams } from "@kundera-sn/kundera-ts/provider";
 import type { TxnReceiptWithBlockInfo } from "@kundera-sn/kundera-ts/jsonrpc";
@@ -92,42 +92,38 @@ export const TransactionLive: Layer.Layer<
       const pollIntervalMs = Math.max(options?.pollIntervalMs ?? 1_500, 0);
       const maxAttempts = Math.max(options?.maxAttempts ?? 40, 1);
 
-      const loop = (
-        attempt: number,
-      ): Effect.Effect<
-        TxnReceiptWithBlockInfo,
-        TransportError | RpcError | TransactionError
-      > =>
-        provider
-          .request<TxnReceiptWithBlockInfo>(
-            "starknet_getTransactionReceipt",
-            [txHashHex],
-            options?.requestOptions,
-          )
-          .pipe(
-            Effect.catchTag("RpcError", (error) => {
-              if (isReceiptPending(error) && attempt < maxAttempts) {
-                return Effect.sleep(`${pollIntervalMs} millis`).pipe(
-                  Effect.zipRight(loop(attempt + 1)),
-                );
-              }
-
-              if (isReceiptPending(error)) {
-                return Effect.fail(
-                  new TransactionError({
-                    operation: "waitForReceipt",
-                    message: `Transaction receipt not available after ${maxAttempts} attempts`,
-                    txHash: txHashHex,
-                    cause: error,
-                  }),
-                );
-              }
-
-              return Effect.fail(error);
-            }),
-          );
-
-      return loop(1);
+      return Effect.suspend(() =>
+        provider.request<TxnReceiptWithBlockInfo>(
+          "starknet_getTransactionReceipt",
+          [txHashHex],
+          options?.requestOptions,
+        ),
+      )
+        .pipe(
+          Effect.retry(
+            Schedule.recurs(maxAttempts - 1).pipe(
+              Schedule.addDelay(() => `${pollIntervalMs} millis`),
+              Schedule.whileInput(
+                (error: TransportError | RpcError) =>
+                  error._tag === "RpcError" && isReceiptPending(error),
+              ),
+            ),
+          ),
+          Effect.catchTag(
+            "RpcError",
+            (error): Effect.Effect<never, RpcError | TransactionError> =>
+              isReceiptPending(error)
+                ? Effect.fail(
+                    new TransactionError({
+                      operation: "waitForReceipt",
+                      message: `Transaction receipt not available after ${maxAttempts} attempts`,
+                      txHash: txHashHex,
+                      cause: error,
+                    }),
+                  )
+                : Effect.fail(error),
+          ),
+        );
     };
 
     const sendInvokeAndWait: TransactionServiceShape["sendInvokeAndWait"] = (
