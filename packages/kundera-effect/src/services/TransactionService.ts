@@ -50,10 +50,14 @@ export class TransactionService extends Context.Tag(
   "@kundera/TransactionService",
 )<TransactionService, TransactionServiceShape>() {}
 
+const BLOCK_NOT_FOUND_CODE: RpcError["code"] = 24;
+const INVALID_TRANSACTION_HASH_CODE: RpcError["code"] = 25;
+const TRANSACTION_HASH_NOT_FOUND_CODE: RpcError["code"] = 29;
+
 const RECEIPT_NOT_READY_CODES = new Set<number>([
-  24, // BlockNotFound
-  25, // InvalidTransactionHash
-  29, // TransactionHashNotFound
+  BLOCK_NOT_FOUND_CODE,
+  INVALID_TRANSACTION_HASH_CODE,
+  TRANSACTION_HASH_NOT_FOUND_CODE,
 ]);
 
 const isReceiptPending = (error: RpcError): boolean => {

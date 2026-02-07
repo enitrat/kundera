@@ -62,9 +62,14 @@ export interface FallbackProviderEndpoint {
   readonly retryDelayMs?: number;
 }
 
+const JSON_RPC_INTERNAL_ERROR = -32603;
+const JSON_RPC_SERVER_ERROR_MIN = -32099;
+const JSON_RPC_SERVER_ERROR_MAX = -32000;
+
 const isRetryableRpcError = (error: { code: number; message: string }): boolean =>
-  error.code === -32603 ||
-  (error.code <= -32000 && error.code >= -32099) ||
+  error.code === JSON_RPC_INTERNAL_ERROR ||
+  (error.code >= JSON_RPC_SERVER_ERROR_MIN &&
+    error.code <= JSON_RPC_SERVER_ERROR_MAX) ||
   error.message.toLowerCase().includes("timeout") ||
   error.message.toLowerCase().includes("temporarily") ||
   error.message.toLowerCase().includes("unavailable");

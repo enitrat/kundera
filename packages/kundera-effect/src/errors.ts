@@ -1,4 +1,5 @@
 import { Data } from "effect";
+import type { StarknetRpcErrorCode } from "@kundera-sn/kundera-ts/jsonrpc";
 
 export class TransportError extends Data.TaggedError("TransportError")<{
   readonly operation: string;
@@ -10,7 +11,7 @@ export class TransportError extends Data.TaggedError("TransportError")<{
 // together with this class to avoid naming collisions.
 export class RpcError extends Data.TaggedError("RpcError")<{
   readonly method: string;
-  readonly code: number;
+  readonly code: StarknetRpcErrorCode | number;
   readonly message: string;
   readonly data?: unknown;
 }> {}
@@ -49,3 +50,5 @@ export type KunderaError =
   | TransactionError
   | NonceError
   | ContractError;
+
+export type { StarknetRpcErrorCode } from "@kundera-sn/kundera-ts/jsonrpc";
