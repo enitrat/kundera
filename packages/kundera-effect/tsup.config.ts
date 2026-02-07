@@ -6,7 +6,8 @@ export default defineConfig({
     "src/errors.ts",
     "src/services/index.ts",
     "src/jsonrpc/index.ts",
-    "src/presets/index.ts"
+    "src/presets/index.ts",
+    "src/testing/index.ts"
   ],
   format: ["esm"],
   dts: false,

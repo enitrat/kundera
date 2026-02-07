@@ -20,6 +20,12 @@ export interface ContractRegistry<TConfig extends ContractRegistryConfig> {
   readonly get: <K extends keyof TConfig>(name: K) => InferContractRegistry<TConfig>[K];
 }
 
+/**
+ * Creates a type-safe contract registry from config.
+ *
+ * This is intentionally an Effect-returning function instead of a Context.Tag
+ * service because the registry shape is generic per call site (`TConfig`).
+ */
 export const makeContractRegistry = <TConfig extends ContractRegistryConfig>(
   config: TConfig,
 ): Effect.Effect<ContractRegistry<TConfig>, never, ContractService> =>
