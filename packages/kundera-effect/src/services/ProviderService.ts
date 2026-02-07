@@ -74,14 +74,6 @@ const isRetryableRpcError = (error: { code: number; message: string }): boolean 
   error.message.toLowerCase().includes("temporarily") ||
   error.message.toLowerCase().includes("unavailable");
 
-const isNoSuchElementException = (
-  error: unknown,
-): error is { readonly _tag: "NoSuchElementException" } =>
-  typeof error === "object" &&
-  error !== null &&
-  "_tag" in error &&
-  error._tag === "NoSuchElementException";
-
 export const FallbackHttpProviderLive = (
   endpoints: readonly [FallbackProviderEndpoint, ...FallbackProviderEndpoint[]],
 ): Layer.Layer<ProviderService> =>
@@ -163,22 +155,31 @@ export const FallbackHttpProviderLive = (
 
       return {
         request: <T>(method: string, params?: readonly unknown[], options?: RequestOptions) =>
-          Effect.firstSuccessOf(
-            transports.map(({ endpoint, transport }) =>
-              makeEndpointRequest<T>(endpoint, transport, method, params, options),
-            ),
-          ).pipe(
-            Effect.catchAll((error): Effect.Effect<T, TransportErrorData | RpcErrorData> =>
-              isNoSuchElementException(error)
-                ? Effect.fail(
-                    new TransportErrorData({
-                      operation: method,
-                      message: "All fallback provider endpoints failed",
-                    }),
-                  )
-                : Effect.fail(error as TransportErrorData | RpcErrorData),
-            ),
-          ),
+          Effect.gen(function* () {
+            const runEndpoint = (
+              index: number,
+              lastTransportError?: TransportErrorData,
+            ): Effect.Effect<T, TransportErrorData | RpcErrorData> => {
+              if (index >= transports.length) {
+                return Effect.fail(
+                  new TransportErrorData({
+                    operation: method,
+                    message: "All fallback provider endpoints failed",
+                    cause: lastTransportError,
+                  }),
+                );
+              }
+
+              const { endpoint, transport } = transports[index];
+              return makeEndpointRequest<T>(endpoint, transport, method, params, options).pipe(
+                Effect.catchTag("TransportError", (error) =>
+                  runEndpoint(index + 1, error),
+                ),
+              );
+            };
+
+            return yield* runEndpoint(0);
+          }),
       } satisfies ProviderServiceShape;
     }),
   );

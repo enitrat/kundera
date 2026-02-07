@@ -9,6 +9,7 @@ import {
   withRequestInterceptor,
   withResponseInterceptor,
   withRetries,
+  withTimeout,
 } from "../TransportService.js";
 
 describe("TransportService", () => {
@@ -174,5 +175,60 @@ describe("TransportService", () => {
 
     await Effect.runPromise(Effect.flip(program));
     expect(invoked).toBe(true);
+  });
+
+  it("calls underlying transport.close when service is closed", async () => {
+    let closeCalled = false;
+
+    const transport: Transport = {
+      type: "custom",
+      request: async () =>
+        ({
+          jsonrpc: "2.0",
+          id: 1,
+          result: null,
+        }) as JsonRpcResponse<unknown>,
+      requestBatch: async () => [],
+      close: async () => {
+        closeCalled = true;
+      },
+    };
+
+    await Effect.runPromise(
+      Effect.flatMap(TransportService, (service) => service.close).pipe(
+        Effect.provide(TransportLive(transport)),
+      ),
+    );
+
+    expect(closeCalled).toBe(true);
+  });
+
+  it("applies timeout override via FiberRef", async () => {
+    let receivedTimeout: number | undefined;
+
+    const transport: Transport = {
+      type: "custom",
+      request: async (_request, options) => {
+        receivedTimeout = options?.timeout;
+        return {
+          jsonrpc: "2.0",
+          id: 1,
+          result: "ok",
+        } as JsonRpcResponse<string>;
+      },
+      requestBatch: async () => [],
+    };
+
+    const result = await Effect.runPromise(
+      Effect.flatMap(TransportService, (service) =>
+        service.request<string>("starknet_chainId"),
+      ).pipe(
+        withTimeout(1234),
+        Effect.provide(TransportLive(transport)),
+      ),
+    );
+
+    expect(result).toBe("ok");
+    expect(receivedTimeout).toBe(1234);
   });
 });
