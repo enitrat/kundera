@@ -1,0 +1,93 @@
+---
+session: general
+date: 2026-02-07
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Implement full docs restructure — fix stale APIs, deduplicate pages, unify branded types, improve narrative
+now: Address remaining 1047 pre-existing broken links in generated-api docs, consider ABI inference concept page
+
+test: cd docs && npx mintlify broken-links
+
+done_this_session:
+  - task: Replaced 26 stale starknet_call references with Rpc.CallRequest pattern
+    files: [packages/kundera-ts/docs/overview.mdx, packages/kundera-ts/docs/skills/contract-read.mdx, packages/kundera-ts/docs/skills/http-provider.mdx]
+  - task: Fixed 5 fake provider.getBlockNumber() calls
+    files: [docs/index.mdx, docs/guides/typescript-to-effect.mdx]
+  - task: Fixed branded types contradiction (bigint→Uint8Array)
+    files: [docs/typescript/overview/architecture.mdx, CLAUDE.md]
+  - task: Merged 3 branded-types pages into one canonical shared/branded-types.mdx
+    files: [docs/shared/branded-types.mdx]
+  - task: Deleted duplicate comparison table (typescript/comparisons.mdx) and why-kundera duplicate
+    files: [docs/docs.json]
+  - task: Made docs/index.mdx neutral (TS and Effect presented equally)
+    files: [docs/index.mdx]
+  - task: Copied missing wallet skill files via docs:setup
+    files: [docs/typescript/skills/wallet-account.mdx, docs/typescript/skills/wallet-modal-starknetkit.mdx, docs/typescript/skills/wallet-modal-get-starknet.mdx]
+  - task: Restructured skills index with categories, narrative, composition flow
+    files: [packages/kundera-ts/docs/skills/index.mdx]
+  - task: Fixed runtime-implementations to clarify Native=sync, WASM=async
+    files: [docs/shared/runtime-implementations.mdx]
+  - task: Updated comparison example to showcase typed contract reads with ABI inference
+    files: [docs/index.mdx]
+
+blockers: []
+
+questions:
+  - "1047 pre-existing broken links mostly in generated-api (anchor refs like index-1.mdx#felt252type). Needs docs:generate fix or generated-api rebuild."
+  - "ABI type inference (InferArgs/InferReturn/InferFunctionName) only documented in get-contract.mdx skill — deserves its own concept page?"
+  - "Constructor convention (.from() vs bare constructor) still mixed in Effect docs — intentional for effectful validation or should be unified?"
+
+decisions:
+  - landing_page_neutral: "User chose neutral over Effect-first or TS-first for docs/index.mdx"
+  - branded_types_canonical: "User chose shared/branded-types.mdx as single canonical location"
+  - symlink_vs_copy: "User chose quick fix (run docs:setup to copy) over fixing script to symlink"
+  - redirect_pages_deleted: "User requested full deletion of redirect pages rather than keeping 'moved to' stubs"
+
+findings:
+  - branded_types_truth: "All branded types are Brand<Uint8Array, 'TypeName'> & FeltMethods — verified at packages/kundera-ts/src/primitives/Felt252/types.ts:19"
+  - setup_script_copies: "scripts/setup-docs.ts copies files, not symlinks, despite CLAUDE.md saying symlinks — source of drift"
+  - comparison_duplication: "Kundera vs starknet.js table existed in 5+ places with different columns"
+  - native_is_sync: "Native crypto (Rust FFI) works immediately, only WASM needs async loadWasmCrypto()"
+
+worked:
+  - Parallel scout agents for gathering context without polluting main context
+  - Parallel spark/kraken agents for independent edits
+  - Re-running docs:setup after source edits to sync copies
+  - Direct edits for fixing agent hallucinations (contract-viem, fee-estimation skill refs)
+
+failed:
+  - spark agent didn't actually delete typescript/comparisons.mdx despite reporting it did
+  - spark agent hallucinated contract-viem and fee-estimation skill pages in skills index
+  - pnpm docs:build doesn't exist (mintlify uses 'mint validate' or 'broken-links')
+
+next:
+  - Fix 1047 pre-existing broken links in generated-api docs (regenerate with pnpm docs:generate or fix anchor format)
+  - Create standalone ABI type inference concept page (extract from get-contract.mdx)
+  - Build "dapp in 15 minutes" tutorial showing skill composition end-to-end
+  - Standardize constructor convention across all doc examples
+  - Consider fixing setup-docs.ts to use actual symlinks (prevents future drift)
+
+files:
+  created:
+    - thoughts/shared/handoffs/general/2026-02-07_14-50_docs-restructure-implementation.yaml
+    - docs/typescript/skills/wallet-account.mdx
+    - docs/typescript/skills/wallet-modal-get-starknet.mdx
+    - docs/typescript/skills/wallet-modal-starknetkit.mdx
+  modified:
+    - CLAUDE.md
+    - docs/docs.json
+    - docs/guides/typescript-to-effect.mdx
+    - docs/index.mdx
+    - docs/shared/branded-types.mdx
+    - docs/shared/runtime-implementations.mdx
+    - docs/typescript/overview.mdx
+    - docs/typescript/overview/architecture.mdx
+    - docs/typescript/skills/contract-read.mdx
+    - docs/typescript/skills/http-provider.mdx
+    - docs/typescript/skills/index.mdx
+    - packages/kundera-ts/docs/overview.mdx
+    - packages/kundera-ts/docs/skills/contract-read.mdx
+    - packages/kundera-ts/docs/skills/http-provider.mdx
+    - packages/kundera-ts/docs/skills/index.mdx

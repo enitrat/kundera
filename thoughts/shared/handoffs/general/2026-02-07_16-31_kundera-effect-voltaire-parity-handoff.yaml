@@ -1,0 +1,84 @@
+---
+session: general
+date: 2026-02-07
+status: partial
+outcome: PARTIAL_PLUS
+---
+
+goal: Rebuild `@kundera-sn/kundera-effect` on solid wallet-first Effect patterns inspired by `voltaire-effect`, then measure feature/composition/type gaps.
+now: Added minimal production-ready write/fee/chain services (`ContractWriteService`, `FeeEstimatorService`, `ChainService`) and wired them into stacks/presets with full green validation.
+stop_recommendation: Safe to stop here. Current state is a solid MVP baseline (read + write + fee + chain + composed stacks), and remaining work is optimization/ergonomics rather than missing fundamentals.
+test: pnpm --filter @kundera-sn/kundera-effect typecheck && pnpm --filter @kundera-sn/kundera-effect test:run && pnpm --filter @kundera-sn/kundera-effect build
+
+done_this_session:
+  - task: Reframed Kundera Effect around a clean wallet-first service surface (transport/provider/wallet/raw/nonce/transaction) with typed error tags.
+    files: [packages/kundera-effect/src/services/TransportService.ts, packages/kundera-effect/src/services/ProviderService.ts, packages/kundera-effect/src/services/WalletProviderService.ts, packages/kundera-effect/src/services/RawProviderService.ts, packages/kundera-effect/src/services/NonceManagerService.ts, packages/kundera-effect/src/services/TransactionService.ts, packages/kundera-effect/src/errors.ts]
+  - task: Expanded Starknet JSON-RPC free functions and preset stacks for provider + wallet workflows.
+    files: [packages/kundera-effect/src/jsonrpc/index.ts, packages/kundera-effect/src/presets/index.ts]
+  - task: Added provider fallback strategy and transport FiberRef-scoped request controls/interceptors (timeout/retries/retry delay/tracing/hooks).
+    files: [packages/kundera-effect/src/services/ProviderService.ts, packages/kundera-effect/src/services/TransportService.ts]
+  - task: Added wallet-first `SignerService` and corrected layer composition ordering to provide a single merged dependency base to downstream services.
+    files: [packages/kundera-effect/src/services/SignerService.ts, packages/kundera-effect/src/services/index.ts]
+  - task: Added/updated tests and validated full package pipeline (typecheck/tests/build all green).
+    files: [packages/kundera-effect/src/services/__tests__/SignerService.test.ts, packages/kundera-effect/src/presets/__tests__/index.test.ts, packages/kundera-effect/src/services/__tests__/TransportService.test.ts, packages/kundera-effect/src/services/__tests__/ProviderService.test.ts, packages/kundera-effect/src/services/__tests__/WalletProviderService.test.ts, packages/kundera-effect/src/services/__tests__/TransactionService.test.ts, packages/kundera-effect/src/services/__tests__/NonceManagerService.test.ts, packages/kundera-effect/src/services/__tests__/RawProviderService.test.ts, packages/kundera-effect/src/jsonrpc/__tests__/index.test.ts]
+  - task: Performed structured Voltaire vs Kundera comparison and extracted concrete parity roadmap (services, composition, typing, ergonomics).
+    files: [/Users/msaug/workspace/voltaire/packages/voltaire-effect/src/services/Provider/ProviderService.ts, /Users/msaug/workspace/voltaire/packages/voltaire-effect/src/services/Provider/index.ts, /Users/msaug/workspace/voltaire/packages/voltaire-effect/src/services/presets/index.ts, /Users/msaug/workspace/voltaire/packages/voltaire-effect/src/services/Transport/index.ts, /Users/msaug/workspace/voltaire/packages/voltaire-effect/docs/guides/layers.mdx, /Users/msaug/workspace/voltaire/packages/voltaire-effect/docs/guides/provider-fallback.mdx]
+  - task: Implemented a minimal Starknet `ContractService` (ABI encode/decode around `starknet_call`) with a bound contract factory API and stack integration.
+    files: [packages/kundera-effect/src/services/ContractService.ts, packages/kundera-effect/src/services/index.ts, packages/kundera-effect/src/services/__tests__/ContractService.test.ts, packages/kundera-effect/src/presets/__tests__/index.test.ts]
+  - task: Implemented an optional typed `ContractRegistry` builder for app-level contract catalogs and validated via tests.
+    files: [packages/kundera-effect/src/services/ContractRegistry.ts, packages/kundera-effect/src/services/index.ts, packages/kundera-effect/src/services/__tests__/ContractRegistry.test.ts]
+  - task: Migrated core public inputs from plain strings to direct existing `kundera-ts` primitive types (`ContractAddressType`, `Felt252Type`, `StorageKeyType`) without creating local primitive wrappers/types.
+    files: [packages/kundera-effect/src/services/NonceManagerService.ts, packages/kundera-effect/src/services/TransactionService.ts, packages/kundera-effect/src/services/ContractService.ts, packages/kundera-effect/src/services/ContractRegistry.ts, packages/kundera-effect/src/jsonrpc/index.ts]
+  - task: Added primitive-input coverage tests and revalidated full package pipeline green.
+    files: [packages/kundera-effect/src/services/__tests__/NonceManagerService.test.ts, packages/kundera-effect/src/services/__tests__/TransactionService.test.ts, packages/kundera-effect/src/services/__tests__/ContractService.test.ts, packages/kundera-effect/src/jsonrpc/__tests__/index.test.ts]
+  - task: Ran anti-duplication audit confirming no local `Address/ChainId/TxHash` types and no primitive helper wrappers in `kundera-effect`.
+    files: [packages/kundera-effect/src]
+  - task: Implemented `FeeEstimatorService` as a typed Effect wrapper over `starknet_estimateFee` for invoke/declare/deploy estimations.
+    files: [packages/kundera-effect/src/services/FeeEstimatorService.ts, packages/kundera-effect/src/services/__tests__/FeeEstimatorService.test.ts]
+  - task: Implemented minimal `ChainService` (chainId/networkName/rpcUrl) with Starknet chain-id mapping and devnet fallback inference from local RPC URLs.
+    files: [packages/kundera-effect/src/services/ChainService.ts, packages/kundera-effect/src/services/__tests__/ChainService.test.ts]
+  - task: Implemented `ContractWriteService` for wallet-first write flows (`invoke`, `invokeAndWait`, ABI-backed `invokeContract`, `invokeContractAndWait`) plus fee-estimation delegation.
+    files: [packages/kundera-effect/src/services/ContractWriteService.ts, packages/kundera-effect/src/services/__tests__/ContractWriteService.test.ts]
+  - task: Wired new services into stack composition (`WalletBaseStack`, `WalletTransactionStack`) and preset-level integration tests.
+    files: [packages/kundera-effect/src/services/index.ts, packages/kundera-effect/src/presets/__tests__/index.test.ts]
+
+blockers: []
+
+questions: [Do we keep custom fallback provider logic only, or add an Effect `ExecutionPlan` variant for closer Voltaire parity?, Should top-level exports stay namespaced (`Services/JsonRpc/Presets`) or move to flatter Voltaire-like direct exports?]
+
+decisions:
+  - wallet_first_scope: Prioritize browser wallet providers + transaction flows; defer local signer/CLI account paths.
+  - breaking_change_allowed: Existing library was reset and rebuilt from zero because there are no active consumers.
+  - provider_contract: Keep `ProviderService` minimal (`request`) and expose operation helpers through free functions (`JsonRpc.*`), matching Voltaire philosophy.
+  - composition_ordering: Compose a merged base layer (`provider + wallet`) first, then provide this base to dependent layers (raw/nonce/transaction/signer) to avoid fragmented wiring.
+  - signer_facade: Add a wallet-first `SignerService` to separate app-facing write ergonomics from low-level wallet/provider service details.
+  - primitive_reuse_policy: Do not create new primitive types (`Address`, `ChainId`, `TxHash`) or helper wrappers in `kundera-effect`; reuse primitive types and methods directly from `@kundera-sn/kundera-ts`.
+  - no_local_primitives_barrel: Do not introduce a local `kundera-effect` primitive subsystem; keep primitives sourced directly from `@kundera-sn/kundera-ts` in signatures and caller imports.
+  - minimal_foundation_scope: For MVP, prioritize wallet-first contract write path + fee estimation + chain context before adding broader Voltaire-like optional services.
+
+findings:
+  - voltaire_strength: Voltaire’s strongest patterns are minimal core services + rich free-function API + explicit layer composition guidance + robust presets.
+  - current_kundera_gap: Kundera still lacks batching and some optional utility modules (cache/formatter/fee-estimator-like capabilities); primitive modeling must come from direct `kundera-ts` reuse, not local duplication.
+  - contract_progress: Contract read-path now includes both typed ABI-backed calls (`ContractService`) and optional registry ergonomics (`makeContractRegistry`).
+  - transport_quality: Current Kundera transport now supports key production controls (timeouts/retries/interceptors/tracing) and scoped overrides via FiberRef.
+  - typing_gap: Some domain entities are still plain `string`; migration should use existing `kundera-ts` primitive types directly, avoiding any duplicate local type systems.
+  - typing_progress: Nonce/transaction/contract/jsonrpc address-hash-key inputs now accept direct `kundera-ts` primitive types and normalize via instance methods inline.
+  - anti_dup_status: Verified no local primitive type aliases (`Address`, `ChainId`, `TxHash`) and no dedicated primitive helper wrappers/util modules in `kundera-effect`.
+  - test_posture: Current baseline is stable with green typecheck/tests/build; this is a good checkpoint before adding new modules.
+  - voltaire_parity_gap: Compared to Voltaire, the largest remaining gaps are service breadth (Account/AbiEncoder/RpcBatch/Multicall/Chain metadata/streams/cache/rate-limit utilities) and richer preset ergonomics.
+  - mvp_progress: Core wallet transaction loop now has a cohesive service story: chain context + fee estimation + typed contract write + receipt waiting.
+  - stop_here_assessment: This is an acceptable stopping point for this phase; minimum functional integration goals are met with full green validation.
+
+worked: [Service-by-service rebuild with strict Layer boundaries, wallet-first API shaping, incremental test additions per service, compare-first workflow against Voltaire docs+code before adding new abstractions]
+failed: [Attempting broad Voltaire parity in one step would over-expand scope and mix Ethereum-specific modules with Starknet-first priorities, Reintroducing old pre-reset modules would conflict with the new clean architecture and re-import deprecated patterns]
+
+next:
+  - Optional optimization: add a transport batching layer (or equivalent request coalescing) with tests (Voltaire parity: RpcBatch/Multicall direction).
+  - Optional ergonomics: decide/export strategy (keep namespace exports vs flatter Voltaire-like direct exports) and update docs/examples.
+  - Optional parity expansion: add next-priority missing services (candidate order now: block/receipt stream helpers, richer chain metadata/config, optional cache/rate-limiter utilities).
+  - Optional robustness: tighten error model with richer context fields (`request`, optional code/context metadata) while preserving current tagged errors.
+  - Keep anti-duplication verification in CI/review checklist: no new local primitive types/wrappers/helpers duplicating `kundera-ts`.
+
+files:
+  created: [packages/kundera-effect/src/services/TransportService.ts, packages/kundera-effect/src/services/ProviderService.ts, packages/kundera-effect/src/services/WalletProviderService.ts, packages/kundera-effect/src/services/RawProviderService.ts, packages/kundera-effect/src/services/NonceManagerService.ts, packages/kundera-effect/src/services/TransactionService.ts, packages/kundera-effect/src/services/SignerService.ts, packages/kundera-effect/src/services/ContractService.ts, packages/kundera-effect/src/services/ContractRegistry.ts, packages/kundera-effect/src/services/__tests__/TransportService.test.ts, packages/kundera-effect/src/services/__tests__/ProviderService.test.ts, packages/kundera-effect/src/services/__tests__/WalletProviderService.test.ts, packages/kundera-effect/src/services/__tests__/RawProviderService.test.ts, packages/kundera-effect/src/services/__tests__/NonceManagerService.test.ts, packages/kundera-effect/src/services/__tests__/TransactionService.test.ts, packages/kundera-effect/src/services/__tests__/SignerService.test.ts, packages/kundera-effect/src/services/__tests__/ContractService.test.ts, packages/kundera-effect/src/services/__tests__/ContractRegistry.test.ts, packages/kundera-effect/src/jsonrpc/__tests__/index.test.ts, packages/kundera-effect/src/presets/index.ts, packages/kundera-effect/src/presets/__tests__/index.test.ts, thoughts/shared/handoffs/general/2026-02-07_16-31_kundera-effect-voltaire-parity-handoff.yaml]
+  modified: [packages/kundera-effect/src/services/index.ts, packages/kundera-effect/src/jsonrpc/index.ts, packages/kundera-effect/src/errors.ts, packages/kundera-effect/src/index.ts, packages/kundera-effect/README.md, packages/kundera-effect/docs/index.mdx, packages/kundera-effect/package.json, packages/kundera-effect/tsconfig.json, packages/kundera-effect/tsconfig.build.json, packages/kundera-effect/tsup.config.ts, packages/kundera-effect/vitest.config.ts]
