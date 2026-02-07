@@ -6,10 +6,12 @@ import { DefaultFeeEstimator } from "./DefaultFeeEstimator.js";
 import { FeeEstimatorService } from "./FeeEstimatorService.js";
 
 const SAMPLE_ESTIMATE = {
-  gas_consumed: "0x10",
-  gas_price: "0x20",
-  data_gas_consumed: "0x2",
-  data_gas_price: "0x3",
+  l1_gas_consumed: "0x10",
+  l1_gas_price: "0x20",
+  l2_gas_consumed: "0x0",
+  l2_gas_price: "0x0",
+  l1_data_gas_consumed: "0x2",
+  l1_data_gas_price: "0x3",
   overall_fee: "0x200",
   unit: "WEI"
 } as const;
@@ -40,10 +42,10 @@ describe("FeeEstimatorService", () => {
     }).pipe(Effect.provide(DefaultFeeEstimator), Effect.provide(providerLayer));
 
     const adjusted = await Effect.runPromise(program);
-    expect(adjusted.gas_consumed).toBe("0x18");
-    expect(adjusted.gas_price).toBe("0x30");
-    expect(adjusted.data_gas_consumed).toBe("0x3");
-    expect(adjusted.data_gas_price).toBe("0x5");
+    expect(adjusted.l1_gas_consumed).toBe("0x18");
+    expect(adjusted.l1_gas_price).toBe("0x30");
+    expect(adjusted.l1_data_gas_consumed).toBe("0x3");
+    expect(adjusted.l1_data_gas_price).toBe("0x5");
     expect(adjusted.overall_fee).toBe("0x300");
   });
 

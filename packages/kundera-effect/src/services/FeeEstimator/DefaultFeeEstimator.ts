@@ -22,10 +22,10 @@ const toHex = (value: bigint) => `0x${value.toString(16)}`;
 
 const applyMultiplierToEstimate = (estimate: FeeEstimate, multiplier: number): FeeEstimate => ({
   ...estimate,
-  gas_consumed: toHex(applyMultiplier(toBigInt(estimate.gas_consumed), multiplier)),
-  gas_price: toHex(applyMultiplier(toBigInt(estimate.gas_price), multiplier)),
-  data_gas_consumed: toHex(applyMultiplier(toBigInt(estimate.data_gas_consumed), multiplier)),
-  data_gas_price: toHex(applyMultiplier(toBigInt(estimate.data_gas_price), multiplier)),
+  l1_gas_consumed: toHex(applyMultiplier(toBigInt(estimate.l1_gas_consumed), multiplier)),
+  l1_gas_price: toHex(applyMultiplier(toBigInt(estimate.l1_gas_price), multiplier)),
+  l1_data_gas_consumed: toHex(applyMultiplier(toBigInt(estimate.l1_data_gas_consumed), multiplier)),
+  l1_data_gas_price: toHex(applyMultiplier(toBigInt(estimate.l1_data_gas_price), multiplier)),
   overall_fee: toHex(applyMultiplier(toBigInt(estimate.overall_fee), multiplier))
 });
 
@@ -39,13 +39,13 @@ const toResourceBounds = (
 
   return {
     l1_gas: {
-      max_amount: toBigInt(estimate.gas_consumed),
-      max_price_per_unit: applyMultiplier(toBigInt(estimate.gas_price), multiplier)
+      max_amount: toBigInt(estimate.l1_gas_consumed),
+      max_price_per_unit: applyMultiplier(toBigInt(estimate.l1_gas_price), multiplier)
     },
     l2_gas: l2Gas,
     l1_data_gas: {
-      max_amount: toBigInt(estimate.data_gas_consumed),
-      max_price_per_unit: applyMultiplier(toBigInt(estimate.data_gas_price), multiplier)
+      max_amount: toBigInt(estimate.l1_data_gas_consumed),
+      max_price_per_unit: applyMultiplier(toBigInt(estimate.l1_data_gas_price), multiplier)
     }
   };
 };
