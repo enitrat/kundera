@@ -31,12 +31,12 @@ const BALANCE_ABI: Abi = [
 ];
 
 describe("ContractRegistry", () => {
-  it("builds typed contract instances from config", async () => {
+  it.effect("builds typed contract instances from config", () => {
     const providerLayer = Layer.succeed(ProviderService, {
       request: <T>() => Effect.succeed(["0x64", "0x0"] as T),
     });
 
-    const program = Effect.gen(function* () {
+    return Effect.gen(function* () {
       const registry = yield* makeContractRegistry({
         token: {
           address: ContractAddress.from("0x111"),
@@ -51,16 +51,12 @@ describe("ContractRegistry", () => {
       const tokenBalance = yield* registry.get("token").read("balance_of", [0xabcn]);
       const treasuryBalance = yield* registry.contracts.treasury.read("balance_of", [0xabcn]);
 
-      return { tokenBalance, treasuryBalance };
+      expect(tokenBalance).toBe(100n);
+      expect(treasuryBalance).toBe(100n);
     }).pipe(Effect.provide(ContractLive), Effect.provide(providerLayer));
-
-    const result = await Effect.runPromise(program);
-
-    expect(result.tokenBalance).toBe(100n);
-    expect(result.treasuryBalance).toBe(100n);
   });
 
-  it("delegates ContractInstance.read through ContractService.call with key-specific address", async () => {
+  it.effect("delegates ContractInstance.read through ContractService.call with key-specific address", () => {
     let calledParams: readonly unknown[] | undefined;
 
     const providerLayer = Layer.succeed(ProviderService, {
@@ -70,22 +66,20 @@ describe("ContractRegistry", () => {
       },
     });
 
-    await Effect.runPromise(
-      Effect.gen(function* () {
-        const registry = yield* makeContractRegistry({
-          token: {
-            address: ContractAddress.from("0x111"),
-            abi: BALANCE_ABI,
-          },
-        });
-        yield* registry.get("token").read("balance_of", [0xabcn]);
-      }).pipe(Effect.provide(ContractLive), Effect.provide(providerLayer)),
-    );
+    return Effect.gen(function* () {
+      const registry = yield* makeContractRegistry({
+        token: {
+          address: ContractAddress.from("0x111"),
+          abi: BALANCE_ABI,
+        },
+      });
+      yield* registry.get("token").read("balance_of", [0xabcn]);
 
-    const requestPayload = calledParams?.[0] as
-      | { contract_address?: string }
-      | undefined;
-    expect(requestPayload?.contract_address).toBe(ContractAddress.from("0x111").toHex());
-    expect(calledParams?.[1]).toBe("latest");
+      const requestPayload = calledParams?.[0] as
+        | { contract_address?: string }
+        | undefined;
+      expect(requestPayload?.contract_address).toBe(ContractAddress.from("0x111").toHex());
+      expect(calledParams?.[1]).toBe("latest");
+    }).pipe(Effect.provide(ContractLive), Effect.provide(providerLayer));
   });
 });

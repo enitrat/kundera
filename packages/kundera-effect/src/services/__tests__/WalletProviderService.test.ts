@@ -78,17 +78,19 @@ const makeMockWallet = (
 });
 
 describe("WalletProviderService", () => {
-  it("requests accounts", async () => {
+  it.effect("requests accounts", () => {
     const program = Effect.flatMap(WalletProviderService, (wallet) =>
       wallet.requestAccounts(),
     ).pipe(Effect.provide(WalletProviderLive(makeMockWallet())));
 
-    const accounts = await Effect.runPromise(program);
+    return Effect.gen(function* () {
+      const accounts = yield* program;
 
-    expect(accounts).toEqual(["0xabc"]);
+      expect(accounts).toEqual(["0xabc"]);
+    });
   });
 
-  it("maps legacy silentMode to silent_mode", async () => {
+  it.effect("maps legacy silentMode to silent_mode", () => {
     let payload: WalletRequestArguments | undefined;
 
     const program = Effect.flatMap(WalletProviderService, (wallet) =>
@@ -103,14 +105,16 @@ describe("WalletProviderService", () => {
       ),
     );
 
-    await Effect.runPromise(program);
+    return Effect.gen(function* () {
+      yield* program;
 
-    expect(payload).toBeDefined();
-    expect(payload?.type).toBe("wallet_requestAccounts");
-    expect(payload?.params).toEqual({ silent_mode: true });
+      expect(payload).toBeDefined();
+      expect(payload?.type).toBe("wallet_requestAccounts");
+      expect(payload?.params).toEqual({ silent_mode: true });
+    });
   });
 
-  it("submits wallet invoke transaction", async () => {
+  it.effect("submits wallet invoke transaction", () => {
     const program = Effect.flatMap(WalletProviderService, (wallet) =>
       wallet.addInvokeTransaction({
         calls: [
@@ -123,8 +127,10 @@ describe("WalletProviderService", () => {
       }),
     ).pipe(Effect.provide(WalletProviderLive(makeMockWallet())));
 
-    const response = await Effect.runPromise(program);
+    return Effect.gen(function* () {
+      const response = yield* program;
 
-    expect(response.transaction_hash).toBe("0xdeadbeef");
+      expect(response.transaction_hash).toBe("0xdeadbeef");
+    });
   });
 });

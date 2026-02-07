@@ -5,7 +5,7 @@ import { ChainLive, ChainService } from "../ChainService.js";
 import { ProviderService } from "../ProviderService.js";
 
 describe("ChainService", () => {
-  it("resolves chain id and known network name", async () => {
+  it.effect("resolves chain id and known network name", () => {
     const providerLayer = Layer.succeed(ProviderService, {
       request: <T>(method: string) => {
         if (method === "starknet_chainId") {
@@ -16,36 +16,36 @@ describe("ChainService", () => {
       },
     });
 
-    const result = await Effect.runPromise(
-      Effect.flatMap(ChainService, (chain) =>
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(ChainService, (chain) =>
         Effect.all({
           chainId: chain.chainId(),
           networkName: chain.networkName(),
           rpcUrl: Effect.succeed(chain.rpcUrl()),
         }),
-      ).pipe(
-        Effect.provide(ChainLive({ rpcUrl: "https://starknet-sepolia.example" })),
-        Effect.provide(providerLayer),
-      ),
-    );
+      );
 
-    expect(result.chainId).toBe("0x534e5f5345504f4c4941");
-    expect(result.networkName).toBe("sepolia");
-    expect(result.rpcUrl).toBe("https://starknet-sepolia.example");
+      expect(result.chainId).toBe("0x534e5f5345504f4c4941");
+      expect(result.networkName).toBe("sepolia");
+      expect(result.rpcUrl).toBe("https://starknet-sepolia.example");
+    }).pipe(
+      Effect.provide(ChainLive({ rpcUrl: "https://starknet-sepolia.example" })),
+      Effect.provide(providerLayer),
+    );
   });
 
-  it("infers devnet when chain id is unknown and rpc url is local", async () => {
+  it.effect("infers devnet when chain id is unknown and rpc url is local", () => {
     const providerLayer = Layer.succeed(ProviderService, {
       request: <T>() => Effect.succeed("0xdeadbeef" as T),
     });
 
-    const networkName = await Effect.runPromise(
-      Effect.flatMap(ChainService, (chain) => chain.networkName()).pipe(
-        Effect.provide(ChainLive({ rpcUrl: "http://127.0.0.1:5050/rpc" })),
-        Effect.provide(providerLayer),
-      ),
-    );
+    return Effect.gen(function* () {
+      const networkName = yield* Effect.flatMap(ChainService, (chain) => chain.networkName());
 
-    expect(networkName).toBe("devnet");
+      expect(networkName).toBe("devnet");
+    }).pipe(
+      Effect.provide(ChainLive({ rpcUrl: "http://127.0.0.1:5050/rpc" })),
+      Effect.provide(providerLayer),
+    );
   });
 });

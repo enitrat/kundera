@@ -154,32 +154,26 @@ export const FallbackHttpProviderLive = (
       };
 
       return {
-        request: <T>(method: string, params?: readonly unknown[], options?: RequestOptions) =>
-          Effect.gen(function* () {
-            const runEndpoint = (
-              index: number,
-              lastTransportError?: TransportErrorData,
-            ): Effect.Effect<T, TransportErrorData | RpcErrorData> => {
-              if (index >= transports.length) {
-                return Effect.fail(
-                  new TransportErrorData({
-                    operation: method,
-                    message: "All fallback provider endpoints failed",
-                    cause: lastTransportError,
-                  }),
-                );
-              }
+        request: <T>(
+          method: string,
+          params?: readonly unknown[],
+          options?: RequestOptions,
+        ): Effect.Effect<T, TransportErrorData | RpcErrorData> => {
+          const allFailed: Effect.Effect<T, TransportErrorData | RpcErrorData> = Effect.fail(
+            new TransportErrorData({
+              operation: method,
+              message: "All fallback provider endpoints failed",
+            }),
+          );
 
-              const { endpoint, transport } = transports[index];
-              return makeEndpointRequest<T>(endpoint, transport, method, params, options).pipe(
-                Effect.catchTag("TransportError", (error) =>
-                  runEndpoint(index + 1, error),
-                ),
-              );
-            };
-
-            return yield* runEndpoint(0);
-          }),
+          return transports.reduceRight(
+            (fallback: Effect.Effect<T, TransportErrorData | RpcErrorData>, { endpoint, transport }) =>
+              makeEndpointRequest<T>(endpoint, transport, method, params, options).pipe(
+                Effect.catchTag("TransportError", () => fallback),
+              ),
+            allFailed,
+          );
+        },
       } satisfies ProviderServiceShape;
     }),
   );

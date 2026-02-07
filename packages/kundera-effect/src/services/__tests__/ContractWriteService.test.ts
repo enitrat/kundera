@@ -18,7 +18,7 @@ const WRITE_ABI: Abi = [
 ];
 
 describe("ContractWriteService", () => {
-  it("invokeContract compiles calldata and forwards wallet invoke", async () => {
+  it.effect("invokeContract compiles calldata and forwards wallet invoke", () => {
     let sentInvoke:
       | {
           params: unknown;
@@ -39,8 +39,8 @@ describe("ContractWriteService", () => {
       estimate: () => Effect.succeed([]),
     });
 
-    const result = await Effect.runPromise(
-      Effect.flatMap(ContractWriteService, (writer) =>
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(ContractWriteService, (writer) =>
         writer.invokeContract(
           {
             contractAddress: ContractAddress.from("0x1234"),
@@ -50,32 +50,32 @@ describe("ContractWriteService", () => {
           },
           { requestOptions: { timeoutMs: 2_000 } },
         ),
-      ).pipe(
-        Effect.provide(ContractWriteLive),
-        Effect.provide(txLayer),
-        Effect.provide(feeLayer),
-      ),
-    );
+      );
 
-    expect(result.transactionHash).toBe("0xbeef");
-    const payload = sentInvoke?.params as
-      | {
-          calls?: Array<{
-            contract_address: string;
-            entry_point: string;
-            calldata?: string[];
-          }>;
-        }
-      | undefined;
-    expect(payload?.calls?.[0]?.contract_address).toBe(
-      ContractAddress.from("0x1234").toHex(),
+      expect(result.transactionHash).toBe("0xbeef");
+      const payload = sentInvoke?.params as
+        | {
+            calls?: Array<{
+              contract_address: string;
+              entry_point: string;
+              calldata?: string[];
+            }>;
+          }
+        | undefined;
+      expect(payload?.calls?.[0]?.contract_address).toBe(
+        ContractAddress.from("0x1234").toHex(),
+      );
+      expect(payload?.calls?.[0]?.entry_point).toBe("set_value");
+      expect(payload?.calls?.[0]?.calldata).toEqual(["0x2a"]);
+      expect(sentInvoke?.options).toEqual({ timeoutMs: 2_000 });
+    }).pipe(
+      Effect.provide(ContractWriteLive),
+      Effect.provide(txLayer),
+      Effect.provide(feeLayer),
     );
-    expect(payload?.calls?.[0]?.entry_point).toBe("set_value");
-    expect(payload?.calls?.[0]?.calldata).toEqual(["0x2a"]);
-    expect(sentInvoke?.options).toEqual({ timeoutMs: 2_000 });
   });
 
-  it("invokeContractAndWait delegates to transaction service", async () => {
+  it.effect("invokeContractAndWait delegates to transaction service", () => {
     let calledOptions: unknown;
 
     const txLayer = Layer.succeed(TransactionService, {
@@ -103,8 +103,8 @@ describe("ContractWriteService", () => {
       estimate: () => Effect.succeed([]),
     });
 
-    const result = await Effect.runPromise(
-      Effect.flatMap(ContractWriteService, (writer) =>
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(ContractWriteService, (writer) =>
         writer.invokeContractAndWait(
           {
             contractAddress: ContractAddress.from("0x1234"),
@@ -118,24 +118,24 @@ describe("ContractWriteService", () => {
             maxAttempts: 3,
           },
         ),
-      ).pipe(
-        Effect.provide(ContractWriteLive),
-        Effect.provide(txLayer),
-        Effect.provide(feeLayer),
-      ),
-    );
+      );
 
-    expect(result.transactionHash).toBe("0xbeef");
-    expect(result.receipt.transaction_hash).toBe("0xbeef");
-    expect(calledOptions).toEqual({
-      invokeOptions: { timeoutMs: 1_000 },
-      pollIntervalMs: 0,
-      maxAttempts: 3,
-      requestOptions: undefined,
-    });
+      expect(result.transactionHash).toBe("0xbeef");
+      expect(result.receipt.transaction_hash).toBe("0xbeef");
+      expect(calledOptions).toEqual({
+        invokeOptions: { timeoutMs: 1_000 },
+        pollIntervalMs: 0,
+        maxAttempts: 3,
+        requestOptions: undefined,
+      });
+    }).pipe(
+      Effect.provide(ContractWriteLive),
+      Effect.provide(txLayer),
+      Effect.provide(feeLayer),
+    );
   });
 
-  it("estimateFee delegates to FeeEstimatorService", async () => {
+  it.effect("estimateFee delegates to FeeEstimatorService", () => {
     let receivedOptions: unknown;
     let receivedTxs: readonly unknown[] | undefined;
 
@@ -163,29 +163,29 @@ describe("ContractWriteService", () => {
       nonce: "0x0",
     };
 
-    await Effect.runPromise(
-      Effect.flatMap(ContractWriteService, (writer) =>
+    return Effect.gen(function* () {
+      yield* Effect.flatMap(ContractWriteService, (writer) =>
         writer.estimateFee([tx], {
           simulationFlags: ["SKIP_VALIDATE"],
           blockId: { block_number: 42 },
           requestOptions: { timeoutMs: 5_000 },
         }),
-      ).pipe(
-        Effect.provide(ContractWriteLive),
-        Effect.provide(txLayer),
-        Effect.provide(feeLayer),
-      ),
-    );
+      );
 
-    expect(receivedTxs).toEqual([tx]);
-    expect(receivedOptions).toEqual({
-      simulationFlags: ["SKIP_VALIDATE"],
-      blockId: { block_number: 42 },
-      requestOptions: { timeoutMs: 5_000 },
-    });
+      expect(receivedTxs).toEqual([tx]);
+      expect(receivedOptions).toEqual({
+        simulationFlags: ["SKIP_VALIDATE"],
+        blockId: { block_number: 42 },
+        requestOptions: { timeoutMs: 5_000 },
+      });
+    }).pipe(
+      Effect.provide(ContractWriteLive),
+      Effect.provide(txLayer),
+      Effect.provide(feeLayer),
+    );
   });
 
-  it("fails with ContractError when function is missing", async () => {
+  it.effect("fails with ContractError when function is missing", () => {
     const txLayer = Layer.succeed(TransactionService, {
       sendInvoke: () => Effect.dieMessage("not used in this test"),
       waitForReceipt: () => Effect.dieMessage("not used in this test"),
@@ -196,8 +196,8 @@ describe("ContractWriteService", () => {
       estimate: () => Effect.succeed([]),
     });
 
-    const result = await Effect.runPromise(
-      Effect.flatMap(ContractWriteService, (writer) =>
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(ContractWriteService, (writer) =>
         Effect.either(
           writer.invokeContract({
             contractAddress: ContractAddress.from("0x1234"),
@@ -206,17 +206,17 @@ describe("ContractWriteService", () => {
             args: [],
           }),
         ),
-      ).pipe(
-        Effect.provide(ContractWriteLive),
-        Effect.provide(txLayer),
-        Effect.provide(feeLayer),
-      ),
-    );
+      );
 
-    expect(result._tag).toBe("Left");
-    if (result._tag === "Left") {
-      expect(result.left._tag).toBe("ContractError");
-      expect(result.left.stage).toBe("encode");
-    }
+      expect(result._tag).toBe("Left");
+      if (result._tag === "Left") {
+        expect(result.left._tag).toBe("ContractError");
+        expect(result.left.stage).toBe("encode");
+      }
+    }).pipe(
+      Effect.provide(ContractWriteLive),
+      Effect.provide(txLayer),
+      Effect.provide(feeLayer),
+    );
   });
 });

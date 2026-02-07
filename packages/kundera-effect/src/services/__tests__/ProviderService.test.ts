@@ -31,54 +31,54 @@ describe("ProviderService fallback", () => {
     mockedFetch.mockReset();
   });
 
-  it("falls back to secondary endpoint when primary fails", async () => {
-    vi.stubGlobal("fetch", mockedFetch);
+  it.effect("falls back to secondary endpoint when primary fails", () =>
+    Effect.gen(function* () {
+      vi.stubGlobal("fetch", mockedFetch);
 
-    mockedFetch.mockImplementation(async (input, init) => {
-      const url = String(input);
-      const body = readBody(init);
+      mockedFetch.mockImplementation(async (input, init) => {
+        const url = String(input);
+        const body = readBody(init);
 
-      if (url.includes("primary")) {
-        throw new Error("primary down");
-      }
+        if (url.includes("primary")) {
+          throw new Error("primary down");
+        }
 
-      return jsonResultResponse(body.id, "0x534e5f5345504f4c4941");
-    });
+        return jsonResultResponse(body.id, "0x534e5f5345504f4c4941");
+      });
 
-    const program = Effect.flatMap(ProviderService, (provider) =>
-      provider.request<string>("starknet_chainId"),
-    ).pipe(
-      Effect.provide(
-        FallbackHttpProviderLive([
-          { url: "https://primary.example", attempts: 1 },
-          { url: "https://secondary.example", attempts: 1 },
-        ]),
-      ),
-    );
+      const chainId = yield* Effect.flatMap(ProviderService, (provider) =>
+        provider.request<string>("starknet_chainId"),
+      ).pipe(
+        Effect.provide(
+          FallbackHttpProviderLive([
+            { url: "https://primary.example", attempts: 1 },
+            { url: "https://secondary.example", attempts: 1 },
+          ]),
+        ),
+      );
 
-    const chainId = await Effect.runPromise(program);
+      expect(chainId).toBe("0x534e5f5345504f4c4941");
+      expect(mockedFetch).toHaveBeenCalledTimes(2);
+    }),
+  );
 
-    expect(chainId).toBe("0x534e5f5345504f4c4941");
-    expect(mockedFetch).toHaveBeenCalledTimes(2);
-  });
+  it.effect("retries within a single endpoint until success", () =>
+    Effect.gen(function* () {
+      vi.stubGlobal("fetch", mockedFetch);
+      let attempts = 0;
 
-  it("retries within a single endpoint until success", async () => {
-    vi.stubGlobal("fetch", mockedFetch);
-    let attempts = 0;
+      mockedFetch.mockImplementation(async (_input, init) => {
+        attempts += 1;
+        const body = readBody(init);
 
-    mockedFetch.mockImplementation(async (_input, init) => {
-      attempts += 1;
-      const body = readBody(init);
+        if (attempts < 3) {
+          throw new Error("temporary failure");
+        }
 
-      if (attempts < 3) {
-        throw new Error("temporary failure");
-      }
+        return jsonResultResponse(body.id, "0x534e5f5345504f4c4941");
+      });
 
-      return jsonResultResponse(body.id, "0x534e5f5345504f4c4941");
-    });
-
-    const result = await Effect.runPromise(
-      Effect.flatMap(ProviderService, (provider) =>
+      const result = yield* Effect.flatMap(ProviderService, (provider) =>
         provider.request<string>("starknet_chainId"),
       ).pipe(
         Effect.provide(
@@ -86,33 +86,33 @@ describe("ProviderService fallback", () => {
             { url: "https://primary.example", attempts: 3, retryDelayMs: 0 },
           ]),
         ),
-      ),
-    );
+      );
 
-    expect(result).toBe("0x534e5f5345504f4c4941");
-    expect(attempts).toBe(3);
-  });
+      expect(result).toBe("0x534e5f5345504f4c4941");
+      expect(attempts).toBe(3);
+    }),
+  );
 
-  it("retries retryable RPC errors", async () => {
-    vi.stubGlobal("fetch", mockedFetch);
-    let attempts = 0;
+  it.effect("retries retryable RPC errors", () =>
+    Effect.gen(function* () {
+      vi.stubGlobal("fetch", mockedFetch);
+      let attempts = 0;
 
-    mockedFetch.mockImplementation(async (_input, init) => {
-      attempts += 1;
-      const body = readBody(init);
+      mockedFetch.mockImplementation(async (_input, init) => {
+        attempts += 1;
+        const body = readBody(init);
 
-      if (attempts === 1) {
-        return jsonErrorResponse(body.id, {
-          code: -32603,
-          message: "Internal error",
-        });
-      }
+        if (attempts === 1) {
+          return jsonErrorResponse(body.id, {
+            code: -32603,
+            message: "Internal error",
+          });
+        }
 
-      return jsonResultResponse(body.id, "0x534e5f5345504f4c4941");
-    });
+        return jsonResultResponse(body.id, "0x534e5f5345504f4c4941");
+      });
 
-    const result = await Effect.runPromise(
-      Effect.flatMap(ProviderService, (provider) =>
+      const result = yield* Effect.flatMap(ProviderService, (provider) =>
         provider.request<string>("starknet_chainId"),
       ).pipe(
         Effect.provide(
@@ -120,32 +120,32 @@ describe("ProviderService fallback", () => {
             { url: "https://primary.example", attempts: 2, retryDelayMs: 0 },
           ]),
         ),
-      ),
-    );
+      );
 
-    expect(result).toBe("0x534e5f5345504f4c4941");
-    expect(attempts).toBe(2);
-  });
+      expect(result).toBe("0x534e5f5345504f4c4941");
+      expect(attempts).toBe(2);
+    }),
+  );
 
-  it("fails fast on non-retryable RPC errors without trying the next endpoint", async () => {
-    vi.stubGlobal("fetch", mockedFetch);
+  it.effect("fails fast on non-retryable RPC errors without trying the next endpoint", () =>
+    Effect.gen(function* () {
+      vi.stubGlobal("fetch", mockedFetch);
 
-    mockedFetch.mockImplementation(async (input, init) => {
-      const url = String(input);
-      const body = readBody(init);
+      mockedFetch.mockImplementation(async (input, init) => {
+        const url = String(input);
+        const body = readBody(init);
 
-      if (url.includes("primary")) {
-        return jsonErrorResponse(body.id, {
-          code: 20,
-          message: "Contract not found",
-        });
-      }
+        if (url.includes("primary")) {
+          return jsonErrorResponse(body.id, {
+            code: 20,
+            message: "Contract not found",
+          });
+        }
 
-      return jsonResultResponse(body.id, "0x534e5f5345504f4c4941");
-    });
+        return jsonResultResponse(body.id, "0x534e5f5345504f4c4941");
+      });
 
-    const error = await Effect.runPromise(
-      Effect.flip(
+      const error = yield* Effect.flip(
         Effect.flatMap(ProviderService, (provider) =>
           provider.request<string>("starknet_chainId"),
         ).pipe(
@@ -156,20 +156,20 @@ describe("ProviderService fallback", () => {
             ]),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(error._tag).toBe("RpcError");
-    expect(error.code).toBe(20);
-    expect(mockedFetch).toHaveBeenCalledTimes(1);
-  });
+      expect(error._tag).toBe("RpcError");
+      expect(error.code).toBe(20);
+      expect(mockedFetch).toHaveBeenCalledTimes(1);
+    }),
+  );
 
-  it("returns TransportError when all endpoints fail", async () => {
-    vi.stubGlobal("fetch", mockedFetch);
-    mockedFetch.mockRejectedValue(new Error("network down"));
+  it.effect("returns TransportError when all endpoints fail", () =>
+    Effect.gen(function* () {
+      vi.stubGlobal("fetch", mockedFetch);
+      mockedFetch.mockRejectedValue(new Error("network down"));
 
-    const error = await Effect.runPromise(
-      Effect.flip(
+      const error = yield* Effect.flip(
         Effect.flatMap(ProviderService, (provider) =>
           provider.request<string>("starknet_chainId"),
         ).pipe(
@@ -180,26 +180,26 @@ describe("ProviderService fallback", () => {
             ]),
           ),
         ),
-      ),
-    );
+      );
 
-    expect(error._tag).toBe("TransportError");
-    expect(error.operation).toBe("starknet_chainId");
-    expect(error.message).toContain("All fallback provider endpoints failed");
-  });
+      expect(error._tag).toBe("TransportError");
+      expect(error.operation).toBe("starknet_chainId");
+      expect(error.message).toContain("All fallback provider endpoints failed");
+    }),
+  );
 
-  it("assigns unique request ids across concurrent requests", async () => {
-    vi.stubGlobal("fetch", mockedFetch);
-    const seenIds = new Set<number>();
+  it.effect("assigns unique request ids across concurrent requests", () =>
+    Effect.gen(function* () {
+      vi.stubGlobal("fetch", mockedFetch);
+      const seenIds = new Set<number>();
 
-    mockedFetch.mockImplementation(async (_input, init) => {
-      const body = readBody(init);
-      seenIds.add(body.id);
-      return jsonResultResponse(body.id, body.method);
-    });
+      mockedFetch.mockImplementation(async (_input, init) => {
+        const body = readBody(init);
+        seenIds.add(body.id);
+        return jsonResultResponse(body.id, body.method);
+      });
 
-    const results = await Effect.runPromise(
-      Effect.flatMap(ProviderService, (provider) =>
+      const results = yield* Effect.flatMap(ProviderService, (provider) =>
         Effect.all([
           provider.request<string>("starknet_chainId"),
           provider.request<string>("starknet_blockNumber"),
@@ -208,13 +208,15 @@ describe("ProviderService fallback", () => {
         Effect.provide(
           FallbackHttpProviderLive([{ url: "https://primary.example", attempts: 1 }]),
         ),
-      ),
-    );
+      );
 
-    expect(results).toEqual(["starknet_chainId", "starknet_blockNumber"]);
-    expect(seenIds.size).toBe(2);
-  });
+      expect(results).toEqual(["starknet_chainId", "starknet_blockNumber"]);
+      expect(seenIds.size).toBe(2);
+    }),
+  );
 
+  // Fake timers require manual async control (advancing between steps),
+  // so this test keeps the async () => pattern.
   it("waits retryDelayMs between retries", async () => {
     vi.useFakeTimers();
     vi.stubGlobal("fetch", mockedFetch);

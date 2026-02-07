@@ -13,7 +13,7 @@ import {
 } from "../TransportService.js";
 
 describe("TransportService", () => {
-  it("maps JSON-RPC error responses to RpcError", async () => {
+  it.effect("maps JSON-RPC error responses to RpcError", () => {
     const transport: Transport = {
       type: "custom",
       request: async () =>
@@ -25,18 +25,20 @@ describe("TransportService", () => {
       requestBatch: async () => [],
     };
 
-    const program = Effect.flatMap(TransportService, (service) =>
-      service.request<number>("starknet_blockNumber"),
-    ).pipe(Effect.provide(TransportLive(transport)));
+    return Effect.gen(function* () {
+      const program = Effect.flatMap(TransportService, (service) =>
+        service.request<number>("starknet_blockNumber"),
+      );
 
-    const error = await Effect.runPromise(Effect.flip(program));
+      const error = yield* Effect.flip(program);
 
-    expect(error._tag).toBe("RpcError");
-    expect(error.method).toBe("starknet_blockNumber");
-    expect(error.code).toBe(-32001);
+      expect(error._tag).toBe("RpcError");
+      expect(error.method).toBe("starknet_blockNumber");
+      expect(error.code).toBe(-32001);
+    }).pipe(Effect.provide(TransportLive(transport)));
   });
 
-  it("retries transport failures and eventually succeeds", async () => {
+  it.effect("retries transport failures and eventually succeeds", () => {
     let attempts = 0;
 
     const transport: Transport = {
@@ -57,20 +59,20 @@ describe("TransportService", () => {
       requestBatch: async () => [],
     };
 
-    const program = Effect.flatMap(TransportService, (service) =>
-      service.request<number>("starknet_blockNumber", [], {
-        retries: 2,
-        retryDelayMs: 0,
-      }),
-    ).pipe(Effect.provide(TransportLive(transport)));
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(TransportService, (service) =>
+        service.request<number>("starknet_blockNumber", [], {
+          retries: 2,
+          retryDelayMs: 0,
+        }),
+      );
 
-    const value = await Effect.runPromise(program);
-
-    expect(value).toBe(42);
-    expect(attempts).toBe(3);
+      expect(result).toBe(42);
+      expect(attempts).toBe(3);
+    }).pipe(Effect.provide(TransportLive(transport)));
   });
 
-  it("supports fiber-local retry overrides", async () => {
+  it.effect("supports fiber-local retry overrides", () => {
     let attempts = 0;
 
     const transport: Transport = {
@@ -91,20 +93,17 @@ describe("TransportService", () => {
       requestBatch: async () => [],
     };
 
-    const program = Effect.flatMap(TransportService, (service) =>
-      service.request<number>("starknet_blockNumber"),
-    ).pipe(
-      withRetries(1),
-      Effect.provide(TransportLive(transport)),
-    );
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(TransportService, (service) =>
+        service.request<number>("starknet_blockNumber"),
+      ).pipe(withRetries(1));
 
-    const value = await Effect.runPromise(program);
-
-    expect(value).toBe(7);
-    expect(attempts).toBe(2);
+      expect(result).toBe(7);
+      expect(attempts).toBe(2);
+    }).pipe(Effect.provide(TransportLive(transport)));
   });
 
-  it("applies request/response interceptors", async () => {
+  it.effect("applies request/response interceptors", () => {
     let observedMethod = "";
 
     const transport: Transport = {
@@ -120,37 +119,36 @@ describe("TransportService", () => {
       requestBatch: async () => [],
     };
 
-    const program = Effect.flatMap(TransportService, (service) =>
-      service.request<number>("starknet_blockNumber"),
-    ).pipe(
-      withRequestInterceptor((ctx) =>
-        Effect.succeed({
-          ...ctx,
-          request: {
-            ...ctx.request,
-            method: "starknet_chainId",
-          },
-        }),
-      ),
-      withResponseInterceptor((ctx) =>
-        Effect.succeed({
-          ...ctx,
-          response: {
-            ...ctx.response,
-            result: (ctx.response as JsonRpcResponse<number>).result + 1,
-          } as JsonRpcResponse<number>,
-        }),
-      ),
-      Effect.provide(TransportLive(transport)),
-    );
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(TransportService, (service) =>
+        service.request<number>("starknet_blockNumber"),
+      ).pipe(
+        withRequestInterceptor((ctx) =>
+          Effect.succeed({
+            ...ctx,
+            request: {
+              ...ctx.request,
+              method: "starknet_chainId",
+            },
+          }),
+        ),
+        withResponseInterceptor((ctx) =>
+          Effect.succeed({
+            ...ctx,
+            response: {
+              ...ctx.response,
+              result: (ctx.response as JsonRpcResponse<number>).result + 1,
+            } as JsonRpcResponse<number>,
+          }),
+        ),
+      );
 
-    const value = await Effect.runPromise(program);
-
-    expect(value).toBe(11);
-    expect(observedMethod).toBe("starknet_chainId");
+      expect(result).toBe(11);
+      expect(observedMethod).toBe("starknet_chainId");
+    }).pipe(Effect.provide(TransportLive(transport)));
   });
 
-  it("invokes error interceptor on transport error", async () => {
+  it.effect("invokes error interceptor on transport error", () => {
     let invoked = false;
 
     const transport: Transport = {
@@ -161,23 +159,24 @@ describe("TransportService", () => {
       requestBatch: async () => [],
     };
 
-    const program = Effect.flatMap(TransportService, (service) =>
-      service.request<number>("starknet_blockNumber"),
-    ).pipe(
-      withInterceptors({
-        onError: () =>
-          Effect.sync(() => {
-            invoked = true;
-          }),
-      }),
-      Effect.provide(TransportLive(transport)),
-    );
+    return Effect.gen(function* () {
+      const program = Effect.flatMap(TransportService, (service) =>
+        service.request<number>("starknet_blockNumber"),
+      ).pipe(
+        withInterceptors({
+          onError: () =>
+            Effect.sync(() => {
+              invoked = true;
+            }),
+        }),
+      );
 
-    await Effect.runPromise(Effect.flip(program));
-    expect(invoked).toBe(true);
+      yield* Effect.flip(program);
+      expect(invoked).toBe(true);
+    }).pipe(Effect.provide(TransportLive(transport)));
   });
 
-  it("calls underlying transport.close when service is closed", async () => {
+  it.effect("calls underlying transport.close when service is closed", () => {
     let closeCalled = false;
 
     const transport: Transport = {
@@ -194,16 +193,13 @@ describe("TransportService", () => {
       },
     };
 
-    await Effect.runPromise(
-      Effect.flatMap(TransportService, (service) => service.close).pipe(
-        Effect.provide(TransportLive(transport)),
-      ),
-    );
-
-    expect(closeCalled).toBe(true);
+    return Effect.gen(function* () {
+      yield* Effect.flatMap(TransportService, (service) => service.close);
+      expect(closeCalled).toBe(true);
+    }).pipe(Effect.provide(TransportLive(transport)));
   });
 
-  it("applies timeout override via FiberRef", async () => {
+  it.effect("applies timeout override via FiberRef", () => {
     let receivedTimeout: number | undefined;
 
     const transport: Transport = {
@@ -219,16 +215,13 @@ describe("TransportService", () => {
       requestBatch: async () => [],
     };
 
-    const result = await Effect.runPromise(
-      Effect.flatMap(TransportService, (service) =>
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(TransportService, (service) =>
         service.request<string>("starknet_chainId"),
-      ).pipe(
-        withTimeout(1234),
-        Effect.provide(TransportLive(transport)),
-      ),
-    );
+      ).pipe(withTimeout(1234));
 
-    expect(result).toBe("ok");
-    expect(receivedTimeout).toBe(1234);
+      expect(result).toBe("ok");
+      expect(receivedTimeout).toBe(1234);
+    }).pipe(Effect.provide(TransportLive(transport)));
   });
 });

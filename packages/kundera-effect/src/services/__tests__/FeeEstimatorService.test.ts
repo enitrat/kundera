@@ -8,7 +8,7 @@ import {
 } from "../FeeEstimatorService.js";
 
 describe("FeeEstimatorService", () => {
-  it("maps estimate to starknet_estimateFee with default options", async () => {
+  it.effect("maps estimate to starknet_estimateFee with default options", () => {
     let called:
       | {
           method: string;
@@ -46,21 +46,23 @@ describe("FeeEstimatorService", () => {
       nonce: "0x0",
     };
 
-    const estimates = await Effect.runPromise(
-      Effect.flatMap(FeeEstimatorService, (service) => service.estimate([tx])).pipe(
-        Effect.provide(FeeEstimatorLive),
-        Effect.provide(providerLayer),
-      ),
-    );
+    return Effect.gen(function* () {
+      const estimates = yield* Effect.flatMap(FeeEstimatorService, (service) =>
+        service.estimate([tx]),
+      );
 
-    expect(called?.method).toBe("starknet_estimateFee");
-    expect(called?.params?.[0]).toEqual([tx]);
-    expect(called?.params?.[1]).toEqual([]);
-    expect(called?.params?.[2]).toBe("latest");
-    expect(estimates).toHaveLength(1);
+      expect(called?.method).toBe("starknet_estimateFee");
+      expect(called?.params?.[0]).toEqual([tx]);
+      expect(called?.params?.[1]).toEqual([]);
+      expect(called?.params?.[2]).toBe("latest");
+      expect(estimates).toHaveLength(1);
+    }).pipe(
+      Effect.provide(FeeEstimatorLive),
+      Effect.provide(providerLayer),
+    );
   });
 
-  it("passes simulation flags and custom block id", async () => {
+  it.effect("passes simulation flags and custom block id", () => {
     let calledParams: readonly unknown[] | undefined;
 
     const providerLayer = Layer.succeed(ProviderService, {
@@ -80,18 +82,18 @@ describe("FeeEstimatorService", () => {
       nonce: "0x0",
     };
 
-    await Effect.runPromise(
-      Effect.flatMap(FeeEstimatorService, (service) =>
+    return Effect.gen(function* () {
+      yield* Effect.flatMap(FeeEstimatorService, (service) =>
         service.estimate([tx], {
           simulationFlags: ["SKIP_VALIDATE"],
           blockId: { block_number: 12 },
         }),
-      ).pipe(
-        Effect.provide(FeeEstimatorLive),
-        Effect.provide(providerLayer),
-      ),
-    );
+      );
 
-    expect(calledParams).toEqual([[tx], ["SKIP_VALIDATE"], { block_number: 12 }]);
+      expect(calledParams).toEqual([[tx], ["SKIP_VALIDATE"], { block_number: 12 }]);
+    }).pipe(
+      Effect.provide(FeeEstimatorLive),
+      Effect.provide(providerLayer),
+    );
   });
 });

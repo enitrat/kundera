@@ -272,12 +272,12 @@ export function getFunctionSelectorHex(fnName: string): string {
 /**
  * Compile a complete function call
  *
- * Returns selector and calldata ready for starknet_call or execute.
+ * Returns selector hex and calldata as hex strings, ready for JSON-RPC wire format.
  *
  * @param abi - Contract ABI
  * @param fnName - Function name
  * @param args - Function arguments
- * @returns { selector, calldata } or error
+ * @returns { selectorHex, calldata } or error
  */
 export function compileCalldata<
 	TAbi extends AbiLike,
@@ -286,21 +286,19 @@ export function compileCalldata<
 	abi: TAbi,
 	fnName: TFunctionName,
 	args: InferArgs<TAbi, TFunctionName>,
-): Result<{ selector: bigint; selectorHex: string; calldata: bigint[] }> {
+): Result<{ selectorHex: string; calldata: string[] }> {
 	const encoded = encodeCalldataInternal(abi, fnName, args);
 	if (encoded.error) {
 		return encoded as Result<{
-			selector: bigint;
 			selectorHex: string;
-			calldata: bigint[];
+			calldata: string[];
 		}>;
 	}
 
 	const selector = computeSelector(fnName);
 
 	return ok({
-		selector,
 		selectorHex: "0x" + selector.toString(16),
-		calldata: encoded.result,
+		calldata: encoded.result.map((v) => "0x" + v.toString(16)),
 	});
 }

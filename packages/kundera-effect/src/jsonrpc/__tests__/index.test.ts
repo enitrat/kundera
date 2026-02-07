@@ -7,7 +7,7 @@ import { ProviderService } from "../../services/ProviderService.js";
 import * as JsonRpc from "../index.js";
 
 describe("jsonrpc wrappers", () => {
-  it("maps blockNumber to starknet_blockNumber", async () => {
+  it.effect("maps blockNumber to starknet_blockNumber", () => {
     let calledMethod = "";
 
     const providerLayer = Layer.succeed(ProviderService, {
@@ -17,15 +17,15 @@ describe("jsonrpc wrappers", () => {
       },
     } satisfies ProviderServiceShape);
 
-    const value = await Effect.runPromise(
-      JsonRpc.blockNumber().pipe(Effect.provide(providerLayer)),
-    );
+    return Effect.gen(function* () {
+      const value = yield* JsonRpc.blockNumber();
 
-    expect(value).toBe(123);
-    expect(calledMethod).toBe("starknet_blockNumber");
+      expect(value).toBe(123);
+      expect(calledMethod).toBe("starknet_blockNumber");
+    }).pipe(Effect.provide(providerLayer));
   });
 
-  it("maps getTransactionReceipt params correctly", async () => {
+  it.effect("maps getTransactionReceipt params correctly", () => {
     let calledParams: readonly unknown[] | undefined;
     const txHash = Felt252.from("0xabc");
 
@@ -47,15 +47,15 @@ describe("jsonrpc wrappers", () => {
       },
     } satisfies ProviderServiceShape);
 
-    const receipt = await Effect.runPromise(
-      JsonRpc.getTransactionReceipt(txHash).pipe(Effect.provide(providerLayer)),
-    );
+    return Effect.gen(function* () {
+      const receipt = yield* JsonRpc.getTransactionReceipt(txHash);
 
-    expect(calledParams).toEqual([txHash.toHex()]);
-    expect(receipt.transaction_hash).toBe("0xabc");
+      expect(calledParams).toEqual([txHash.toHex()]);
+      expect(receipt.transaction_hash).toBe("0xabc");
+    }).pipe(Effect.provide(providerLayer));
   });
 
-  it("maps getNonce params correctly when using ContractAddress primitive", async () => {
+  it.effect("maps getNonce params correctly when using ContractAddress primitive", () => {
     let calledParams: readonly unknown[] | undefined;
     const address = ContractAddress.from("0xabc");
 
@@ -66,15 +66,15 @@ describe("jsonrpc wrappers", () => {
       },
     } satisfies ProviderServiceShape);
 
-    const nonce = await Effect.runPromise(
-      JsonRpc.getNonce(address).pipe(Effect.provide(providerLayer)),
-    );
+    return Effect.gen(function* () {
+      const nonce = yield* JsonRpc.getNonce(address);
 
-    expect(calledParams).toEqual(["latest", address.toHex()]);
-    expect(nonce).toBe("0x1");
+      expect(calledParams).toEqual(["latest", address.toHex()]);
+      expect(nonce).toBe("0x1");
+    }).pipe(Effect.provide(providerLayer));
   });
 
-  it("maps getTransactionByBlockIdAndIndex params correctly", async () => {
+  it.effect("maps getTransactionByBlockIdAndIndex params correctly", () => {
     let calledMethod = "";
     let calledParams: readonly unknown[] | undefined;
 
@@ -86,17 +86,15 @@ describe("jsonrpc wrappers", () => {
       },
     } satisfies ProviderServiceShape);
 
-    await Effect.runPromise(
-      JsonRpc.getTransactionByBlockIdAndIndex({ block_number: 12 }, 3).pipe(
-        Effect.provide(providerLayer),
-      ),
-    );
+    return Effect.gen(function* () {
+      yield* JsonRpc.getTransactionByBlockIdAndIndex({ block_number: 12 }, 3);
 
-    expect(calledMethod).toBe("starknet_getTransactionByBlockIdAndIndex");
-    expect(calledParams).toEqual([{ block_number: 12 }, 3]);
+      expect(calledMethod).toBe("starknet_getTransactionByBlockIdAndIndex");
+      expect(calledParams).toEqual([{ block_number: 12 }, 3]);
+    }).pipe(Effect.provide(providerLayer));
   });
 
-  it("maps getStorageProof params using branded primitives", async () => {
+  it.effect("maps getStorageProof params using branded primitives", () => {
     let calledMethod = "";
     let calledParams: readonly unknown[] | undefined;
 
@@ -112,23 +110,23 @@ describe("jsonrpc wrappers", () => {
     const address = ContractAddress.from("0xabc");
     const key = StorageKey.from("0x77");
 
-    await Effect.runPromise(
-      JsonRpc.getStorageProof(
+    return Effect.gen(function* () {
+      yield* JsonRpc.getStorageProof(
         { block_hash: "0x1" },
         {
           classHashes: [classHash],
           contractAddresses: [address],
           contractStorageKeys: [{ contractAddress: address, storageKeys: [key] }],
         },
-      ).pipe(Effect.provide(providerLayer)),
-    );
+      );
 
-    expect(calledMethod).toBe("starknet_getStorageProof");
-    expect(calledParams).toEqual([
-      { block_hash: "0x1" },
-      [classHash.toHex()],
-      [address.toHex()],
-      [{ contract_address: address.toHex(), storage_keys: [key.toHex()] }],
-    ]);
+      expect(calledMethod).toBe("starknet_getStorageProof");
+      expect(calledParams).toEqual([
+        { block_hash: "0x1" },
+        [classHash.toHex()],
+        [address.toHex()],
+        [{ contract_address: address.toHex(), storage_keys: [key.toHex()] }],
+      ]);
+    }).pipe(Effect.provide(providerLayer));
   });
 });

@@ -27,7 +27,6 @@ import {
 import { FeeEstimatorService } from "./FeeEstimatorService.js";
 import type { RequestOptions } from "./TransportService.js";
 import { TransactionService, type WaitForReceiptOptions } from "./TransactionService.js";
-import { bigintToHex } from "./wire.js";
 
 type EstimatableTransaction =
   | BroadcastedInvokeTxn
@@ -135,7 +134,7 @@ const toWalletInvokeParams = <
         {
           contract_address: contractAddressHex,
           entry_point: params.functionName,
-          calldata: compiled.result.calldata.map(bigintToHex),
+          calldata: compiled.result.calldata,
         },
       ],
     } satisfies WalletInvokeParams;

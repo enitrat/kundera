@@ -30,7 +30,7 @@ const ERC20_ABI: Abi = [
 ];
 
 describe("ContractService", () => {
-  it("encodes, calls provider, and decodes output", async () => {
+  it.effect("encodes, calls provider, and decodes output", () => {
     let requestArgs: { method: string; params?: readonly unknown[] } | undefined;
     const contractAddress = ContractAddress.from("0x1234");
 
@@ -50,18 +50,20 @@ describe("ContractService", () => {
       }),
     ).pipe(Effect.provide(ContractLive), Effect.provide(providerLayer));
 
-    const result = await Effect.runPromise(program);
+    return Effect.gen(function* () {
+      const result = yield* program;
 
-    expect(result).toBe(42n);
-    expect(requestArgs?.method).toBe("starknet_call");
-    expect(requestArgs?.params?.[1]).toBe("latest");
-    const requestPayload = requestArgs?.params?.[0] as
-      | { contract_address?: string }
-      | undefined;
-    expect(requestPayload?.contract_address).toBe(contractAddress.toHex());
+      expect(result).toBe(42n);
+      expect(requestArgs?.method).toBe("starknet_call");
+      expect(requestArgs?.params?.[1]).toBe("latest");
+      const requestPayload = requestArgs?.params?.[0] as
+        | { contract_address?: string }
+        | undefined;
+      expect(requestPayload?.contract_address).toBe(contractAddress.toHex());
+    });
   });
 
-  it("supports bound contract factory via at()", async () => {
+  it.effect("supports bound contract factory via at()", () => {
     const contractAddress = ContractAddress.from("0x999");
     const providerLayer = Layer.succeed(ProviderService, {
       request: <T>() => Effect.succeed(["0x7", "0x0"] as T),
@@ -72,11 +74,13 @@ describe("ContractService", () => {
       return token.read("balance_of", [0xabcn]);
     }).pipe(Effect.provide(ContractLive), Effect.provide(providerLayer));
 
-    const result = await Effect.runPromise(program);
-    expect(result).toBe(7n);
+    return Effect.gen(function* () {
+      const result = yield* program;
+      expect(result).toBe(7n);
+    });
   });
 
-  it("fails with ContractError on invalid function name", async () => {
+  it.effect("fails with ContractError on invalid function name", () => {
     const providerLayer = Layer.succeed(ProviderService, {
       request: <T>() => Effect.succeed([] as T),
     });
@@ -92,11 +96,13 @@ describe("ContractService", () => {
       ),
     ).pipe(Effect.provide(ContractLive), Effect.provide(providerLayer));
 
-    const result = await Effect.runPromise(program);
-    expect(result._tag).toBe("Left");
-    if (result._tag === "Left") {
-      expect(result.left._tag).toBe("ContractError");
-      expect(result.left.stage).toBe("encode");
-    }
+    return Effect.gen(function* () {
+      const result = yield* program;
+      expect(result._tag).toBe("Left");
+      if (result._tag === "Left") {
+        expect(result.left._tag).toBe("ContractError");
+        expect(result.left.stage).toBe("encode");
+      }
+    });
   });
 });

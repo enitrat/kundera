@@ -39,7 +39,7 @@ describe("presets", () => {
     mockedFetch.mockReset();
   });
 
-  it("createProvider works with JSON-RPC helpers", async () => {
+  it.effect("createProvider works with JSON-RPC helpers", () => {
     vi.stubGlobal("fetch", mockedFetch);
 
     mockedFetch.mockImplementation(async (_input, init) => {
@@ -59,19 +59,16 @@ describe("presets", () => {
       );
     });
 
-    const program = Effect.gen(function* () {
+    return Effect.gen(function* () {
       const chainId = yield* JsonRpc.chainId();
       const block = yield* JsonRpc.blockNumber();
-      return { chainId, block };
+
+      expect(chainId).toBe("0x534e5f5345504f4c4941");
+      expect(block).toBe(1);
     }).pipe(Effect.provide(Presets.createProvider("https://rpc.example")));
-
-    const result = await Effect.runPromise(program);
-
-    expect(result.chainId).toBe("0x534e5f5345504f4c4941");
-    expect(result.block).toBe(1);
   });
 
-  it("wallet base stack wires wallet and nonce services", async () => {
+  it.effect("wallet base stack wires wallet and nonce services", () => {
     vi.stubGlobal("fetch", mockedFetch);
 
     mockedFetch.mockImplementation(async (_input, init) => {
@@ -96,7 +93,7 @@ describe("presets", () => {
       rpcUrl: "https://rpc.example",
     });
 
-    const program = Effect.gen(function* () {
+    return Effect.gen(function* () {
       const wallet = yield* Services.WalletProviderService;
       const nonce = yield* Services.NonceManagerService;
       const contract = yield* Services.ContractService;
@@ -109,25 +106,15 @@ describe("presets", () => {
       );
       const networkName = yield* chain.networkName();
 
-      return {
-        accounts,
-        nextNonce,
-        networkName,
-        hasContract: typeof contract.at === "function",
-        hasFeeEstimator: typeof feeEstimator.estimate === "function",
-      };
+      expect(accounts).toEqual(["0xabc"]);
+      expect(nextNonce).toBe(5n);
+      expect(networkName).toBe("sepolia");
+      expect(typeof contract.at === "function").toBe(true);
+      expect(typeof feeEstimator.estimate === "function").toBe(true);
     }).pipe(Effect.provide(stack));
-
-    const result = await Effect.runPromise(program);
-
-    expect(result.accounts).toEqual(["0xabc"]);
-    expect(result.nextNonce).toBe(5n);
-    expect(result.networkName).toBe("sepolia");
-    expect(result.hasContract).toBe(true);
-    expect(result.hasFeeEstimator).toBe(true);
   });
 
-  it("wallet stack wires transaction and contract write flow", async () => {
+  it.effect("wallet stack wires transaction and contract write flow", () => {
     vi.stubGlobal("fetch", mockedFetch);
 
     mockedFetch.mockImplementation(async (_input, init) => {
@@ -164,7 +151,7 @@ describe("presets", () => {
       rpcUrl: "https://rpc.example",
     });
 
-    const program = Effect.gen(function* () {
+    return Effect.gen(function* () {
       const transactions = yield* Services.TransactionService;
       const writer = yield* Services.ContractWriteService;
 
@@ -188,14 +175,10 @@ describe("presets", () => {
         ],
       });
 
-      return { transactionResult, writerResult };
+      expect(transactionResult.transactionHash).toBe("0xbeef");
+      expect(transactionResult.receipt.transaction_hash).toBe("0xbeef");
+      expect(writerResult.transactionHash).toBe("0xbeef");
+      expect(writerResult.receipt.transaction_hash).toBe("0xbeef");
     }).pipe(Effect.provide(stack));
-
-    const result = await Effect.runPromise(program);
-
-    expect(result.transactionResult.transactionHash).toBe("0xbeef");
-    expect(result.transactionResult.receipt.transaction_hash).toBe("0xbeef");
-    expect(result.writerResult.transactionHash).toBe("0xbeef");
-    expect(result.writerResult.receipt.transaction_hash).toBe("0xbeef");
   });
 });

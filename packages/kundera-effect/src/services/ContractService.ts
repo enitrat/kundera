@@ -9,11 +9,11 @@ import {
   type InferReturn,
 } from "@kundera-sn/kundera-ts/abi";
 import type { BlockId } from "@kundera-sn/kundera-ts/jsonrpc";
+import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc";
 
 import { ContractError, type RpcError, type TransportError } from "../errors.js";
 import { ProviderService } from "./ProviderService.js";
 import type { RequestOptions } from "./TransportService.js";
-import { bigintToHex } from "./wire.js";
 
 const parseResponseItem = (
   value: string,
@@ -118,14 +118,11 @@ export const ContractLive: Layer.Layer<ContractService, never, ProviderService> 
         const callRequest = {
           contract_address: contractAddressHex,
           entry_point_selector: compiled.result.selectorHex,
-          calldata: compiled.result.calldata.map(bigintToHex),
+          calldata: compiled.result.calldata,
         };
 
-        return yield* provider.request<string[]>(
-          "starknet_call",
-          [callRequest, params.blockId ?? "latest"],
-          params.requestOptions,
-        );
+        const { method, params: rpcParams } = Rpc.CallRequest(callRequest, params.blockId ?? "latest");
+        return yield* provider.request<string[]>(method, rpcParams, params.requestOptions);
       });
 
     const call: ContractServiceShape["call"] = (params) =>
