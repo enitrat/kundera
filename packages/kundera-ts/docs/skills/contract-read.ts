@@ -2,9 +2,18 @@
  * Contract Read Skill
  *
  * Read-only contract calls with ABI encoding/decoding.
+ * Generic over ABI for full type inference of args and return types.
  */
 
-import { encodeCalldata, decodeOutput, getFunctionSelectorHex, type AbiLike, type CairoValue } from '@kundera-sn/kundera-ts/abi';
+import {
+  encodeCalldata,
+  decodeOutput,
+  getFunctionSelectorHex,
+  type StarknetAbi,
+  type InferFunctionName,
+  type InferArgs,
+  type InferReturn,
+} from '@kundera-sn/kundera-ts/abi';
 import { Felt252 } from '@kundera-sn/kundera-ts/Felt252';
 import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { BlockId, FunctionCall } from '@kundera-sn/kundera-ts/jsonrpc';
@@ -17,11 +26,14 @@ async function send<T>(transport: Transport, req: { method: string; params?: unk
   return response.result as T;
 }
 
-export interface ReadContractParams {
-  abi: AbiLike;
+export interface ReadContractParams<
+  TAbi extends StarknetAbi,
+  TFunctionName extends InferFunctionName<TAbi> & string,
+> {
+  abi: TAbi;
   address: string;
-  functionName: string;
-  args?: CairoValue[];
+  functionName: TFunctionName;
+  args?: InferArgs<TAbi, TFunctionName>;
   blockId?: BlockId;
 }
 
@@ -47,12 +59,30 @@ function err<T>(code: ContractErrorCode, message: string): ContractResult<T> {
 
 /**
  * Read from a contract (view function).
+ *
+ * When the ABI is passed `as const`, args and return type are fully inferred:
+ *
+ * @example
+ * ```ts
+ * const ERC20_ABI = [...] as const;
+ *
+ * // args: [ContractAddress], return: u256
+ * const { result } = await readContract(transport, {
+ *   abi: ERC20_ABI,
+ *   address: '0x049d...',
+ *   functionName: 'balance_of',
+ *   args: [accountAddress], // type-checked against ABI
+ * });
+ * ```
  */
-export async function readContract(
+export async function readContract<
+  TAbi extends StarknetAbi,
+  TFunctionName extends InferFunctionName<TAbi> & string,
+>(
   transport: Transport,
-  params: ReadContractParams,
-): Promise<ContractResult<CairoValue>> {
-  const { abi, address, functionName, args = [], blockId } = params;
+  params: ReadContractParams<TAbi, TFunctionName>,
+): Promise<ContractResult<InferReturn<TAbi, TFunctionName>>> {
+  const { abi, address, functionName, args = [] as never, blockId } = params;
 
   const calldataResult = encodeCalldata(abi, functionName, args);
   if (calldataResult.error) {
@@ -75,7 +105,7 @@ export async function readContract(
     if (decoded.error) {
       return err('DECODE_ERROR', decoded.error.message);
     }
-    return ok(decoded.result);
+    return ok(decoded.result as InferReturn<TAbi, TFunctionName>);
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     return err('RPC_ERROR', message);

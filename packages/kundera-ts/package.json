@@ -152,6 +152,66 @@
       "types": "./dist/primitives/Address/index.d.ts",
       "import": "./dist/primitives/Address/index.js",
       "require": "./dist/primitives/Address/index.cjs"
+    },
+    "./Uint256": {
+      "types": "./dist/primitives/Uint256/index.d.ts",
+      "import": "./dist/primitives/Uint256/index.js",
+      "require": "./dist/primitives/Uint256/index.cjs"
+    },
+    "./Uint128": {
+      "types": "./dist/primitives/Uint128/index.d.ts",
+      "import": "./dist/primitives/Uint128/index.js",
+      "require": "./dist/primitives/Uint128/index.cjs"
+    },
+    "./Uint64": {
+      "types": "./dist/primitives/Uint64/index.d.ts",
+      "import": "./dist/primitives/Uint64/index.js",
+      "require": "./dist/primitives/Uint64/index.cjs"
+    },
+    "./Uint32": {
+      "types": "./dist/primitives/Uint32/index.d.ts",
+      "import": "./dist/primitives/Uint32/index.js",
+      "require": "./dist/primitives/Uint32/index.cjs"
+    },
+    "./Uint16": {
+      "types": "./dist/primitives/Uint16/index.d.ts",
+      "import": "./dist/primitives/Uint16/index.js",
+      "require": "./dist/primitives/Uint16/index.cjs"
+    },
+    "./Uint8": {
+      "types": "./dist/primitives/Uint8/index.d.ts",
+      "import": "./dist/primitives/Uint8/index.js",
+      "require": "./dist/primitives/Uint8/index.cjs"
+    },
+    "./Int128": {
+      "types": "./dist/primitives/Int128/index.d.ts",
+      "import": "./dist/primitives/Int128/index.js",
+      "require": "./dist/primitives/Int128/index.cjs"
+    },
+    "./Int64": {
+      "types": "./dist/primitives/Int64/index.d.ts",
+      "import": "./dist/primitives/Int64/index.js",
+      "require": "./dist/primitives/Int64/index.cjs"
+    },
+    "./Int32": {
+      "types": "./dist/primitives/Int32/index.d.ts",
+      "import": "./dist/primitives/Int32/index.js",
+      "require": "./dist/primitives/Int32/index.cjs"
+    },
+    "./Int16": {
+      "types": "./dist/primitives/Int16/index.d.ts",
+      "import": "./dist/primitives/Int16/index.js",
+      "require": "./dist/primitives/Int16/index.cjs"
+    },
+    "./Int8": {
+      "types": "./dist/primitives/Int8/index.d.ts",
+      "import": "./dist/primitives/Int8/index.js",
+      "require": "./dist/primitives/Int8/index.cjs"
+    },
+    "./ByteArray": {
+      "types": "./dist/primitives/ByteArray/index.d.ts",
+      "import": "./dist/primitives/ByteArray/index.js",
+      "require": "./dist/primitives/ByteArray/index.cjs"
     }
   },
   "main": "./dist/index.cjs",

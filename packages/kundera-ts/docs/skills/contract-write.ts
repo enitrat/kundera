@@ -2,9 +2,15 @@
  * Contract Write Skill
  *
  * State-changing contract calls using an account executor.
+ * Generic over ABI for full type inference of args.
  */
 
-import { encodeCalldata, type AbiLike, type CairoValue } from '@kundera-sn/kundera-ts/abi';
+import {
+  encodeCalldata,
+  type StarknetAbi,
+  type InferFunctionName,
+  type InferArgs,
+} from '@kundera-sn/kundera-ts/abi';
 import type { Call, UniversalDetails } from '@kundera-sn/kundera-ts/crypto';
 
 export interface AccountExecutor {
@@ -12,11 +18,14 @@ export interface AccountExecutor {
   execute: (calls: Call | Call[], details?: UniversalDetails) => Promise<{ transaction_hash: string }>;
 }
 
-export interface WriteContractParams {
-  abi: AbiLike;
+export interface WriteContractParams<
+  TAbi extends StarknetAbi,
+  TFunctionName extends InferFunctionName<TAbi> & string,
+> {
+  abi: TAbi;
   address: string;
-  functionName: string;
-  args?: CairoValue[];
+  functionName: TFunctionName;
+  args?: InferArgs<TAbi, TFunctionName>;
   account: AccountExecutor;
   details?: UniversalDetails;
 }
@@ -47,11 +56,30 @@ function err<T>(code: ContractErrorCode, message: string): ContractResult<T> {
 
 /**
  * Write to a contract (state-changing function).
+ *
+ * When the ABI is passed `as const`, args are fully inferred:
+ *
+ * @example
+ * ```ts
+ * const ERC20_ABI = [...] as const;
+ *
+ * // args: [ContractAddress, u256] — type-checked against ABI
+ * const { result } = await writeContract({
+ *   abi: ERC20_ABI,
+ *   address: '0x049d...',
+ *   functionName: 'transfer',
+ *   args: [recipient, amount],
+ *   account,
+ * });
+ * ```
  */
-export async function writeContract(
-  params: WriteContractParams,
+export async function writeContract<
+  TAbi extends StarknetAbi,
+  TFunctionName extends InferFunctionName<TAbi> & string,
+>(
+  params: WriteContractParams<TAbi, TFunctionName>,
 ): Promise<ContractResult<WriteResult>> {
-  const { abi, address, functionName, args = [], account, details } = params;
+  const { abi, address, functionName, args = [] as never, account, details } = params;
 
   if (!account?.execute) {
     return err('ACCOUNT_REQUIRED', 'Account executor with execute() is required');
