@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Effect, Layer } from "effect";
+import { ContractAddress } from "@kundera-sn/kundera-ts";
 import type { Abi } from "@kundera-sn/kundera-ts/abi";
 
 import { ContractLive } from "../ContractService.js";
@@ -38,11 +39,11 @@ describe("ContractRegistry", () => {
     const program = Effect.gen(function* () {
       const registry = yield* makeContractRegistry({
         token: {
-          address: "0x111",
+          address: ContractAddress.from("0x111"),
           abi: BALANCE_ABI,
         },
         treasury: {
-          address: "0x222",
+          address: ContractAddress.from("0x222"),
           abi: BALANCE_ABI,
         },
       });

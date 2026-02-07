@@ -107,7 +107,7 @@ describe("ContractWriteService", () => {
       Effect.flatMap(ContractWriteService, (writer) =>
         writer.invokeContractAndWait(
           {
-            contractAddress: "0x1234",
+            contractAddress: ContractAddress.from("0x1234"),
             abi: WRITE_ABI,
             functionName: "set_value",
             args: [1n],
@@ -200,7 +200,7 @@ describe("ContractWriteService", () => {
       Effect.flatMap(ContractWriteService, (writer) =>
         Effect.either(
           writer.invokeContract({
-            contractAddress: "0x1234",
+            contractAddress: ContractAddress.from("0x1234"),
             abi: WRITE_ABI,
             functionName: "missing_function" as never,
             args: [],

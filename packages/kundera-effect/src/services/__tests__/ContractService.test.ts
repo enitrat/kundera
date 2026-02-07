@@ -84,7 +84,7 @@ describe("ContractService", () => {
     const program = Effect.flatMap(ContractService, (contracts) =>
       Effect.either(
         contracts.call({
-          contractAddress: "0x1234",
+          contractAddress: ContractAddress.from("0x1234"),
           abi: ERC20_ABI,
           functionName: "missing_function" as never,
           args: [],

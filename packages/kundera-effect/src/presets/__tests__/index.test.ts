@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Effect } from "effect";
+import { ContractAddress } from "@kundera-sn/kundera-ts";
 import type {
   StarknetWindowObject,
   WalletRequestArguments,
@@ -102,7 +103,9 @@ describe("presets", () => {
       const chain = yield* Services.ChainService;
 
       const accounts = yield* wallet.requestAccounts();
-      const nextNonce = yield* nonce.consume(accounts[0] ?? "0xabc");
+      const nextNonce = yield* nonce.consume(
+        ContractAddress.from(accounts[0] ?? "0xabc"),
+      );
       const networkName = yield* chain.networkName();
 
       return {

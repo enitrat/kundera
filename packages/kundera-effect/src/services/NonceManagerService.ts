@@ -1,35 +1,36 @@
 import { Context, Effect, Layer, Ref } from "effect";
 import type { ContractAddressType, Felt252Type } from "@kundera-sn/kundera-ts";
+import type { BlockId } from "@kundera-sn/kundera-ts/jsonrpc";
 
 import { NonceError, type RpcError, type TransportError } from "../errors.js";
 import { ProviderService } from "./ProviderService.js";
 import type { RequestOptions } from "./TransportService.js";
 
 export interface NonceRequestOptions {
-  readonly chainId?: Felt252Type | string;
-  readonly blockId?: unknown;
+  readonly chainId?: Felt252Type;
+  readonly blockId?: BlockId;
   readonly requestOptions?: RequestOptions;
 }
 
 export interface NonceManagerServiceShape {
   readonly get: (
-    address: ContractAddressType | string,
+    address: ContractAddressType,
     options?: NonceRequestOptions,
   ) => Effect.Effect<bigint, NonceError | TransportError | RpcError>;
 
   readonly consume: (
-    address: ContractAddressType | string,
+    address: ContractAddressType,
     options?: NonceRequestOptions,
   ) => Effect.Effect<bigint, NonceError | TransportError | RpcError>;
 
   readonly increment: (
-    address: ContractAddressType | string,
-    chainId: Felt252Type | string,
+    address: ContractAddressType,
+    chainId: Felt252Type,
   ) => Effect.Effect<void>;
 
   readonly reset: (
-    address: ContractAddressType | string,
-    chainId: Felt252Type | string,
+    address: ContractAddressType,
+    chainId: Felt252Type,
   ) => Effect.Effect<void>;
 }
 
@@ -69,11 +70,7 @@ export const DefaultNonceManagerLive: Layer.Layer<
       options?: NonceRequestOptions,
     ): Effect.Effect<string, TransportError | RpcError> =>
       options?.chainId
-        ? Effect.succeed(
-            typeof options.chainId === "string"
-              ? options.chainId
-              : options.chainId.toHex(),
-          )
+        ? Effect.succeed(options.chainId.toHex())
         : provider.request<string>("starknet_chainId", [], options?.requestOptions);
 
     const getDelta = (key: string): Effect.Effect<bigint> =>
@@ -94,7 +91,7 @@ export const DefaultNonceManagerLive: Layer.Layer<
 
     const get: NonceManagerServiceShape["get"] = (address, options) =>
       Effect.gen(function* () {
-        const addressHex = typeof address === "string" ? address : address.toHex();
+        const addressHex = address.toHex();
         const chainId = yield* resolveChainId(options);
         const blockId = options?.blockId ?? "pending";
         const key = toNonceKey(chainId, addressHex);
@@ -113,15 +110,19 @@ export const DefaultNonceManagerLive: Layer.Layer<
 
     const consume: NonceManagerServiceShape["consume"] = (address, options) =>
       Effect.gen(function* () {
-        const addressHex = typeof address === "string" ? address : address.toHex();
+        const addressHex = address.toHex();
         const chainId = yield* resolveChainId(options);
-        const nonce = yield* get(addressHex, {
-          ...options,
-          chainId,
-        });
-
+        const blockId = options?.blockId ?? "pending";
         const key = toNonceKey(chainId, addressHex);
+        const onChainNonceHex = yield* provider.request<string>(
+          "starknet_getNonce",
+          [blockId, addressHex],
+          options?.requestOptions,
+        );
+        const onChainNonce = yield* parseNonce(addressHex, onChainNonceHex);
         const delta = yield* getDelta(key);
+        const nonce = onChainNonce + delta;
+
         yield* setDelta(key, delta + 1n);
 
         return nonce;
@@ -132,8 +133,8 @@ export const DefaultNonceManagerLive: Layer.Layer<
       chainId,
     ) =>
       Effect.gen(function* () {
-        const addressHex = typeof address === "string" ? address : address.toHex();
-        const chainIdHex = typeof chainId === "string" ? chainId : chainId.toHex();
+        const addressHex = address.toHex();
+        const chainIdHex = chainId.toHex();
         const key = toNonceKey(chainIdHex, addressHex);
         const delta = yield* getDelta(key);
         yield* setDelta(key, delta + 1n);
@@ -141,10 +142,7 @@ export const DefaultNonceManagerLive: Layer.Layer<
 
     const reset: NonceManagerServiceShape["reset"] = (address, chainId) =>
       setDelta(
-        toNonceKey(
-          typeof chainId === "string" ? chainId : chainId.toHex(),
-          typeof address === "string" ? address : address.toHex(),
-        ),
+        toNonceKey(chainId.toHex(), address.toHex()),
         0n,
       );
 

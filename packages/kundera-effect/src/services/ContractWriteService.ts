@@ -7,11 +7,13 @@ import {
   type InferFunctionName,
 } from "@kundera-sn/kundera-ts/abi";
 import type {
+  BlockId,
   BroadcastedDeclareTxn,
   BroadcastedDeployAccountTxn,
   BroadcastedInvokeTxn,
   FeeEstimate,
   SimulationFlag,
+  TxnReceiptWithBlockInfo,
 } from "@kundera-sn/kundera-ts/jsonrpc";
 import type { WalletInvokeParams } from "@kundera-sn/kundera-ts/provider";
 
@@ -25,8 +27,7 @@ import {
 import { FeeEstimatorService } from "./FeeEstimatorService.js";
 import type { RequestOptions } from "./TransportService.js";
 import { TransactionService, type WaitForReceiptOptions } from "./TransactionService.js";
-
-const bigintToHex = (value: bigint): string => `0x${value.toString(16)}`;
+import { bigintToHex } from "./wire.js";
 
 type EstimatableTransaction =
   | BroadcastedInvokeTxn
@@ -35,7 +36,7 @@ type EstimatableTransaction =
 
 export interface EstimateContractWriteFeeOptions {
   readonly simulationFlags?: readonly SimulationFlag[];
-  readonly blockId?: import("@kundera-sn/kundera-ts/jsonrpc").BlockId;
+  readonly blockId?: BlockId;
   readonly requestOptions?: RequestOptions;
 }
 
@@ -51,7 +52,7 @@ export interface ContractWriteParams<
   TAbi extends AbiLike,
   TFunctionName extends InferFunctionName<TAbi> & string,
 > {
-  readonly contractAddress: ContractAddressType | string;
+  readonly contractAddress: ContractAddressType;
   readonly abi: TAbi;
   readonly functionName: TFunctionName;
   readonly args: InferArgs<TAbi, TFunctionName>;
@@ -69,7 +70,7 @@ export interface ContractWriteServiceShape {
   ) => Effect.Effect<
     {
       transactionHash: string;
-      receipt: import("@kundera-sn/kundera-ts/jsonrpc").TxnReceiptWithBlockInfo;
+      receipt: TxnReceiptWithBlockInfo;
     },
     WalletError | TransportError | RpcError | TransactionError
   >;
@@ -96,7 +97,7 @@ export interface ContractWriteServiceShape {
   ) => Effect.Effect<
     {
       transactionHash: string;
-      receipt: import("@kundera-sn/kundera-ts/jsonrpc").TxnReceiptWithBlockInfo;
+      receipt: TxnReceiptWithBlockInfo;
     },
     ContractError | WalletError | TransportError | RpcError | TransactionError
   >;
@@ -114,10 +115,7 @@ const toWalletInvokeParams = <
   params: ContractWriteParams<TAbi, TFunctionName>,
 ): Effect.Effect<WalletInvokeParams, ContractError> =>
   Effect.gen(function* () {
-    const contractAddressHex =
-      typeof params.contractAddress === "string"
-        ? params.contractAddress
-        : params.contractAddress.toHex();
+    const contractAddressHex = params.contractAddress.toHex();
 
     const compiled = compileCalldata(params.abi, params.functionName, params.args);
     if (compiled.error) {
@@ -127,7 +125,7 @@ const toWalletInvokeParams = <
           functionName: params.functionName,
           stage: "encode",
           message: compiled.error.message,
-          details: compiled.error,
+          cause: compiled.error,
         }),
       );
     }

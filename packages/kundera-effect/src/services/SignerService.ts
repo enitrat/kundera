@@ -40,7 +40,7 @@ export interface SignerServiceShape {
   ) => Effect.Effect<{ transactionHash: string }, WalletError | RpcError>;
 
   readonly waitForReceipt: (
-    txHash: Felt252Type | string,
+    txHash: Felt252Type,
     options?: import("./TransactionService.js").WaitForReceiptOptions,
   ) => Effect.Effect<
     TxnReceiptWithBlockInfo,

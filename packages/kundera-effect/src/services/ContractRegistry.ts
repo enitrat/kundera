@@ -5,7 +5,7 @@ import type { AbiLike } from "@kundera-sn/kundera-ts/abi";
 import { ContractService, type ContractInstance } from "./ContractService.js";
 
 export interface ContractDefinition<TAbi extends AbiLike = AbiLike> {
-  readonly address: ContractAddressType | string;
+  readonly address: ContractAddressType;
   readonly abi: TAbi;
 }
 
@@ -24,6 +24,7 @@ export const makeContractRegistry = <TConfig extends ContractRegistryConfig>(
   config: TConfig,
 ): Effect.Effect<ContractRegistry<TConfig>, never, ContractService> =>
   Effect.map(ContractService, (service) => {
+    // TypeScript cannot preserve key-specific mapped types through Object.keys iteration.
     const contracts = {} as {
       -readonly [K in keyof TConfig]: ContractInstance<TConfig[K]["abi"]>;
     };

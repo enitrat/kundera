@@ -1,5 +1,5 @@
 import { Context, Effect, Layer, Schedule } from "effect";
-import type { Felt252Type } from "@kundera-sn/kundera-ts";
+import { Felt252, type Felt252Type } from "@kundera-sn/kundera-ts";
 import type { WalletInvokeParams } from "@kundera-sn/kundera-ts/provider";
 import type { TxnReceiptWithBlockInfo } from "@kundera-sn/kundera-ts/jsonrpc";
 
@@ -30,7 +30,7 @@ export interface TransactionServiceShape {
   ) => Effect.Effect<{ transactionHash: string }, WalletError | RpcError>;
 
   readonly waitForReceipt: (
-    txHash: Felt252Type | string,
+    txHash: Felt252Type,
     options?: WaitForReceiptOptions,
   ) => Effect.Effect<
     TxnReceiptWithBlockInfo,
@@ -88,7 +88,7 @@ export const TransactionLive: Layer.Layer<
       txHash,
       options,
     ) => {
-      const txHashHex = typeof txHash === "string" ? txHash : txHash.toHex();
+      const txHashHex = txHash.toHex();
       const pollIntervalMs = Math.max(options?.pollIntervalMs ?? 1_500, 0);
       const maxAttempts = Math.max(options?.maxAttempts ?? 40, 1);
 
@@ -132,7 +132,17 @@ export const TransactionLive: Layer.Layer<
     ) =>
       Effect.gen(function* () {
         const sent = yield* sendInvoke(params, options?.invokeOptions);
-        const receipt = yield* waitForReceipt(sent.transactionHash, options);
+        const txHash = yield* Effect.try({
+          try: () => Felt252.from(sent.transactionHash),
+          catch: (cause) =>
+            new TransactionError({
+              operation: "sendInvokeAndWait",
+              message: `Invalid transaction hash returned by wallet: ${sent.transactionHash}`,
+              txHash: sent.transactionHash,
+              cause,
+            }),
+        });
+        const receipt = yield* waitForReceipt(txHash, options);
 
         return {
           transactionHash: sent.transactionHash,

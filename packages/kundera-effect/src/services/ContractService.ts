@@ -13,8 +13,7 @@ import type { BlockId } from "@kundera-sn/kundera-ts/jsonrpc";
 import { ContractError, type RpcError, type TransportError } from "../errors.js";
 import { ProviderService } from "./ProviderService.js";
 import type { RequestOptions } from "./TransportService.js";
-
-const bigintToHex = (value: bigint): string => `0x${value.toString(16)}`;
+import { bigintToHex } from "./wire.js";
 
 const parseResponseItem = (
   value: string,
@@ -42,14 +41,14 @@ export interface ContractCallParams<
   TAbi extends AbiLike,
   TFunctionName extends InferFunctionName<TAbi> & string,
 > extends ContractReadOptions {
-  readonly contractAddress: ContractAddressType | string;
+  readonly contractAddress: ContractAddressType;
   readonly abi: TAbi;
   readonly functionName: TFunctionName;
   readonly args: InferArgs<TAbi, TFunctionName>;
 }
 
 export interface ContractInstance<TAbi extends AbiLike> {
-  readonly address: string;
+  readonly address: ContractAddressType;
   readonly abi: TAbi;
   readonly read: <TFunctionName extends InferFunctionName<TAbi> & string>(
     functionName: TFunctionName,
@@ -85,7 +84,7 @@ export interface ContractServiceShape {
   >;
 
   readonly at: <TAbi extends AbiLike>(
-    contractAddress: ContractAddressType | string,
+    contractAddress: ContractAddressType,
     abi: TAbi,
   ) => ContractInstance<TAbi>;
 }
@@ -102,10 +101,7 @@ export const ContractLive: Layer.Layer<ContractService, never, ProviderService> 
 
     const callRaw: ContractServiceShape["callRaw"] = (params) =>
       Effect.gen(function* () {
-        const contractAddressHex =
-          typeof params.contractAddress === "string"
-            ? params.contractAddress
-            : params.contractAddress.toHex();
+        const contractAddressHex = params.contractAddress.toHex();
         const compiled = compileCalldata(params.abi, params.functionName, params.args);
         if (compiled.error) {
           return yield* Effect.fail(
@@ -114,7 +110,7 @@ export const ContractLive: Layer.Layer<ContractService, never, ProviderService> 
               functionName: params.functionName,
               stage: "encode",
               message: compiled.error.message,
-              details: compiled.error,
+              cause: compiled.error,
             }),
           );
         }
@@ -134,10 +130,7 @@ export const ContractLive: Layer.Layer<ContractService, never, ProviderService> 
 
     const call: ContractServiceShape["call"] = (params) =>
       Effect.gen(function* () {
-        const contractAddressHex =
-          typeof params.contractAddress === "string"
-            ? params.contractAddress
-            : params.contractAddress.toHex();
+        const contractAddressHex = params.contractAddress.toHex();
         const rawResult = yield* callRaw(params);
         const outputValues = yield* Effect.forEach(rawResult, (item) =>
           parseResponseItem(item, contractAddressHex, params.functionName),
@@ -151,7 +144,7 @@ export const ContractLive: Layer.Layer<ContractService, never, ProviderService> 
               functionName: params.functionName,
               stage: "decode",
               message: decoded.error.message,
-              details: decoded.error,
+              cause: decoded.error,
             }),
           );
         }
@@ -160,10 +153,7 @@ export const ContractLive: Layer.Layer<ContractService, never, ProviderService> 
       });
 
     const at: ContractServiceShape["at"] = (contractAddress, abi) => ({
-      address:
-        typeof contractAddress === "string"
-          ? contractAddress
-          : contractAddress.toHex(),
+      address: contractAddress,
       abi,
       read: (functionName, args, options) =>
         call({
@@ -194,7 +184,7 @@ export const ContractLive: Layer.Layer<ContractService, never, ProviderService> 
 );
 
 export const Contract = <TAbi extends AbiLike>(
-  contractAddress: ContractAddressType | string,
+  contractAddress: ContractAddressType,
   abi: TAbi,
 ): Effect.Effect<ContractInstance<TAbi>, never, ContractService> =>
   Effect.map(ContractService, (service) => service.at(contractAddress, abi));
