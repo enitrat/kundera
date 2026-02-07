@@ -1,0 +1,76 @@
+import { describe, expect, it } from "vitest";
+import { Effect, Layer } from "effect";
+import { ContractAddress, Felt252 } from "@kundera-sn/kundera-ts";
+
+import type { ProviderServiceShape } from "../../services/ProviderService.js";
+import { ProviderService } from "../../services/ProviderService.js";
+import * as JsonRpc from "../index.js";
+
+describe("jsonrpc wrappers", () => {
+  it("maps blockNumber to starknet_blockNumber", async () => {
+    let calledMethod = "";
+
+    const providerLayer = Layer.succeed(ProviderService, {
+      request: <T>(method: string) => {
+        calledMethod = method;
+        return Effect.succeed(123 as T);
+      },
+    } satisfies ProviderServiceShape);
+
+    const value = await Effect.runPromise(
+      JsonRpc.blockNumber().pipe(Effect.provide(providerLayer)),
+    );
+
+    expect(value).toBe(123);
+    expect(calledMethod).toBe("starknet_blockNumber");
+  });
+
+  it("maps getTransactionReceipt params correctly", async () => {
+    let calledParams: readonly unknown[] | undefined;
+    const txHash = Felt252.from("0xabc");
+
+    const providerLayer = Layer.succeed(ProviderService, {
+      request: <T>(_method: string, params?: readonly unknown[]) => {
+        calledParams = params;
+        return Effect.succeed(
+          {
+            type: "INVOKE",
+            transaction_hash: "0xabc",
+            actual_fee: { amount: "0x0", unit: "WEI" },
+            finality_status: "ACCEPTED_ON_L2",
+            messages_sent: [],
+            events: [],
+            execution_resources: { steps: 1 },
+            execution_status: "SUCCEEDED",
+          } as T,
+        );
+      },
+    } satisfies ProviderServiceShape);
+
+    const receipt = await Effect.runPromise(
+      JsonRpc.getTransactionReceipt(txHash).pipe(Effect.provide(providerLayer)),
+    );
+
+    expect(calledParams).toEqual([txHash.toHex()]);
+    expect(receipt.transaction_hash).toBe("0xabc");
+  });
+
+  it("maps getNonce params correctly when using ContractAddress primitive", async () => {
+    let calledParams: readonly unknown[] | undefined;
+    const address = ContractAddress.from("0xabc");
+
+    const providerLayer = Layer.succeed(ProviderService, {
+      request: <T>(_method: string, params?: readonly unknown[]) => {
+        calledParams = params;
+        return Effect.succeed("0x1" as T);
+      },
+    } satisfies ProviderServiceShape);
+
+    const nonce = await Effect.runPromise(
+      JsonRpc.getNonce(address).pipe(Effect.provide(providerLayer)),
+    );
+
+    expect(calledParams).toEqual(["latest", address.toHex()]);
+    expect(nonce).toBe("0x1");
+  });
+});
