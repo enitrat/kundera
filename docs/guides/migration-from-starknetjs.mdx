@@ -37,7 +37,7 @@ npm install @kundera-sn/kundera-effect effect
 import { RpcProvider } from "starknet";
 
 const provider = new RpcProvider({
-  nodeUrl: "https://starknet-sepolia.public.blastapi.io"
+  nodeUrl: "https://api.zan.top/public/starknet-sepolia"
 });
 
 // Global instance, hard to test
@@ -50,7 +50,7 @@ import { Services } from "@kundera-sn/kundera-effect";
 
 // Create a layer (no instantiation needed)
 const ProviderLayer = Services.Presets.createHttpProvider(
-  "https://starknet-sepolia.public.blastapi.io",
+  "https://api.zan.top/public/starknet-sepolia",
   undefined,
   {
     timeoutMs: 10_000,
@@ -444,7 +444,7 @@ const program = Effect.gen(function* () {
 }).pipe(
   Effect.provide(
     Services.Presets.createHttpProviderWithBatch(
-      "https://starknet-sepolia.public.blastapi.io",
+      "https://api.zan.top/public/starknet-sepolia",
       { maxBatchSize: 20, maxWaitTime: 10 }
     )
   )

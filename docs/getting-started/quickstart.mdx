@@ -40,7 +40,7 @@ import { Services } from "@kundera-sn/kundera-effect";
 
 // Create a provider layer for Sepolia testnet
 const ProviderLayer = Services.Presets.createHttpProvider(
-  "https://starknet-sepolia.public.blastapi.io"
+  "https://api.zan.top/public/starknet-sepolia"
 );
 
 // Define your program
@@ -172,7 +172,7 @@ const getBalances = (userAddress: string) =>
 
 // Provide all layers
 const ProviderLayer = Services.Presets.createHttpProvider(
-  "https://starknet-sepolia.public.blastapi.io"
+  "https://api.zan.top/public/starknet-sepolia"
 );
 
 const program = getBalances(
@@ -279,7 +279,7 @@ const resilientProgram = program.pipe(
 
 // Or configure at transport level
 const ProviderLayer = Services.Presets.createHttpProvider(
-  "https://starknet-sepolia.public.blastapi.io",
+  "https://api.zan.top/public/starknet-sepolia",
   undefined,
   {
     timeoutMs: 10_000,
@@ -338,7 +338,7 @@ const transfer = Effect.gen(function* () {
 
 // Provide account and provider
 const ProviderLayer = Services.Presets.createHttpProvider(
-  "https://starknet-sepolia.public.blastapi.io"
+  "https://api.zan.top/public/starknet-sepolia"
 );
 
 const AccountLayer = Services.Account.OpenZeppelinAccount({
@@ -405,7 +405,7 @@ const program = Effect.gen(function* () {
 }).pipe(
   Effect.provide(
     Services.Presets.createHttpProviderWithBatch(
-      "https://starknet-sepolia.public.blastapi.io",
+      "https://api.zan.top/public/starknet-sepolia",
       { maxBatchSize: 20, maxWaitTime: 10 }
     )
   )
@@ -442,12 +442,12 @@ Swap implementations without changing code:
 ```typescript
 // Production
 const ProdProvider = Services.Presets.createHttpProvider(
-  "https://starknet-mainnet.public.blastapi.io"
+  "https://api.zan.top/public/starknet-mainnet"
 );
 
 // Development
 const DevProvider = Services.Presets.createHttpProvider(
-  "https://starknet-sepolia.public.blastapi.io"
+  "https://api.zan.top/public/starknet-sepolia"
 );
 
 // Test (mock)
@@ -522,7 +522,7 @@ Or configure at transport level:
 
 ```typescript
 const ProviderLayer = Services.Presets.createHttpProvider(
-  "https://starknet-sepolia.public.blastapi.io",
+  "https://api.zan.top/public/starknet-sepolia",
   undefined,
   { timeoutMs: 30_000, retry: { maxRetries: 3, delayMs: 500 } }
 );

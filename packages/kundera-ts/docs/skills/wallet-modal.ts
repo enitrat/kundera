@@ -2,23 +2,30 @@
  * Wallet Modal Skill
  *
  * Minimal adapter for StarknetKit/get-starknet modal integrations.
- * Uses peer dependencies + dynamic imports to avoid bundling wallet SDKs.
+ * Requires `starknetkit` or `get-starknet` as a peer dependency.
+ *
+ * NOTE: Dynamic imports are used so the skill file itself can be imported
+ * without the peer dep installed, but bundlers (Vite, webpack) will still
+ * resolve and bundle the peer dep if it's in node_modules. This is NOT
+ * a tree-shaking boundary — install only the modal library you use.
+ *
+ * VITE USERS: Vite's import analysis will fail on the uninstalled modal
+ * library even though it's inside a try/catch. You need a plugin to
+ * externalize it:
+ *
+ *   // vite.config.ts
+ *   { name: 'externalize-optional-deps', enforce: 'pre',
+ *     resolveId(id) { if (id === 'get-starknet') return { id, external: true } } }
+ *
+ * Or delete the loadGetStarknet() function if you only use starknetkit.
  */
 
 import { httpTransport, type Transport } from '@kundera-sn/kundera-ts/transport';
+import type { StarknetWindowObject } from '@kundera-sn/kundera-ts/provider';
 
 // ============================================================================
 // Types
 // ============================================================================
-
-export interface StarknetWalletProvider {
-  id?: string;
-  name?: string;
-  account?: { address: string };
-  selectedAddress?: string;
-  request: (args: { type: string; params?: unknown }) => Promise<unknown>;
-  enable?: () => Promise<void>;
-}
 
 export interface WalletModalOptions {
   /**
@@ -45,8 +52,8 @@ export interface WalletModalOptions {
 }
 
 export interface WalletModalConnection {
-  /** Wallet provider instance */
-  walletProvider: StarknetWalletProvider;
+  /** The StarknetWindowObject — pass directly to createWalletAccount() */
+  swo: StarknetWindowObject;
   /** Transport for read-only RPC calls */
   transport: Transport;
   /** Connected wallet ID */
@@ -88,8 +95,8 @@ function ok(connection: WalletModalConnection): WalletModalResult {
 
 async function loadStarknetKit(): Promise<any | null> {
   try {
-    // @ts-expect-error - Optional peer dependency
-    return await import('@starknet-io/starknet-kit');
+    // @ts-expect-error - Optional peer dependency, not in kundera-ts deps
+    return await import('starknetkit');
   } catch {
     return null;
   }
@@ -97,21 +104,39 @@ async function loadStarknetKit(): Promise<any | null> {
 
 async function loadGetStarknet(): Promise<any | null> {
   try {
-    // @ts-expect-error - Optional peer dependency
+    // @ts-expect-error - Optional peer dependency, may not be installed
     return await import('get-starknet');
   } catch {
     return null;
   }
 }
 
-function resolveAddress(provider: StarknetWalletProvider): string | null {
-  return provider.account?.address ?? provider.selectedAddress ?? null;
+function resolveAddress(swo: StarknetWindowObject | any): string | null {
+  // StarknetKit returns connection.wallet which may have account.address or selectedAddress
+  return swo.account?.address ?? swo.selectedAddress ?? null;
 }
 
 // ============================================================================
 // Main API
 // ============================================================================
 
+/**
+ * Open a wallet connection modal and return a connected SWO + transport.
+ *
+ * The returned `swo` can be passed directly to `createWalletAccount()`.
+ *
+ * @example
+ * ```ts
+ * import { connectWalletWithModal } from './skills/wallet-modal';
+ * import { createWalletAccount } from './skills/wallet-account';
+ *
+ * const { result, error } = await connectWalletWithModal();
+ * if (result) {
+ *   const account = createWalletAccount({ swo: result.swo, transport: result.transport });
+ *   await account.connect();
+ * }
+ * ```
+ */
 export async function connectWalletWithModal(
   options: WalletModalOptions = {},
 ): Promise<WalletModalResult> {
@@ -125,8 +150,8 @@ export async function connectWalletWithModal(
   const resolvedRpcUrl =
     rpcUrl ??
     (chainId === 'SN_MAIN'
-      ? 'https://starknet-mainnet.public.blastapi.io'
-      : 'https://starknet-sepolia.public.blastapi.io');
+      ? 'https://api.zan.top/public/starknet-mainnet'
+      : 'https://api.zan.top/public/starknet-sepolia');
 
   if (modalProvider === 'starknetkit') {
     const opts = { rpcUrl: resolvedRpcUrl, chainId } as any;
@@ -149,7 +174,7 @@ async function connectWithStarknetKit(options: any): Promise<WalletModalResult> 
   if (!starknetKit) {
     return err(
       'MODAL_NOT_AVAILABLE',
-      'StarknetKit is not installed. Run: npm install @starknet-io/starknet-kit',
+      'StarknetKit is not installed. Run: npm install starknetkit',
     );
   }
 
@@ -165,16 +190,17 @@ async function connectWithStarknetKit(options: any): Promise<WalletModalResult> 
       return err('USER_REJECTED', 'User rejected the connection request');
     }
 
-    const walletProvider = connection.wallet as StarknetWalletProvider;
-    const address = resolveAddress(walletProvider);
+    // StarknetKit's wallet object satisfies StarknetWindowObject
+    const swo = connection.wallet as StarknetWindowObject;
+    const address = resolveAddress(swo);
     if (!address) {
       return err('NO_WALLET_FOUND', 'No account found in wallet');
     }
 
     return ok({
-      walletProvider,
+      swo,
       transport: httpTransport(options.rpcUrl),
-      walletId: walletProvider.id ?? 'unknown',
+      walletId: swo.id ?? 'unknown',
       address,
       chainId: options.chainId,
     });
@@ -197,28 +223,29 @@ async function connectWithGetStarknet(options: any): Promise<WalletModalResult> 
   try {
     const { connect } = getStarknet;
 
-    const wallet = (await connect({
+    const swo = (await connect({
       modalMode: 'alwaysAsk',
       ...(options.walletIds ? { include: options.walletIds } : {}),
-    })) as StarknetWalletProvider | null;
+    })) as StarknetWindowObject | null;
 
-    if (!wallet) {
+    if (!swo) {
       return err('USER_REJECTED', 'User rejected the connection request');
     }
 
-    if (wallet.enable) {
-      await wallet.enable();
+    // get-starknet may require explicit enable
+    if ('enable' in swo && typeof (swo as any).enable === 'function') {
+      await (swo as any).enable();
     }
 
-    const address = resolveAddress(wallet);
+    const address = resolveAddress(swo);
     if (!address) {
       return err('NO_WALLET_FOUND', 'No account found in wallet');
     }
 
     return ok({
-      walletProvider: wallet,
+      swo,
       transport: httpTransport(options.rpcUrl),
-      walletId: wallet.id ?? 'unknown',
+      walletId: swo.id ?? 'unknown',
       address,
       chainId: options.chainId,
     });

@@ -28,50 +28,67 @@ bun add @kundera-sn/kundera-ts
 ### Create a Provider
 
 ```typescript
-import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
+import { HttpProvider } from "@kundera-sn/kundera-ts/provider";
+import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc";
 
 const provider = new HttpProvider({
-  url: "https://starknet-sepolia.public.blastapi.io"
-})
+  url: "https://api.zan.top/public/starknet-sepolia",
+});
 
-const blockNumber = await provider.getBlockNumber()
-console.log(`Latest block: ${blockNumber}`)
+const blockNumber = await provider.request(Rpc.BlockNumberRequest());
+console.log(`Latest block: ${blockNumber}`);
 ```
 
-### Work with Primitives
+### Get Chain ID
 
 ```typescript
-import { ContractAddress, Felt252 } from "@kundera-sn/kundera-ts"
-
-// Create a contract address (validated at construction)
-const address = ContractAddress("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7")
-
-// Work with field elements
-const felt = Felt252("0x123")
-const doubled = felt.mul(Felt252("2"))
-
-console.log(doubled.toString()) // "0x246"
+const chainId = await provider.request(Rpc.ChainIdRequest());
+console.log(`Chain: ${chainId}`);
 ```
 
 ### Read from a Contract
 
 ```typescript
-import { HttpProvider } from "@kundera-sn/kundera-ts/provider"
-import { ContractAddress, Felt252 } from "@kundera-sn/kundera-ts"
+import { HttpProvider } from "@kundera-sn/kundera-ts/provider";
+import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc";
 
 const provider = new HttpProvider({
-  url: "https://starknet-sepolia.public.blastapi.io"
-})
+  url: "https://api.zan.top/public/starknet-sepolia",
+});
 
-const balance = await provider.callContract({
-  contractAddress: ContractAddress("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"),
-  entrypoint: "balanceOf",
-  calldata: [
-    Felt252("0x123...") // owner address
-  ]
-})
+const result = await provider.request(
+  Rpc.CallRequest(
+    {
+      contract_address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+      entry_point_selector: "0x02016836a56b71f0d02689e69e326f4f4c1b9057164ef592671cf0d37c8040c0",
+      calldata: ["0x0000000000000000000000000000000000000000000000000000000000000001"],
+    },
+    "latest",
+  )
+);
 
-console.log(`Balance: ${balance[0].toString()}`)
+console.log(`Result: ${result}`);
+```
+
+### Get a Block
+
+```typescript
+const block = await provider.request(
+  Rpc.GetBlockWithTxHashesRequest("latest")
+);
+
+console.log(`Block hash: ${block.block_hash}`);
+console.log(`Transactions: ${block.transactions.length}`);
+```
+
+### Get Transaction Receipt
+
+```typescript
+const receipt = await provider.request(
+  Rpc.GetTransactionReceiptRequest("0x123...")
+);
+
+console.log(`Status: ${receipt.finality_status}`);
 ```
 
 ## Key Features
@@ -97,8 +114,8 @@ console.log(`Balance: ${balance[0].toString()}`)
 ## Next Steps
 
 <CardGroup cols={2}>
-  <Card title="Primitives" icon="cube" href="/typescript/primitives/index">
-    Learn about primitives
+  <Card title="Wallet Integration" icon="wallet" href="/typescript/guides/wallet-integration">
+    Connect browser wallets
   </Card>
 
   <Card title="Skills" icon="puzzle" href="/typescript/skills/index">

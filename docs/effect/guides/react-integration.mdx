@@ -27,7 +27,7 @@ import { Effect, Layer } from "effect"
 // Create service layer
 const AppLayer = Layer.mergeAll(
   ProviderService.layer({
-    url: "https://starknet-sepolia.public.blastapi.io"
+    url: "https://api.zan.top/public/starknet-sepolia"
   }),
   AccountService.layer({
     address: "0x...",

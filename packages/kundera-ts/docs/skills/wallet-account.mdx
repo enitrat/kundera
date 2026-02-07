@@ -13,21 +13,41 @@ cp -r examples/skills/wallet-account src/skills/
 
 ## Usage
 
+### With wallet-modal (recommended)
+
+```ts
+import { connectWalletWithModal } from './skills/wallet-modal';
+import { createWalletAccount } from './skills/wallet-account';
+
+const { result } = await connectWalletWithModal({ chainId: 'SN_MAIN' });
+if (!result) throw new Error('Connection failed');
+
+// result.swo passes directly — no cast needed
+const account = createWalletAccount({
+  swo: result.swo,
+  transport: result.transport,
+});
+
+const accounts = await account.connect();
+console.log('Connected:', accounts[0]);
+```
+
+### With window.starknet\_\* directly
+
 ```ts
 import { createWalletAccount } from './skills/wallet-account';
 import { httpTransport } from '@kundera-sn/kundera-ts/transport';
+import type { StarknetWindowObject } from '@kundera-sn/kundera-ts/provider';
 
-// swo comes from get-starknet, starknetkit, or window.starknet_argentX
+// Access wallet extension directly
+const swo = (window as any).starknet_argentX as StarknetWindowObject;
+
 const account = createWalletAccount({
-  swo: window.starknet_argentX,
-  transport: httpTransport('https://starknet-mainnet.public.blastapi.io'),
+  swo,
+  transport: httpTransport('https://api.zan.top/public/starknet-mainnet'),
 });
 
-// Connect — prompts the wallet popup
 const accounts = await account.connect();
-console.log('Connected:', accounts[0]);
-
-// Execute a transaction — wallet signs + submits
 const { transaction_hash } = await account.execute({
   contractAddress: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
   entrypoint: 'transfer',
@@ -96,9 +116,6 @@ For operations not covered by `createWalletAccount`, use `WalletRpc` builders di
 import { WalletRpc } from '@kundera-sn/kundera-ts/jsonrpc';
 
 // Switch network
-await swo.request({ type: 'wallet_switchStarknetChain', params: { chainId: '0x534e5f4d41494e' } });
-
-// Or use the builder + manual translation
 const req = WalletRpc.SwitchStarknetChainRequest({ chainId: '0x534e5f4d41494e' });
 await swo.request({ type: req.method, params: req.params[0] });
 

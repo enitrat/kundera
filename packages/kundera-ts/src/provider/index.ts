@@ -59,3 +59,9 @@ export { HttpProvider } from "./HttpProvider.js";
 
 export type { WebSocketProviderOptions } from "./WebSocketProvider.js";
 export { WebSocketProvider } from "./WebSocketProvider.js";
+
+export type {
+	WalletProviderOptions,
+	WalletProviderEventMap,
+} from "./WalletProvider.js";
+export { WalletProvider } from "./WalletProvider.js";

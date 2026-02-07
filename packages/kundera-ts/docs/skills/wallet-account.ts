@@ -2,33 +2,30 @@
  * Wallet Account Skill
  *
  * Execute transactions through a browser wallet (ArgentX, Braavos).
- * Reads go to an RPC node. Writes delegate to the wallet via wallet_* RPC.
+ * Reads go to an RPC node. Writes delegate to the wallet via WalletProvider.
  *
- * Uses kundera's wallet primitives:
- * - StarknetWindowObject (provider/wallet/types)
+ * Composes kundera primitives:
+ * - walletTransport (transport/wallet) — SWO → Transport adapter
+ * - WalletProvider (provider/WalletProvider) — typed wallet_* RPC
  * - WalletRpc.* request builders (jsonrpc/wallet)
- * - WalletRpcSchema (provider/schemas)
+ * - AccountExecutor interface from contract-write skill
  */
 
-import { WalletRpc } from '@kundera-sn/kundera-ts/jsonrpc';
+import { walletTransport } from '@kundera-sn/kundera-ts/transport';
+import { WalletProvider } from '@kundera-sn/kundera-ts/provider';
+import { Rpc, WalletRpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { Transport } from '@kundera-sn/kundera-ts/transport';
+import type { BlockId, FunctionCall } from '@kundera-sn/kundera-ts/jsonrpc';
 import type {
   StarknetWindowObject,
-  WalletRequestArguments,
   WalletTypedData,
-  WalletCall,
 } from '@kundera-sn/kundera-ts/provider';
+import type { Call, UniversalDetails } from '@kundera-sn/kundera-ts/crypto';
+import type { AccountExecutor } from './contract-write';
 
 // ============================================================================
 // Types
 // ============================================================================
-
-/** A call in the dapp's format (camelCase). */
-export interface Call {
-  contractAddress: string;
-  entrypoint: string;
-  calldata?: string[];
-}
 
 export interface WalletAccountOptions {
   /** The StarknetWindowObject from get-starknet or window.starknet_* */
@@ -37,46 +34,32 @@ export interface WalletAccountOptions {
   transport: Transport;
 }
 
-export interface WalletAccount {
+export interface WalletAccount extends AccountExecutor {
   /** Connected account address */
-  address: string | null;
+  address: string;
   /** Request accounts from the wallet */
   connect(options?: { silent_mode?: boolean }): Promise<string[]>;
   /** Get chain ID from the wallet */
   chainId(): Promise<string>;
   /** Execute invoke transaction through the wallet */
-  execute(calls: Call | Call[]): Promise<{ transaction_hash: string }>;
+  execute(calls: Call | Call[], details?: UniversalDetails): Promise<{ transaction_hash: string }>;
   /** Sign SNIP-12 typed data through the wallet */
   signTypedData(typedData: WalletTypedData): Promise<string[]>;
   /** Read-only: call a contract via the RPC node */
-  call(fnCall: { contract_address: string; entry_point_selector: string; calldata: string[] }, blockId?: string): Promise<string[]>;
+  call(fnCall: FunctionCall, blockId?: BlockId): Promise<string[]>;
+  /** The typed wallet provider (for advanced use) */
+  walletProvider: WalletProvider;
+  /** The node transport (for use with readContract / getContract) */
+  nodeTransport: Transport;
 }
 
 // ============================================================================
-// SWO Adapter
+// Node Transport Helper
 // ============================================================================
 
-/**
- * Translate a `{ method, params }` request builder result into
- * the SWO's `{ type, params }` format and send it.
- */
-async function swoRequest<T>(swo: StarknetWindowObject, req: { method: string; params?: unknown[] | unknown }): Promise<T> {
-  // SWO expects { type, params } — flatten the params array for non-array params
-  const args: WalletRequestArguments = {
-    type: req.method,
-    params: Array.isArray(req.params) ? req.params[0] : req.params,
-  };
-  return swo.request(args) as Promise<T>;
-}
-
-/** Send a read request through the transport (RPC node). */
-async function nodeRequest<T>(transport: Transport, req: { method: string; params?: unknown[] }): Promise<T> {
-  const response = await transport.request({
-    jsonrpc: '2.0',
-    id: 1,
-    method: req.method,
-    params: req.params ?? [],
-  });
+/** Send a request-builder result through a transport and unwrap the response. */
+async function send<T>(transport: Transport, req: { method: string; params?: unknown[] | Record<string, unknown> }): Promise<T> {
+  const response = await transport.request({ jsonrpc: '2.0', id: 1, method: req.method, params: req.params ?? [] });
   if ('error' in response) throw new Error(response.error.message);
   return response.result as T;
 }
@@ -89,75 +72,99 @@ async function nodeRequest<T>(transport: Transport, req: { method: string; param
  * Create a wallet account that delegates write operations to the wallet
  * and read operations to an RPC node.
  *
+ * The returned object implements `AccountExecutor`, so it composes directly
+ * with `writeContract()` and `getContract()` from other skills.
+ *
  * @example
  * ```ts
  * import { createWalletAccount } from './skills/wallet-account';
+ * import { readContract } from './skills/contract-read';
+ * import { writeContract } from './skills/contract-write';
  * import { httpTransport } from '@kundera-sn/kundera-ts/transport';
  *
  * // swo comes from get-starknet, starknetkit, or window.starknet_argentX
  * const account = createWalletAccount({
  *   swo,
- *   transport: httpTransport('https://starknet-mainnet.public.blastapi.io'),
+ *   transport: httpTransport('https://api.zan.top/public/starknet-mainnet'),
  * });
  *
- * const accounts = await account.connect();
+ * await account.connect();
+ *
+ * // Direct usage
  * const { transaction_hash } = await account.execute({
  *   contractAddress: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
  *   entrypoint: 'transfer',
  *   calldata: ['0x123', '0x456', '0x0'],
  * });
+ *
+ * // Compose with contract skills (account satisfies AccountExecutor)
+ * await writeContract({
+ *   abi: ERC20_ABI,
+ *   address: '0x049d...',
+ *   functionName: 'transfer',
+ *   args: [recipient, amount],
+ *   account, // works because WalletAccount extends AccountExecutor
+ * });
+ *
+ * // Reads go through the node transport
+ * const balance = await readContract(account.nodeTransport, {
+ *   abi: ERC20_ABI,
+ *   address: '0x049d...',
+ *   functionName: 'balance_of',
+ *   args: [account.address],
+ * });
  * ```
  */
 export function createWalletAccount(options: WalletAccountOptions): WalletAccount {
   const { swo, transport } = options;
-  let connectedAddress: string | null = null;
+
+  // Wallet provider for typed wallet_* RPC calls
+  const wp = new WalletProvider({
+    transport: walletTransport(swo),
+    swo,
+  });
+
+  let connectedAddress = '';
 
   return {
     get address() {
       return connectedAddress;
     },
 
+    walletProvider: wp,
+    nodeTransport: transport,
+
     async connect(connectOptions) {
-      const accounts = await swoRequest<string[]>(
-        swo,
+      const accounts = await wp.request(
         WalletRpc.RequestAccountsRequest(connectOptions),
       );
-      connectedAddress = accounts[0] ?? null;
+      connectedAddress = accounts[0] ?? '';
       return accounts;
     },
 
     async chainId() {
-      return swoRequest<string>(swo, WalletRpc.RequestChainIdRequest());
+      return wp.request(WalletRpc.RequestChainIdRequest());
     },
 
-    async execute(calls) {
+    async execute(calls, _details?) {
       const callsArray = Array.isArray(calls) ? calls : [calls];
 
       // Translate camelCase dapp format → snake_case wallet API format
-      const walletCalls: WalletCall[] = callsArray.map((c) => ({
+      const walletCalls = callsArray.map((c) => ({
         contract_address: c.contractAddress,
         entry_point: c.entrypoint,
-        calldata: c.calldata ?? [],
+        calldata: (c.calldata ?? []).map(String),
       }));
 
-      return swoRequest<{ transaction_hash: string }>(
-        swo,
-        WalletRpc.AddInvokeTransactionRequest(walletCalls),
-      );
+      return wp.request(WalletRpc.AddInvokeTransactionRequest(walletCalls));
     },
 
     async signTypedData(typedData) {
-      return swoRequest<string[]>(
-        swo,
-        WalletRpc.SignTypedDataRequest(typedData),
-      );
+      return wp.request(WalletRpc.SignTypedDataRequest(typedData));
     },
 
-    async call(fnCall, blockId = 'pending') {
-      return nodeRequest<string[]>(transport, {
-        method: 'starknet_call',
-        params: [fnCall, blockId],
-      });
+    async call(fnCall, blockId) {
+      return send<string[]>(transport, Rpc.CallRequest(fnCall, blockId));
     },
   };
 }

@@ -100,7 +100,7 @@ const getBalance = Effect.gen(function* () {
 
 // Production: real network
 const ProdLayer = Services.Presets.createHttpProvider(
-  "https://starknet-mainnet.public.blastapi.io"
+  "https://api.zan.top/public/starknet-mainnet"
 );
 
 // Test: mock provider
@@ -168,7 +168,7 @@ const program = Effect.gen(function* () {
 }).pipe(
   Effect.provide(
     Services.Presets.createHttpProvider(
-      "https://starknet-sepolia.public.blastapi.io"
+      "https://api.zan.top/public/starknet-sepolia"
     )
   )
 );
@@ -227,7 +227,7 @@ const program = getBalances.pipe(
   Effect.provide(ContractsLayer),
   Effect.provide(Services.Contract.ContractLayer),
   Effect.provide(Services.Presets.createHttpProvider(
-    "https://starknet-sepolia.public.blastapi.io"
+    "https://api.zan.top/public/starknet-sepolia"
   ))
 );
 

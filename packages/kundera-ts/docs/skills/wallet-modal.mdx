@@ -1,34 +1,17 @@
 ---
 title: Wallet Modal
-description: Connect to wallets using StarknetKit or get-starknet modals.
+description: Connect to wallets — choose your modal provider.
 ---
 
-This skill provides a minimal modal connection flow and returns a wallet provider + transport.
+Choose the wallet modal skill for your project:
 
-## Quick Start
+<CardGroup cols={2}>
+  <Card title="StarknetKit" icon="wallet" href="/typescript/skills/wallet-modal-starknetkit">
+    Full-featured modal with built-in UI. Install: `npm install starknetkit`
+  </Card>
+  <Card title="get-starknet" icon="wallet" href="/typescript/skills/wallet-modal-get-starknet">
+    Lightweight wallet discovery. Install: `npm install get-starknet`
+  </Card>
+</CardGroup>
 
-```bash
-cp -r examples/skills/wallet-modal src/skills/
-```
-
-## Usage
-
-```ts
-import { connectWalletWithModal } from './skills/wallet-modal';
-
-const { result, error } = await connectWalletWithModal({
-  modalProvider: 'starknetkit',
-  chainId: 'SN_MAIN',
-});
-
-if (result) {
-  const { walletProvider, transport, address } = result;
-  console.log('Connected:', address);
-}
-```
-
-## Notes
-
-- This skill does not create an account abstraction.
-- Pair with `account-invoke` or your own wallet-specific account flow.
-- Requires peer dependencies: `@starknet-io/starknet-kit` or `get-starknet`.
+Both skills return a `StarknetWindowObject` that composes directly with [`wallet-account`](/typescript/skills/wallet-account).

@@ -79,7 +79,7 @@ import { Layer } from "effect"
 describe("integration tests", () => {
   const IntegrationLayer = Layer.mergeAll(
     ProviderService.layer({
-      url: "https://starknet-sepolia.public.blastapi.io"
+      url: "https://api.zan.top/public/starknet-sepolia"
     }),
     AccountService.layer({
       address: process.env.TEST_ACCOUNT_ADDRESS!,

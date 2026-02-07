@@ -159,7 +159,8 @@
                       "typescript/guides/abi/events"
                     ]
                   },
-                  "typescript/guides/serialization"
+                  "typescript/guides/serialization",
+                  "typescript/guides/wallet-integration"
                 ]
               },
               {
@@ -178,7 +179,9 @@
                   "typescript/skills/http-transport",
                   "typescript/skills/http-provider",
                   "typescript/skills/websocket-provider",
-                  "typescript/skills/wallet-modal"
+                  "typescript/skills/wallet-modal-starknetkit",
+                  "typescript/skills/wallet-modal-get-starknet",
+                  "typescript/skills/wallet-account"
                 ]
               },
               {

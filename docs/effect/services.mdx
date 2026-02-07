@@ -35,7 +35,7 @@ import { Services } from "@kundera-sn/kundera-effect";
 
 // Create a provider layer
 const ProviderLayer = Services.Presets.createHttpProvider(
-  "https://starknet-sepolia.public.blastapi.io"
+  "https://api.zan.top/public/starknet-sepolia"
 );
 
 // Use it in your program
@@ -57,7 +57,7 @@ await Effect.runPromise(program);
 
 ```typescript
 const ProviderLayer = Services.Presets.createHttpProvider(
-  "https://starknet-sepolia.public.blastapi.io",
+  "https://api.zan.top/public/starknet-sepolia",
   undefined,  // Optional HTTP headers
   {
     timeoutMs: 30_000,
@@ -415,7 +415,7 @@ const program = Effect.gen(function* () {
 }).pipe(
   Effect.provide(
     Services.Presets.createHttpProviderWithBatch(
-      "https://starknet-sepolia.public.blastapi.io",
+      "https://api.zan.top/public/starknet-sepolia",
       {
         maxBatchSize: 20,
         maxWaitTime: 10  // milliseconds
@@ -484,13 +484,13 @@ const getProviderLayer = () => {
   switch (process.env.NODE_ENV) {
     case "production":
       return Services.Presets.createHttpProvider(
-        "https://starknet-mainnet.public.blastapi.io"
+        "https://api.zan.top/public/starknet-mainnet"
       );
     case "test":
       return TestProviderLayer;
     default:
       return Services.Presets.createHttpProvider(
-        "https://starknet-sepolia.public.blastapi.io"
+        "https://api.zan.top/public/starknet-sepolia"
       );
   }
 };

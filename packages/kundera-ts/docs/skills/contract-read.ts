@@ -5,7 +5,7 @@
  */
 
 import { encodeCalldata, decodeOutput, getFunctionSelectorHex, type AbiLike, type CairoValue } from '@kundera-sn/kundera-ts/abi';
-import { Felt252 } from '@kundera-sn/kundera-ts';
+import { Felt252 } from '@kundera-sn/kundera-ts/Felt252';
 import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { BlockId, FunctionCall } from '@kundera-sn/kundera-ts/jsonrpc';
 import type { Transport } from '@kundera-sn/kundera-ts/transport';

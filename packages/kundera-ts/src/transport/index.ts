@@ -38,3 +38,6 @@ export {
 	type WebSocketTransport,
 	type WebSocketTransportOptions,
 } from "./websocket.js";
+
+// Wallet Transport
+export { walletTransport } from "./wallet.js";
