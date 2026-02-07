@@ -13,19 +13,7 @@ export default defineConfig({
         replacement: path.resolve(kunderaRoot, "src/index.ts")
       },
       {
-        find: /^@kundera-sn\/kundera-ts\/(Felt252|ContractAddress|ClassHash|StorageKey|ShortString|EthAddress|Address)$/,
-        replacement: path.resolve(kunderaRoot, "src/primitives/$1/index.ts")
-      },
-      {
         find: /^@kundera-sn\/kundera-ts\/(.*)$/,
-        replacement: path.resolve(kunderaRoot, "src/$1/index.ts")
-      },
-      {
-        find: /^@starknet\/kundera$/,
-        replacement: path.resolve(kunderaRoot, "src/index.ts")
-      },
-      {
-        find: /^@starknet\/kundera\/(.*)$/,
         replacement: path.resolve(kunderaRoot, "src/$1/index.ts")
       }
     ]
@@ -33,7 +21,6 @@ export default defineConfig({
   test: {
     include: ["src/**/*.{test,spec}.{js,ts}"],
     exclude: ["**/node_modules/**"],
-    environment: "node",
-    setupFiles: ["./vitest.setup.ts"]
+    environment: "node"
   }
 });

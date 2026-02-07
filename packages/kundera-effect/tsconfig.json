@@ -6,7 +6,6 @@
     "baseUrl": ".",
     "paths": {
       "@kundera-sn/kundera-ts": ["../kundera-ts/dist/index.d.ts"],
-      "@kundera-sn/kundera-ts/*": ["../kundera-ts/dist/*/index.d.ts"],
       "@kundera-sn/kundera-ts/native": ["../kundera-ts/dist/native/index.d.ts"],
       "@kundera-sn/kundera-ts/wasm": ["../kundera-ts/dist/wasm/index.d.ts"],
       "@kundera-sn/kundera-ts/wasm-loader": ["../kundera-ts/dist/wasm-loader/index.d.ts"],
@@ -17,13 +16,7 @@
       "@kundera-sn/kundera-ts/transport": ["../kundera-ts/dist/transport/index.d.ts"],
       "@kundera-sn/kundera-ts/provider": ["../kundera-ts/dist/provider/index.d.ts"],
       "@kundera-sn/kundera-ts/utils": ["../kundera-ts/dist/utils/index.d.ts"],
-      "@kundera-sn/kundera-ts/Felt252": ["../kundera-ts/dist/primitives/Felt252/index.d.ts"],
-      "@kundera-sn/kundera-ts/ContractAddress": ["../kundera-ts/dist/primitives/ContractAddress/index.d.ts"],
-      "@kundera-sn/kundera-ts/ClassHash": ["../kundera-ts/dist/primitives/ClassHash/index.d.ts"],
-      "@kundera-sn/kundera-ts/StorageKey": ["../kundera-ts/dist/primitives/StorageKey/index.d.ts"],
-      "@kundera-sn/kundera-ts/ShortString": ["../kundera-ts/dist/primitives/ShortString/index.d.ts"],
-      "@kundera-sn/kundera-ts/EthAddress": ["../kundera-ts/dist/primitives/EthAddress/index.d.ts"],
-      "@kundera-sn/kundera-ts/Address": ["../kundera-ts/dist/primitives/Address/index.d.ts"]
+      "@kundera-sn/kundera-ts/*": ["../kundera-ts/dist/*/index.d.ts"]
     },
     "declaration": true,
     "declarationMap": true,
@@ -39,5 +32,5 @@
     "noEmit": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test-d.ts"]
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }
