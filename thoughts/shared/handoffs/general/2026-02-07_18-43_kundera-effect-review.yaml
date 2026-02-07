@@ -1,0 +1,55 @@
+---
+session: general
+date: 2026-02-07
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Deep PR review of kundera-effect rewrite (7 commits from 2faeb72), comparing against voltaire-effect patterns and creating actionable issues
+now: Pick issues from .issues/ and start implementing fixes (001 and 002 are highest impact)
+test: ls .issues/*.md && cat packages/kundera-effect/CLAUDE.md | head -5
+
+done_this_session:
+  - task: Ran 6 parallel review agents covering voltaire patterns, service quality, jsonrpc/presets, voltaire-vs-kundera comparison, test quality, and kundera-ts primitive reuse
+    files: []
+  - task: Created 15 atomic issues under .issues/ covering all findings
+    files: [.issues/001-replace-manual-retry-with-effect-schedule.md, .issues/002-jsonrpc-reuse-kundera-ts-request-builders.md, .issues/003-add-missing-rpc-methods.md, .issues/004-extract-shared-test-mocks.md, .issues/005-extract-address-normalization-helper.md, .issues/006-fix-error-model-ambiguity.md, .issues/007-add-typed-rpc-error-codes.md, .issues/008-fix-type-safety-gaps.md, .issues/009-add-missing-test-coverage.md, .issues/010-adopt-effect-vitest.md, .issues/011-adopt-operations-pattern.md, .issues/012-evaluate-thin-wrapper-services.md, .issues/013-contractregistry-as-context-tag.md, .issues/014-add-test-transport-utility.md, .issues/015-layer-memoization-in-presets.md]
+  - task: Wrote CLAUDE.md for kundera-effect with enforced patterns (services, errors, jsonrpc, retry, testing, layers) and symlinked to AGENTS.md
+    files: [packages/kundera-effect/CLAUDE.md, packages/kundera-effect/AGENTS.md]
+
+blockers: []
+
+questions:
+  - Should SignerService and RawProviderService be removed as unnecessary facades, or kept as intentional extension points?
+  - Should ContractRegistry become a Context.Tag service or remain a utility function?
+  - When adding missing RPC methods (#003), should subscription methods be deferred or stubbed?
+
+decisions:
+  - data-tagged-error-over-schema: Voltaire uses Data.TaggedError exclusively, not Schema.TaggedError. CLAUDE.md enforces this.
+  - free-functions-over-service-methods: Operations should be free functions depending on services via Effect R type, not methods on service objects. jsonrpc/index.ts already follows this.
+  - rpc-builders-required: CLAUDE.md mandates using Rpc.*Request() builders from kundera-ts instead of hardcoding method strings.
+  - effect-retry-over-manual-loops: CLAUDE.md bans manual retry/polling loops. Must use Effect.retry + Schedule.
+
+findings:
+  - three-manual-retry-loops: FallbackHttpProviderLive (ProviderService.ts:72-161), TransactionService.waitForReceipt (87-131), TransportService.attemptRequest (138-166) all hand-roll retry with for/break/continue instead of Effect.retry+Schedule. ~150 lines that should be ~30.
+  - rpc-builder-drift-risk: jsonrpc/index.ts hardcodes 23 method strings + param orderings instead of using Rpc.*Request() builders. 14 of 37 methods missing entirely.
+  - fiber-unsafe-mutable-state: FallbackHttpProviderLive has `let requestId = 0` outside Effect scope, shared across fibers. Must be Ref.
+  - test-coverage-gaps: NonceManager.reset/increment untested. FallbackProvider has 1 test for 90 lines. 9/12 WalletProvider methods untested. No @effect/vitest usage.
+  - mock-boilerplate: WalletProviderService mock copy-pasted 4 times (~100 lines). No TestTransport utility for consumers.
+  - type-safety-gaps: NonceRequestOptions.blockId typed as unknown. response.result as T in 3 locations. RpcError name collision between kundera-ts and kundera-effect.
+
+worked:
+  - 6 parallel review agents covering orthogonal dimensions produced comprehensive coverage without duplication
+  - Using voltaire-effect as concrete reference made findings actionable rather than abstract
+
+failed: []
+
+next:
+  - Implement issue 001 (replace manual retry loops with Effect.retry + Schedule) - highest LOC reduction
+  - Implement issue 002 (reuse Rpc.*Request() builders) - highest drift-risk reduction
+  - Implement issue 004 (shared test mocks) - unblocks issue 009 (missing test coverage)
+  - After those three, issues 003-015 are all parallelizable
+
+files:
+  created: [.issues/001-replace-manual-retry-with-effect-schedule.md, .issues/002-jsonrpc-reuse-kundera-ts-request-builders.md, .issues/003-add-missing-rpc-methods.md, .issues/004-extract-shared-test-mocks.md, .issues/005-extract-address-normalization-helper.md, .issues/006-fix-error-model-ambiguity.md, .issues/007-add-typed-rpc-error-codes.md, .issues/008-fix-type-safety-gaps.md, .issues/009-add-missing-test-coverage.md, .issues/010-adopt-effect-vitest.md, .issues/011-adopt-operations-pattern.md, .issues/012-evaluate-thin-wrapper-services.md, .issues/013-contractregistry-as-context-tag.md, .issues/014-add-test-transport-utility.md, .issues/015-layer-memoization-in-presets.md, packages/kundera-effect/CLAUDE.md, packages/kundera-effect/AGENTS.md]
+  modified: []

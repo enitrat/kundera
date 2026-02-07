@@ -1,0 +1,50 @@
+---
+session: general
+date: 2026-02-07
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Deep rewrite of all 15 kundera-effect review issues with proper root-cause depth, then fix 4 remaining issues found during PR review of the implementation commits
+now: Commit uncommitted changes (issues 016-019 fixes + it.effect migration + issue rewrites). Then tackle remaining open issues (011, 015).
+test: pnpm --filter kundera-effect test:run && ls .issues/*.md | wc -l
+
+done_this_session:
+  - task: Rewrote all 15 issues with proper depth. Root cause identified as type permissiveness (ContractAddressType | string unions) rather than surface symptoms. Issue 005 KILLED (subsumed by 002).
+    files: [.issues/001-replace-manual-retry-with-effect-schedule.md, .issues/002-jsonrpc-reuse-kundera-ts-request-builders.md, .issues/003-add-missing-rpc-methods.md, .issues/004-extract-shared-test-mocks.md, .issues/005-extract-address-normalization-helper.md, .issues/006-fix-error-model-ambiguity.md, .issues/007-add-typed-rpc-error-codes.md, .issues/008-fix-type-safety-gaps.md, .issues/009-add-missing-test-coverage.md, .issues/010-adopt-effect-vitest.md, .issues/011-adopt-operations-pattern.md, .issues/012-evaluate-thin-wrapper-services.md, .issues/013-contractregistry-as-context-tag.md, .issues/014-add-test-transport-utility.md, .issues/015-layer-memoization-in-presets.md]
+  - task: PR-reviewed 10 implementation commits (001-014). Found 4 remaining issues.
+    files: [.issues/016-fallback-provider-still-uses-manual-recursion.md, .issues/017-effect-vitest-migration-incomplete.md, .issues/018-contractservice-hardcoded-method-string.md, .issues/019-wire-biginthex-padding-undocumented.md]
+  - task: "Issue 016 fix: replaced manual recursive runEndpoint() with declarative reduceRight + Effect.catchTag in FallbackHttpProviderLive"
+    files: [packages/kundera-effect/src/services/ProviderService.ts]
+  - task: "Issue 018 fix: replaced hardcoded 'starknet_call' with Rpc.CallRequest() builder in ContractService"
+    files: [packages/kundera-effect/src/services/ContractService.ts]
+  - task: "Issue 019 fix: deleted wire.ts, inlined bigint-to-hex conversion in ContractService and ContractWriteService"
+    files: [packages/kundera-effect/src/services/ContractService.ts, packages/kundera-effect/src/services/ContractWriteService.ts, packages/kundera-effect/src/services/wire.ts]
+  - task: "Issue 017 fix: migrated 50/52 tests to it.effect(). 2 kept as plain it() for fake timer control (vi.useFakeTimers)."
+    files: [packages/kundera-effect/src/services/__tests__/ProviderService.test.ts, packages/kundera-effect/src/services/__tests__/TransactionService.test.ts, packages/kundera-effect/src/services/__tests__/TransportService.test.ts, packages/kundera-effect/src/services/__tests__/NonceManagerService.test.ts, packages/kundera-effect/src/services/__tests__/ChainService.test.ts, packages/kundera-effect/src/services/__tests__/ContractService.test.ts, packages/kundera-effect/src/services/__tests__/ContractWriteService.test.ts, packages/kundera-effect/src/services/__tests__/ContractRegistry.test.ts, packages/kundera-effect/src/services/__tests__/FeeEstimatorService.test.ts, packages/kundera-effect/src/services/__tests__/WalletProviderService.test.ts, packages/kundera-effect/src/jsonrpc/__tests__/index.test.ts, packages/kundera-effect/src/presets/__tests__/index.test.ts, packages/kundera-effect/src/testing/__tests__/index.test.ts]
+
+blockers: []
+
+questions: []
+
+decisions:
+  - type-permissiveness-is-root-cause: "Issues 002/005/008 were symptoms of the same disease: accepting `ContractAddressType | string` unions. Fix is removing `| string` at effect boundary, not adding coercion helpers."
+  - biginthex-inlined-not-helper: "bigintToHex was a 1-liner used in 2 places. Deleted wire.ts, inlined `(v: bigint) => `0x${v.toString(16)}`` directly. No padding needed (RPC nodes accept minimal hex)."
+  - fake-timer-tests-stay-plain: "2 tests using vi.useFakeTimers + vi.advanceTimersByTimeAsync need manual async control incompatible with it.effect(). Kept as plain it()."
+  - reducright-over-firstsuccessof: "FallbackProvider uses reduceRight to build a chain of catchTag handlers. This gives RpcError-aware short-circuiting (transport errors try next, RPC errors fail immediately) which firstSuccessOf can't express."
+
+findings:
+  - calldata-bigint-to-hex-bridge: "compileCalldata() returns bigint[] (ABI layer works in field elements). Starknet JSON-RPC wire format expects hex strings. The .map() at ContractService/ContractWriteService bridges ABI→transport."
+  - effect-retry-options-form-valid: "Effect.retry({ times, schedule, while }) is valid API despite critic agent claiming otherwise. All 52 tests pass with this form."
+
+worked:
+  - Parallel critic agents for PR review caught real issues (4/4 actionable)
+  - Parallel kraken agents for test migration completed 13 files efficiently
+
+failed:
+  - Critic agent produced false positive claiming Effect.retry options form was invalid API
+
+next:
+  - Commit all uncommitted changes (16 modified files + wire.ts deletion + 19 issue files)
+  - Issue 011 (adopt operations pattern) - free functions over service methods
+  - Issue 015 (layer memoization in presets) - Layer.memoize for shared layers
