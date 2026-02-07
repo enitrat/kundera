@@ -1,0 +1,50 @@
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "result": {
+    "block_hash": "0x17614e0ede412d9cd2c3025810fc2655e333a0d11a11c4f04c64eb6bf89cd40",
+    "block_number": 800000,
+    "event_commitment": "0x8b9cea69959ae77f7b2e97100609cdf8963680c01585f3abc9bafcd95fba2c",
+    "event_count": 180,
+    "l1_da_mode": "BLOB",
+    "l1_data_gas_price": {
+      "price_in_fri": "0x1658",
+      "price_in_wei": "0x1"
+    },
+    "l1_gas_price": {
+      "price_in_fri": "0x3f4ff003e511",
+      "price_in_wei": "0x2d5576c55"
+    },
+    "l2_gas_price": {
+      "price_in_fri": "0x1",
+      "price_in_wei": "0x1"
+    },
+    "new_root": "0xcc0f0615c102a0e8cd4c74a7eba9db4d64cb03b4a1c34db2d1447d61258491",
+    "parent_hash": "0x3b84748bdbf61d4172a8c1bb1d6676e156c8ccc8c22aa31319e1ed8f6f4ac69",
+    "receipt_commitment": "0x13b1c61bb5bae59dd2fac2c5a5eb99cc3f0a1565c0327c1635445c916d2f6e2",
+    "sequencer_address": "0x1176a1bd84444c89232ec27754698e5d2e7e1a7f1539f12027f28b23ec9f3d8",
+    "starknet_version": "0.13.2.1",
+    "state_diff_commitment": "0x5e09d524e3db4ad3bd7466d287d2a9e010582984efdd93e40dd83bd2cb835ae",
+    "state_diff_length": 171,
+    "status": "ACCEPTED_ON_L1",
+    "timestamp": 1728897868,
+    "transaction_commitment": "0x4fa11dbb80890e4d0100b45ff91d28cbb177f59fe191aaa7037dce3a297df",
+    "transaction_count": 14,
+    "transactions": [
+      "0x44400b45a0d6aa7b74c466a6f39bdb5f6b542e1adf608bb8ea6700d1ffae9f3",
+      "0x27edf2e5f382eaa33ac32ea50e7787a65a7e13b2c322a7c99b1194c2736b335",
+      "0x25aa75f07cf15de60ee669a755f82a0487a474403a4f02dca08911d2d6af6ba",
+      "0x72493b3c592dcc5cbd8217522a820fb05e23c0dc81b21799c57f715794d65a2",
+      "0x4ad5152ae06c3c3d412fae84187297b06cabd268a45d22b511f92efd2a0c4f2",
+      "0x4d9e0234d00620f0ada1a59d4e38010f16f65ef3c93e2cd39bfeb30b9f37d74",
+      "0x66a93e8293e0ce05a15e64a068cf0243aafaef41e440e150c4f7bf936b0c543",
+      "0x432f9761c49cf760e53efe594139a436cdd3a783f04bd374e0492c7564348f7",
+      "0x3a902318755b821d8823b4225df3ebffd082b87bcbf31e96c6da26d4429455e",
+      "0x6e977fcfb012997099a0f87853fe72e3866aac238b5deecd6a6fd0ccd1df3d1",
+      "0x288ba08192d93b26a38a32625abad4061df73eb706d671e36d62acbf75351ba",
+      "0x6fa67ddd62b351b242f3c288e0128d4cc6dee4e146b8e3ad82de87c2d8354b3",
+      "0x3706b5a2d35580b44c56cf618f945c939120ce8826d55d466480ea5b3b96971",
+      "0x7dbe82f1ba4644801cb0a2c1d3e40f2b84d1cd775d5ad6b5db6c03118f38f36"
+    ]
+  }
+}

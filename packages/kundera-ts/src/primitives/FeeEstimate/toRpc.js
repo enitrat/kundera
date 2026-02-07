@@ -4,10 +4,12 @@
  */
 export function feeEstimateToRpc(fee) {
 	return {
-		gas_consumed: fee.gas_consumed.toHex(),
-		gas_price: fee.gas_price.toHex(),
-		data_gas_consumed: fee.data_gas_consumed.toHex(),
-		data_gas_price: fee.data_gas_price.toHex(),
+		l1_gas_consumed: fee.l1_gas_consumed.toHex(),
+		l1_gas_price: fee.l1_gas_price.toHex(),
+		l2_gas_consumed: fee.l2_gas_consumed.toHex(),
+		l2_gas_price: fee.l2_gas_price.toHex(),
+		l1_data_gas_consumed: fee.l1_data_gas_consumed.toHex(),
+		l1_data_gas_price: fee.l1_data_gas_price.toHex(),
 		overall_fee: fee.overall_fee.toHex(),
 		unit: fee.unit,
 	};

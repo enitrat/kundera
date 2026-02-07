@@ -259,10 +259,12 @@ export type SimulationFlag = "SKIP_VALIDATE" | "SKIP_FEE_CHARGE";
  * Fee estimate
  */
 export interface FeeEstimate {
-	gas_consumed: string;
-	gas_price: string;
-	data_gas_consumed: string;
-	data_gas_price: string;
+	l1_gas_consumed: string;
+	l1_gas_price: string;
+	l2_gas_consumed: string;
+	l2_gas_price: string;
+	l1_data_gas_consumed: string;
+	l1_data_gas_price: string;
 	overall_fee: string;
 	unit: "WEI" | "FRI";
 }

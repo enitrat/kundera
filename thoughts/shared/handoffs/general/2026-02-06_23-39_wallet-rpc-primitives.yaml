@@ -1,0 +1,106 @@
+---
+session: general
+date: 2026-02-06
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Add wallet RPC primitives for browser wallet integration (WalletRpcSchema, request builders, SWO type, skill)
+now: Build kundera-effect wallet layer or update wallet-modal skill to use new primitives instead of inline types
+
+test: cd packages/kundera-ts && npx vitest run wallet-account
+
+done_this_session:
+  - task: Research starknet wallet API spec, starknet.js WalletAccount, get-starknet, SNIP standards
+    files: []
+  - task: Research Voltaire's wallet primitives approach (EIP-1193, EIP-6963, request builders)
+    files: []
+  - task: Create WalletRpcSchema with 12 wallet_* method types + all param/result types
+    files: [packages/kundera-ts/src/provider/schemas/WalletRpcSchema.ts]
+  - task: Create StarknetWindowObject type definition (SWO contract)
+    files: [packages/kundera-ts/src/provider/wallet/types.ts]
+  - task: Create 12 wallet request builders + error codes + barrel export
+    files:
+      - packages/kundera-ts/src/jsonrpc/wallet/addInvokeTransaction.js
+      - packages/kundera-ts/src/jsonrpc/wallet/addDeclareTransaction.js
+      - packages/kundera-ts/src/jsonrpc/wallet/signTypedData.js
+      - packages/kundera-ts/src/jsonrpc/wallet/requestAccounts.js
+      - packages/kundera-ts/src/jsonrpc/wallet/requestChainId.js
+      - packages/kundera-ts/src/jsonrpc/wallet/deploymentData.js
+      - packages/kundera-ts/src/jsonrpc/wallet/switchStarknetChain.js
+      - packages/kundera-ts/src/jsonrpc/wallet/addStarknetChain.js
+      - packages/kundera-ts/src/jsonrpc/wallet/watchAsset.js
+      - packages/kundera-ts/src/jsonrpc/wallet/getPermissions.js
+      - packages/kundera-ts/src/jsonrpc/wallet/supportedWalletApi.js
+      - packages/kundera-ts/src/jsonrpc/wallet/supportedSpecs.js
+      - packages/kundera-ts/src/jsonrpc/wallet/errors.js
+      - packages/kundera-ts/src/jsonrpc/wallet/methods.js
+  - task: Wire exports into jsonrpc/index.ts, provider/index.ts, schemas/index.ts
+    files:
+      - packages/kundera-ts/src/jsonrpc/index.ts
+      - packages/kundera-ts/src/provider/index.ts
+      - packages/kundera-ts/src/provider/schemas/index.ts
+  - task: Create wallet-account skill (mdx + ts + test) showing SWO adapter pattern
+    files:
+      - packages/kundera-ts/docs/skills/wallet-account.ts
+      - packages/kundera-ts/docs/skills/wallet-account.test.ts
+      - packages/kundera-ts/docs/skills/wallet-account.mdx
+
+blockers: []
+
+questions:
+  - Should wallet-modal.ts be updated to use StarknetWindowObject from provider/wallet/types instead of its inline type?
+  - Should WalletRpcSchema be added to the combined StarknetRpcSchema or kept separate?
+  - Is a subpath export `@kundera-sn/kundera-ts/wallet` needed?
+
+decisions:
+  - separate_wallet_schema: WalletRpcSchema kept separate from StarknetRpcSchema because they target different transports (wallet extension vs RPC node)
+  - method_not_type: Request builders use standard {method, params} format. SWO's {type, params} translation is skill-level concern
+  - no_wallet_discovery: No EIP-6963 equivalent for Starknet yet. Discovery left to get-starknet/starknetkit (skill territory)
+  - no_fee_estimation: Wallet API has no wallet_estimateFee method. Wallet handles fees internally
+  - camelCase_to_snake_case_in_skill: Field name translation (contractAddress→contract_address) done in skill, not primitives
+
+findings:
+  - wallet_api_spec: Lives at starkware-libs/starknet-specs/wallet-api/wallet_rpc.json (v0.8.0), no formal SNIP number
+  - swo_uses_type: StarknetWindowObject.request() takes {type, params} NOT {method, params}
+  - twelve_methods: wallet_supportedWalletApi, wallet_supportedSpecs, wallet_getPermissions, wallet_requestAccounts, wallet_requestChainId, wallet_deploymentData, wallet_watchAsset, wallet_addStarknetChain, wallet_switchStarknetChain, wallet_addInvokeTransaction, wallet_addDeclareTransaction, wallet_signTypedData
+  - error_codes: 111 (UNLISTED_NETWORK), 113 (USER_REFUSED_OP), 114 (INVALID_REQUEST_PAYLOAD), 115 (ACCOUNT_ALREADY_DEPLOYED), 162 (API_VERSION_NOT_SUPPORTED), 163 (UNKNOWN_ERROR)
+
+worked:
+  - Voltaire-style request builder pattern (one file per method, barrel export) maps perfectly to wallet_* methods
+  - Parallel oracle agents for starknet.js + SNIP research saved significant time
+  - Keeping primitives minimal (types + builders + error codes) — no abstractions in core
+
+failed: []
+
+next:
+  - Update wallet-modal.ts skill to import StarknetWindowObject from provider/wallet/types instead of defining inline
+  - Consider kundera-effect wallet service layer (Effect wrappers around WalletRpc)
+  - Add wallet_* methods to docs site navigation (docs.json)
+  - Consider wallet-standard v5 protocol support (features-based discovery as alternative to window scanning)
+
+files:
+  created:
+    - packages/kundera-ts/src/provider/schemas/WalletRpcSchema.ts
+    - packages/kundera-ts/src/provider/wallet/types.ts
+    - packages/kundera-ts/src/jsonrpc/wallet/addInvokeTransaction.js
+    - packages/kundera-ts/src/jsonrpc/wallet/addDeclareTransaction.js
+    - packages/kundera-ts/src/jsonrpc/wallet/signTypedData.js
+    - packages/kundera-ts/src/jsonrpc/wallet/requestAccounts.js
+    - packages/kundera-ts/src/jsonrpc/wallet/requestChainId.js
+    - packages/kundera-ts/src/jsonrpc/wallet/deploymentData.js
+    - packages/kundera-ts/src/jsonrpc/wallet/switchStarknetChain.js
+    - packages/kundera-ts/src/jsonrpc/wallet/addStarknetChain.js
+    - packages/kundera-ts/src/jsonrpc/wallet/watchAsset.js
+    - packages/kundera-ts/src/jsonrpc/wallet/getPermissions.js
+    - packages/kundera-ts/src/jsonrpc/wallet/supportedWalletApi.js
+    - packages/kundera-ts/src/jsonrpc/wallet/supportedSpecs.js
+    - packages/kundera-ts/src/jsonrpc/wallet/errors.js
+    - packages/kundera-ts/src/jsonrpc/wallet/methods.js
+    - packages/kundera-ts/docs/skills/wallet-account.ts
+    - packages/kundera-ts/docs/skills/wallet-account.test.ts
+    - packages/kundera-ts/docs/skills/wallet-account.mdx
+  modified:
+    - packages/kundera-ts/src/jsonrpc/index.ts
+    - packages/kundera-ts/src/provider/index.ts
+    - packages/kundera-ts/src/provider/schemas/index.ts

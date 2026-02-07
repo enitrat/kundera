@@ -1,0 +1,8 @@
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "result": {
+    "block_hash": "0x332d2b1de37a1c79b18c2d3f8c8b33695d2d94d58d7f8ad50d379cc9d748307",
+    "block_number": 6519198
+  }
+}

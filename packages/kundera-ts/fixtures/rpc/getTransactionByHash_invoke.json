@@ -1,0 +1,72 @@
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "result": {
+    "account_deployment_data": [],
+    "calldata": [
+      "0x3",
+      "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+      "0x83afd3f4caedc6eebf44246fe54e38c95e3179a5ec9ea81740eca5b482d12e",
+      "0x3",
+      "0x199741822c2dc722f6f605204f35e56dbc23bceed54818168c4c49e4fb8737e",
+      "0xf9ccd8a1c5080000",
+      "0x0",
+      "0x199741822c2dc722f6f605204f35e56dbc23bceed54818168c4c49e4fb8737e",
+      "0x23170181ce94904a6579426f958734a9e1ae9bd25082143abf393288c83bbb1",
+      "0x14",
+      "0x2",
+      "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+      "0x782f0ddca11d9950bc3220e35ac82cf868778edb67a5e58b39838544bc4cd0f",
+      "0x20c49ba5e353f80000000000000000",
+      "0x3e8",
+      "0x0",
+      "0xe1ae5f6eaa376374bfb168c2a408a274",
+      "0x0",
+      "0x1",
+      "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+      "0x782f0ddca11d9950bc3220e35ac82cf868778edb67a5e58b39838544bc4cd0f",
+      "0xc49ba5e353f7d00000000000000000",
+      "0x175e",
+      "0x0",
+      "0x1cf518ef92d6e6b12bac8305502a973d",
+      "0x2",
+      "0x0",
+      "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+      "0xf9ccd8a1c5080000",
+      "0x0",
+      "0x199741822c2dc722f6f605204f35e56dbc23bceed54818168c4c49e4fb8737e",
+      "0x2e1d93dafae32660a4a76a0fd6f31550f3ddfd6a51c29ef2e055b80afbbd011",
+      "0x3",
+      "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+      "0xf9ccd8a1c5080000",
+      "0x0"
+    ],
+    "fee_data_availability_mode": "L1",
+    "nonce": "0xeb",
+    "nonce_data_availability_mode": "L1",
+    "paymaster_data": [],
+    "resource_bounds": {
+      "l1_data_gas": {
+        "max_amount": "0x0",
+        "max_price_per_unit": "0x0"
+      },
+      "l1_gas": {
+        "max_amount": "0x12d",
+        "max_price_per_unit": "0x5ef7e805d799"
+      },
+      "l2_gas": {
+        "max_amount": "0x0",
+        "max_price_per_unit": "0x0"
+      }
+    },
+    "sender_address": "0xbd15f2ccc720ec710b6065a8c48bab4ccdcff1887d819ee587d998e40cafcd",
+    "signature": [
+      "0x657c266b84c06d1a76cfdf1ffe626fa40701a15a9d34b54566e9e92d36d6ace",
+      "0x69b1fc78e58418c2b77f76e67c9669f10ac28c4d67822d24d49a5ff7c6e5e3f"
+    ],
+    "tip": "0x0",
+    "transaction_hash": "0x44400b45a0d6aa7b74c466a6f39bdb5f6b542e1adf608bb8ea6700d1ffae9f3",
+    "type": "INVOKE",
+    "version": "0x3"
+  }
+}

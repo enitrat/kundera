@@ -6,10 +6,12 @@ import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
  */
 export function feeEstimateFromRpc(rpc) {
 	return {
-		gas_consumed: feltFromHex(rpc.gas_consumed),
-		gas_price: feltFromHex(rpc.gas_price),
-		data_gas_consumed: feltFromHex(rpc.data_gas_consumed),
-		data_gas_price: feltFromHex(rpc.data_gas_price),
+		l1_gas_consumed: feltFromHex(rpc.l1_gas_consumed),
+		l1_gas_price: feltFromHex(rpc.l1_gas_price),
+		l2_gas_consumed: feltFromHex(rpc.l2_gas_consumed),
+		l2_gas_price: feltFromHex(rpc.l2_gas_price),
+		l1_data_gas_consumed: feltFromHex(rpc.l1_data_gas_consumed),
+		l1_data_gas_price: feltFromHex(rpc.l1_data_gas_price),
 		overall_fee: feltFromHex(rpc.overall_fee),
 		unit: rpc.unit,
 	};

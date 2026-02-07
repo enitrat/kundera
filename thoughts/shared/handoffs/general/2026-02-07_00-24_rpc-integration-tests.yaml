@@ -1,0 +1,106 @@
+---
+session: general
+date: 2026-02-07
+status: partial
+outcome: SUCCEEDED
+---
+
+goal: Add MSW-based integration tests using recorded mainnet RPC fixtures for all 8 domain primitives
+now: Fix FeeEstimate wire type (v0.10 field names), update fromRpc/toRpc + unit tests, then run full suite
+
+test: cd packages/kundera-ts && npx vitest run src/__tests__/rpc-integration.test.ts
+
+done_this_session:
+  - task: Research integration testing patterns (starknet.js, Voltaire, viem, MSW vs nock vs Polly.js)
+    files: [development/INTEGRATION_TESTING.md]
+  - task: Create fixture recorder script hitting real mainnet RPC
+    files: [packages/kundera-ts/scripts/record-fixtures.ts]
+  - task: Record 20 fixtures from Alchemy v0.10 endpoint (block 800000, INVOKE_V3 tx)
+    files: [packages/kundera-ts/fixtures/rpc/*.json]
+  - task: Create MSW setup (body.method matching) + integration test file (12 tests)
+    files:
+      - packages/kundera-ts/src/__tests__/setup-msw.ts
+      - packages/kundera-ts/src/__tests__/rpc-integration.test.ts
+  - task: "Fix real bug: BlockHeaderWithCommitments fields are optional in real responses"
+    files:
+      - packages/kundera-ts/src/jsonrpc/types.ts
+      - packages/kundera-ts/src/primitives/BlockHeader/types.ts
+      - packages/kundera-ts/src/primitives/BlockHeader/fromRpc.js
+      - packages/kundera-ts/src/primitives/BlockHeader/toRpc.js
+      - packages/kundera-ts/src/primitives/BlockHeader/fromRpc.test.ts
+  - task: Started updating FeeEstimate wire type from v0.7 to v0.10 field names
+    files: [packages/kundera-ts/src/jsonrpc/types.ts]
+
+blockers: []
+
+questions:
+  - Should MessageFeeEstimate wire type also be updated to v0.10 field names?
+  - Should we record fixtures for DECLARE tx type too (currently only have INVOKE_V3)?
+  - Should fixtures be gitignored or committed? (Currently not gitignored — recommend committing)
+
+decisions:
+  - msw_over_nock: MSW matches on request body (JSON-RPC method field). Nock/Polly.js are URL-based — bad fit for single-endpoint JSON-RPC
+  - alchemy_demo_endpoint: "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_10/demo" — free, no API key, supports all methods including traces
+  - pinned_block_800000: Block 800000 has 14 txs (INVOKE_V3, INVOKE_V1, DEPLOY_ACCOUNT), immutable mainnet data
+  - optional_commitments: Real block responses don't always include commitment fields (event_commitment, etc.) — made optional in wire + domain types
+  - v0_10_fixtures: Re-recorded all fixtures against v0.10 (latest stable spec) instead of v0.8
+
+findings:
+  - fee_estimate_v0.10_shape: "FeeEstimate uses l1_gas_consumed, l1_gas_price, l2_gas_consumed, l2_gas_price, l1_data_gas_consumed, l1_data_gas_price (not gas_consumed/gas_price from v0.7)"
+  - starknet_specs_latest: "v0.10.1-rc.2 is latest tag, v0.10.0 is latest stable release"
+  - commitment_fields_optional: "getBlockWithTxHashes etc. don't include event_commitment/transaction_commitment/receipt_commitment/state_diff_commitment fields"
+  - nobody_tests_wallet: "starknet.js wallet test is an empty stub. Ecosystem-wide gap."
+  - estimateFee_needs_SKIP_VALIDATE: "Empty signature → INVALID_SIG. Must pass ['SKIP_VALIDATE'] simulation flag"
+
+worked:
+  - Alchemy demo endpoint serves v0.10 with traces — reliable for fixture recording
+  - MSW http.post('*/rpc*') + body.method matching works perfectly for JSON-RPC
+  - Integration tests immediately caught real codec bugs (optional commitments, field name drift)
+
+failed:
+  - Blast API dead (403), Nethermind free RPC unreachable, Lava blocks trace methods
+  - estimateFee with empty signature fails without SKIP_VALIDATE flag
+  - estimateFee with wrong nonce fails (nonce advances within block)
+
+next:
+  - Update FeeEstimate fromRpc/toRpc + types to use v0.10 field names (l1_gas_consumed etc.)
+    # See packages/kundera-ts/src/primitives/FeeEstimate/fromRpc.js, toRpc.js, types.ts, fromRpc.test.ts
+  - Update FeeEstimate unit test data to match v0.10 shape
+  - Convert the it.todo FeeEstimate integration test to a real passing test
+  - Check if MessageFeeEstimate also needs v0.10 field name update
+  - Run full test suite + typecheck to verify everything passes
+  - Check if any other wire types drifted between v0.7→v0.10 (TransactionReceipt execution_resources shape?)
+
+files:
+  created:
+    - development/INTEGRATION_TESTING.md
+    - packages/kundera-ts/scripts/record-fixtures.ts
+    - packages/kundera-ts/fixtures/rpc/blockNumber.json
+    - packages/kundera-ts/fixtures/rpc/blockHashAndNumber.json
+    - packages/kundera-ts/fixtures/rpc/chainId.json
+    - packages/kundera-ts/fixtures/rpc/specVersion.json
+    - packages/kundera-ts/fixtures/rpc/syncing.json
+    - packages/kundera-ts/fixtures/rpc/getBlockWithTxHashes.json
+    - packages/kundera-ts/fixtures/rpc/getBlockWithTxs.json
+    - packages/kundera-ts/fixtures/rpc/getBlockWithReceipts.json
+    - packages/kundera-ts/fixtures/rpc/getBlockTransactionCount.json
+    - packages/kundera-ts/fixtures/rpc/getTransactionByHash_invoke.json
+    - packages/kundera-ts/fixtures/rpc/getTransactionReceipt.json
+    - packages/kundera-ts/fixtures/rpc/getTransactionStatus.json
+    - packages/kundera-ts/fixtures/rpc/getStateUpdate.json
+    - packages/kundera-ts/fixtures/rpc/getEvents.json
+    - packages/kundera-ts/fixtures/rpc/estimateFee.json
+    - packages/kundera-ts/fixtures/rpc/traceTransaction.json
+    - packages/kundera-ts/fixtures/rpc/traceBlockTransactions.json
+    - packages/kundera-ts/fixtures/rpc/getClassAt.json
+    - packages/kundera-ts/fixtures/rpc/getStorageAt.json
+    - packages/kundera-ts/fixtures/rpc/getNonce.json
+    - packages/kundera-ts/src/__tests__/setup-msw.ts
+    - packages/kundera-ts/src/__tests__/rpc-integration.test.ts
+  modified:
+    - packages/kundera-ts/package.json
+    - packages/kundera-ts/src/jsonrpc/types.ts
+    - packages/kundera-ts/src/primitives/BlockHeader/types.ts
+    - packages/kundera-ts/src/primitives/BlockHeader/fromRpc.js
+    - packages/kundera-ts/src/primitives/BlockHeader/toRpc.js
+    - packages/kundera-ts/src/primitives/BlockHeader/fromRpc.test.ts
