@@ -257,6 +257,8 @@ const makeTransportService = (
           );
         }
 
+        // Trust boundary: we assume the selected JSON-RPC node returns a value
+        // that matches the caller's requested generic result type.
         return response.result as T;
       });
 

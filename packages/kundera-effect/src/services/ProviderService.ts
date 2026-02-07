@@ -146,8 +146,10 @@ export const FallbackHttpProviderLive = (
             );
           }
 
-            return response.result as T;
-          });
+          // Trust boundary: endpoint JSON-RPC responses are assumed to satisfy
+          // the caller-specified generic type.
+          return response.result as T;
+        });
 
         return requestOnce.pipe(
           Effect.retry({

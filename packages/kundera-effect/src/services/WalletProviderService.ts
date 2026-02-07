@@ -141,6 +141,8 @@ const makeWalletProviderService = (
           );
         }
 
+        // Trust boundary: wallet RPC responses are assumed to match the
+        // caller-declared generic type for that method.
         return response.result as T;
       });
 

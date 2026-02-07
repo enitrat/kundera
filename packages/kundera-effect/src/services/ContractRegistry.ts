@@ -31,10 +31,12 @@ export const makeContractRegistry = <TConfig extends ContractRegistryConfig>(
 
     for (const key of Object.keys(config) as Array<keyof TConfig>) {
       const def = config[key];
+      // TS cannot correlate `key` to the mapped ABI member at this point.
       contracts[key] = service.at(def.address, def.abi as TConfig[typeof key]["abi"]);
     }
 
     return {
+      // Safe because `contracts` is populated using every key from `config`.
       contracts: contracts as InferContractRegistry<TConfig>,
       get: (name) => contracts[name],
     };
