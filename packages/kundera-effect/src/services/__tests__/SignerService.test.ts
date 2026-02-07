@@ -3,33 +3,17 @@ import { Effect, Layer } from "effect";
 
 import { SignerLive, SignerService } from "../SignerService.js";
 import { TransactionService } from "../TransactionService.js";
-import { WalletProviderService } from "../WalletProviderService.js";
+import { makeMockWalletProvider } from "./_mocks.js";
 
 describe("SignerService", () => {
   it("delegates wallet account requests", async () => {
     let requestAccountsOptions: unknown;
 
-    const walletLayer = Layer.succeed(WalletProviderService, {
-      request: () => Effect.succeed([]),
-      supportedWalletApi: () => Effect.succeed([]),
-      supportedSpecs: () => Effect.succeed([]),
-      getPermissions: () => Effect.succeed([]),
+    const walletLayer = makeMockWalletProvider({
       requestAccounts: (options?: unknown) => {
         requestAccountsOptions = options;
         return Effect.succeed(["0xabc"]);
       },
-      requestChainId: () => Effect.succeed("0x534e5f5345504f4c4941"),
-      deploymentData: () =>
-        Effect.succeed({
-          address: "0xabc",
-          class_hash: "0x1",
-          salt: "0x2",
-          calldata: ["0x3"],
-          version: 1,
-        }),
-      watchAsset: () => Effect.succeed(true),
-      addStarknetChain: () => Effect.succeed(true),
-      switchStarknetChain: () => Effect.succeed(true),
       addInvokeTransaction: () => Effect.succeed({ transaction_hash: "0xbeef" }),
       addDeclareTransaction: () =>
         Effect.succeed({ transaction_hash: "0xbeef", class_hash: "0x1" }),
@@ -80,24 +64,7 @@ describe("SignerService", () => {
   });
 
   it("delegates invoke send-and-wait to transaction service", async () => {
-    const walletLayer = Layer.succeed(WalletProviderService, {
-      request: () => Effect.succeed([]),
-      supportedWalletApi: () => Effect.succeed([]),
-      supportedSpecs: () => Effect.succeed([]),
-      getPermissions: () => Effect.succeed([]),
-      requestAccounts: () => Effect.succeed(["0xabc"]),
-      requestChainId: () => Effect.succeed("0x534e5f5345504f4c4941"),
-      deploymentData: () =>
-        Effect.succeed({
-          address: "0xabc",
-          class_hash: "0x1",
-          salt: "0x2",
-          calldata: ["0x3"],
-          version: 1,
-        }),
-      watchAsset: () => Effect.succeed(true),
-      addStarknetChain: () => Effect.succeed(true),
-      switchStarknetChain: () => Effect.succeed(true),
+    const walletLayer = makeMockWalletProvider({
       addInvokeTransaction: () => Effect.succeed({ transaction_hash: "0xbeef" }),
       addDeclareTransaction: () =>
         Effect.succeed({ transaction_hash: "0xbeef", class_hash: "0x1" }),
