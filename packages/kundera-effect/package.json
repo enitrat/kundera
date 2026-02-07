@@ -44,6 +44,10 @@
       "types": "./dist/jsonrpc/index.d.ts",
       "import": "./dist/jsonrpc/index.js"
     },
+    "./primitives": {
+      "types": "./dist/primitives/index.d.ts",
+      "import": "./dist/primitives/index.js"
+    },
     "./presets": {
       "types": "./dist/presets/index.d.ts",
       "import": "./dist/presets/index.js"
@@ -63,6 +67,9 @@
       ],
       "jsonrpc": [
         "./dist/jsonrpc/index.d.ts"
+      ],
+      "primitives": [
+        "./dist/primitives/index.d.ts"
       ],
       "presets": [
         "./dist/presets/index.d.ts"

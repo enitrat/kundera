@@ -10,6 +10,7 @@ Wallet-first Effect services for Starknet.
 - Optional typed contract registry builder
 - Transaction submission via wallet providers
 - Receipt polling via Starknet RPC provider
+- Schema-first primitive input decoding (`Primitives`)
 - Typed errors and Layer-based dependency injection
 
 ## Install
@@ -45,4 +46,19 @@ const program = Effect.gen(function* () {
 });
 
 await Effect.runPromise(program.pipe(Effect.provide(stack)));
+```
+
+## Boundary validation (recommended)
+
+```ts
+import * as S from "effect/Schema";
+import { Effect } from "effect";
+import { JsonRpc, Primitives } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const address = yield* S.decodeUnknown(Primitives.ContractAddress.Hex)(
+    "0x123",
+  );
+  return yield* JsonRpc.getNonce(address, "latest");
+});
 ```
