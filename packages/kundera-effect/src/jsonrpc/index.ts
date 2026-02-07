@@ -1,5 +1,6 @@
 import { Effect } from "effect";
 import type {
+  ClassHashType,
   ContractAddressType,
   Felt252Type,
   StorageKeyType,
@@ -11,21 +12,28 @@ import {
   type AddInvokeTransactionResult,
   type BlockHashAndNumber,
   type BlockId,
+  type BlockTransactionTrace,
   type BlockWithReceipts,
   type BlockWithTxHashes,
   type BlockWithTxs,
   type BroadcastedDeclareTxn,
   type BroadcastedDeployAccountTxn,
   type BroadcastedInvokeTxn,
+  type ContractClass,
   type EventsFilter,
   type EventsResponse,
   type FeeEstimate,
   type FunctionCall,
+  type MessageFeeEstimate,
+  type MessagesStatusResponse,
+  type MsgFromL1,
   type SimulatedTransaction,
   type SimulationFlag,
   type StateUpdate,
+  type StorageProof,
   type SyncingStatus,
   type TransactionStatus,
+  type TransactionTrace,
   type TxnReceiptWithBlockInfo,
   type TxnWithHash,
 } from "@kundera-sn/kundera-ts/jsonrpc";
@@ -101,11 +109,28 @@ export const estimateFee = (
   return request(method, params, options);
 };
 
+export const estimateMessageFee = (
+  message: MsgFromL1,
+  blockId: BlockId = "latest",
+  options?: RequestOptions,
+): Effect.Effect<MessageFeeEstimate, TransportError | RpcError, ProviderService> => {
+  const { method, params } = Rpc.EstimateMessageFeeRequest(message, blockId);
+  return request(method, params, options);
+};
+
 export const getStateUpdate = (
   blockId: BlockId,
   options?: RequestOptions,
 ): Effect.Effect<StateUpdate, TransportError | RpcError, ProviderService> => {
   const { method, params } = Rpc.GetStateUpdateRequest(blockId);
+  return request(method, params, options);
+};
+
+export const getBlockTransactionCount = (
+  blockId: BlockId,
+  options?: RequestOptions,
+): Effect.Effect<number, TransportError | RpcError, ProviderService> => {
+  const { method, params } = Rpc.GetBlockTransactionCountRequest(blockId);
   return request(method, params, options);
 };
 
@@ -141,12 +166,21 @@ export const getClassHashAt = (
   return request(method, params, options);
 };
 
-export const getClassAt = <T = unknown>(
+export const getClassAt = (
   blockId: BlockId,
   contractAddress: ContractAddressType,
   options?: RequestOptions,
-): Effect.Effect<T, TransportError | RpcError, ProviderService> => {
+): Effect.Effect<ContractClass, TransportError | RpcError, ProviderService> => {
   const { method, params } = Rpc.GetClassAtRequest(blockId, contractAddress.toHex());
+  return request(method, params, options);
+};
+
+export const getClass = (
+  blockId: BlockId,
+  classHash: ClassHashType,
+  options?: RequestOptions,
+): Effect.Effect<ContractClass, TransportError | RpcError, ProviderService> => {
+  const { method, params } = Rpc.GetClassRequest(blockId, classHash.toHex());
   return request(method, params, options);
 };
 
@@ -182,6 +216,15 @@ export const getTransactionByHash = (
   return request(method, params, options);
 };
 
+export const getTransactionByBlockIdAndIndex = (
+  blockId: BlockId,
+  index: number,
+  options?: RequestOptions,
+): Effect.Effect<TxnWithHash, TransportError | RpcError, ProviderService> => {
+  const { method, params } = Rpc.GetTransactionByBlockIdAndIndexRequest(blockId, index);
+  return request(method, params, options);
+};
+
 export const getTransactionReceipt = (
   txHash: Felt252Type,
   options?: RequestOptions,
@@ -198,11 +241,45 @@ export const getTransactionStatus = (
   return request(method, params, options);
 };
 
+export const getMessagesStatus = (
+  txHash: Felt252Type,
+  options?: RequestOptions,
+): Effect.Effect<MessagesStatusResponse, TransportError | RpcError, ProviderService> => {
+  const { method, params } = Rpc.GetMessagesStatusRequest(txHash.toHex());
+  return request(method, params, options);
+};
+
 export const getEvents = (
   filter: EventsFilter,
   options?: RequestOptions,
 ): Effect.Effect<EventsResponse, TransportError | RpcError, ProviderService> => {
   const { method, params } = Rpc.GetEventsRequest(filter);
+  return request(method, params, options);
+};
+
+export interface StorageProofRequest {
+  readonly classHashes?: readonly ClassHashType[];
+  readonly contractAddresses?: readonly ContractAddressType[];
+  readonly contractStorageKeys?: ReadonlyArray<{
+    readonly contractAddress: ContractAddressType;
+    readonly storageKeys: readonly StorageKeyType[];
+  }>;
+}
+
+export const getStorageProof = (
+  blockId: BlockId,
+  proofRequest: StorageProofRequest = {},
+  options?: RequestOptions,
+): Effect.Effect<StorageProof, TransportError | RpcError, ProviderService> => {
+  const { method, params } = Rpc.GetStorageProofRequest(
+    blockId,
+    [...(proofRequest.classHashes ?? [])].map((hash) => hash.toHex()),
+    [...(proofRequest.contractAddresses ?? [])].map((address) => address.toHex()),
+    [...(proofRequest.contractStorageKeys ?? [])].map((entry) => ({
+      contract_address: entry.contractAddress.toHex(),
+      storage_keys: [...entry.storageKeys].map((key) => key.toHex()),
+    })),
+  );
   return request(method, params, options);
 };
 
@@ -243,3 +320,26 @@ export const simulateTransactions = (
   );
   return request(method, params, options);
 };
+
+export const traceTransaction = (
+  txHash: Felt252Type,
+  options?: RequestOptions,
+): Effect.Effect<TransactionTrace, TransportError | RpcError, ProviderService> => {
+  const { method, params } = Rpc.TraceTransactionRequest(txHash.toHex());
+  return request(method, params, options);
+};
+
+export const traceBlockTransactions = (
+  blockId: BlockId,
+  options?: RequestOptions,
+): Effect.Effect<BlockTransactionTrace[], TransportError | RpcError, ProviderService> => {
+  const { method, params } = Rpc.TraceBlockTransactionsRequest(blockId);
+  return request(method, params, options);
+};
+
+/**
+ * Subscription RPC methods are intentionally deferred.
+ *
+ * These methods are push-based and should be exposed as `Effect.Stream`
+ * wrappers once a WebSocket subscription API is added.
+ */
