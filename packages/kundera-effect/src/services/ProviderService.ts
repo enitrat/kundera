@@ -97,34 +97,40 @@ export const FallbackHttpProviderLive = (
             }),
           );
 
-          return transports.reduceRight(
-            (fallback: Effect.Effect<T, TransportError | RpcError>, { endpoint, transport }) => {
+          return transports.reduceRight<Effect.Effect<T, TransportError | RpcError>>(
+            (fallback, { endpoint, transport }) => {
               const attempts = Math.max(endpoint.attempts ?? 1, 1);
               const retryDelayMs = Math.max(endpoint.retryDelayMs ?? 0, 0);
 
-              return transport
-                .request<T>(method, params, options)
-                .pipe(
-                  // Promote retryable RPC errors to TransportError for retry/fallback
-                  Effect.catchTag("RpcError", (error) =>
-                    isRetryableRpcError(error)
-                      ? Effect.fail(
-                          new TransportError({
-                            operation: `${method}@${endpoint.url}`,
-                            message: `Retryable RPC error: ${error.message}`,
-                            cause: error,
-                          }),
-                        )
-                      : Effect.fail(error),
+              const attempt: Effect.Effect<T, TransportError | RpcError> =
+                Effect.gen(function* () {
+                  const result = yield* transport.request<T>(method, params, options).pipe(
+                    Effect.catchTag("RpcError", (error): Effect.Effect<T, TransportError | RpcError> =>
+                      isRetryableRpcError(error)
+                        ? Effect.fail(
+                            new TransportError({
+                              operation: `${method}@${endpoint.url}`,
+                              message: `Retryable RPC error: ${error.message}`,
+                              cause: error,
+                            }),
+                          )
+                        : Effect.fail(error),
+                    ),
+                  );
+                  return result;
+                });
+
+              return attempt.pipe(
+                Effect.retry(
+                  Schedule.recurs(attempts - 1).pipe(
+                    Schedule.addDelay(() => `${retryDelayMs} millis`),
+                    Schedule.whileInput(
+                      (error: TransportError | RpcError) => error._tag === "TransportError",
+                    ),
                   ),
-                  Effect.retry({
-                    times: attempts - 1,
-                    schedule: Schedule.spaced(`${retryDelayMs} millis`),
-                    while: (error: TransportError | RpcError) =>
-                      error._tag === "TransportError",
-                  }),
-                  Effect.catchTag("TransportError", () => fallback),
-                );
+                ),
+                Effect.catchTag("TransportError", () => fallback),
+              );
             },
             allFailed,
           );
