@@ -1,0 +1,194 @@
+---
+title: Presets
+description: Pre-composed layers for Mainnet, Sepolia, Devnet, and wallet integration stacks.
+---
+
+# Presets Module
+
+Presets are pre-composed `Layer` factories for common configurations. Start here — customize only when needed.
+
+## Imports
+
+```typescript
+import { Presets } from "@kundera-sn/kundera-effect";
+// or
+import * as Presets from "@kundera-sn/kundera-effect/presets";
+```
+
+## Provider Presets
+
+Read-only operations (block queries, contract reads, event filtering). No wallet needed.
+
+```typescript
+import { Effect } from "effect";
+import { JsonRpc, Presets } from "@kundera-sn/kundera-effect";
+
+// Mainnet
+const mainnet = JsonRpc.blockNumber().pipe(
+  Effect.provide(Presets.MainnetProvider())
+);
+
+// Sepolia testnet
+const sepolia = JsonRpc.blockNumber().pipe(
+  Effect.provide(Presets.SepoliaProvider())
+);
+
+// Local devnet
+const devnet = JsonRpc.blockNumber().pipe(
+  Effect.provide(Presets.DevnetProvider())
+);
+```
+
+| Preset | URL |
+|--------|-----|
+| `MainnetProvider(options?)` | `https://starknet-mainnet.public.blastapi.io/rpc/v0_8` |
+| `SepoliaProvider(options?)` | `https://starknet-sepolia.public.blastapi.io/rpc/v0_8` |
+| `DevnetProvider(options?)` | `http://127.0.0.1:5050/rpc` |
+
+### Custom Provider
+
+```typescript
+// Custom URL
+const custom = Presets.createProvider("https://my-rpc.example.com", {
+  timeout: 30_000,
+  headers: { "x-api-key": "..." },
+});
+
+// Fallback across multiple endpoints
+const fallback = Presets.createFallbackProvider([
+  { url: "https://primary.example.com", priority: 1 },
+  { url: "https://secondary.example.com", priority: 2 },
+]);
+
+// Shorthand: URLs only
+const fallback2 = Presets.FallbackProvider(
+  "https://primary.example.com",
+  "https://secondary.example.com",
+);
+```
+
+## Wallet Stacks
+
+For browser dapps that need wallet integration.
+
+### Base Stack
+
+Provides: `ProviderService` + `WalletProviderService` + `ContractService` + `NonceManagerService` + `FeeEstimatorService` + `ChainService` + `EventService` + `BatchService`
+
+Use when you need reads, fee estimation, and wallet access but handle transaction submission yourself.
+
+```typescript
+import { Effect } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const wallet = yield* Services.WalletProviderService;
+  const accounts = yield* wallet.requestAccounts();
+
+  const contract = yield* Services.ContractService;
+  const balance = yield* contract.readContract({
+    abi: erc20Abi,
+    address: tokenAddress,
+    functionName: "balanceOf",
+    args: [accounts[0]],
+  });
+
+  return balance;
+}).pipe(
+  Effect.provide(Presets.SepoliaWalletBaseStack({
+    swo: window.starknet_argentX,
+  }))
+);
+```
+
+### Full Stack (Transaction Stack)
+
+Adds: `TransactionService` + `ContractWriteService` on top of Base Stack.
+
+Use when you need full transaction lifecycle — submit, poll for receipt, ABI-encoded writes.
+
+```typescript
+const program = Effect.gen(function* () {
+  const contractWrite = yield* Services.ContractWriteService;
+
+  const receipt = yield* contractWrite.invokeAndWait({
+    abi: erc20Abi,
+    address: tokenAddress,
+    functionName: "transfer",
+    args: [recipientAddress, amount],
+  });
+
+  return receipt;
+}).pipe(
+  Effect.provide(Presets.SepoliaWalletStack({
+    swo: window.starknet_argentX,
+  }))
+);
+```
+
+| Preset | Description |
+|--------|-------------|
+| `MainnetWalletBaseStack({ swo, rpcUrl?, rpcTransportOptions? })` | Mainnet base |
+| `SepoliaWalletBaseStack({ swo, rpcUrl?, rpcTransportOptions? })` | Sepolia base |
+| `DevnetWalletBaseStack({ swo, rpcUrl?, rpcTransportOptions? })` | Devnet base |
+| `MainnetWalletStack({ swo, rpcUrl?, rpcTransportOptions? })` | Mainnet full |
+| `SepoliaWalletStack({ swo, rpcUrl?, rpcTransportOptions? })` | Sepolia full |
+| `DevnetWalletStack({ swo, rpcUrl?, rpcTransportOptions? })` | Devnet full |
+
+### Custom RPC URL
+
+Override the default RPC URL while keeping everything else:
+
+```typescript
+const stack = Presets.MainnetWalletStack({
+  swo: window.starknet_argentX,
+  rpcUrl: "https://my-private-node.example.com",
+  rpcTransportOptions: {
+    timeout: 30_000,
+    headers: { "x-api-key": "..." },
+  },
+});
+```
+
+## Decision Tree
+
+```
+What do you need?
+├─ Read-only operations (blocks, contracts, events)
+│  → Provider presets: MainnetProvider(), SepoliaProvider(), etc.
+│
+├─ Wallet + reads + fee estimation (no transaction submission)
+│  → Base stacks: MainnetWalletBaseStack({ swo }), etc.
+│
+└─ Full wallet integration (reads + writes + receipt polling)
+   → Full stacks: MainnetWalletStack({ swo }), etc.
+```
+
+## Test Preset
+
+For unit tests, use `TestProviderPreset` with canned responses:
+
+```typescript
+import { Presets } from "@kundera-sn/kundera-effect";
+
+const testLayer = Presets.TestProviderPreset({
+  starknet_blockNumber: 42,
+  starknet_chainId: "0x534e5f5345504f4c4941",
+});
+```
+
+See [Testing Guide](/effect/guides/testing) for full patterns.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider" icon="plug" href="/effect/services/provider">
+    Underlying ProviderService.
+  </Card>
+  <Card title="Transport" icon="satellite" href="/effect/services/transport">
+    Custom transport configuration.
+  </Card>
+  <Card title="Testing" icon="flask" href="/effect/guides/testing">
+    Mock layers for unit tests.
+  </Card>
+</CardGroup>

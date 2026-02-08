@@ -26,8 +26,7 @@ const DOCS_JSON_PATH = "docs/docs.json";
  */
 const PACKAGE_DOC_SOURCES: Record<string, string> = {
   "typescript": "packages/kundera-ts/docs",
-  // Add more package doc sources here as needed:
-  // "effect": "packages/kundera-effect/docs",
+  "effect": "packages/kundera-effect/docs",
 };
 
 /**

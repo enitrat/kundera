@@ -1,0 +1,137 @@
+---
+title: Wallet Provider Service
+description: Browser wallet integration via StarknetWindowObject (SNIP standards).
+---
+
+# Wallet Provider Service
+
+`WalletProviderService` wraps a `StarknetWindowObject` (ArgentX, Braavos, or any SNIP-compliant wallet) into an Effect service. Use this for browser dapps where transactions require user approval.
+
+## Imports
+
+```typescript
+import { Services } from "@kundera-sn/kundera-effect";
+// or
+import {
+  WalletProviderService,
+  WalletProviderLive,
+} from "@kundera-sn/kundera-effect/services";
+```
+
+## Service Shape
+
+```typescript
+interface WalletProviderServiceShape {
+  readonly requestAccounts: (
+    options?: RequestAccountsOptions,
+  ) => Effect.Effect<string[], WalletError>;
+
+  readonly execute: (
+    calls: readonly Call[],
+    options?: unknown,
+  ) => Effect.Effect<{ transaction_hash: string }, WalletError>;
+
+  readonly signMessage: (
+    typedData: unknown,
+  ) => Effect.Effect<string[], WalletError>;
+
+  readonly getChainId: () => Effect.Effect<string, WalletError>;
+}
+```
+
+## Live Layer
+
+```typescript
+import { Services } from "@kundera-sn/kundera-effect";
+
+// From a detected wallet
+const walletLayer = Services.WalletProviderLive(window.starknet_argentX);
+```
+
+<Tip>
+Use [Presets](/effect/modules/presets) wallet stacks instead of composing manually — they wire Provider + Wallet + Contract + Nonce + Fee + Chain in one call.
+</Tip>
+
+## Detect and Connect
+
+```typescript
+import { Effect } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const wallet = yield* Services.WalletProviderService;
+
+  // Request account access (triggers wallet popup)
+  const accounts = yield* wallet.requestAccounts();
+  const userAddress = accounts[0];
+
+  return userAddress;
+}).pipe(
+  Effect.provide(Presets.SepoliaWalletStack({ swo: window.starknet_argentX }))
+);
+```
+
+## Execute Transactions
+
+```typescript
+const program = Effect.gen(function* () {
+  const wallet = yield* Services.WalletProviderService;
+
+  const result = yield* wallet.execute([
+    {
+      contractAddress: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+      entrypoint: "transfer",
+      calldata: [recipientAddress, amountLow, amountHigh],
+    },
+  ]);
+
+  return result.transaction_hash;
+});
+```
+
+## Sign Message (SNIP-12)
+
+```typescript
+const signature = yield* wallet.signMessage({
+  types: { ... },
+  primaryType: "...",
+  domain: { ... },
+  message: { ... },
+});
+```
+
+## Error Handling
+
+All wallet operations surface `WalletError`:
+
+```typescript
+import { WalletError } from "@kundera-sn/kundera-effect/errors";
+
+program.pipe(
+  Effect.catchTag("WalletError", (e) => {
+    // e.operation: "requestAccounts" | "execute" | "signMessage" | ...
+    // e.message: "User rejected the request" | ...
+    return Effect.fail(new MyAppError(e.message));
+  })
+);
+```
+
+Common `WalletError` causes:
+- User rejected the request
+- Wallet not connected
+- Wallet extension not found
+- Network mismatch
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Account" icon="user" href="/effect/services/account">
+    Server-side signing (no browser wallet needed).
+  </Card>
+  <Card title="Transaction" icon="arrow-right-arrow-left" href="/effect/services/transaction">
+    Poll for transaction receipts.
+  </Card>
+  <Card title="Presets" icon="sliders" href="/effect/modules/presets">
+    Pre-composed wallet stacks.
+  </Card>
+</CardGroup>

@@ -1,0 +1,144 @@
+---
+title: Transport Service
+description: Low-level HTTP/WebSocket transport with fiber-local interceptors, timeout, and retry policies.
+---
+
+# Transport Service
+
+`TransportService` is the lowest layer in the stack — it handles raw HTTP or WebSocket communication with the Starknet RPC node. Most users never touch this directly; `ProviderService` or `Presets` wire it automatically.
+
+Use `TransportService` when you need custom interceptors, logging, or transport-level configuration.
+
+## Imports
+
+```typescript
+import { Services } from "@kundera-sn/kundera-effect";
+// or
+import {
+  TransportService,
+  HttpTransportLive,
+  WebSocketTransportLive,
+  withTimeout,
+  withRetries,
+  withRetrySchedule,
+  withRequestInterceptor,
+  withResponseInterceptor,
+  withErrorInterceptor,
+} from "@kundera-sn/kundera-effect/services";
+```
+
+## Service Shape
+
+```typescript
+interface TransportServiceShape {
+  readonly request: <T>(
+    method: string,
+    params?: readonly unknown[],
+  ) => Effect.Effect<T, TransportError | RpcError>;
+
+  readonly requestBatch: <T>(
+    requests: readonly { method: string; params?: readonly unknown[] }[],
+  ) => Effect.Effect<T[], TransportError | RpcError>;
+
+  readonly requestRaw: (
+    method: string,
+    params?: readonly unknown[],
+  ) => Effect.Effect<unknown, TransportError>;
+
+  readonly requestRawBatch: (
+    requests: readonly { method: string; params?: readonly unknown[] }[],
+  ) => Effect.Effect<unknown[], TransportError>;
+
+  readonly close: Effect.Effect<void>;
+}
+```
+
+## Live Layers
+
+| Layer | Description |
+|-------|-------------|
+| `HttpTransportLive(url, options?)` | HTTP transport via `fetch` |
+| `WebSocketTransportLive(url, options?)` | WebSocket transport (persistent connection) |
+
+## FiberRef Policies
+
+Policies are fiber-local — they apply to a specific Effect execution, not globally. Compose them with `.pipe()`:
+
+```typescript
+import { Effect, Schedule } from "effect";
+import { JsonRpc, Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = JsonRpc.blockNumber().pipe(
+  Services.withTimeout(10_000),
+  Services.withRetrySchedule(
+    Schedule.exponential("100 millis").pipe(
+      Schedule.intersect(Schedule.recurs(3))
+    )
+  ),
+  Effect.provide(Presets.SepoliaProvider())
+);
+```
+
+### Available Policies
+
+| Function | Description |
+|----------|-------------|
+| `withTimeout(ms)` | Per-request timeout in milliseconds |
+| `withRetries(n)` | Retry up to N times |
+| `withRetryDelay(duration)` | Fixed delay between retries |
+| `withRetrySchedule(schedule)` | Custom retry schedule |
+| `withTracing(enabled)` | Enable request tracing |
+
+### Interceptors
+
+Interceptors run on every request/response at the transport level:
+
+```typescript
+import { Services } from "@kundera-sn/kundera-effect";
+
+// Log every request
+const withLogging = Services.withRequestInterceptor((ctx) => {
+  console.log(`[RPC] ${ctx.method}`, ctx.params);
+  return ctx;
+});
+
+// Transform responses
+const withTransform = Services.withResponseInterceptor((ctx) => {
+  // ctx.result contains the raw response
+  return ctx;
+});
+
+// Enrich errors
+const withErrorContext = Services.withErrorInterceptor((ctx) => {
+  // ctx.error contains the error
+  return ctx;
+});
+
+const program = JsonRpc.blockNumber().pipe(
+  withLogging,
+  Effect.provide(Presets.SepoliaProvider())
+);
+```
+
+## Errors
+
+`TransportService` surfaces `TransportError` for network failures:
+
+```typescript
+class TransportError extends Data.TaggedError("TransportError")<{
+  readonly operation: string;  // e.g. "request", "connect"
+  readonly message: string;
+  readonly cause?: unknown;
+}>
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider" icon="plug" href="/effect/services/provider">
+    Higher-level JSON-RPC provider built on TransportService.
+  </Card>
+  <Card title="Presets" icon="sliders" href="/effect/modules/presets">
+    Pre-composed layers that wire transport automatically.
+  </Card>
+</CardGroup>

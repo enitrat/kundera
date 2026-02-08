@@ -1,0 +1,110 @@
+---
+title: Event Service
+description: Query, filter, and decode Starknet contract events.
+---
+
+# Event Service
+
+`EventService` provides event querying and ABI-based event decoding. It wraps `starknet_getEvents` with type-safe filtering and optional ABI decoding.
+
+## Imports
+
+```typescript
+import { Services } from "@kundera-sn/kundera-effect";
+// or
+import {
+  EventService,
+  EventLive,
+} from "@kundera-sn/kundera-effect/services";
+```
+
+## Service Shape
+
+```typescript
+interface EventServiceShape {
+  readonly getEvents: (
+    filter: EventsFilter,
+    options?: EventReadOptions,
+  ) => Effect.Effect<EventsResponse, TransportError | RpcError>;
+
+  readonly decodeEvent: (
+    params: DecodeEventParams,
+  ) => Effect.Effect<unknown, ContractError>;
+
+  readonly watchEvents: (
+    filter: EventsFilter,
+    options?: WatchEventsOptions,
+  ) => Effect.Effect<EventsResponse, TransportError | RpcError>;
+
+  readonly watchDecodedEvents: (
+    filter: EventsFilter,
+    options?: WatchDecodedEventsOptions,
+  ) => Effect.Effect<unknown[], TransportError | RpcError | ContractError>;
+}
+```
+
+## Live Layer
+
+`EventLive` requires `ProviderService`:
+
+```typescript
+import { Layer } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const stack = Layer.mergeAll(
+  Presets.SepoliaProvider(),
+  Services.EventLive,
+);
+```
+
+<Info>
+`EventLive` is included automatically in wallet stacks.
+</Info>
+
+## Query Events
+
+```typescript
+import { Effect } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const events = yield* Services.EventService;
+
+  const response = yield* events.getEvents({
+    from_block: { block_number: 100_000 },
+    to_block: { block_number: 100_100 },
+    address: "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+    keys: [["0x0099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9"]], // Transfer key
+    chunk_size: 100,
+  });
+
+  return response.events;
+}).pipe(
+  Effect.provide(Presets.SepoliaProvider()),
+  Effect.provide(Services.EventLive)
+);
+```
+
+## Decode Events
+
+Decode raw event data using an ABI:
+
+```typescript
+const decoded = yield* events.decodeEvent({
+  abi: erc20Abi,
+  eventName: "Transfer",
+  keys: event.keys,
+  data: event.data,
+});
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Event Filtering" icon="filter" href="/shared/event-filtering">
+    Cross-package event filtering patterns.
+  </Card>
+  <Card title="JSON-RPC" icon="code" href="/effect/modules/jsonrpc">
+    Low-level `getEvents` RPC call.
+  </Card>
+</CardGroup>

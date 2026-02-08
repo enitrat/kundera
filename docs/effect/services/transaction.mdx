@@ -1,0 +1,122 @@
+---
+title: Transaction Service
+description: Submit transactions and poll for receipts with configurable intervals.
+---
+
+# Transaction Service
+
+`TransactionService` handles transaction submission via wallet and receipt polling. It bridges the gap between "transaction submitted" and "transaction confirmed."
+
+## Imports
+
+```typescript
+import { Services } from "@kundera-sn/kundera-effect";
+// or
+import {
+  TransactionService,
+  TransactionLive,
+} from "@kundera-sn/kundera-effect/services";
+```
+
+## Service Shape
+
+```typescript
+interface TransactionServiceShape {
+  readonly sendInvokeAndWait: (
+    calls: readonly Call[],
+    options?: SendInvokeAndWaitOptions,
+  ) => Effect.Effect<
+    TxnReceiptWithBlockInfo,
+    WalletError | TransactionError | TransportError | RpcError
+  >;
+
+  readonly waitForReceipt: (
+    txHash: string,
+    options?: WaitForReceiptOptions,
+  ) => Effect.Effect<
+    TxnReceiptWithBlockInfo,
+    TransactionError | TransportError | RpcError
+  >;
+}
+```
+
+## Live Layer
+
+`TransactionLive` requires `ProviderService` + `WalletProviderService`:
+
+```typescript
+// Included automatically in full wallet stacks:
+Presets.SepoliaWalletStack({ swo })  // includes TransactionService
+```
+
+## Send and Wait
+
+Submit an invoke transaction and poll until confirmed:
+
+```typescript
+import { Effect } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const tx = yield* Services.TransactionService;
+
+  const receipt = yield* tx.sendInvokeAndWait(
+    [
+      {
+        contractAddress: "0x...",
+        entrypoint: "transfer",
+        calldata: [recipientAddress, amountLow, amountHigh],
+      },
+    ],
+    {
+      pollInterval: 2_000,  // ms between polls
+      maxAttempts: 30,      // max poll attempts
+    },
+  );
+
+  return receipt;
+}).pipe(
+  Effect.provide(Presets.SepoliaWalletStack({ swo: window.starknet_argentX }))
+);
+```
+
+## Wait for Existing Transaction
+
+If you already have a transaction hash (from `WalletProviderService.execute` or `AccountService.execute`):
+
+```typescript
+const receipt = yield* tx.waitForReceipt("0xTXHASH...", {
+  pollInterval: 2_000,
+  maxAttempts: 30,
+});
+```
+
+## Receipt Status
+
+The receipt includes the execution status:
+
+- `SUCCEEDED` — Transaction executed successfully on L2
+- `REVERTED` — Transaction reverted with a reason string
+
+## Errors
+
+| Error | When |
+|-------|------|
+| `WalletError` | User rejected the transaction (sendInvokeAndWait only) |
+| `TransactionError` | Polling timeout, receipt not found after maxAttempts |
+| `RpcError` | Node returned an error during polling |
+| `TransportError` | Network failure during polling |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Wallet Provider" icon="wallet" href="/effect/services/wallet-provider">
+    Execute transactions via browser wallet.
+  </Card>
+  <Card title="Contract Write" icon="pen" href="/effect/services/contract-write">
+    ABI-encoded writes with automatic receipt polling.
+  </Card>
+  <Card title="Account" icon="user" href="/effect/services/account">
+    Server-side transaction signing.
+  </Card>
+</CardGroup>

@@ -43,39 +43,28 @@
                 "group": "Services",
                 "icon": "server",
                 "pages": [
-                  "effect/services/contract-registry",
                   "effect/services/provider",
+                  "effect/services/transport",
                   "effect/services/contract",
                   "effect/services/contract-write",
+                  "effect/services/contract-registry",
                   "effect/services/account",
-                  "effect/services/argentx-account",
-                  "effect/services/signer",
+                  "effect/services/wallet-provider",
+                  "effect/services/transaction",
                   "effect/services/fee-estimator",
                   "effect/services/nonce-manager",
+                  "effect/services/chain",
+                  "effect/services/event",
                   "effect/services/rpc-batch"
-                ]
-              },
-              {
-                "group": "Primitives",
-                "icon": "cube",
-                "pages": [
-                  "effect/primitives/index",
-                  "effect/primitives/felt252",
-                  "effect/primitives/contract-address",
-                  "effect/primitives/class-hash",
-                  "effect/primitives/storage-key",
-                  "effect/primitives/eth-address",
-                  "effect/primitives/short-strings"
                 ]
               },
               {
                 "group": "Modules",
                 "icon": "box",
                 "pages": [
-                  "effect/modules/abi",
-                  "effect/modules/crypto",
                   "effect/modules/jsonrpc",
-                  "effect/modules/serde",
+                  "effect/modules/presets",
+                  "effect/modules/primitives",
                   "effect/modules/transport"
                 ]
               },
@@ -246,7 +235,8 @@
                 "group": "Jsonrpc",
                 "pages": [
                   "generated-api/jsonrpc/index",
-                  "generated-api/jsonrpc/namespaces/Rpc"
+                  "generated-api/jsonrpc/namespaces/Rpc",
+                  "generated-api/jsonrpc/namespaces/WalletRpc"
                 ]
               },
               {

@@ -1,0 +1,167 @@
+# @kundera-sn/kundera-effect
+
+> Effect-TS integration for Starknet. Type-safe services, composable layers, explicit error tracking.
+
+## Install
+
+```bash
+pnpm add @kundera-sn/kundera-effect @kundera-sn/kundera-ts effect
+```
+
+## Architecture
+
+kundera-effect wraps kundera-ts with Effect services. It never reimplements — wire types, primitives, transport, ABI encoding, and crypto all come from kundera-ts. kundera-effect adds:
+
+1. **Services** — Context.Tag + Layer for compile-time dependency injection
+2. **Error tracking** — Data.TaggedError in the Effect error channel
+3. **Composability** — FiberRef for fiber-local config (timeout, retries, interceptors)
+4. **Testing** — Layer-swappable mocks (TestTransport, TestProvider)
+
+### Layer Dependency Graph
+
+```
+TransportService (HTTP / WebSocket)
+  └─ ProviderService (JSON-RPC request/response)
+       ├─ ChainService
+       ├─ FeeEstimatorService
+       ├─ NonceManagerService
+       ├─ ContractService
+       ├─ EventService
+       └─ BatchService
+
+AccountService (server-side signing, requires Provider + NonceManager)
+
+WalletProviderService (browser wallet via SNIP)
+  └─ TransactionService
+       └─ ContractWriteService
+```
+
+## Package Exports
+
+| Subpath | Contents |
+|---------|----------|
+| `@kundera-sn/kundera-effect` | Namespaced: Services, JsonRpc, Presets, Primitives |
+| `@kundera-sn/kundera-effect/errors` | TransportError, RpcError, WalletError, TransactionError, NonceError, ContractError |
+| `@kundera-sn/kundera-effect/services` | All service tags, shapes, layers, stack presets |
+| `@kundera-sn/kundera-effect/jsonrpc` | Free-function RPC wrappers (30 methods) |
+| `@kundera-sn/kundera-effect/presets` | Network presets and wallet stacks |
+| `@kundera-sn/kundera-effect/primitives` | Effect Schema wrappers for domain types |
+| `@kundera-sn/kundera-effect/testing` | TestTransport, TestProvider |
+
+## Quick Start
+
+```typescript
+import { Effect } from "effect";
+import { JsonRpc, Presets } from "@kundera-sn/kundera-effect";
+
+const program = JsonRpc.blockNumber().pipe(
+  Effect.provide(Presets.SepoliaProvider())
+);
+const blockNum = await Effect.runPromise(program);
+```
+
+## Error Types
+
+| Error | Tag | When |
+|-------|-----|------|
+| TransportError | "TransportError" | Network failure, timeout |
+| RpcError | "RpcError" | JSON-RPC error from node |
+| WalletError | "WalletError" | Wallet interaction failure |
+| TransactionError | "TransactionError" | TX submission/polling failure |
+| NonceError | "NonceError" | Nonce fetch/reservation failure |
+| ContractError | "ContractError" | ABI encode/decode failure |
+
+## Error Handling
+
+```typescript
+program.pipe(
+  Effect.catchTags({
+    RpcError: (e) => Effect.succeed(fallback),
+    TransportError: (e) => Effect.succeed(fallback),
+  })
+);
+```
+
+## Services
+
+- **ProviderService** — JSON-RPC request/response
+- **TransportService** — HTTP/WebSocket transport with interceptors
+- **ContractService** — Read-only contract calls with ABI decoding
+- **ContractWriteService** — Write transactions with ABI encoding
+- **ContractRegistry** — Pre-configured named contracts in a Layer
+- **AccountService** — Server-side signing (invoke, declare, deploy)
+- **WalletProviderService** — Browser wallet (ArgentX, Braavos)
+- **TransactionService** — Submit + poll for receipt
+- **FeeEstimatorService** — Estimate transaction fees
+- **NonceManagerService** — Concurrent nonce tracking
+- **ChainService** — Chain ID and network name
+- **EventService** — Event querying and decoding
+- **BatchService** — Batched RPC calls
+
+## Presets
+
+```typescript
+// Read-only
+Presets.MainnetProvider()
+Presets.SepoliaProvider()
+Presets.DevnetProvider()
+
+// Wallet stacks (browser)
+Presets.SepoliaWalletBaseStack({ swo })    // reads + wallet + fees
+Presets.SepoliaWalletStack({ swo })         // + transactions + contract writes
+
+// Custom
+Presets.createProvider(url, options)
+Presets.createFallbackProvider(endpoints)
+```
+
+## JsonRpc (30 methods)
+
+Chain: specVersion, chainId, blockNumber, blockHashAndNumber, syncing
+Blocks: getBlockWithTxHashes, getBlockWithTxs, getBlockWithReceipts, getBlockTransactionCount
+State: getStorageAt, getNonce, getStateUpdate, getStorageProof
+Contracts: call, getClass, getClassAt, getClassHashAt
+Transactions: getTransactionByHash, getTransactionByBlockIdAndIndex, getTransactionReceipt, getTransactionStatus, getMessagesStatus
+Events: getEvents
+Tracing: traceTransaction, traceBlockTransactions
+Write: addInvokeTransaction, addDeclareTransaction, addDeployAccountTransaction
+Simulation: estimateFee, estimateMessageFee, simulateTransactions
+
+## Testing
+
+```typescript
+import { TestProvider } from "@kundera-sn/kundera-effect/testing";
+
+const testLayer = TestProvider({
+  starknet_blockNumber: 42,
+  starknet_chainId: "0x534e5f5345504f4c4941",
+});
+
+it.effect("test", () =>
+  JsonRpc.blockNumber().pipe(Effect.provide(testLayer))
+);
+```
+
+## Documentation
+
+- effect/overview — Architecture, philosophy, exports
+- effect/services/provider — ProviderService
+- effect/services/transport — TransportService, interceptors, FiberRef policies
+- effect/services/contract — ContractService, ContractFactory
+- effect/services/contract-write — ContractWriteService
+- effect/services/contract-registry — makeContractRegistry
+- effect/services/account — AccountService (server-side signing)
+- effect/services/wallet-provider — WalletProviderService (browser wallet)
+- effect/services/transaction — TransactionService, receipt polling
+- effect/services/fee-estimator — FeeEstimatorService
+- effect/services/nonce-manager — NonceManagerService
+- effect/services/chain — ChainService
+- effect/services/event — EventService
+- effect/services/rpc-batch — BatchService
+- effect/modules/jsonrpc — Full method reference
+- effect/modules/presets — Network presets, wallet stacks
+- effect/modules/primitives — Effect Schema wrappers
+- effect/modules/transport — Transport quick reference
+- effect/guides/error-handling — Error types and patterns
+- effect/guides/testing — TestTransport, mock patterns
+- effect/guides/react-integration — React hooks, runtime management

@@ -1,0 +1,191 @@
+---
+title: Primitives
+description: Effect Schema wrappers for Starknet domain types — validation at trust boundaries.
+---
+
+# Primitives Module
+
+The `Primitives` namespace provides [Effect Schema](https://effect.website/docs/schema/introduction/) wrappers for kundera-ts domain types. Use these at trust boundaries — user input, API responses, config parsing — where data needs validation.
+
+<Info>
+Internal code that already holds typed values (e.g., `Felt252Type` from a service call) does not need schema validation. Validate at the edges, trust in the middle.
+</Info>
+
+## Imports
+
+```typescript
+import { Primitives } from "@kundera-sn/kundera-effect";
+// or
+import * as Primitives from "@kundera-sn/kundera-effect/primitives";
+```
+
+## Core Primitive Schemas
+
+### Felt252.Hex
+
+Validates a hex string and returns a branded `Felt252Type` (32-byte `Uint8Array`):
+
+```typescript
+import * as S from "effect/Schema";
+import { Primitives } from "@kundera-sn/kundera-effect";
+
+// Effectful decode
+const felt = yield* S.decodeUnknown(Primitives.Felt252.Hex)("0x123");
+
+// Sync decode (throws on failure)
+const felt2 = S.decodeUnknownSync(Primitives.Felt252.Hex)("0x123");
+
+// Encode back to hex
+const hex = S.encodeSync(Primitives.Felt252.Hex)(felt);
+// "0x0000000000000000000000000000000000000000000000000000000000000123"
+```
+
+### ContractAddress.Hex
+
+```typescript
+const address = yield* S.decodeUnknown(Primitives.ContractAddress.Hex)(
+  "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7"
+);
+```
+
+### ClassHash.Hex
+
+```typescript
+const classHash = yield* S.decodeUnknown(Primitives.ClassHash.Hex)("0xabc...");
+```
+
+### StorageKey.Hex
+
+```typescript
+const key = yield* S.decodeUnknown(Primitives.StorageKey.Hex)("0xdef...");
+```
+
+## Decode Helpers
+
+Shorthand functions that call `Schema.decodeUnknown` for you:
+
+```typescript
+import { Primitives } from "@kundera-sn/kundera-effect";
+
+// Effectful (returns Effect<T, ParseError>)
+const address = yield* Primitives.decodeContractAddress("0x...");
+const felt = yield* Primitives.decodeFelt252("0x...");
+const classHash = yield* Primitives.decodeClassHash("0x...");
+const key = yield* Primitives.decodeStorageKey("0x...");
+
+// Sync (throws on failure)
+const address2 = Primitives.decodeContractAddressSync("0x...");
+const felt2 = Primitives.decodeFelt252Sync("0x...");
+```
+
+## RPC Domain Schemas
+
+Effect Schemas that bridge RPC wire types (JSON) to kundera-ts domain types. These use `Schema.transformOrFail` to delegate decode/encode to the kundera-ts `fromRpc`/`toRpc` converters.
+
+### BlockHeader
+
+```typescript
+// RPC wire → BlockHeaderType
+const header = yield* S.decodeUnknown(Primitives.BlockHeader.Rpc)(rpcBlockHeader);
+
+// With commitments
+const full = yield* S.decodeUnknown(Primitives.BlockHeader.WithCommitmentsRpc)(rpcData);
+
+// Resource price sub-type
+const price = yield* S.decodeUnknown(Primitives.BlockHeader.ResourcePriceRpc)(rpcPrice);
+```
+
+### Block
+
+```typescript
+const block1 = yield* S.decodeUnknown(Primitives.Block.WithTxHashesRpc)(rpcData);
+const block2 = yield* S.decodeUnknown(Primitives.Block.WithTxsRpc)(rpcData);
+const block3 = yield* S.decodeUnknown(Primitives.Block.WithReceiptsRpc)(rpcData);
+```
+
+### Transaction
+
+```typescript
+const tx = yield* S.decodeUnknown(Primitives.Transaction.Rpc)(rpcTx);
+const txWithHash = yield* S.decodeUnknown(Primitives.Transaction.WithHashRpc)(rpcTx);
+const bounds = yield* S.decodeUnknown(Primitives.Transaction.ResourceBoundsRpc)(rpcBounds);
+```
+
+### Receipt
+
+```typescript
+const receipt = yield* S.decodeUnknown(Primitives.Receipt.Rpc)(rpcReceipt);
+const receiptFull = yield* S.decodeUnknown(Primitives.Receipt.WithBlockInfoRpc)(rpcReceipt);
+const feePayment = yield* S.decodeUnknown(Primitives.Receipt.FeePaymentRpc)(rpcFee);
+const msg = yield* S.decodeUnknown(Primitives.Receipt.MsgToL1Rpc)(rpcMsg);
+```
+
+### Event, StateUpdate, FeeEstimate, Trace
+
+```typescript
+const event = yield* S.decodeUnknown(Primitives.Event.Rpc)(rpcEvent);
+const emitted = yield* S.decodeUnknown(Primitives.Event.EmittedRpc)(rpcEmitted);
+const stateUpdate = yield* S.decodeUnknown(Primitives.StateUpdate.Rpc)(rpcState);
+const fee = yield* S.decodeUnknown(Primitives.FeeEstimate.Rpc)(rpcFee);
+const trace = yield* S.decodeUnknown(Primitives.Trace.Rpc)(rpcTrace);
+```
+
+## RPC Decode Helpers
+
+Pre-built `Schema.decodeUnknown` calls for every RPC domain type:
+
+```typescript
+import { Primitives } from "@kundera-sn/kundera-effect";
+
+const header = yield* Primitives.decodeBlockHeader(rpcData);
+const block = yield* Primitives.decodeBlockWithTxs(rpcData);
+const tx = yield* Primitives.decodeTransaction(rpcData);
+const receipt = yield* Primitives.decodeReceipt(rpcData);
+const event = yield* Primitives.decodeEvent(rpcData);
+const stateUpdate = yield* Primitives.decodeStateUpdate(rpcData);
+const feeEstimate = yield* Primitives.decodeFeeEstimate(rpcData);
+const trace = yield* Primitives.decodeTrace(rpcData);
+```
+
+## Format Helpers
+
+Format domain types for display:
+
+```typescript
+import { Primitives } from "@kundera-sn/kundera-effect";
+
+Primitives.formatContractAddress(addr);  // "0x049d...4dc7" (truncated)
+Primitives.formatFelt252(felt);          // "0x0000...0123"
+```
+
+## Architecture: Trust Boundary Pattern
+
+```
+User Input / API Response (untrusted)
+  │
+  ▼
+Schema.decodeUnknown(Primitives.Felt252.Hex)  ← validation
+  │
+  ▼
+Felt252Type (trusted, branded Uint8Array)
+  │
+  ▼
+Service calls, business logic  ← no validation needed
+  │
+  ▼
+Schema.encode(Primitives.Felt252.Hex)  ← serialization
+  │
+  ▼
+Hex string output
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="kundera-ts Primitives" icon="cube" href="/typescript/primitives/index">
+    Underlying branded types (Felt252, ContractAddress, etc.).
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/effect/guides/error-handling">
+    Handling ParseError from schema validation.
+  </Card>
+</CardGroup>

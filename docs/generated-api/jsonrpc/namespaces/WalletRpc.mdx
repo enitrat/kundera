@@ -1,0 +1,296 @@
+---
+title: "WalletRpc"
+description: Auto-generated API documentation
+---
+
+[**@kundera-sn/kundera-ts**](../../index.mdx)
+
+***
+
+[@kundera-sn/kundera-ts](../../index.mdx) / [jsonrpc](../index.mdx) / WalletRpc
+
+# WalletRpc
+
+## Variables
+
+### AddDeclareTransactionRequest()
+
+> `const` **AddDeclareTransactionRequest**: (`params`) => `object` = `_addDeclareTransaction.AddDeclareTransactionRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:40](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L40)
+
+#### Parameters
+
+##### params
+
+[`WalletDeclareParams`](../../provider.mdx#walletdeclareparams)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_addDeclareTransaction"`
+
+##### params
+
+> **params**: \[[`WalletDeclareParams`](../../provider.mdx#walletdeclareparams)\]
+
+***
+
+### AddInvokeTransactionRequest()
+
+> `const` **AddInvokeTransactionRequest**: (`calls`) => `object` = `_addInvokeTransaction.AddInvokeTransactionRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:38](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L38)
+
+#### Parameters
+
+##### calls
+
+[`WalletCall`](../../provider.mdx#walletcall)[]
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_addInvokeTransaction"`
+
+##### params
+
+> **params**: \[\{ `calls`: [`WalletCall`](../../provider.mdx#walletcall)[]; \}\]
+
+***
+
+### AddStarknetChainRequest()
+
+> `const` **AddStarknetChainRequest**: (`params`) => `object` = `_addStarknetChain.AddStarknetChainRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:33](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L33)
+
+#### Parameters
+
+##### params
+
+[`WalletAddChainParams`](../../provider.mdx#walletaddchainparams)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_addStarknetChain"`
+
+##### params
+
+> **params**: \[[`WalletAddChainParams`](../../provider.mdx#walletaddchainparams)\]
+
+***
+
+### DeploymentDataRequest()
+
+> `const` **DeploymentDataRequest**: () => `object` = `_deploymentData.DeploymentDataRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:29](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L29)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_deploymentData"`
+
+##### params
+
+> **params**: \[\]
+
+***
+
+### GetPermissionsRequest()
+
+> `const` **GetPermissionsRequest**: () => `object` = `_getPermissions.GetPermissionsRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:26](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L26)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_getPermissions"`
+
+##### params
+
+> **params**: \[\]
+
+***
+
+### RequestAccountsRequest()
+
+> `const` **RequestAccountsRequest**: (`options?`) => `object` = `_requestAccounts.RequestAccountsRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:27](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L27)
+
+#### Parameters
+
+##### options?
+
+###### silent_mode?
+
+`boolean`
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_requestAccounts"`
+
+##### params
+
+> **params**: \[\] \| \[\{ `silent_mode?`: `boolean`; \}\]
+
+***
+
+### RequestChainIdRequest()
+
+> `const` **RequestChainIdRequest**: () => `object` = `_requestChainId.RequestChainIdRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:28](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L28)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_requestChainId"`
+
+##### params
+
+> **params**: \[\]
+
+***
+
+### SignTypedDataRequest()
+
+> `const` **SignTypedDataRequest**: (`typedData`) => `object` = `_signTypedData.SignTypedDataRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:42](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L42)
+
+#### Parameters
+
+##### typedData
+
+[`WalletTypedData`](../../provider.mdx#wallettypeddata)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_signTypedData"`
+
+##### params
+
+> **params**: \[[`WalletTypedData`](../../provider.mdx#wallettypeddata)\]
+
+***
+
+### SupportedSpecsRequest()
+
+> `const` **SupportedSpecsRequest**: () => `object` = `_supportedSpecs.SupportedSpecsRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:23](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L23)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_supportedSpecs"`
+
+##### params
+
+> **params**: \[\]
+
+***
+
+### SupportedWalletApiRequest()
+
+> `const` **SupportedWalletApiRequest**: () => `object` = `_supportedWalletApi.SupportedWalletApiRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:21](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L21)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_supportedWalletApi"`
+
+##### params
+
+> **params**: \[\]
+
+***
+
+### SwitchStarknetChainRequest()
+
+> `const` **SwitchStarknetChainRequest**: (`params`) => `object` = `_switchStarknetChain.SwitchStarknetChainRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:34](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L34)
+
+#### Parameters
+
+##### params
+
+[`WalletSwitchChainParams`](../../provider.mdx#walletswitchchainparams)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_switchStarknetChain"`
+
+##### params
+
+> **params**: \[[`WalletSwitchChainParams`](../../provider.mdx#walletswitchchainparams)\]
+
+***
+
+### WatchAssetRequest()
+
+> `const` **WatchAssetRequest**: (`params`) => `object` = `_watchAsset.WatchAssetRequest`
+
+Defined in: [jsonrpc/wallet/methods.js:32](https://github.com/enitrat/kundera/blob/a5d00b3bba7eb6a19b43fd97ec5eff7ae0e49f63/packages/kundera-ts/src/jsonrpc/wallet/methods.js#L32)
+
+#### Parameters
+
+##### params
+
+[`WalletWatchAssetParams`](../../provider.mdx#walletwatchassetparams)
+
+#### Returns
+
+`object`
+
+##### method
+
+> **method**: `"wallet_watchAsset"`
+
+##### params
+
+> **params**: \[[`WalletWatchAssetParams`](../../provider.mdx#walletwatchassetparams)\]

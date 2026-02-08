@@ -1,0 +1,84 @@
+---
+title: Chain Service
+description: Chain identification and network name resolution.
+---
+
+# Chain Service
+
+`ChainService` provides chain ID and network name. The chain ID is fetched once and cached.
+
+## Imports
+
+```typescript
+import { Services } from "@kundera-sn/kundera-effect";
+// or
+import { ChainService, ChainLive } from "@kundera-sn/kundera-effect/services";
+```
+
+## Service Shape
+
+```typescript
+interface ChainServiceShape {
+  readonly getChainId: () => Effect.Effect<string, TransportError | RpcError>;
+  readonly getNetworkName: () => Effect.Effect<StarknetNetworkName, TransportError | RpcError>;
+}
+
+type StarknetNetworkName = "mainnet" | "sepolia" | "devnet" | "unknown";
+```
+
+## Live Layer
+
+```typescript
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+import { Layer } from "effect";
+
+const chain = Services.ChainLive({ rpcUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8" });
+
+const stack = Layer.mergeAll(
+  Presets.SepoliaProvider(),
+  chain,
+);
+```
+
+<Info>
+`ChainLive` is included automatically in all wallet stacks (`WalletBaseStack`, `WalletTransactionStack`).
+</Info>
+
+## Usage
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const chain = yield* Services.ChainService;
+
+  const chainId = yield* chain.getChainId();
+  // "0x534e5f5345504f4c4941" (Sepolia)
+
+  const network = yield* chain.getNetworkName();
+  // "sepolia"
+
+  return { chainId, network };
+});
+```
+
+## Chain IDs
+
+| Network | Chain ID (hex) | Name |
+|---------|---------------|------|
+| Mainnet | `0x534e5f4d41494e` | `"mainnet"` |
+| Sepolia | `0x534e5f5345504f4c4941` | `"sepolia"` |
+| Devnet | varies | `"devnet"` |
+| Other | anything else | `"unknown"` |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider" icon="plug" href="/effect/services/provider">
+    Underlying provider used by ChainService.
+  </Card>
+  <Card title="Presets" icon="sliders" href="/effect/modules/presets">
+    Pre-composed layers with chain config.
+  </Card>
+</CardGroup>
