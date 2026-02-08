@@ -136,6 +136,32 @@ describe("walletTransport", () => {
 		}
 	});
 
+	it("supports timeout options (including 0ms)", async () => {
+		const transport = walletTransport(
+			mockSwo(
+				() =>
+					new Promise((resolve) => {
+						setTimeout(() => resolve("late"), 25);
+					}),
+			),
+		);
+
+		const response = await transport.request(
+			{
+				jsonrpc: "2.0",
+				id: 1,
+				method: "wallet_requestChainId",
+				params: [],
+			},
+			{ timeout: 0 },
+		);
+
+		expect(isJsonRpcError(response)).toBe(true);
+		if (isJsonRpcError(response)) {
+			expect(response.error.message).toBe("Request timeout after 0ms");
+		}
+	});
+
 	it("uses null id when request has no id", async () => {
 		const transport = walletTransport(mockSwo(() => Promise.resolve("ok")));
 

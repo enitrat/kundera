@@ -17,6 +17,28 @@ import type {
 } from "./types.js";
 import { JsonRpcErrorCode, createErrorResponse } from "./types.js";
 
+const withTimeout = async <T>(
+	promise: Promise<T>,
+	timeoutMs: number | undefined,
+): Promise<T> => {
+	if (timeoutMs === undefined) {
+		return promise;
+	}
+
+	let timeoutId: ReturnType<typeof setTimeout> | undefined;
+	return await new Promise<T>((resolve, reject) => {
+		timeoutId = setTimeout(() => {
+			reject(new Error(`Request timeout after ${timeoutMs}ms`));
+		}, timeoutMs);
+
+		promise.then(resolve, reject);
+	}).finally(() => {
+		if (timeoutId !== undefined) {
+			clearTimeout(timeoutId);
+		}
+	});
+};
+
 /**
  * Create a wallet transport that routes JSON-RPC requests through a
  * Starknet Window Object (browser wallet extension).
@@ -45,7 +67,7 @@ export function walletTransport(swo: StarknetWindowObject): Transport {
 
 		async request<T>(
 			request: JsonRpcRequest,
-			_options?: TransportRequestOptions,
+			options?: TransportRequestOptions,
 		): Promise<JsonRpcResponse<T>> {
 			const id = request.id ?? null;
 
@@ -58,10 +80,13 @@ export function walletTransport(swo: StarknetWindowObject): Transport {
 						? undefined
 						: request.params;
 
-				const result = await swo.request({
-					type: request.method,
-					params,
-				});
+				const result = await withTimeout(
+					swo.request({
+						type: request.method,
+						params,
+					}),
+					options?.timeout,
+				);
 
 				return {
 					jsonrpc: "2.0",
