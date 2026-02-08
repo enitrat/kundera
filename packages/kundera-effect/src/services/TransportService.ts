@@ -5,6 +5,7 @@ import {
   createRequest,
   httpTransport,
   isJsonRpcError,
+  matchBatchResponses,
   webSocketTransport,
   type HttpTransportOptions,
   type JsonRpcRequest,
@@ -261,7 +262,7 @@ const makeTransportService = (
           () =>
             transport.request<T>(
               requestContext.request,
-              timeoutMs ? { timeout: timeoutMs } : undefined,
+              timeoutMs === undefined ? undefined : { timeout: timeoutMs },
             ),
           {
             retries,
@@ -383,7 +384,7 @@ const makeTransportService = (
           () =>
             transport.requestBatch<T>(
               [...interceptedRequests],
-              timeoutMs ? { timeout: timeoutMs } : undefined,
+              timeoutMs === undefined ? undefined : { timeout: timeoutMs },
             ),
           {
             retries,
@@ -408,8 +409,13 @@ const makeTransportService = (
         const responseTime = yield* Clock.currentTimeMillis;
         const durationMs = Number(responseTime - startedAt);
 
+        const responsesInRequestOrder = matchBatchResponses(
+          [...interceptedRequests],
+          [...responses],
+        );
+
         const interceptedResponses = yield* Effect.forEach(
-          responses,
+          responsesInRequestOrder,
           (response, index) => {
             const requestForResponse =
               interceptedRequests[index] ?? interceptedRequests[0] ?? createRequest("batch");

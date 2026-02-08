@@ -284,6 +284,34 @@ describe("TransportService", () => {
     }).pipe(Effect.provide(TransportLive(transport)));
   });
 
+  it.effect("forwards timeoutMs = 0 to transport", () => {
+    let receivedTimeout: number | undefined;
+
+    const transport: Transport = {
+      type: "custom",
+      request: async (_request, options) => {
+        receivedTimeout = options?.timeout;
+        return {
+          jsonrpc: "2.0",
+          id: 1,
+          result: "ok",
+        } as JsonRpcResponse<string>;
+      },
+      requestBatch: async () => [],
+    };
+
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(TransportService, (service) =>
+        service.request<string>("starknet_chainId", [], {
+          timeoutMs: 0,
+        }),
+      );
+
+      expect(result).toBe("ok");
+      expect(receivedTimeout).toBe(0);
+    }).pipe(Effect.provide(TransportLive(transport)));
+  });
+
   it.effect("requestBatch returns decoded results in order", () => {
     const transport: Transport = {
       type: "custom",
@@ -295,6 +323,35 @@ describe("TransportService", () => {
         }) as JsonRpcResponse<string>,
       requestBatch: async (requests) =>
         requests.map((request) => ({
+          jsonrpc: "2.0",
+          id: request.id ?? 0,
+          result: request.method,
+        })) as JsonRpcResponse<string>[],
+    };
+
+    return Effect.gen(function* () {
+      const results = yield* Effect.flatMap(TransportService, (service) =>
+        service.requestBatch<string>([
+          { method: "starknet_chainId" },
+          { method: "starknet_blockNumber" },
+        ]),
+      );
+
+      expect(results).toEqual(["starknet_chainId", "starknet_blockNumber"]);
+    }).pipe(Effect.provide(TransportLive(transport)));
+  });
+
+  it.effect("requestBatch reorders out-of-order responses by id", () => {
+    const transport: Transport = {
+      type: "custom",
+      request: async () =>
+        ({
+          jsonrpc: "2.0",
+          id: 1,
+          result: "unused",
+        }) as JsonRpcResponse<string>,
+      requestBatch: async (requests) =>
+        [...requests].reverse().map((request) => ({
           jsonrpc: "2.0",
           id: request.id ?? 0,
           result: request.method,
@@ -336,6 +393,46 @@ describe("TransportService", () => {
                 result: request.method,
               } as JsonRpcResponse<string>),
         ),
+    };
+
+    return Effect.gen(function* () {
+      const error = yield* Effect.flip(
+        Effect.flatMap(TransportService, (service) =>
+          service.requestBatch<string>([
+            { method: "starknet_chainId" },
+            { method: "starknet_blockNumber" },
+          ]),
+        ),
+      );
+
+      expect(error._tag).toBe("RpcError");
+      expect(error.method).toBe("starknet_blockNumber");
+      expect(error.code).toBe(-32001);
+    }).pipe(Effect.provide(TransportLive(transport)));
+  });
+
+  it.effect("requestBatch maps out-of-order JSON-RPC errors to the correct method", () => {
+    const transport: Transport = {
+      type: "custom",
+      request: async () =>
+        ({
+          jsonrpc: "2.0",
+          id: 1,
+          result: "unused",
+        }) as JsonRpcResponse<string>,
+      requestBatch: async (requests) =>
+        [
+          {
+            jsonrpc: "2.0",
+            id: requests[1]?.id ?? 0,
+            error: { code: -32001, message: "boom" },
+          },
+          {
+            jsonrpc: "2.0",
+            id: requests[0]?.id ?? 0,
+            result: requests[0]?.method ?? "starknet_chainId",
+          },
+        ] as JsonRpcResponse<string>[],
     };
 
     return Effect.gen(function* () {
