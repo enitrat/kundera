@@ -114,6 +114,30 @@ describe("WalletProviderService", () => {
     });
   });
 
+  it.effect("maps legacy silentMode to silent_mode for requestAccounts", () => {
+    let payload: WalletRequestArguments | undefined;
+
+    const program = Effect.flatMap(WalletProviderService, (wallet) =>
+      wallet.requestAccounts({ silentMode: true }),
+    ).pipe(
+      Effect.provide(
+        WalletProviderLive(
+          makeMockWallet((args) => {
+            payload = args;
+          }),
+        ),
+      ),
+    );
+
+    return Effect.gen(function* () {
+      yield* program;
+
+      expect(payload).toBeDefined();
+      expect(payload?.type).toBe("wallet_requestAccounts");
+      expect(payload?.params).toEqual({ silent_mode: true });
+    });
+  });
+
   it.effect("submits wallet invoke transaction", () => {
     const program = Effect.flatMap(WalletProviderService, (wallet) =>
       wallet.addInvokeTransaction({

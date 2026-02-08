@@ -20,6 +20,7 @@ import type { RequestOptions } from "./TransportService.js";
 
 export interface RequestAccountsOptions {
   readonly silent_mode?: boolean;
+  readonly silentMode?: boolean;
 }
 
 export interface WalletProviderServiceShape {
@@ -78,7 +79,16 @@ export class WalletProviderService extends Context.Tag(
 const normalizeRequestAccounts = (
   options?: RequestAccountsOptions,
 ): { silent_mode?: boolean } | undefined => {
-  return options;
+  if (!options) {
+    return undefined;
+  }
+  if (options.silent_mode !== undefined) {
+    return { silent_mode: options.silent_mode };
+  }
+  if (options.silentMode !== undefined) {
+    return { silent_mode: options.silentMode };
+  }
+  return undefined;
 };
 
 /**
@@ -112,7 +122,9 @@ const makeWalletProviderService = (
           try: () =>
             transport.request<T>(
               payload,
-              options?.timeoutMs ? { timeout: options.timeoutMs } : undefined,
+              options?.timeoutMs === undefined
+                ? undefined
+                : { timeout: options.timeoutMs },
             ),
           catch: (cause) =>
             new WalletError({
