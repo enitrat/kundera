@@ -66,8 +66,6 @@ src/
     FeeEstimatorService.ts
     NonceManagerService.ts
     TransactionService.ts
-    SignerService.ts
-    RawProviderService.ts
     index.ts          # Barrel + stack presets
     __tests__/
 ```
@@ -80,13 +78,11 @@ TransportService (HTTP/WS connection)
        ├─ ChainService (chain ID, network name)
        ├─ FeeEstimatorService (fee estimation)
        ├─ NonceManagerService (nonce tracking)
-       ├─ ContractService (read calls, ABI encoding)
-       └─ RawProviderService (untyped passthrough)
+       └─ ContractService (read calls, ABI encoding)
 
 WalletProviderService (browser wallet via SNIP standards)
   └─ TransactionService (send + wait for receipt)
-       ├─ ContractWriteService (write calls via wallet)
-       └─ SignerService (facade over wallet + tx)
+       └─ ContractWriteService (write calls via wallet)
 ```
 
 ---
