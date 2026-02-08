@@ -1,4 +1,6 @@
-import { Context, Effect, FiberRef, Layer, Ref, Schedule } from "effect";
+import { Clock, Context, Effect, FiberRef, Layer, Ref } from "effect";
+import * as Duration from "effect/Duration";
+import * as Schedule from "effect/Schedule";
 import {
   createRequest,
   httpTransport,
@@ -14,9 +16,12 @@ import {
 import { RpcError, TransportError } from "../errors.js";
 
 export interface RequestOptions {
+  readonly timeout?: Duration.DurationInput;
   readonly timeoutMs?: number;
   readonly retries?: number;
+  readonly retryDelay?: Duration.DurationInput;
   readonly retryDelayMs?: number;
+  readonly retrySchedule?: Schedule.Schedule<unknown, TransportError>;
 }
 
 export interface TransportRequestContext {
@@ -68,9 +73,14 @@ export class TransportService extends Context.Tag("@kundera/TransportService")<
   TransportServiceShape
 >() {}
 
-const timeoutRef = FiberRef.unsafeMake<number | undefined>(undefined);
+const timeoutRef = FiberRef.unsafeMake<Duration.Duration | undefined>(undefined);
 const retriesRef = FiberRef.unsafeMake<number | undefined>(undefined);
-const retryDelayRef = FiberRef.unsafeMake<number | undefined>(undefined);
+const retryDelayRef = FiberRef.unsafeMake<Duration.Duration | undefined>(
+  undefined,
+);
+const retryScheduleRef = FiberRef.unsafeMake<
+  Schedule.Schedule<unknown, TransportError> | undefined
+>(undefined);
 const tracingRef = FiberRef.unsafeMake<boolean>(false);
 const requestInterceptorRef = FiberRef.unsafeMake<RequestInterceptor>((context) =>
   Effect.succeed(context),
@@ -81,9 +91,9 @@ const responseInterceptorRef = FiberRef.unsafeMake<ResponseInterceptor>(
 const errorInterceptorRef = FiberRef.unsafeMake<ErrorInterceptor>(() => Effect.void);
 
 export const withTimeout =
-  (timeoutMs: number) =>
+  (timeout: Duration.DurationInput) =>
   <A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
-    Effect.locally(effect, timeoutRef, timeoutMs);
+    Effect.locally(effect, timeoutRef, Duration.decode(timeout));
 
 export const withRetries =
   (retries: number) =>
@@ -91,9 +101,14 @@ export const withRetries =
     Effect.locally(effect, retriesRef, retries);
 
 export const withRetryDelay =
-  (retryDelayMs: number) =>
+  (retryDelay: Duration.DurationInput) =>
   <A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
-    Effect.locally(effect, retryDelayRef, retryDelayMs);
+    Effect.locally(effect, retryDelayRef, Duration.decode(retryDelay));
+
+export const withRetrySchedule =
+  (retrySchedule: Schedule.Schedule<unknown, TransportError>) =>
+  <A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
+    Effect.locally(effect, retryScheduleRef, retrySchedule);
 
 export const withTracing =
   (enabled = true) =>
@@ -138,10 +153,13 @@ export const withInterceptors =
 const attemptRequest = <T>(
   operation: string,
   execute: () => Promise<T>,
-  retries: number,
-  retryDelayMs: number,
-): Effect.Effect<T, TransportError> =>
-  Effect.tryPromise({
+  options: {
+    readonly retries: number;
+    readonly retryDelay: Duration.Duration;
+    readonly retrySchedule?: Schedule.Schedule<unknown, TransportError>;
+  },
+): Effect.Effect<T, TransportError> => {
+  const base = Effect.tryPromise({
     try: execute,
     catch: (cause) =>
       new TransportError({
@@ -149,13 +167,24 @@ const attemptRequest = <T>(
         message: "Transport request failed",
         cause,
       }),
-  }).pipe(
+  });
+
+  if (options.retrySchedule) {
+    return base.pipe(Effect.retry(options.retrySchedule));
+  }
+
+  if (options.retries <= 0) {
+    return base;
+  }
+
+  return base.pipe(
     Effect.retry(
-      Schedule.recurs(retries).pipe(
-        Schedule.addDelay(() => `${retryDelayMs} millis`),
+      Schedule.recurs(options.retries).pipe(
+        Schedule.addDelay(() => options.retryDelay),
       ),
     ),
   );
+};
 
 const makeTransportService = (
   transport: Transport,
@@ -170,10 +199,11 @@ const makeTransportService = (
       options?: RequestOptions,
     ): Effect.Effect<JsonRpcResponse<T>, TransportError> =>
       Effect.gen(function* () {
-        const startedAt = Date.now();
+        const startedAt = yield* Clock.currentTimeMillis;
         const fiberTimeout = yield* FiberRef.get(timeoutRef);
         const fiberRetries = yield* FiberRef.get(retriesRef);
         const fiberRetryDelay = yield* FiberRef.get(retryDelayRef);
+        const fiberRetrySchedule = yield* FiberRef.get(retryScheduleRef);
         const tracingEnabled = yield* FiberRef.get(tracingRef);
         const requestInterceptor = yield* FiberRef.get(requestInterceptorRef);
         const responseInterceptor = yield* FiberRef.get(responseInterceptorRef);
@@ -184,12 +214,24 @@ const makeTransportService = (
           options,
         });
 
-        const timeoutMs = requestContext.options?.timeoutMs ?? fiberTimeout;
+        const timeoutDuration =
+          requestContext.options?.timeout !== undefined
+            ? Duration.decode(requestContext.options.timeout)
+            : requestContext.options?.timeoutMs !== undefined
+              ? Duration.millis(requestContext.options.timeoutMs)
+              : fiberTimeout;
+
         const retries = Math.max(requestContext.options?.retries ?? fiberRetries ?? 0, 0);
-        const retryDelayMs = Math.max(
-          requestContext.options?.retryDelayMs ?? fiberRetryDelay ?? 0,
-          0,
-        );
+        const retryDelay = requestContext.options?.retryDelay !== undefined
+          ? Duration.decode(requestContext.options.retryDelay)
+          : requestContext.options?.retryDelayMs !== undefined
+            ? Duration.millis(requestContext.options.retryDelayMs)
+            : (fiberRetryDelay ?? Duration.millis(0));
+        const retrySchedule = requestContext.options?.retrySchedule ?? fiberRetrySchedule;
+
+        const timeoutMs =
+          timeoutDuration === undefined ? undefined : Duration.toMillis(timeoutDuration);
+        const retryDelayMs = Duration.toMillis(retryDelay);
 
         if (tracingEnabled) {
           yield* Effect.logDebug("transport.request.start", {
@@ -208,28 +250,35 @@ const makeTransportService = (
               requestContext.request,
               timeoutMs ? { timeout: timeoutMs } : undefined,
             ),
-          retries,
-          retryDelayMs,
+          {
+            retries,
+            retryDelay,
+            retrySchedule,
+          },
         ).pipe(
           Effect.catchTag("TransportError", (error) =>
-            errorInterceptor({
-              request: requestContext.request,
-              error,
-              durationMs: Date.now() - startedAt,
-            }).pipe(Effect.zipRight(Effect.fail(error))),
+            Effect.flatMap(Clock.currentTimeMillis, (now) =>
+              errorInterceptor({
+                request: requestContext.request,
+                error,
+                durationMs: Number(now - startedAt),
+              }).pipe(Effect.zipRight(Effect.fail(error))),
+            ),
           ),
         );
 
+        const responseTime = yield* Clock.currentTimeMillis;
         const interceptedResponse = yield* responseInterceptor({
           request: requestContext.request,
           response,
-          durationMs: Date.now() - startedAt,
+          durationMs: Number(responseTime - startedAt),
         });
 
         if (tracingEnabled) {
+          const endTime = yield* Clock.currentTimeMillis;
           yield* Effect.logDebug("transport.request.end", {
             method: requestContext.request.method,
-            durationMs: Date.now() - startedAt,
+            durationMs: Number(endTime - startedAt),
           });
         }
 
