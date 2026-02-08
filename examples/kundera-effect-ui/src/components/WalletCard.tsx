@@ -1,8 +1,9 @@
 import { useAtom } from '@effect-atom/atom-react';
-import { useEffect, useRef, useState } from 'react';
-import { swoAtom, addressAtom, setupWalletListeners } from '../atoms';
+import { useCallback, useEffect, useState } from 'react';
+import { swoAtom, addressAtom } from '../atoms';
 import { connectWallet, disconnectWallet } from '../wallet';
-import { shortAddress } from '../constants';
+import { shortAddress } from '../lib/format';
+import type { StarknetWindowObject } from '@kundera-sn/kundera-ts/provider';
 
 export function WalletCard() {
   const [swo, setSwo] = useAtom(swoAtom);
@@ -10,21 +11,9 @@ export function WalletCard() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const connected = swo !== null;
-  const cleanupRef = useRef<(() => void) | null>(null);
+  useWalletListeners(swo, setSwo, setAddress);
 
-  // Register wallet event listeners when connected
-  useEffect(() => {
-    if (swo) {
-      cleanupRef.current = setupWalletListeners(swo, setSwo, setAddress);
-    }
-    return () => {
-      cleanupRef.current?.();
-      cleanupRef.current = null;
-    };
-  }, [swo, setSwo, setAddress]);
-
-  const handleConnect = async () => {
+  const handleConnect = useCallback(async () => {
     setBusy(true);
     setError(null);
     try {
@@ -40,9 +29,9 @@ export function WalletCard() {
     } finally {
       setBusy(false);
     }
-  };
+  }, [setSwo, setAddress]);
 
-  const handleDisconnect = async () => {
+  const handleDisconnect = useCallback(async () => {
     setBusy(true);
     try {
       await disconnectWallet();
@@ -51,9 +40,9 @@ export function WalletCard() {
     } finally {
       setBusy(false);
     }
-  };
+  }, [setSwo, setAddress]);
 
-  if (!connected) {
+  if (!swo) {
     return (
       <div className="card">
         <h2>Wallet</h2>
@@ -77,4 +66,29 @@ export function WalletCard() {
       </button>
     </div>
   );
+}
+
+/** Subscribe to wallet account changes. Clean up on unmount or SWO change. */
+function useWalletListeners(
+  swo: StarknetWindowObject | null,
+  setSwo: (v: StarknetWindowObject | null) => void,
+  setAddress: (v: string | null) => void,
+) {
+  useEffect(() => {
+    if (!swo) return;
+
+    const onAccountsChanged = (accounts: string[]) => {
+      if (accounts.length === 0) {
+        setSwo(null);
+        setAddress(null);
+      } else {
+        setAddress(accounts[0]);
+      }
+    };
+
+    swo.on('accountsChanged', onAccountsChanged);
+    return () => {
+      swo.off('accountsChanged', onAccountsChanged);
+    };
+  }, [swo, setSwo, setAddress]);
 }

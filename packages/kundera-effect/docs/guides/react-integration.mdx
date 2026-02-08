@@ -268,16 +268,19 @@ function TransferButton() {
   const swo = useAtomValue(swoAtom);
   const address = useAtomValue(addressAtom);
   const [pending, setPending] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleTransfer = async () => {
     if (!swo || !address) return;
     setPending(true);
+    setError(null);
     try {
       const result = await runWithWallet(swo, transferZeroEth(address));
       if (Either.isLeft(result)) {
-        console.error("Transfer failed:", result.left);
+        setError(String(result.left));
       } else {
-        console.log("TX hash:", result.right);
+        setTxHash(result.right as string);
       }
     } finally {
       setPending(false);
@@ -285,9 +288,13 @@ function TransferButton() {
   };
 
   return (
-    <button onClick={handleTransfer} disabled={!swo || pending}>
-      {pending ? "Sending..." : "Transfer 0 ETH"}
-    </button>
+    <div>
+      <button onClick={handleTransfer} disabled={!swo || pending}>
+        {pending ? "Sending..." : "Transfer 0 ETH"}
+      </button>
+      {txHash && <p>TX: {txHash}</p>}
+      {error && <p>Error: {error}</p>}
+    </div>
   );
 }
 ```
@@ -439,7 +446,7 @@ import { blockNumberAtom } from "./atoms";
 export const blockLabelAtom = Atom.map(blockNumberAtom, (result) =>
   Result.match(result, {
     onInitial: () => "Loading...",
-    onSuccess: (n) => `Block #${n.toLocaleString()}`,
+    onSuccess: (s) => `Block #${s.value.toLocaleString()}`,
     onFailure: () => "Error",
   }),
 );
@@ -472,9 +479,9 @@ function BalanceWithErrors({ address }: { address: string }) {
 
   return Result.match(result, {
     onInitial: () => <p>Loading...</p>,
-    onSuccess: (balance) => <p>{formatEth(balance)} ETH</p>,
-    onFailure: (cause) => {
-      const error = Cause.squash(cause);
+    onSuccess: (success) => <p>{formatEth(success.value)} ETH</p>,
+    onFailure: (failure) => {
+      const error = Cause.squash(failure.cause);
 
       if ("_tag" in error && error._tag === "TransportError") {
         return <p>Network error — check your connection</p>;
