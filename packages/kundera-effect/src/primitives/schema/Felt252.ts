@@ -2,7 +2,10 @@ import * as ParseResult from "effect/ParseResult";
 import * as Schema from "effect/Schema";
 import { Felt252, type Felt252Type } from "@kundera-sn/kundera-ts";
 
-const Felt252TypeSchema = Schema.Any as Schema.Schema<Felt252Type>;
+const Felt252TypeSchema = Schema.declare<Felt252Type>(
+  (u): u is Felt252Type => u instanceof Uint8Array && u.length === 32,
+  { identifier: "Felt252" },
+);
 
 export const Hex: Schema.Schema<Felt252Type, string> = Schema.transformOrFail(
   Schema.String,

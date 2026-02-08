@@ -2,7 +2,10 @@ import * as ParseResult from "effect/ParseResult";
 import * as Schema from "effect/Schema";
 import { StorageKey, type StorageKeyType } from "@kundera-sn/kundera-ts";
 
-const StorageKeyTypeSchema = Schema.Any as Schema.Schema<StorageKeyType>;
+const StorageKeyTypeSchema = Schema.declare<StorageKeyType>(
+  (u): u is StorageKeyType => u instanceof Uint8Array && u.length === 32,
+  { identifier: "StorageKey" },
+);
 
 export const Hex: Schema.Schema<StorageKeyType, string> = Schema.transformOrFail(
   Schema.String,

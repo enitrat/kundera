@@ -5,7 +5,10 @@ import {
   type ContractAddressType,
 } from "@kundera-sn/kundera-ts";
 
-const ContractAddressTypeSchema = Schema.Any as Schema.Schema<ContractAddressType>;
+const ContractAddressTypeSchema = Schema.declare<ContractAddressType>(
+  (u): u is ContractAddressType => u instanceof Uint8Array && u.length === 32,
+  { identifier: "ContractAddress" },
+);
 
 export const Hex: Schema.Schema<ContractAddressType, string> = Schema.transformOrFail(
   Schema.String,

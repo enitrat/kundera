@@ -2,7 +2,10 @@ import * as ParseResult from "effect/ParseResult";
 import * as Schema from "effect/Schema";
 import { ClassHash, type ClassHashType } from "@kundera-sn/kundera-ts";
 
-const ClassHashTypeSchema = Schema.Any as Schema.Schema<ClassHashType>;
+const ClassHashTypeSchema = Schema.declare<ClassHashType>(
+  (u): u is ClassHashType => u instanceof Uint8Array && u.length === 32,
+  { identifier: "ClassHash" },
+);
 
 export const Hex: Schema.Schema<ClassHashType, string> = Schema.transformOrFail(
   Schema.String,
