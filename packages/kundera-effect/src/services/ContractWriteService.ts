@@ -8,9 +8,6 @@ import {
 } from "@kundera-sn/kundera-ts/abi";
 import type {
   BlockId,
-  BroadcastedDeclareTxn,
-  BroadcastedDeployAccountTxn,
-  BroadcastedInvokeTxn,
   FeeEstimate,
   SimulationFlag,
   TxnReceiptWithBlockInfo,
@@ -24,14 +21,9 @@ import {
   type TransportError,
   type WalletError,
 } from "../errors.js";
-import { FeeEstimatorService } from "./FeeEstimatorService.js";
+import { FeeEstimatorService, type EstimatableTransaction } from "./FeeEstimatorService.js";
 import type { RequestOptions } from "./TransportService.js";
 import { TransactionService, type WaitForReceiptOptions } from "./TransactionService.js";
-
-type EstimatableTransaction =
-  | BroadcastedInvokeTxn
-  | BroadcastedDeclareTxn
-  | BroadcastedDeployAccountTxn;
 
 export interface EstimateContractWriteFeeOptions {
   readonly simulationFlags?: readonly SimulationFlag[];
