@@ -1,7 +1,7 @@
 import { Context, Effect, Layer, Schedule } from "effect";
 import { Felt252, type Felt252Type } from "@kundera-sn/kundera-ts";
 import type { WalletInvokeParams } from "@kundera-sn/kundera-ts/provider";
-import type { TxnReceiptWithBlockInfo } from "@kundera-sn/kundera-ts/jsonrpc";
+import { Rpc, type TxnReceiptWithBlockInfo } from "@kundera-sn/kundera-ts/jsonrpc";
 
 import {
   RpcError,
@@ -96,10 +96,11 @@ export const TransactionLive: Layer.Layer<
       const pollIntervalMs = Math.max(options?.pollIntervalMs ?? 1_500, 0);
       const maxAttempts = Math.max(options?.maxAttempts ?? 40, 1);
 
+      const { method, params } = Rpc.GetTransactionReceiptRequest(txHashHex);
       return Effect.suspend(() =>
         provider.request<TxnReceiptWithBlockInfo>(
-          "starknet_getTransactionReceipt",
-          [txHashHex],
+          method,
+          params,
           options?.requestOptions,
         ),
       )

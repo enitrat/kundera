@@ -1,11 +1,12 @@
 import { Context, Effect, Layer } from "effect";
-import type {
-  BlockId,
-  BroadcastedDeclareTxn,
-  BroadcastedDeployAccountTxn,
-  BroadcastedInvokeTxn,
-  FeeEstimate,
-  SimulationFlag,
+import {
+  Rpc,
+  type BlockId,
+  type BroadcastedDeclareTxn,
+  type BroadcastedDeployAccountTxn,
+  type BroadcastedInvokeTxn,
+  type FeeEstimate,
+  type SimulationFlag,
 } from "@kundera-sn/kundera-ts/jsonrpc";
 
 import type { RpcError, TransportError } from "../errors.js";
@@ -44,16 +45,14 @@ export const FeeEstimatorLive: Layer.Layer<
   Effect.gen(function* () {
     const provider = yield* ProviderService;
 
-    const estimate: FeeEstimatorServiceShape["estimate"] = (transactions, options) =>
-      provider.request<FeeEstimate[]>(
-        "starknet_estimateFee",
-        [
-          transactions,
-          options?.simulationFlags ?? [],
-          options?.blockId ?? "latest",
-        ],
-        options?.requestOptions,
+    const estimate: FeeEstimatorServiceShape["estimate"] = (transactions, options) => {
+      const { method, params } = Rpc.EstimateFeeRequest(
+        [...transactions],
+        [...(options?.simulationFlags ?? [])],
+        options?.blockId ?? "latest",
       );
+      return provider.request<FeeEstimate[]>(method, params, options?.requestOptions);
+    };
 
     return {
       estimate,

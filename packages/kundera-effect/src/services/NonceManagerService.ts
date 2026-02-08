@@ -1,6 +1,6 @@
 import { Context, Effect, Layer, Ref } from "effect";
 import type { ContractAddressType, Felt252Type } from "@kundera-sn/kundera-ts";
-import type { BlockId } from "@kundera-sn/kundera-ts/jsonrpc";
+import { Rpc, type BlockId } from "@kundera-sn/kundera-ts/jsonrpc";
 
 import { NonceError, type RpcError, type TransportError } from "../errors.js";
 import { ProviderService } from "./ProviderService.js";
@@ -68,10 +68,11 @@ export const DefaultNonceManagerLive: Layer.Layer<
 
     const resolveChainId = (
       options?: NonceRequestOptions,
-    ): Effect.Effect<string, TransportError | RpcError> =>
-      options?.chainId
-        ? Effect.succeed(options.chainId.toHex())
-        : provider.request<string>("starknet_chainId", [], options?.requestOptions);
+    ): Effect.Effect<string, TransportError | RpcError> => {
+      if (options?.chainId) return Effect.succeed(options.chainId.toHex());
+      const { method, params } = Rpc.ChainIdRequest();
+      return provider.request<string>(method, params, options?.requestOptions);
+    };
 
     const getDelta = (key: string): Effect.Effect<bigint> =>
       Ref.get(deltasRef).pipe(
@@ -96,9 +97,10 @@ export const DefaultNonceManagerLive: Layer.Layer<
         const blockId = options?.blockId ?? "pending";
         const key = toNonceKey(chainId, addressHex);
 
+        const nonceReq = Rpc.GetNonceRequest(blockId, addressHex);
         const onChainNonceHex = yield* provider.request<string>(
-          "starknet_getNonce",
-          [blockId, addressHex],
+          nonceReq.method,
+          nonceReq.params,
           options?.requestOptions,
         );
 
@@ -114,9 +116,10 @@ export const DefaultNonceManagerLive: Layer.Layer<
         const chainId = yield* resolveChainId(options);
         const blockId = options?.blockId ?? "pending";
         const key = toNonceKey(chainId, addressHex);
+        const nonceReq = Rpc.GetNonceRequest(blockId, addressHex);
         const onChainNonceHex = yield* provider.request<string>(
-          "starknet_getNonce",
-          [blockId, addressHex],
+          nonceReq.method,
+          nonceReq.params,
           options?.requestOptions,
         );
         const onChainNonce = yield* parseNonce(addressHex, onChainNonceHex);

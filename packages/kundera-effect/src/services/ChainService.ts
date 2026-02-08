@@ -1,5 +1,6 @@
 import { Context, Effect, Layer } from "effect";
 import type { Felt252Type } from "@kundera-sn/kundera-ts";
+import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc";
 
 import type { RpcError, TransportError } from "../errors.js";
 import { ProviderService } from "./ProviderService.js";
@@ -65,8 +66,10 @@ export const ChainLive = (
     Effect.gen(function* () {
       const provider = yield* ProviderService;
 
-      const chainId: ChainServiceShape["chainId"] = (requestOptions) =>
-        provider.request("starknet_chainId", [], requestOptions);
+      const chainId: ChainServiceShape["chainId"] = (requestOptions) => {
+        const { method, params } = Rpc.ChainIdRequest();
+        return provider.request(method, params, requestOptions);
+      };
 
       const networkName: ChainServiceShape["networkName"] = (requestOptions) =>
         Effect.map(chainId(requestOptions), (chainIdValue) => {
