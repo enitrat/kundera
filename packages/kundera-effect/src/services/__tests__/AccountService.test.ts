@@ -241,6 +241,155 @@ describe("AccountService", () => {
     );
   });
 
+  it.effect("estimateExecuteFee reads nonce without consuming it", () => {
+    const estimate: FeeEstimate = {
+      l1_gas_consumed: "0x1",
+      l1_gas_price: "0x2",
+      l2_gas_consumed: "0x3",
+      l2_gas_price: "0x4",
+      l1_data_gas_consumed: "0x5",
+      l1_data_gas_price: "0x6",
+      overall_fee: "0x7",
+      unit: "WEI",
+    };
+
+    let getCalls = 0;
+    let consumeCalls = 0;
+    let estimateNonceHex: string | undefined;
+
+    const nonceLayer = Layer.succeed(NonceManagerService, {
+      get: () => {
+        getCalls += 1;
+        return Effect.succeed(7n);
+      },
+      consume: () => {
+        consumeCalls += 1;
+        return Effect.succeed(7n);
+      },
+      increment: () => Effect.void,
+      reset: () => Effect.void,
+    });
+
+    const providerLayer = Layer.succeed(ProviderService, {
+      request: <T>(method: string, params?: readonly unknown[]) => {
+        if (method === "starknet_chainId") {
+          return Effect.succeed(CHAIN_ID as T);
+        }
+
+        if (method === "starknet_estimateFee") {
+          const txs = params?.[0] as readonly Array<{ readonly nonce: string }>;
+          estimateNonceHex = txs?.[0]?.nonce;
+          return Effect.succeed([estimate] as T);
+        }
+
+        return Effect.dieMessage(`unexpected method: ${method}`);
+      },
+    });
+
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(AccountService, (account) =>
+        account.estimateExecuteFee({
+          contractAddress: "0x111",
+          entrypoint: "transfer",
+          calldata: ["0x1"],
+        }),
+      );
+
+      expect(result.overall_fee).toBe("0x7");
+      expect(getCalls).toBe(1);
+      expect(consumeCalls).toBe(0);
+      expect(estimateNonceHex).toBe(Felt252(7n).toHex());
+    }).pipe(
+      Effect.provide(
+        AccountLive({
+          accountAddress: "0x1234",
+          privateKey: "0x123",
+        }),
+      ),
+      Effect.provide(providerLayer),
+      Effect.provide(nonceLayer),
+    );
+  });
+
+  it.effect("estimateDeclareFee reads nonce without consuming it", () => {
+    const estimate: FeeEstimate = {
+      l1_gas_consumed: "0x1",
+      l1_gas_price: "0x2",
+      l2_gas_consumed: "0x3",
+      l2_gas_price: "0x4",
+      l1_data_gas_consumed: "0x5",
+      l1_data_gas_price: "0x6",
+      overall_fee: "0x7",
+      unit: "WEI",
+    };
+
+    let getCalls = 0;
+    let consumeCalls = 0;
+    let estimateNonceHex: string | undefined;
+
+    const nonceLayer = Layer.succeed(NonceManagerService, {
+      get: () => {
+        getCalls += 1;
+        return Effect.succeed(11n);
+      },
+      consume: () => {
+        consumeCalls += 1;
+        return Effect.succeed(11n);
+      },
+      increment: () => Effect.void,
+      reset: () => Effect.void,
+    });
+
+    const providerLayer = Layer.succeed(ProviderService, {
+      request: <T>(method: string, params?: readonly unknown[]) => {
+        if (method === "starknet_chainId") {
+          return Effect.succeed(CHAIN_ID as T);
+        }
+
+        if (method === "starknet_estimateFee") {
+          const txs = params?.[0] as readonly Array<{ readonly nonce: string }>;
+          estimateNonceHex = txs?.[0]?.nonce;
+          return Effect.succeed([estimate] as T);
+        }
+
+        return Effect.dieMessage(`unexpected method: ${method}`);
+      },
+    });
+
+    return Effect.gen(function* () {
+      const result = yield* Effect.flatMap(AccountService, (account) =>
+        account.estimateDeclareFee({
+          classHash: "0x123",
+          compiledClassHash: "0x456",
+          contract: {
+            sierra_program: [],
+            contract_class_version: "0.1.0",
+            entry_points_by_type: {
+              CONSTRUCTOR: [],
+              EXTERNAL: [],
+              L1_HANDLER: [],
+            },
+            abi: "[]",
+          },
+        }),
+      );
+
+      expect(result.overall_fee).toBe("0x7");
+      expect(getCalls).toBe(1);
+      expect(consumeCalls).toBe(0);
+      expect(estimateNonceHex).toBe(Felt252(11n).toHex());
+    }).pipe(
+      Effect.provide(
+        AccountLive({
+          accountAddress: "0x1234",
+          privateKey: "0x123",
+        }),
+      ),
+      Effect.provide(providerLayer),
+      Effect.provide(nonceLayer),
+    );
+  });
+
   it.effect("fails fast when no signer configuration is provided", () =>
     Effect.gen(function* () {
       const error = yield* Effect.flip(

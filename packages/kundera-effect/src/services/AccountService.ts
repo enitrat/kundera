@@ -451,7 +451,9 @@ export const AccountLive = (
         Effect.gen(function* () {
           const normalizedCalls = normalizeCalls(calls);
           const chainId = yield* resolveChainId(options?.chainId, options?.requestOptions);
-          const nonce = options?.nonce ?? (yield* nonceManager.consume(accountAddress, {
+          // Estimation must be read-only with respect to local nonce state.
+          // Using `get` avoids reserving/incrementing a nonce that will never be sent.
+          const nonce = options?.nonce ?? (yield* nonceManager.get(accountAddress, {
             chainId: Felt252(chainId),
             requestOptions: options?.requestOptions,
           }));
@@ -541,7 +543,7 @@ export const AccountLive = (
       ) =>
         Effect.gen(function* () {
           const chainId = yield* resolveChainId(options?.chainId, options?.requestOptions);
-          const nonce = options?.nonce ?? (yield* nonceManager.consume(accountAddress, {
+          const nonce = options?.nonce ?? (yield* nonceManager.get(accountAddress, {
             chainId: Felt252(chainId),
             requestOptions: options?.requestOptions,
           }));
