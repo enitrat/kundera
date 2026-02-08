@@ -1,6 +1,6 @@
 {
   "name": "@kundera-sn/kundera-effect",
-  "version": "0.1.0",
+  "version": "0.0.6",
   "description": "Wallet-first Effect services for Starknet using Kundera",
   "author": "Starknet",
   "license": "MIT",
@@ -81,7 +81,7 @@
   },
   "sideEffects": false,
   "peerDependencies": {
-    "@kundera-sn/kundera-ts": "^0.0.5",
+    "@kundera-sn/kundera-ts": "^0.0.6",
     "effect": "^3.19.0"
   },
   "devDependencies": {
