@@ -1,0 +1,235 @@
+---
+title: Layers
+description: Compose once, provide once — understanding the kundera-effect service graph and layer composition.
+---
+
+# Layers
+
+Every kundera-effect service is an Effect `Layer`. Layers declare their dependencies in the type system, compose statically, and are provided once at the program boundary. This guide explains how the pieces fit together.
+
+## The Service Graph
+
+```
+TransportService (HTTP/WebSocket connection)
+  └─ ProviderService (JSON-RPC request/response)
+       ├─ ChainService (chain ID, network name)
+       ├─ FeeEstimatorService (fee estimation)
+       ├─ NonceManagerService (nonce tracking)
+       ├─ EventService (event queries, streaming)
+       ├─ BatchService (request batching)
+       └─ ContractService (read calls, ABI encoding)
+
+WalletProviderService (browser wallet via SNIP standards)
+  └─ TransactionService (send + wait for receipt)
+       └─ ContractWriteService (write calls via wallet)
+```
+
+All roads lead to `ProviderService` → `TransportService`. If your effect needs to talk to Starknet, it needs a provider.
+
+## Compose Once, Provide Once
+
+The golden rule: compose all your layers into **one stack**, provide it **once** at the program boundary.
+
+```typescript
+import { Effect, Layer } from "effect";
+import { JsonRpc, Presets, Services } from "@kundera-sn/kundera-effect";
+
+// ✅ Compose once
+const providerLayer = Presets.SepoliaProvider();
+const readStack = Layer.mergeAll(
+  providerLayer,
+  Services.ContractLive.pipe(Layer.provide(providerLayer)),
+  Services.EventLive.pipe(Layer.provide(providerLayer)),
+);
+
+// ✅ Provide once
+const program = Effect.gen(function* () {
+  const blockNum = yield* JsonRpc.blockNumber();
+  const events = yield* Services.EventService;
+  const response = yield* events.getEvents({ /* ... */ });
+  return { blockNum, events: response.events };
+}).pipe(Effect.provide(readStack));
+```
+
+### Why This Matters
+
+Each `Layer.provide` call creates a new layer instance. If you provide the same layer in multiple places, you get **multiple transport connections**, **multiple nonce managers**, etc.
+
+```typescript
+// ❌ BAD: Two separate ProviderService instances
+const a = JsonRpc.blockNumber().pipe(Effect.provide(Presets.SepoliaProvider()));
+const b = JsonRpc.chainId().pipe(Effect.provide(Presets.SepoliaProvider()));
+
+// ✅ GOOD: Shared ProviderService
+const provider = Presets.SepoliaProvider();
+const program = Effect.gen(function* () {
+  const blockNum = yield* JsonRpc.blockNumber();
+  const chainId = yield* JsonRpc.chainId();
+  return { blockNum, chainId };
+}).pipe(Effect.provide(provider));
+```
+
+## Layer Composition Patterns
+
+### Merge Independent Layers
+
+Use `Layer.mergeAll` when layers don't depend on each other:
+
+```typescript
+const stack = Layer.mergeAll(
+  providerLayer,
+  walletLayer,
+  chainLayer,
+);
+```
+
+### Provide Dependencies
+
+Use `.pipe(Layer.provide(...))` when a layer depends on another:
+
+```typescript
+// ContractLive depends on ProviderService
+const contractLayer = Services.ContractLive.pipe(
+  Layer.provide(providerLayer),
+);
+```
+
+### Static Config
+
+Use `Layer.succeed` to provide a constant value:
+
+```typescript
+import { Effect, Layer } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+const fixedChain = Layer.succeed(Services.ChainService, {
+  chainId: () => Effect.succeed("0x534e5f5345504f4c4941"),
+  networkName: () => Effect.succeed("sepolia"),
+  rpcUrl: () => "https://starknet-sepolia.example.com",
+});
+```
+
+## Preset Stacks
+
+Presets handle composition for you. They cover the most common setups.
+
+### Read-Only
+
+```typescript
+import { Presets } from "@kundera-sn/kundera-effect";
+
+// Provider + Transport in one layer
+const provider = Presets.SepoliaProvider();
+```
+
+### Read + Contracts
+
+```typescript
+const providerLayer = Presets.SepoliaProvider();
+const readStack = Layer.mergeAll(
+  providerLayer,
+  Services.ContractLive.pipe(Layer.provide(providerLayer)),
+);
+```
+
+### Full Wallet Stack
+
+```typescript
+// Provides: ProviderService, WalletProviderService, ContractService,
+// NonceManagerService, FeeEstimatorService, ChainService, EventService,
+// BatchService, TransactionService, ContractWriteService
+const fullStack = Presets.SepoliaWalletStack({
+  swo: window.starknet_argentX,
+});
+```
+
+See [Presets](/effect/modules/presets) for the full list.
+
+## Building Custom Stacks
+
+For advanced use cases, compose manually:
+
+```typescript
+import { Layer } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const providerLayer = Presets.createProvider("https://my-rpc.example.com", {
+  timeout: 10_000,
+  fetchOptions: { headers: { "x-api-key": "..." } },
+});
+
+const walletLayer = Services.WalletProviderLive(window.starknet_argentX);
+const baseDeps = Layer.merge(providerLayer, walletLayer);
+
+const contractLayer = Services.ContractLive.pipe(Layer.provide(baseDeps));
+const nonceLayer = Services.DefaultNonceManagerLive.pipe(Layer.provide(baseDeps));
+const feeLayer = Services.FeeEstimatorLive.pipe(Layer.provide(baseDeps));
+const eventLayer = Services.EventLive.pipe(Layer.provide(providerLayer));
+const chainLayer = Services.ChainLive({ rpcUrl: "https://my-rpc.example.com" }).pipe(
+  Layer.provide(baseDeps),
+);
+
+const baseStack = Layer.mergeAll(
+  baseDeps,
+  contractLayer,
+  nonceLayer,
+  feeLayer,
+  eventLayer,
+  chainLayer,
+);
+
+// Add transaction layer on top
+const txLayer = Services.TransactionLive.pipe(Layer.provide(baseStack));
+const writeLayer = Services.ContractWriteLive.pipe(
+  Layer.provide(Layer.merge(baseStack, txLayer)),
+);
+
+const fullStack = Layer.mergeAll(baseStack, txLayer, writeLayer);
+```
+
+## Testing with Swapped Layers
+
+Layers make testing trivial — swap the real provider for a mock:
+
+```typescript
+import { Effect, Layer } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+// Test layer with canned responses
+const testProvider = Presets.TestProviderPreset({
+  starknet_blockNumber: 42,
+  starknet_chainId: "0x534e5f5345504f4c4941",
+});
+
+// Same program, different layer
+const result = await Effect.runPromise(
+  JsonRpc.blockNumber().pipe(Effect.provide(testProvider)),
+);
+// result === 42
+```
+
+See [Testing Guide](/effect/guides/testing) for full patterns.
+
+## Common Mistakes
+
+- **Providing layers inside `Effect.gen`** — Layer composition should happen at module level or in a setup function, not inside generators. Generators should only `yield*` services.
+- **Calling `Presets.SepoliaProvider()` multiple times** — Each call creates a new layer instance. Store it in a variable and reuse.
+- **Missing transitive dependencies** — If `ContractWriteLive` depends on `TransactionService | FeeEstimatorService`, you must provide both. The type system catches this at compile time.
+- **Circular dependencies** — If Layer A depends on Layer B and B depends on A, you'll get a type error. Restructure to break the cycle.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Presets" icon="sliders" href="/effect/modules/presets">
+    Pre-composed stacks for common configurations.
+  </Card>
+  <Card title="Testing" icon="flask" href="/effect/guides/testing">
+    Mock layers and test utilities.
+  </Card>
+  <Card title="Debugging" icon="bug" href="/effect/guides/debugging">
+    Tracing and interceptors for layer debugging.
+  </Card>
+  <Card title="Provider Fallback" icon="rotate" href="/effect/guides/provider-fallback">
+    Multi-endpoint reliability.
+  </Card>
+</CardGroup>

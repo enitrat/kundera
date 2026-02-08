@@ -1,0 +1,202 @@
+---
+title: Provider Fallback
+description: Multi-endpoint fallback and retry strategies for reliable Starknet RPC access.
+---
+
+# Provider Fallback
+
+Starknet public RPC endpoints can be unreliable — rate limits, downtime, and latency spikes are common. `FallbackHttpProviderLive` tries multiple endpoints in order, with per-endpoint retry and delay configuration.
+
+## Basic Fallback
+
+The simplest fallback: a list of URLs tried in order.
+
+```typescript
+import { Presets } from "@kundera-sn/kundera-effect";
+
+const provider = Presets.FallbackProvider([
+  "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_8/YOUR_KEY",
+  "https://starknet-mainnet.public.blastapi.io/rpc/v0_8",
+  "https://free-rpc.nethermind.io/mainnet-juno",
+]);
+```
+
+When a request fails on the first URL, the provider automatically tries the second, then the third. No retry within each endpoint — it falls through immediately on failure.
+
+## Per-Endpoint Configuration
+
+For finer control, use `createFallbackProvider` with endpoint objects:
+
+```typescript
+import { Presets } from "@kundera-sn/kundera-effect";
+
+const provider = Presets.createFallbackProvider([
+  {
+    url: "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_8/YOUR_KEY",
+    attempts: 3,       // Retry up to 3 times before falling through
+    retryDelayMs: 200,  // Wait 200ms between retries
+  },
+  {
+    url: "https://starknet-mainnet.public.blastapi.io/rpc/v0_8",
+    attempts: 2,
+    retryDelayMs: 500,
+  },
+  {
+    url: "https://free-rpc.nethermind.io/mainnet-juno",
+    // Single attempt, no retry (last resort)
+  },
+]);
+```
+
+### Endpoint Options
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `url` | `string` | required | RPC endpoint URL |
+| `transportOptions` | `HttpTransportOptions` | `undefined` | Custom fetch options (headers, timeout) |
+| `attempts` | `number` | `1` | Number of tries before falling to next endpoint |
+| `retryDelayMs` | `number` | `0` | Delay between retries within this endpoint |
+
+## How Fallback Works
+
+The provider is built from the endpoint array using a right-fold:
+
+```
+Request
+  → Try endpoint[0] (up to `attempts` times with `retryDelayMs` delay)
+  → On failure → Try endpoint[1]
+  → On failure → Try endpoint[2]
+  → On failure → Surface the final error
+```
+
+Only **retryable** errors trigger fallback. Non-retryable RPC errors (like `CONTRACT_NOT_FOUND` or `INVALID_TXN_HASH`) fail immediately without trying the next endpoint.
+
+## Per-Request Overrides
+
+Override timeout and retry behavior for individual requests using `FiberRef`-based combinators:
+
+```typescript
+import { Effect } from "effect";
+import { JsonRpc, Services } from "@kundera-sn/kundera-effect";
+
+// Override timeout for a slow call
+const block = yield* JsonRpc.getBlockWithTxs("latest").pipe(
+  Services.withTimeout(15_000),
+);
+
+// Override retry count
+const balance = yield* JsonRpc.call(payload).pipe(
+  Services.withRetries(5),
+  Services.withRetryDelay(1_000),
+);
+
+// Custom retry schedule (exponential backoff)
+import { Schedule } from "effect";
+
+const result = yield* JsonRpc.blockNumber().pipe(
+  Services.withRetrySchedule(
+    Schedule.exponential("100 millis").pipe(
+      Schedule.intersect(Schedule.recurs(3)),
+    ),
+  ),
+);
+```
+
+## Transport Interceptors
+
+Add logging, metrics, or custom headers to all requests:
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+const program = JsonRpc.blockNumber().pipe(
+  // Log every request
+  Services.withRequestInterceptor((ctx) =>
+    Effect.sync(() => {
+      console.log(`→ ${ctx.method}`);
+      return ctx;
+    }),
+  ),
+
+  // Log every response
+  Services.withResponseInterceptor((ctx) =>
+    Effect.sync(() => {
+      console.log(`← ${ctx.method}: ${JSON.stringify(ctx.result)}`);
+      return ctx;
+    }),
+  ),
+
+  // Log errors
+  Services.withErrorInterceptor((ctx) =>
+    Effect.sync(() => {
+      console.error(`✗ ${ctx.method}: ${ctx.error}`);
+      return ctx;
+    }),
+  ),
+);
+```
+
+## Recommended Presets
+
+### Production (Mainnet)
+
+```typescript
+const mainnetProvider = Presets.createFallbackProvider([
+  {
+    url: "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_8/YOUR_KEY",
+    attempts: 3,
+    retryDelayMs: 200,
+    transportOptions: { timeout: 10_000 },
+  },
+  {
+    url: "https://starknet-mainnet.public.blastapi.io/rpc/v0_8",
+    attempts: 2,
+    retryDelayMs: 500,
+    transportOptions: { timeout: 15_000 },
+  },
+]);
+```
+
+### Development (Sepolia)
+
+```typescript
+const sepoliaProvider = Presets.createFallbackProvider([
+  {
+    url: "https://starknet-sepolia.public.blastapi.io/rpc/v0_8",
+    attempts: 2,
+    retryDelayMs: 300,
+  },
+  {
+    url: "https://free-rpc.nethermind.io/sepolia-juno",
+  },
+]);
+```
+
+### Local Development
+
+```typescript
+// Single devnet instance, no fallback needed
+const devnet = Presets.DevnetProvider();
+```
+
+## Common Mistakes
+
+- **Using `priority` field** — There is no priority-based selection. Endpoints are tried in array order (first = primary). Order your array with the most reliable endpoint first.
+- **Too many retries** — Each retry adds latency. Keep `attempts` low (2-3) and rely on fallback to the next endpoint.
+- **No timeout** — Without a timeout, a hanging endpoint blocks all subsequent endpoints. Set `transportOptions.timeout` explicitly.
+- **Retrying non-retryable errors** — The fallback provider already skips non-retryable RPC errors. Don't add `Effect.retry` on top unless you want to retry the entire fallback chain.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Provider" icon="plug" href="/effect/services/provider">
+    Underlying ProviderService API.
+  </Card>
+  <Card title="Presets" icon="sliders" href="/effect/modules/presets">
+    Pre-composed provider layers.
+  </Card>
+  <Card title="Debugging" icon="bug" href="/effect/guides/debugging">
+    Transport interceptors and tracing.
+  </Card>
+</CardGroup>

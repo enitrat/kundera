@@ -51,20 +51,20 @@ const devnet = JsonRpc.blockNumber().pipe(
 // Custom URL
 const custom = Presets.createProvider("https://my-rpc.example.com", {
   timeout: 30_000,
-  headers: { "x-api-key": "..." },
+  fetchOptions: { headers: { "x-api-key": "..." } },
 });
 
-// Fallback across multiple endpoints
+// Fallback across multiple endpoints (tried in order, first = primary)
 const fallback = Presets.createFallbackProvider([
-  { url: "https://primary.example.com", priority: 1 },
-  { url: "https://secondary.example.com", priority: 2 },
+  { url: "https://primary.example.com", attempts: 3, retryDelayMs: 200 },
+  { url: "https://secondary.example.com", attempts: 2 },
 ]);
 
-// Shorthand: URLs only
-const fallback2 = Presets.FallbackProvider(
+// Shorthand: URLs only, tried in order
+const fallback2 = Presets.FallbackProvider([
   "https://primary.example.com",
   "https://secondary.example.com",
-);
+]);
 ```
 
 ## Wallet Stacks
@@ -145,7 +145,7 @@ const stack = Presets.MainnetWalletStack({
   rpcUrl: "https://my-private-node.example.com",
   rpcTransportOptions: {
     timeout: 30_000,
-    headers: { "x-api-key": "..." },
+    fetchOptions: { headers: { "x-api-key": "..." } },
   },
 });
 ```

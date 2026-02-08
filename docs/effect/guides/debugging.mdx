@@ -1,0 +1,213 @@
+---
+title: Debugging
+description: Transport interceptors, Effect.log, Cause.pretty, and tracing for debugging kundera-effect programs.
+---
+
+# Debugging
+
+When something goes wrong with a Starknet RPC call, you need visibility into what was sent, what came back, and where it failed. kundera-effect provides transport interceptors, Effect's built-in logging, and cause inspection tools.
+
+## Transport Interceptors
+
+The simplest debugging tool: log every request and response at the transport layer.
+
+```typescript
+import { Effect } from "effect";
+import { JsonRpc, Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  return yield* JsonRpc.blockNumber();
+}).pipe(
+  // Log outgoing requests
+  Services.withRequestInterceptor((ctx) =>
+    Effect.sync(() => {
+      console.log(`→ ${ctx.method}`, ctx.params);
+      return ctx;
+    }),
+  ),
+
+  // Log incoming responses
+  Services.withResponseInterceptor((ctx) =>
+    Effect.sync(() => {
+      console.log(`← ${ctx.method}:`, ctx.result);
+      return ctx;
+    }),
+  ),
+
+  // Log errors
+  Services.withErrorInterceptor((ctx) =>
+    Effect.sync(() => {
+      console.error(`✗ ${ctx.method}:`, ctx.error);
+      return ctx;
+    }),
+  ),
+
+  Effect.provide(Presets.SepoliaProvider()),
+);
+```
+
+### Interceptor Context Types
+
+| Interceptor | Context Fields |
+|-------------|---------------|
+| `withRequestInterceptor` | `{ method, params }` |
+| `withResponseInterceptor` | `{ method, params, result }` |
+| `withErrorInterceptor` | `{ method, params, error }` |
+
+### Batch Interceptors
+
+Apply all three at once:
+
+```typescript
+const program = JsonRpc.blockNumber().pipe(
+  Services.withInterceptors({
+    onRequest: (ctx) => Effect.sync(() => { console.log("→", ctx.method); return ctx; }),
+    onResponse: (ctx) => Effect.sync(() => { console.log("←", ctx.result); return ctx; }),
+    onError: (ctx) => Effect.sync(() => { console.error("✗", ctx.error); return ctx; }),
+  }),
+);
+```
+
+## Effect.log
+
+Use Effect's structured logging for trace-level debugging:
+
+```typescript
+import { Effect } from "effect";
+import { JsonRpc, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  yield* Effect.log("Fetching block number...");
+  const blockNum = yield* JsonRpc.blockNumber();
+  yield* Effect.log(`Got block number: ${blockNum}`);
+
+  yield* Effect.log("Fetching chain ID...");
+  const chainId = yield* JsonRpc.chainId();
+  yield* Effect.log(`Got chain ID: ${chainId}`);
+
+  return { blockNum, chainId };
+}).pipe(Effect.provide(Presets.SepoliaProvider()));
+```
+
+### Log Levels
+
+```typescript
+yield* Effect.logDebug("Verbose detail");
+yield* Effect.log("Normal info");
+yield* Effect.logWarning("Something unexpected");
+yield* Effect.logError("Something failed");
+```
+
+## Cause.pretty
+
+When an effect fails, the `Cause` contains the full error trace — including parallel failures, interruption causes, and stack traces. Use `Cause.pretty` for human-readable output:
+
+```typescript
+import { Cause, Effect } from "effect";
+import { JsonRpc, Presets } from "@kundera-sn/kundera-effect";
+
+const program = JsonRpc.blockNumber().pipe(
+  Effect.catchAllCause((cause) => {
+    console.error(Cause.pretty(cause));
+    return Effect.succeed(-1);
+  }),
+  Effect.provide(Presets.SepoliaProvider()),
+);
+```
+
+Example output:
+```
+Error: TransportError
+  at TransportService (TransportService.ts:...)
+  message: "fetch failed: ECONNREFUSED"
+  operation: "starknet_blockNumber"
+```
+
+### Inspecting Specific Error Tags
+
+```typescript
+import { Effect } from "effect";
+
+const program = JsonRpc.blockNumber().pipe(
+  Effect.catchTag("RpcError", (e) => {
+    console.error(`RPC ${e.method} failed: code=${e.code} message=${e.message}`);
+    if (e.data) console.error("RPC error data:", e.data);
+    return Effect.succeed(-1);
+  }),
+  Effect.catchTag("TransportError", (e) => {
+    console.error(`Transport failed: ${e.operation} — ${e.message}`);
+    if (e.cause) console.error("Underlying cause:", e.cause);
+    return Effect.succeed(-1);
+  }),
+);
+```
+
+## Tracing
+
+Enable fiber-level tracing for all requests in a scope:
+
+```typescript
+import { Effect } from "effect";
+import { JsonRpc, Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  // All RPC calls within this scope will be traced
+  const blockNum = yield* JsonRpc.blockNumber();
+  const chainId = yield* JsonRpc.chainId();
+  return { blockNum, chainId };
+}).pipe(
+  Services.withTracing(true),
+  Effect.provide(Presets.SepoliaProvider()),
+);
+```
+
+## Debugging Layer Composition
+
+If a service is missing or misconfigured, the TypeScript compiler catches it:
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const contract = yield* Services.ContractService;
+  return yield* contract.call({ /* ... */ });
+});
+// Type: Effect<..., ..., ContractService>
+//                        ^^^^^^^^^^^^^
+// Must provide ContractService (and its transitive deps)
+```
+
+If you see a type error like `ProviderService is not assignable to never`, it means a required layer is missing from your stack.
+
+### Debugging Strategy
+
+1. **Check the error tag** — `RpcError` vs `TransportError` tells you whether the issue is at the RPC protocol level or the network level.
+2. **Add interceptors** — See the exact JSON-RPC request/response payload.
+3. **Check the method** — `RpcError.method` tells you which RPC call failed.
+4. **Check the code** — `RpcError.code` maps to [Starknet error codes](https://docs.starknet.io/documentation/architecture_and_concepts/Network_Architecture/rpc_error_codes/).
+5. **Use `Cause.pretty`** — For nested or parallel failures, the cause chain shows the full story.
+
+## Common Issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `TransportError: fetch failed` | Network issue, wrong URL, or timeout | Check URL, increase timeout via `Services.withTimeout()` |
+| `RpcError: Method not found` | Wrong RPC spec version | Check endpoint supports v0.8 spec |
+| `RpcError: CONTRACT_NOT_FOUND` | Wrong contract address or block ID | Verify address, try `"latest"` block |
+| `TypeError: Cannot read ...` | Missing layer in stack | Check type signature, add missing layer |
+| Infinite retry loop | Retrying non-retryable errors | Use `Effect.catchTag` to handle known errors |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/effect/guides/error-handling">
+    Typed error patterns.
+  </Card>
+  <Card title="Provider Fallback" icon="rotate" href="/effect/guides/provider-fallback">
+    Multi-endpoint retry strategies.
+  </Card>
+  <Card title="Layers" icon="layer-group" href="/effect/guides/layers">
+    Service graph and composition.
+  </Card>
+</CardGroup>

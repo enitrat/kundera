@@ -27,19 +27,17 @@ interface EventServiceShape {
     options?: EventReadOptions,
   ) => Effect.Effect<EventsResponse, TransportError | RpcError>;
 
+  readonly watchEvents: (
+    options: WatchEventsOptions,
+  ) => Stream.Stream<EmittedEvent, TransportError | RpcError>;
+
   readonly decodeEvent: (
     params: DecodeEventParams,
-  ) => Effect.Effect<unknown, ContractError>;
-
-  readonly watchEvents: (
-    filter: EventsFilter,
-    options?: WatchEventsOptions,
-  ) => Effect.Effect<EventsResponse, TransportError | RpcError>;
+  ) => Effect.Effect<DecodedEvent, ContractError>;
 
   readonly watchDecodedEvents: (
-    filter: EventsFilter,
-    options?: WatchDecodedEventsOptions,
-  ) => Effect.Effect<unknown[], TransportError | RpcError | ContractError>;
+    options: WatchDecodedEventsOptions,
+  ) => Stream.Stream<DecodedEvent, TransportError | RpcError | ContractError>;
 }
 ```
 
@@ -91,12 +89,66 @@ Decode raw event data using an ABI:
 
 ```typescript
 const decoded = yield* events.decodeEvent({
+  event,              // full EmittedEvent object
   abi: erc20Abi,
-  eventName: "Transfer",
-  keys: event.keys,
-  data: event.data,
+  eventNameOrSelector: "Transfer",  // optional: filter by name or selector
 });
 ```
+
+## Watch Events
+
+`watchEvents` and `watchDecodedEvents` return `Stream.Stream`, not `Effect.Effect`. Use `Stream.runForEach` to consume:
+
+```typescript
+import { Effect, Stream } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const events = yield* Services.EventService;
+
+  // Watch raw events — polls at the given interval
+  const stream = events.watchEvents({
+    filter: {
+      from_block: "latest",
+      address: tokenAddress,
+      keys: [["0x0099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9"]],
+      chunk_size: 100,
+    },
+    pollInterval: "5 seconds",
+  });
+
+  // Consume the first 10 events
+  yield* Stream.runForEach(
+    Stream.take(stream, 10),
+    (event) => Effect.log(`Transfer from ${event.from_address}`),
+  );
+});
+
+// Watch decoded events — same pattern with ABI decoding
+const decodedProgram = Effect.gen(function* () {
+  const events = yield* Services.EventService;
+
+  const stream = events.watchDecodedEvents({
+    filter: {
+      from_block: "latest",
+      address: tokenAddress,
+      keys: [["0x0099cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9"]],
+      chunk_size: 100,
+    },
+    abi: erc20Abi,
+    eventNameOrSelector: "Transfer",
+    pollInterval: "5 seconds",
+  });
+
+  yield* Stream.runForEach(stream, (decoded) =>
+    Effect.log(`Decoded transfer: ${JSON.stringify(decoded)}`),
+  );
+});
+```
+
+<Info>
+Both `watchEvents` and `watchDecodedEvents` deduplicate events by `(block_hash, tx_hash, from_address, keys, data)`. Duplicate events from overlapping poll windows are automatically dropped.
+</Info>
 
 ## Related
 

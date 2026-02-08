@@ -74,7 +74,13 @@
                 "pages": [
                   "effect/guides/error-handling",
                   "effect/guides/testing",
-                  "effect/guides/react-integration"
+                  "effect/guides/react-integration",
+                  "effect/guides/debugging",
+                  "effect/guides/layers",
+                  "effect/guides/migrating-from-starknetjs",
+                  "effect/guides/provider-fallback",
+                  "effect/guides/security",
+                  "effect/guides/tanstack-query"
                 ]
               }
             ]
