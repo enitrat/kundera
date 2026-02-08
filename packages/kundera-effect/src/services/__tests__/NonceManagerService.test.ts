@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Array as Arr, Effect, Layer } from "effect";
 import { ContractAddress, Felt252 } from "@kundera-sn/kundera-ts";
 
 import { ProviderService } from "../ProviderService.js";
@@ -143,6 +143,40 @@ describe("NonceManagerService", () => {
       yield* nonce.get(TEST_ACCOUNT, { chainId: TEST_CHAIN_ID });
 
       expect(chainIdCalls).toBe(0);
+    }).pipe(
+      Effect.provide(DefaultNonceManagerLive),
+      Effect.provide(providerLayer),
+    );
+  });
+
+  it.effect("concurrent consume yields unique nonces (atomicity)", () => {
+    const providerLayer = Layer.succeed(ProviderService, {
+      request: <T>(method: string) => {
+        if (method === "starknet_getNonce") {
+          return Effect.succeed("0x10" as T);
+        }
+        return Effect.dieMessage(`unexpected method: ${method}`);
+      },
+    });
+
+    return Effect.gen(function* () {
+      const nonce = yield* NonceManagerService;
+
+      // Spawn 10 fibers that all consume concurrently
+      const results = yield* Effect.forEach(
+        Arr.range(0, 9),
+        () => nonce.consume(TEST_ACCOUNT, { chainId: TEST_CHAIN_ID }),
+        { concurrency: "unbounded" },
+      );
+
+      // All 10 nonces must be unique (no duplicates from race conditions)
+      const unique = new Set(results);
+      expect(unique.size).toBe(10);
+
+      // Must be contiguous starting from on-chain nonce (16n)
+      const sorted = [...results].sort((a, b) => Number(a - b));
+      expect(sorted[0]).toBe(16n);
+      expect(sorted[9]).toBe(25n);
     }).pipe(
       Effect.provide(DefaultNonceManagerLive),
       Effect.provide(providerLayer),
