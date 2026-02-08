@@ -38,7 +38,7 @@ export class NonceError extends Data.TaggedError("NonceError")<{
 export class ContractError extends Data.TaggedError("ContractError")<{
   readonly contractAddress: string;
   readonly functionName: string;
-  readonly stage: "encode" | "request" | "decode";
+  readonly stage: "encode" | "request" | "decode" | "simulate";
   readonly message: string;
   readonly cause?: unknown;
 }> {}

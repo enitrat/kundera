@@ -249,8 +249,11 @@ export interface SimulateContractResult {
  * and calls `starknet_simulateTransactions`. Returns the transaction trace
  * and fee estimation.
  *
- * Depends on `ProviderService` directly (no ContractService needed — simulation
- * goes through the simulate RPC, not starknet_call).
+ * **Dependency note:** Unlike `readContract` (which depends on `ContractService`),
+ * this function depends on `ProviderService` directly because simulation uses a
+ * different RPC method (`starknet_simulateTransactions` vs `starknet_call`) and
+ * builds the full transaction envelope itself rather than delegating to the
+ * ContractService call/encode pipeline.
  */
 export const simulateContract = <
   TAbi extends AbiLike,
@@ -278,9 +281,10 @@ export const simulateContract = <
       );
     }
 
-    // Build a minimal broadcasted invoke transaction for simulation.
-    // Fields like signature/nonce/fee are placeholders — the node fills them
-    // during simulation when SKIP_VALIDATE / SKIP_FEE_CHARGE are set.
+    // Build a minimal V3 broadcasted invoke transaction for simulation.
+    // sender_address is set to the target contract (self-call pattern) since
+    // simulateContract doesn't require an account — the node ignores it when
+    // SKIP_VALIDATE is set. For account-routed simulation, use AccountService.
     const broadcastedTx = {
       type: "INVOKE" as const,
       sender_address: contractAddressHex,
@@ -292,10 +296,18 @@ export const simulateContract = <
         `0x${compiled.result.calldata.length.toString(16)}`, // calldata length
         ...compiled.result.calldata,
       ],
-      version: "0x1" as const,
-      max_fee: "0x0",
+      version: "0x3" as const,
+      resource_bounds: {
+        l1_gas: { max_amount: "0x0", max_price_per_unit: "0x0" },
+        l2_gas: { max_amount: "0x0", max_price_per_unit: "0x0" },
+      },
       signature: [],
       nonce: "0x0",
+      tip: "0x0",
+      paymaster_data: [],
+      account_deployment_data: [],
+      nonce_data_availability_mode: "L1" as const,
+      fee_data_availability_mode: "L1" as const,
     };
 
     const provider = yield* ProviderService;
@@ -311,8 +323,16 @@ export const simulateContract = <
       params.requestOptions,
     );
 
-    // Trust boundary: starknet_simulateTransactions always returns one result
-    // per input transaction. We sent exactly one transaction.
+    if (!results.length) {
+      return yield* Effect.fail(
+        new ContractError({
+          contractAddress: contractAddressHex,
+          functionName: params.functionName,
+          stage: "simulate",
+          message: "starknet_simulateTransactions returned empty results",
+        }),
+      );
+    }
     const result = results[0] as SimulatedTransaction;
 
     return {

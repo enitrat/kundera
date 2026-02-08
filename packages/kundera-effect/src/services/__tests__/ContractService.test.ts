@@ -234,9 +234,11 @@ describe("simulateContract", () => {
       expect(flags).toContain("SKIP_VALIDATE");
       expect(flags).toContain("SKIP_FEE_CHARGE");
 
-      // Verify the transaction was built with the correct contract address
-      const txs = rpcParams?.[1] as Array<{ sender_address: string }>;
+      // Verify the transaction was built with the correct contract address and V3 format
+      const txs = rpcParams?.[1] as Array<{ sender_address: string; version: string; resource_bounds?: unknown }>;
       expect(txs?.[0]?.sender_address).toBe(contractAddress.toHex());
+      expect(txs?.[0]?.version).toBe("0x3");
+      expect(txs?.[0]?.resource_bounds).toBeDefined();
     });
   });
 
