@@ -8,7 +8,13 @@ import {
   type InferFunctionName,
   type InferReturn,
 } from "@kundera-sn/kundera-ts/abi";
-import type { BlockId } from "@kundera-sn/kundera-ts/jsonrpc";
+import type {
+  BlockId,
+  FeeEstimate,
+  SimulatedTransaction,
+  SimulationFlag,
+  TransactionTrace,
+} from "@kundera-sn/kundera-ts/jsonrpc";
 import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc";
 
 import { ContractError, type RpcError, type TransportError } from "../errors.js";
@@ -185,3 +191,132 @@ export const Contract = <TAbi extends AbiLike>(
   abi: TAbi,
 ): Effect.Effect<ContractInstance<TAbi>, never, ContractService> =>
   Effect.map(ContractService, (service) => service.at(contractAddress, abi));
+
+// ---------------------------------------------------------------------------
+// Free functions (Voltaire-style: no Contract instance needed)
+// ---------------------------------------------------------------------------
+
+export interface ReadContractParams<
+  TAbi extends AbiLike,
+  TFunctionName extends InferFunctionName<TAbi> & string,
+> extends ContractReadOptions {
+  readonly contractAddress: ContractAddressType;
+  readonly abi: TAbi;
+  readonly functionName: TFunctionName;
+  readonly args: InferArgs<TAbi, TFunctionName>;
+}
+
+/**
+ * Typed contract read without creating a Contract instance.
+ *
+ * Encodes calldata via ABI, calls `starknet_call`, and decodes the result.
+ * Depends on `ContractService` (which itself depends on `ProviderService`).
+ */
+export const readContract = <
+  TAbi extends AbiLike,
+  TFunctionName extends InferFunctionName<TAbi> & string,
+>(
+  params: ReadContractParams<TAbi, TFunctionName>,
+): Effect.Effect<
+  InferReturn<TAbi, TFunctionName>,
+  ContractError | TransportError | RpcError,
+  ContractService
+> =>
+  Effect.flatMap(ContractService, (service) => service.call(params));
+
+export interface SimulateContractParams<
+  TAbi extends AbiLike,
+  TFunctionName extends InferFunctionName<TAbi> & string,
+> {
+  readonly contractAddress: ContractAddressType;
+  readonly abi: TAbi;
+  readonly functionName: TFunctionName;
+  readonly args: InferArgs<TAbi, TFunctionName>;
+  readonly blockId?: BlockId;
+  readonly simulationFlags?: readonly SimulationFlag[];
+  readonly requestOptions?: RequestOptions;
+}
+
+export interface SimulateContractResult {
+  readonly transactionTrace: TransactionTrace;
+  readonly feeEstimation: FeeEstimate;
+}
+
+/**
+ * Simulate a contract invocation without sending it on-chain.
+ *
+ * Encodes calldata via ABI, wraps it in a broadcasted invoke transaction,
+ * and calls `starknet_simulateTransactions`. Returns the transaction trace
+ * and fee estimation.
+ *
+ * Depends on `ProviderService` directly (no ContractService needed — simulation
+ * goes through the simulate RPC, not starknet_call).
+ */
+export const simulateContract = <
+  TAbi extends AbiLike,
+  TFunctionName extends InferFunctionName<TAbi> & string,
+>(
+  params: SimulateContractParams<TAbi, TFunctionName>,
+): Effect.Effect<
+  SimulateContractResult,
+  ContractError | TransportError | RpcError,
+  ProviderService
+> =>
+  Effect.gen(function* () {
+    const contractAddressHex = params.contractAddress.toHex();
+
+    const compiled = compileCalldata(params.abi, params.functionName, params.args);
+    if (compiled.error) {
+      return yield* Effect.fail(
+        new ContractError({
+          contractAddress: contractAddressHex,
+          functionName: params.functionName,
+          stage: "encode",
+          message: compiled.error.message,
+          cause: compiled.error,
+        }),
+      );
+    }
+
+    // Build a minimal broadcasted invoke transaction for simulation.
+    // Fields like signature/nonce/fee are placeholders — the node fills them
+    // during simulation when SKIP_VALIDATE / SKIP_FEE_CHARGE are set.
+    const broadcastedTx = {
+      type: "INVOKE" as const,
+      sender_address: contractAddressHex,
+      calldata: [
+        // SNIP-6 __execute__ encoding: single call
+        "0x1", // number of calls
+        contractAddressHex,
+        compiled.result.selectorHex,
+        `0x${compiled.result.calldata.length.toString(16)}`, // calldata length
+        ...compiled.result.calldata,
+      ],
+      version: "0x1" as const,
+      max_fee: "0x0",
+      signature: [],
+      nonce: "0x0",
+    };
+
+    const provider = yield* ProviderService;
+    const { method, params: rpcParams } = Rpc.SimulateTransactionsRequest(
+      params.blockId ?? "latest",
+      [broadcastedTx],
+      [...(params.simulationFlags ?? ["SKIP_VALIDATE", "SKIP_FEE_CHARGE"])],
+    );
+
+    const results = yield* provider.request<SimulatedTransaction[]>(
+      method,
+      rpcParams,
+      params.requestOptions,
+    );
+
+    // Trust boundary: starknet_simulateTransactions always returns one result
+    // per input transaction. We sent exactly one transaction.
+    const result = results[0] as SimulatedTransaction;
+
+    return {
+      transactionTrace: result.transaction_trace,
+      feeEstimation: result.fee_estimation,
+    } satisfies SimulateContractResult;
+  });

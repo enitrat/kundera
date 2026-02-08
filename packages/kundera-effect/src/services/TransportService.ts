@@ -328,7 +328,7 @@ const makeTransportService = (
       requestRaw,
       request,
       close,
-    };
+    } satisfies TransportServiceShape;
   });
 
 export const TransportLive = (
@@ -353,6 +353,8 @@ export const WebSocketTransportLive = (
           try: async () => {
             const ws = webSocketTransport(url, options);
             await ws.connect();
+            // Trust boundary: webSocketTransport returns a WebSocketTransport which
+            // satisfies the Transport interface but has a narrower static type.
             return ws as unknown as Transport;
           },
           catch: (cause) =>

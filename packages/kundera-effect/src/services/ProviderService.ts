@@ -142,6 +142,8 @@ export const FallbackHttpProviderLive = (
 export const FallbackHttpProviderFromUrls = (
   urls: readonly [string, ...string[]],
 ): Layer.Layer<ProviderService> =>
+  // Trust boundary: caller guarantees non-empty tuple via the input type
+  // `readonly [string, ...string[]]`, so the mapped array is also non-empty.
   FallbackHttpProviderLive(urls.map((url) => ({ url })) as [
     FallbackProviderEndpoint,
     ...FallbackProviderEndpoint[],

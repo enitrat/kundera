@@ -19,6 +19,7 @@ export {
   withRequestInterceptor,
   withRetries,
   withRetryDelay,
+  withRetrySchedule,
   withResponseInterceptor,
   withTimeout,
   withTracing,
@@ -47,10 +48,15 @@ export {
   Contract,
   ContractLive,
   ContractService,
+  readContract,
+  simulateContract,
   type ContractCallParams,
   type ContractInstance,
   type ContractReadOptions,
   type ContractServiceShape,
+  type ReadContractParams,
+  type SimulateContractParams,
+  type SimulateContractResult,
 } from "./ContractService.js";
 export {
   ContractWriteLive,

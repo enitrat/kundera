@@ -94,6 +94,11 @@ const normalizeRequestAccounts = (
   return undefined;
 };
 
+/**
+ * Known limitation: retry FiberRefs (withRetries, withRetrySchedule) have no
+ * effect on wallet calls. Only `RequestOptions.timeoutMs` is forwarded to the
+ * underlying wallet transport. Retry/backoff must be handled by the caller.
+ */
 const makeWalletProviderService = (
   swo: StarknetWindowObject,
 ): Effect.Effect<WalletProviderServiceShape> =>

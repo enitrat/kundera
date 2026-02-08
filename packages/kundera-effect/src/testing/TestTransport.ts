@@ -14,7 +14,12 @@ export const TestTransport = (
 ): Layer.Layer<TransportService> =>
   Layer.succeed(TransportService, {
     requestRaw: () =>
-      Effect.dieMessage("TestTransport does not support requestRaw; use request()"),
+      Effect.fail(
+        new TransportError({
+          operation: "requestRaw",
+          message: "TestTransport does not support requestRaw; use request()",
+        }),
+      ),
     request: <T>(method: string) => {
       const response = responses[method];
       if (response === undefined) {

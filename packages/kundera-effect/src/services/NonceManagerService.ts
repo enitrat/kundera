@@ -123,25 +123,31 @@ export const DefaultNonceManagerLive: Layer.Layer<
           options?.requestOptions,
         );
         const onChainNonce = yield* parseNonce(addressHex, onChainNonceHex);
-        const delta = yield* getDelta(key);
-        const nonce = onChainNonce + delta;
 
-        yield* setDelta(key, delta + 1n);
+        // Atomic read-and-increment via Ref.modify to prevent duplicate nonces
+        // when multiple fibers call consume() concurrently for the same address.
+        const delta = yield* Ref.modify(deltasRef, (deltas) => {
+          const currentDelta = deltas.get(key) ?? 0n;
+          const next = new Map(deltas);
+          next.set(key, currentDelta + 1n);
+          return [currentDelta, next] as const;
+        });
 
-        return nonce;
+        return onChainNonce + delta;
       });
 
     const increment: NonceManagerServiceShape["increment"] = (
       address,
       chainId,
-    ) =>
-      Effect.gen(function* () {
-        const addressHex = address.toHex();
-        const chainIdHex = chainId.toHex();
-        const key = toNonceKey(chainIdHex, addressHex);
-        const delta = yield* getDelta(key);
-        yield* setDelta(key, delta + 1n);
+    ) => {
+      const key = toNonceKey(chainId.toHex(), address.toHex());
+      return Ref.update(deltasRef, (deltas) => {
+        const currentDelta = deltas.get(key) ?? 0n;
+        const next = new Map(deltas);
+        next.set(key, currentDelta + 1n);
+        return next;
       });
+    };
 
     const reset: NonceManagerServiceShape["reset"] = (address, chainId) =>
       setDelta(
