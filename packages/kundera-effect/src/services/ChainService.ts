@@ -1,4 +1,4 @@
-import { Context, Effect, Layer } from "effect";
+import { Context, Effect, Layer, Option, Ref } from "effect";
 import type { Felt252Type } from "@kundera-sn/kundera-ts";
 import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc";
 
@@ -65,11 +65,18 @@ export const ChainLive = (
     ChainService,
     Effect.gen(function* () {
       const provider = yield* ProviderService;
+      const cachedChainId = yield* Ref.make<Option.Option<Felt252Type | string>>(Option.none());
 
-      const chainId: ChainServiceShape["chainId"] = (requestOptions) => {
-        const { method, params } = Rpc.ChainIdRequest();
-        return provider.request(method, params, requestOptions);
-      };
+      const chainId: ChainServiceShape["chainId"] = (requestOptions) =>
+        Effect.gen(function* () {
+          const cached = yield* Ref.get(cachedChainId);
+          if (Option.isSome(cached)) return cached.value;
+
+          const { method, params } = Rpc.ChainIdRequest();
+          const result = yield* provider.request<Felt252Type | string>(method, params, requestOptions);
+          yield* Ref.set(cachedChainId, Option.some(result));
+          return result;
+        });
 
       const networkName: ChainServiceShape["networkName"] = (requestOptions) =>
         Effect.map(chainId(requestOptions), (chainIdValue) => {
