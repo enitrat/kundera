@@ -1,11 +1,6 @@
-import { Context, Effect, Layer, Ref, Schedule } from "effect";
-import {
-  createRequest,
-  httpTransport,
-  isJsonRpcError,
-} from "@kundera-sn/kundera-ts/transport";
+import { Context, Effect, Layer, Schedule } from "effect";
 
-import { type RpcError, type TransportError } from "../errors.js";
+import { RpcError, TransportError } from "../errors.js";
 import {
   HttpTransportLive,
   type RequestOptions,
@@ -16,7 +11,6 @@ import type {
   HttpTransportOptions,
   WebSocketTransportOptions,
 } from "@kundera-sn/kundera-ts/transport";
-import { RpcError as RpcErrorData, TransportError as TransportErrorData } from "../errors.js";
 
 export interface ProviderServiceShape {
   readonly request: <T>(
@@ -80,97 +74,58 @@ export const FallbackHttpProviderLive = (
   Layer.effect(
     ProviderService,
     Effect.gen(function* () {
-      const transports = endpoints.map((endpoint) => ({
-        endpoint,
-        transport: httpTransport(endpoint.url, endpoint.transportOptions),
-      }));
-      const requestIdRef = yield* Ref.make(0);
-
-      const nextRequestId = Ref.updateAndGet(requestIdRef, (n) => n + 1);
-
-      const makeEndpointRequest = <T>(
-        endpoint: FallbackProviderEndpoint,
-        transport: ReturnType<typeof httpTransport>,
-        method: string,
-        params?: readonly unknown[],
-        options?: RequestOptions,
-      ): Effect.Effect<T, TransportErrorData | RpcErrorData> => {
-        const attempts = Math.max(endpoint.attempts ?? 1, 1);
-        const retryDelayMs = Math.max(endpoint.retryDelayMs ?? 0, 0);
-
-        const requestOnce: Effect.Effect<T, TransportErrorData | RpcErrorData> =
-          Effect.gen(function* () {
-          const id = yield* nextRequestId;
-          const payload = createRequest(method, params ? [...params] : [], id);
-
-          const response = yield* Effect.tryPromise({
-            try: () =>
-              transport.request<T>(
-                payload,
-                options?.timeoutMs ? { timeout: options.timeoutMs } : undefined,
-              ),
-            catch: (cause) =>
-              new TransportErrorData({
-                operation: `${method}@${endpoint.url}`,
-                message: "Provider endpoint request failed",
-                cause,
-              }),
-          });
-
-          if (isJsonRpcError(response)) {
-            if (isRetryableRpcError(response.error)) {
-              return yield* Effect.fail(
-                new TransportErrorData({
-                  operation: `${method}@${endpoint.url}`,
-                  message: `Retryable RPC error: ${response.error.message}`,
-                  cause: response.error,
-                }),
-              );
-            }
-
-            return yield* Effect.fail(
-              new RpcErrorData({
-                method,
-                code: response.error.code,
-                message: response.error.message,
-                data: response.error.data,
-              }),
-            );
-          }
-
-          // Trust boundary: endpoint JSON-RPC responses are assumed to satisfy
-          // the caller-specified generic type.
-          return response.result as T;
-        });
-
-        return requestOnce.pipe(
-          Effect.retry({
-            times: attempts - 1,
-            schedule: Schedule.spaced(`${retryDelayMs} millis`),
-            while: (error: TransportErrorData | RpcErrorData) =>
-              error._tag === "TransportError",
-          }),
-        );
-      };
+      // Resolve a FiberRef-aware TransportServiceShape per endpoint
+      const transports = yield* Effect.all(
+        endpoints.map((endpoint) =>
+          Effect.provide(
+            TransportService,
+            HttpTransportLive(endpoint.url, endpoint.transportOptions),
+          ).pipe(Effect.map((transport) => ({ endpoint, transport }))),
+        ),
+      );
 
       return {
         request: <T>(
           method: string,
           params?: readonly unknown[],
           options?: RequestOptions,
-        ): Effect.Effect<T, TransportErrorData | RpcErrorData> => {
-          const allFailed: Effect.Effect<T, TransportErrorData | RpcErrorData> = Effect.fail(
-            new TransportErrorData({
+        ): Effect.Effect<T, TransportError | RpcError> => {
+          const allFailed: Effect.Effect<T, TransportError | RpcError> = Effect.fail(
+            new TransportError({
               operation: method,
               message: "All fallback provider endpoints failed",
             }),
           );
 
           return transports.reduceRight(
-            (fallback: Effect.Effect<T, TransportErrorData | RpcErrorData>, { endpoint, transport }) =>
-              makeEndpointRequest<T>(endpoint, transport, method, params, options).pipe(
-                Effect.catchTag("TransportError", () => fallback),
-              ),
+            (fallback: Effect.Effect<T, TransportError | RpcError>, { endpoint, transport }) => {
+              const attempts = Math.max(endpoint.attempts ?? 1, 1);
+              const retryDelayMs = Math.max(endpoint.retryDelayMs ?? 0, 0);
+
+              return transport
+                .request<T>(method, params, options)
+                .pipe(
+                  // Promote retryable RPC errors to TransportError for retry/fallback
+                  Effect.catchTag("RpcError", (error) =>
+                    isRetryableRpcError(error)
+                      ? Effect.fail(
+                          new TransportError({
+                            operation: `${method}@${endpoint.url}`,
+                            message: `Retryable RPC error: ${error.message}`,
+                            cause: error,
+                          }),
+                        )
+                      : Effect.fail(error),
+                  ),
+                  Effect.retry({
+                    times: attempts - 1,
+                    schedule: Schedule.spaced(`${retryDelayMs} millis`),
+                    while: (error: TransportError | RpcError) =>
+                      error._tag === "TransportError",
+                  }),
+                  Effect.catchTag("TransportError", () => fallback),
+                );
+            },
             allFailed,
           );
         },
