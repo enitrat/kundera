@@ -1,7 +1,6 @@
 import { Context, Effect, Layer } from "effect";
 import type { ContractAddressType } from "@kundera-sn/kundera-ts";
 import {
-  compileCalldata,
   decodeOutput,
   type AbiLike,
   type InferArgs,
@@ -18,6 +17,7 @@ import type {
 import { Rpc } from "@kundera-sn/kundera-ts/jsonrpc";
 
 import { ContractError, type RpcError, type TransportError } from "../errors.js";
+import { compileContractCall } from "./_contractCall.js";
 import { ProviderService } from "./ProviderService.js";
 import type { RequestOptions } from "./TransportService.js";
 
@@ -107,24 +107,12 @@ export const ContractLive: Layer.Layer<ContractService, never, ProviderService> 
 
     const callRaw: ContractServiceShape["callRaw"] = (params) =>
       Effect.gen(function* () {
-        const contractAddressHex = params.contractAddress.toHex();
-        const compiled = compileCalldata(params.abi, params.functionName, params.args);
-        if (compiled.error) {
-          return yield* Effect.fail(
-            new ContractError({
-              contractAddress: contractAddressHex,
-              functionName: params.functionName,
-              stage: "encode",
-              message: compiled.error.message,
-              cause: compiled.error,
-            }),
-          );
-        }
+        const compiled = yield* compileContractCall(params);
 
         const callRequest = {
-          contract_address: contractAddressHex,
-          entry_point_selector: compiled.result.selectorHex,
-          calldata: compiled.result.calldata,
+          contract_address: compiled.contractAddressHex,
+          entry_point_selector: compiled.selectorHex,
+          calldata: [...compiled.calldata],
         };
 
         const { method, params: rpcParams } = Rpc.CallRequest(callRequest, params.blockId ?? "latest");
@@ -266,20 +254,7 @@ export const simulateContract = <
   ProviderService
 > =>
   Effect.gen(function* () {
-    const contractAddressHex = params.contractAddress.toHex();
-
-    const compiled = compileCalldata(params.abi, params.functionName, params.args);
-    if (compiled.error) {
-      return yield* Effect.fail(
-        new ContractError({
-          contractAddress: contractAddressHex,
-          functionName: params.functionName,
-          stage: "encode",
-          message: compiled.error.message,
-          cause: compiled.error,
-        }),
-      );
-    }
+    const compiled = yield* compileContractCall(params);
 
     // Build a minimal V3 broadcasted invoke transaction for simulation.
     // sender_address is set to the target contract (self-call pattern) since
@@ -287,14 +262,14 @@ export const simulateContract = <
     // SKIP_VALIDATE is set. For account-routed simulation, use AccountService.
     const broadcastedTx = {
       type: "INVOKE" as const,
-      sender_address: contractAddressHex,
+      sender_address: compiled.contractAddressHex,
       calldata: [
         // SNIP-6 __execute__ encoding: single call
         "0x1", // number of calls
-        contractAddressHex,
-        compiled.result.selectorHex,
-        `0x${compiled.result.calldata.length.toString(16)}`, // calldata length
-        ...compiled.result.calldata,
+        compiled.contractAddressHex,
+        compiled.selectorHex,
+        `0x${compiled.calldata.length.toString(16)}`, // calldata length
+        ...compiled.calldata,
       ],
       version: "0x3" as const,
       resource_bounds: {
@@ -326,7 +301,7 @@ export const simulateContract = <
     if (!results.length) {
       return yield* Effect.fail(
         new ContractError({
-          contractAddress: contractAddressHex,
+          contractAddress: compiled.contractAddressHex,
           functionName: params.functionName,
           stage: "simulate",
           message: "starknet_simulateTransactions returned empty results",

@@ -1,7 +1,6 @@
 import { Context, Effect, Layer } from "effect";
 import type { ContractAddressType } from "@kundera-sn/kundera-ts";
 import {
-  compileCalldata,
   type AbiLike,
   type InferArgs,
   type InferFunctionName,
@@ -21,6 +20,7 @@ import {
   type TransportError,
   type WalletError,
 } from "../errors.js";
+import { compileContractCall } from "./_contractCall.js";
 import { FeeEstimatorService, type EstimatableTransaction } from "./FeeEstimatorService.js";
 import type { RequestOptions } from "./TransportService.js";
 import { TransactionService, type WaitForReceiptOptions } from "./TransactionService.js";
@@ -106,27 +106,14 @@ const toWalletInvokeParams = <
   params: ContractWriteParams<TAbi, TFunctionName>,
 ): Effect.Effect<WalletInvokeParams, ContractError> =>
   Effect.gen(function* () {
-    const contractAddressHex = params.contractAddress.toHex();
-
-    const compiled = compileCalldata(params.abi, params.functionName, params.args);
-    if (compiled.error) {
-      return yield* Effect.fail(
-        new ContractError({
-          contractAddress: contractAddressHex,
-          functionName: params.functionName,
-          stage: "encode",
-          message: compiled.error.message,
-          cause: compiled.error,
-        }),
-      );
-    }
+    const compiled = yield* compileContractCall(params);
 
     return {
       calls: [
         {
-          contract_address: contractAddressHex,
+          contract_address: compiled.contractAddressHex,
           entry_point: params.functionName,
-          calldata: compiled.result.calldata,
+          calldata: [...compiled.calldata],
         },
       ],
     } satisfies WalletInvokeParams;
