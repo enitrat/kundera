@@ -1,21 +1,19 @@
 import * as ParseResult from "effect/ParseResult";
 
 export function formatError(error: unknown): string {
-  if (error && typeof error === "object" && "_tag" in error) {
-    const tagged = error as { _tag?: unknown };
-    if (tagged._tag === "ParseError") {
-      return ParseResult.TreeFormatter.formatErrorSync(
-        error as ParseResult.ParseError,
-      );
-    }
+  // Effect ParseError (extends Error with _tag)
+  if (error instanceof Error && "_tag" in error && error._tag === "ParseError") {
+    return ParseResult.TreeFormatter.formatErrorSync(
+      error as ParseResult.ParseError,
+    );
   }
 
-  if (error && typeof error === "object") {
+  // Data.TaggedError instances (also extend Error)
+  if (error && typeof error === "object" && "_tag" in error) {
     const tagged = error as {
       _tag?: unknown;
       message?: unknown;
       operation?: unknown;
-      cause?: unknown;
     };
     const tag = typeof tagged._tag === "string" ? tagged._tag : "Error";
     const message =
@@ -69,7 +67,9 @@ export function decodeChainIdHex(chainId: string): string | null {
 
 export function formatTokenAmount(value: bigint, decimals: number): string {
   const divisor = 10n ** BigInt(decimals);
-  const whole = value / divisor;
-  const frac = value % divisor;
-  return `${whole}.${frac.toString().padStart(decimals, "0").slice(0, 6)}`;
+  const abs = value < 0n ? -value : value;
+  const whole = abs / divisor;
+  const frac = abs % divisor;
+  const formatted = `${whole}.${frac.toString().padStart(decimals, "0").slice(0, 6)}`;
+  return value < 0n ? `-${formatted}` : formatted;
 }

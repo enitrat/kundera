@@ -1,4 +1,4 @@
-import { Cause, Effect, Either } from "effect";
+import { Effect } from "effect";
 import type { ProviderService } from "@kundera-sn/kundera-effect/services";
 import { getProviderLayer, type Network } from "./config.js";
 import { formatError } from "./utils.js";
@@ -9,14 +9,9 @@ export const runCommand = (
 ): Promise<void> =>
   effect.pipe(
     Effect.provide(getProviderLayer(network)),
-    Effect.catchAllCause((cause) => {
-      const failure = Cause.failureOrCause(cause);
-      const msg = Either.isLeft(failure)
-        ? formatError(failure.left)
-        : Cause.pretty(failure.right);
-      console.error(msg);
-      return Effect.sync(() => process.exit(1));
-    }),
     Effect.asVoid,
     Effect.runPromise,
-  );
+  ).catch((error) => {
+    console.error(formatError(error));
+    process.exit(1);
+  });
