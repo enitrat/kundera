@@ -1,0 +1,407 @@
+---
+title: TanStack Query
+description: Using kundera-effect with TanStack Query for React data fetching.
+---
+
+# TanStack Query Integration
+
+[TanStack Query](https://tanstack.com/query) (React Query) provides powerful caching, refetching, and mutation primitives for React apps. This guide shows how to use it with `@kundera-sn/kundera-effect` for Starknet data fetching.
+
+<Info>
+**effect-atom vs TanStack Query** — Use [effect-atom](/effect/guides/react-integration) when your team is already invested in Effect-TS and wants reactive atoms with typed error channels. Use TanStack Query when you want a familiar React data-fetching library with minimal Effect exposure at the UI layer.
+</Info>
+
+## Installation
+
+```bash
+pnpm add @tanstack/react-query @kundera-sn/kundera-effect effect
+```
+
+## Setup
+
+Wrap your app with `QueryClientProvider`:
+
+```tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <YourApp />
+    </QueryClientProvider>
+  );
+}
+```
+
+Create a shared runner that converts `Effect` programs to `Promise`. The layer must include all services your queries depend on — `ProviderService` for raw RPC calls, `ContractService` for `readContract`:
+
+```typescript
+import { Effect, Layer } from "effect";
+import { Presets, Services } from "@kundera-sn/kundera-effect";
+
+const providerLayer = Presets.SepoliaProvider();
+const readStack = Layer.mergeAll(
+  providerLayer,
+  Services.ContractLive.pipe(Layer.provide(providerLayer)),
+);
+
+export function runEffect<A>(
+  effect: Effect.Effect<A, unknown, any>,
+): Promise<A> {
+  return Effect.runPromise(effect.pipe(Effect.provide(readStack)));
+}
+```
+
+## Basic Usage
+
+### Fetching Block Number
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+import { JsonRpc } from "@kundera-sn/kundera-effect";
+import { runEffect } from "./run";
+
+function useBlockNumber() {
+  return useQuery({
+    queryKey: ["blockNumber"],
+    queryFn: () => runEffect(JsonRpc.blockNumber()),
+    refetchInterval: 15_000, // Starknet block time ~15-30s
+  });
+}
+
+function BlockDisplay() {
+  const { data, isLoading, error } = useBlockNumber();
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+
+  return <p>Block: {data?.toLocaleString()}</p>;
+}
+```
+
+### Reading Contract State
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+import { ContractAddress, Uint256 } from "@kundera-sn/kundera-ts";
+import { runEffect } from "./run";
+
+const ETH_TOKEN = "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
+
+const ERC20_ABI = [
+  {
+    type: "function" as const,
+    name: "balance_of",
+    inputs: [{ name: "account", type: "core::starknet::contract_address::ContractAddress" }],
+    outputs: [{ type: "core::integer::u256" }],
+    state_mutability: "view" as const,
+  },
+] as const;
+
+function useBalance(address: string | undefined) {
+  return useQuery({
+    queryKey: ["balance", ETH_TOKEN, address],
+    queryFn: () =>
+      runEffect(
+        Services.readContract({
+          contractAddress: ContractAddress(ETH_TOKEN),
+          abi: ERC20_ABI,
+          functionName: "balance_of",
+          args: [ContractAddress(address!)],
+        }).pipe(Effect.map(Uint256.toBigInt)),
+      ),
+    enabled: !!address,
+    staleTime: 15_000,
+  });
+}
+```
+
+## Advanced Patterns
+
+### Parallel Queries
+
+Fetch multiple balances simultaneously:
+
+```tsx
+import { useQueries } from "@tanstack/react-query";
+
+function useMultipleBalances(addresses: string[]) {
+  return useQueries({
+    queries: addresses.map((address) => ({
+      queryKey: ["balance", ETH_TOKEN, address],
+      queryFn: () =>
+        runEffect(
+          Services.readContract({
+            contractAddress: ContractAddress(ETH_TOKEN),
+            abi: ERC20_ABI,
+            functionName: "balance_of",
+            args: [ContractAddress(address)],
+          }).pipe(Effect.map(Uint256.toBigInt)),
+        ),
+    })),
+  });
+}
+```
+
+### Dependent Queries
+
+Chain queries when one depends on another:
+
+```tsx
+import { useQuery } from "@tanstack/react-query";
+import { JsonRpc } from "@kundera-sn/kundera-effect";
+import { runEffect } from "./run";
+
+function useTransactionDetails(txHash: string | undefined) {
+  const { data: receipt } = useQuery({
+    queryKey: ["txReceipt", txHash],
+    queryFn: () => runEffect(JsonRpc.getTransactionReceipt(txHash!)),
+    enabled: !!txHash,
+  });
+
+  return useQuery({
+    queryKey: ["block", receipt?.block_number],
+    queryFn: () => runEffect(JsonRpc.getBlockWithTxs(receipt!.block_number)),
+    enabled: !!receipt?.block_number,
+  });
+}
+```
+
+### Polling for Updates
+
+Poll for the latest block number at Starknet block intervals:
+
+```tsx
+function useLatestBlock() {
+  return useQuery({
+    queryKey: ["blockNumber"],
+    queryFn: () => runEffect(JsonRpc.blockNumber()),
+    refetchInterval: 15_000, // ~15s block time on mainnet
+  });
+}
+```
+
+### Optimistic Updates with Wallet Mutations
+
+Update the cache optimistically when sending transactions:
+
+```tsx
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Effect } from "effect";
+import { Presets, Services } from "@kundera-sn/kundera-effect";
+import { ContractAddress, Uint256 } from "@kundera-sn/kundera-ts";
+import type { StarknetWindowObject } from "@kundera-sn/kundera-ts/provider";
+
+function useTransfer(swo: StarknetWindowObject) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (params: { to: string; amount: bigint }) => {
+      const layer = Presets.SepoliaWalletStack({ swo });
+      const program = Effect.gen(function* () {
+        const contractWrite = yield* Services.ContractWriteService;
+        return yield* contractWrite.invokeContract({
+          contractAddress: ContractAddress(ETH_TOKEN),
+          abi: ERC20_ABI,
+          functionName: "transfer",
+          args: [ContractAddress(params.to), Uint256.from(params.amount)],
+        });
+      });
+      return Effect.runPromise(program.pipe(Effect.provide(layer)));
+    },
+
+    // Invalidate related queries after the transaction is submitted
+    onSettled: (_data, _error, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["balance", ETH_TOKEN, variables.to] });
+      queryClient.invalidateQueries({ queryKey: ["blockNumber"] });
+    },
+  });
+}
+```
+
+## Query Key Conventions
+
+Structure query keys for efficient cache management and invalidation:
+
+```typescript
+export const queryKeys = {
+  // Chain state
+  chainId: () => ["chainId"] as const,
+  blockNumber: () => ["blockNumber"] as const,
+  block: (blockId: string | number) => ["block", String(blockId)] as const,
+
+  // Account state
+  balance: (token: string, address: string) => ["balance", token, address] as const,
+  nonce: (address: string) => ["nonce", address] as const,
+
+  // Events
+  events: (address: string, fromBlock: number, toBlock: number, keys?: string[][]) =>
+    ["events", address, fromBlock, toBlock, ...(keys ?? [])] as const,
+
+  // Transactions
+  tx: (hash: string) => ["tx", hash] as const,
+  txReceipt: (hash: string) => ["txReceipt", hash] as const,
+  txStatus: (hash: string) => ["txStatus", hash] as const,
+} as const;
+```
+
+### Invalidation After Wallet Writes
+
+After submitting a transaction, invalidate stale queries:
+
+```typescript
+const queryClient = useQueryClient();
+
+// After a transfer:
+queryClient.invalidateQueries({ queryKey: ["balance"] });  // All balances
+queryClient.invalidateQueries({ queryKey: ["nonce", senderAddress] });
+queryClient.invalidateQueries({ queryKey: ["blockNumber"] });
+```
+
+## Custom Hooks Library
+
+Build a reusable hooks library for your dApp:
+
+```typescript
+// hooks/useStarknet.ts
+import { useQuery } from "@tanstack/react-query";
+import { JsonRpc, Services } from "@kundera-sn/kundera-effect";
+import { ContractAddress, Uint256 } from "@kundera-sn/kundera-ts";
+import { Effect } from "effect";
+import { runEffect } from "./run";
+import { queryKeys } from "./queryKeys";
+
+export function useBlockNumber() {
+  return useQuery({
+    queryKey: queryKeys.blockNumber(),
+    queryFn: () => runEffect(JsonRpc.blockNumber()),
+    refetchInterval: 15_000,
+  });
+}
+
+export function useChainId() {
+  return useQuery({
+    queryKey: queryKeys.chainId(),
+    queryFn: () => runEffect(JsonRpc.chainId()),
+    staleTime: Infinity, // Chain ID never changes
+  });
+}
+
+export function useBalance(token: string, address: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.balance(token, address!),
+    queryFn: () =>
+      runEffect(
+        Services.readContract({
+          contractAddress: ContractAddress(token),
+          abi: ERC20_ABI,
+          functionName: "balance_of",
+          args: [ContractAddress(address!)],
+        }).pipe(Effect.map(Uint256.toBigInt)),
+      ),
+    enabled: !!address,
+    staleTime: 15_000,
+  });
+}
+
+export function useTransactionReceipt(hash: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.txReceipt(hash!),
+    queryFn: () => runEffect(JsonRpc.getTransactionReceipt(hash!)),
+    enabled: !!hash,
+    staleTime: Infinity, // Receipts are immutable
+  });
+}
+```
+
+## React Suspense Integration
+
+Use `useSuspenseQuery` with React Suspense boundaries:
+
+```tsx
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Suspense } from "react";
+
+function Balance({ address }: { address: string }) {
+  const { data } = useSuspenseQuery({
+    queryKey: ["balance", ETH_TOKEN, address],
+    queryFn: () =>
+      runEffect(
+        Services.readContract({
+          contractAddress: ContractAddress(ETH_TOKEN),
+          abi: ERC20_ABI,
+          functionName: "balance_of",
+          args: [ContractAddress(address)],
+        }).pipe(Effect.map(Uint256.toBigInt)),
+      ),
+  });
+
+  return <p>{(Number(data) / 1e18).toFixed(4)} ETH</p>;
+}
+
+function App() {
+  return (
+    <Suspense fallback={<p>Loading balance...</p>}>
+      <Balance address="0x049d36570d4e..." />
+    </Suspense>
+  );
+}
+```
+
+## DevTools
+
+Enable React Query DevTools for debugging cache state:
+
+```tsx
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <YourApp />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
+}
+```
+
+## Best Practices
+
+<Tip>
+**Cache Configuration**
+
+- Use `staleTime: Infinity` for immutable data (confirmed receipts, historical blocks, chain ID)
+- Use short `staleTime` (10-15s) for frequently changing data (balances, nonces)
+- Use `refetchInterval` for data that changes on a known schedule (block numbers at ~15s)
+</Tip>
+
+<Warning>
+**Rate Limiting**
+
+Public Starknet RPC endpoints (BlastAPI, Alchemy free tier) have rate limits. Mitigate with:
+- Batching requests via [BatchService](/effect/services/rpc-batch)
+- Using `staleTime` to reduce unnecessary refetches
+- Structuring query keys so TanStack Query deduplicates in-flight requests
+- Using `enabled: false` to prevent queries for undefined addresses
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="React (effect-atom)" icon="atom" href="/effect/guides/react-integration">
+    Alternative integration using effect-atom for fully reactive atoms.
+  </Card>
+  <Card title="JSON-RPC" icon="code" href="/effect/modules/jsonrpc">
+    All available RPC methods as Effect free functions.
+  </Card>
+  <Card title="Presets" icon="sliders" href="/effect/modules/presets">
+    Pre-composed provider layers.
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/effect/guides/error-handling">
+    Typed error handling patterns.
+  </Card>
+</CardGroup>

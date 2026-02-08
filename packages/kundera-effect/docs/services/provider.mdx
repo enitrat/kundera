@@ -26,6 +26,14 @@ interface ProviderServiceShape {
     params?: readonly unknown[],
     options?: RequestOptions,
   ) => Effect.Effect<T, TransportError | RpcError>;
+
+  readonly requestBatch: <T>(
+    requests: readonly {
+      readonly method: string;
+      readonly params?: readonly unknown[];
+    }[],
+    options?: RequestOptions,
+  ) => Effect.Effect<readonly T[], TransportError | RpcError>;
 }
 ```
 
@@ -37,7 +45,7 @@ interface ProviderServiceShape {
 | `HttpProviderLive(url, options?)` | None | HTTP transport + provider in one layer |
 | `WebSocketProviderLive(url, options?)` | None | WebSocket transport + provider |
 | `FallbackHttpProviderLive(endpoints)` | None | Multi-endpoint fallback provider |
-| `FallbackHttpProviderFromUrls(...urls)` | None | Shorthand for URL-only fallback |
+| `FallbackHttpProviderFromUrls(urls)` | None | Shorthand for URL-only fallback |
 
 ## Basic Usage
 
@@ -47,10 +55,7 @@ import { Services, Presets } from "@kundera-sn/kundera-effect";
 
 const program = Effect.gen(function* () {
   const provider = yield* Services.ProviderService;
-  return yield* provider.request<string>({
-    method: "starknet_chainId",
-    params: [],
-  });
+  return yield* provider.request<string>("starknet_chainId", []);
 }).pipe(
   Effect.provide(Presets.SepoliaProvider())
 );
@@ -64,20 +69,20 @@ import { Services } from "@kundera-sn/kundera-effect";
 // HTTP with custom options
 const provider = Services.HttpProviderLive("https://my-rpc.example.com", {
   timeout: 30_000,
-  headers: { "x-api-key": "..." },
+  fetchOptions: { headers: { "x-api-key": "..." } },
 });
 
-// Fallback across multiple endpoints
+// Fallback across multiple endpoints (tried in order, first = primary)
 const fallback = Services.FallbackHttpProviderLive([
-  { url: "https://primary.example.com", priority: 1 },
-  { url: "https://secondary.example.com", priority: 2 },
+  { url: "https://primary.example.com", attempts: 3, retryDelayMs: 200 },
+  { url: "https://secondary.example.com", attempts: 2 },
 ]);
 
-// Shorthand: URLs only, equal priority
-const fallback2 = Services.FallbackHttpProviderFromUrls(
+// Shorthand: URLs only, tried in order
+const fallback2 = Services.FallbackHttpProviderFromUrls([
   "https://primary.example.com",
   "https://secondary.example.com",
-);
+]);
 ```
 
 ## Error Handling

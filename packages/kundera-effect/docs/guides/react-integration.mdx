@@ -1,248 +1,541 @@
 ---
 title: React Integration
-description: Use kundera-effect services in React applications with Effect runtime management.
+description: Use kundera-effect in React with effect-atom for reactive Starknet dApps.
 ---
 
 # React Integration
 
-This guide covers patterns for using `@kundera-sn/kundera-effect` in React applications — managing Effect runtime, wallet connections, and contract reads in a component lifecycle.
+This guide covers the recommended patterns for using `@kundera-sn/kundera-effect` in React applications using [`effect-atom`](https://github.com/tim-smart/effect-atom) — the official reactive binding for Effect-TS.
 
-## Runtime Management
+## Installation
 
-Create a single Effect runtime at the app level and reuse it across components:
+```bash
+pnpm add @effect-atom/atom @effect-atom/atom-react @kundera-sn/kundera-effect effect
+```
+
+Wrap your app with `RegistryProvider` at the root:
+
+```tsx
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { RegistryProvider } from "@effect-atom/atom-react";
+import { App } from "./App";
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <RegistryProvider>
+      <App />
+    </RegistryProvider>
+  </StrictMode>
+);
+```
+
+## Provider Runtime
+
+Create a single `Atom.runtime` at module level from your Effect layers. This is the bridge between Effect services and React atoms.
 
 ```typescript
-import { Effect, Layer, ManagedRuntime } from "effect";
-import { Presets } from "@kundera-sn/kundera-effect";
+import { Atom } from "@effect-atom/atom";
+import { Layer } from "effect";
+import { Presets, Services } from "@kundera-sn/kundera-effect";
 
-// Create runtime once at app initialization
-const AppRuntime = ManagedRuntime.make(Presets.SepoliaProvider());
+const RPC_URL = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_8/demo";
 
-// Use in components
-async function fetchBlockNumber() {
-  const runtime = await AppRuntime.runtime();
-  return runtime.runPromise(JsonRpc.blockNumber());
+// Compose layers once — provider + contract reads
+const providerLayer = Presets.createProvider(RPC_URL);
+const readLayer = Layer.mergeAll(
+  providerLayer,
+  Services.ContractLive.pipe(Layer.provide(providerLayer))
+);
+
+// Create runtime — this powers all read atoms
+export const provider = Atom.runtime(readLayer);
+```
+
+**Rules:**
+- Create the runtime at **module level**, never inside a component
+- Compose all layers **before** passing to `Atom.runtime`
+- One runtime per dependency graph (read-only provider, wallet stack, etc.)
+
+## Reading Chain Data
+
+Use `provider.atom(effect)` to create reactive read atoms. Subscribe with `useAtomValue`.
+
+```typescript
+import { JsonRpc } from "@kundera-sn/kundera-effect";
+
+export const blockNumberAtom = provider.atom(JsonRpc.blockNumber());
+export const chainIdAtom = provider.atom(JsonRpc.chainId());
+```
+
+In your component, `useAtomValue` returns a `Result` with three states — **Initial** (loading), **Success** (data ready), **Failure** (error):
+
+```tsx
+import { useAtomValue } from "@effect-atom/atom-react";
+import { Result } from "@effect-atom/atom";
+import { blockNumberAtom, chainIdAtom } from "./atoms";
+
+function ChainInfo() {
+  const blockNumber = useAtomValue(blockNumberAtom);
+  const chainId = useAtomValue(chainIdAtom);
+
+  return (
+    <div>
+      <p>
+        Block:{" "}
+        {Result.builder(blockNumber)
+          .onInitial(() => "Loading...")
+          .onSuccess((n: number) => n.toLocaleString())
+          .onFailure(() => "Failed to fetch")
+          .render()}
+      </p>
+      <p>
+        Chain:{" "}
+        {Result.builder(chainId)
+          .onInitial(() => "...")
+          .onSuccess((id: string) => id)
+          .onFailure(() => "Error")
+          .render()}
+      </p>
+    </div>
+  );
 }
 ```
 
-## Hook Pattern: useEffect + runPromise
+No `useState`, no `useEffect`, no manual loading flags. The atom handles the lifecycle.
 
-The simplest pattern — run an Effect in a React `useEffect`:
+## Writable State
+
+Use `Atom.make` for client-side state that doesn't come from Effect services:
 
 ```typescript
-import { useEffect, useState } from "react";
-import { Effect } from "effect";
-import { JsonRpc, Presets } from "@kundera-sn/kundera-effect";
+import { Atom } from "@effect-atom/atom";
+import type { StarknetWindowObject } from "@kundera-sn/kundera-ts/provider";
 
-function BlockNumber() {
-  const [blockNum, setBlockNum] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+export const swoAtom = Atom.make<StarknetWindowObject | null>(null);
+export const addressAtom = Atom.make<string | null>(null);
+```
 
-  useEffect(() => {
-    const program = JsonRpc.blockNumber().pipe(
-      Effect.provide(Presets.SepoliaProvider())
-    );
+Read and write with `useAtom`:
 
-    Effect.runPromise(program)
-      .then(setBlockNum)
-      .catch((e) => setError(String(e)));
-  }, []);
+```tsx
+import { useAtom } from "@effect-atom/atom-react";
+import { swoAtom, addressAtom } from "./atoms";
 
-  if (error) return <div>Error: {error}</div>;
-  if (blockNum === null) return <div>Loading...</div>;
-  return <div>Block: {blockNum}</div>;
+function WalletCard() {
+  const [swo, setSwo] = useAtom(swoAtom);
+  const [address, setAddress] = useAtom(addressAtom);
+
+  const handleConnect = async () => {
+    const connection = await connectWallet(); // your starknetkit wrapper
+    if (!connection) return;
+    setSwo(connection.swo);
+    setAddress(connection.address);
+  };
+
+  const handleDisconnect = async () => {
+    await disconnectWallet();
+    setSwo(null);
+    setAddress(null);
+  };
+
+  if (!swo) {
+    return <button onClick={handleConnect}>Connect Wallet</button>;
+  }
+
+  return (
+    <div>
+      <code>{address}</code>
+      <button onClick={handleDisconnect}>Disconnect</button>
+    </div>
+  );
 }
 ```
 
-## Hook Pattern: useCallback for Actions
+## Parameterized Queries with Atom.family
 
-For user-triggered actions (button clicks, form submissions):
+Use `Atom.family` to create atoms keyed by a parameter. Each unique key gets its own cached atom instance:
 
 ```typescript
-import { useCallback, useState } from "react";
+import { Atom } from "@effect-atom/atom";
 import { Effect } from "effect";
-import { Services, Presets } from "@kundera-sn/kundera-effect";
+import { Services } from "@kundera-sn/kundera-effect";
+import { ContractAddress, Uint256 } from "@kundera-sn/kundera-ts";
 
-function TransferButton({ swo, recipient, amount }) {
-  const [txHash, setTxHash] = useState<string | null>(null);
+const ETH_TOKEN = "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
+
+const ERC20_ABI = [
+  {
+    type: "function" as const,
+    name: "balance_of",
+    inputs: [{ name: "account", type: "core::starknet::contract_address::ContractAddress" }],
+    outputs: [{ type: "core::integer::u256" }],
+    state_mutability: "view" as const,
+  },
+] as const;
+
+export const balanceOf = Atom.family((address: string) =>
+  provider.atom(
+    Services.readContract({
+      contractAddress: ContractAddress(ETH_TOKEN),
+      abi: ERC20_ABI,
+      functionName: "balance_of",
+      args: [ContractAddress(address)],
+    }).pipe(Effect.map(Uint256.toBigInt))
+  )
+);
+```
+
+Consume it with conditional rendering — only subscribe when an address exists:
+
+```tsx
+import { useAtomValue } from "@effect-atom/atom-react";
+import { Result } from "@effect-atom/atom";
+import { addressAtom, balanceOf } from "./atoms";
+
+function BalanceCard() {
+  const address = useAtomValue(addressAtom);
+  if (!address) return <p>Connect wallet to view balance</p>;
+  return <BalanceDisplay address={address} />;
+}
+
+function BalanceDisplay({ address }: { address: string }) {
+  const result = useAtomValue(balanceOf(address));
+
+  return (
+    <div>
+      {Result.builder(result)
+        .onInitial(() => "Loading...")
+        .onSuccess((balance: bigint) => `${formatEth(balance)} ETH`)
+        .onFailure(() => "Failed to read balance")
+        .render()}
+    </div>
+  );
+}
+```
+
+When `address` changes, `BalanceDisplay` unmounts and remounts with a new atom — triggering a fresh fetch automatically.
+
+## Wallet Mutations
+
+Wallet operations (transfer, sign) require a `StarknetWindowObject` that's only available after connection. Since the wallet layer is **dynamic**, use imperative `Effect.runPromise` for mutations instead of atoms:
+
+```typescript
+import { Effect, Either, Layer } from "effect";
+import { Presets, Services } from "@kundera-sn/kundera-effect";
+import type { StarknetWindowObject } from "@kundera-sn/kundera-ts/provider";
+
+const RPC_URL = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_8/demo";
+
+export async function runWithWallet<A, R>(
+  swo: StarknetWindowObject,
+  program: Effect.Effect<A, unknown, R>,
+): Promise<Either.Either<A, unknown>> {
+  const layer = Presets.SepoliaWalletStack({ swo, rpcUrl: RPC_URL });
+  const provided = Effect.either(program).pipe(
+    Effect.provide(layer as Layer.Layer<R, never, never>),
+  );
+  return Effect.runPromise(provided);
+}
+```
+
+Define Effect programs as plain functions:
+
+```typescript
+import { ContractAddress, Uint256 } from "@kundera-sn/kundera-ts";
+
+export const transferZeroEth = (recipient: string) =>
+  Effect.gen(function* () {
+    const contractWrite = yield* Services.ContractWriteService;
+    const tx = yield* contractWrite.invokeContract({
+      contractAddress: ContractAddress(ETH_TOKEN),
+      abi: ERC20_ABI,
+      functionName: "transfer",
+      args: [ContractAddress(recipient), Uint256.from(0n)],
+    });
+    return tx.transactionHash;
+  });
+```
+
+Use in components:
+
+```tsx
+import { useAtomValue } from "@effect-atom/atom-react";
+import { Either } from "effect";
+import { swoAtom, addressAtom, runWithWallet, transferZeroEth } from "./atoms";
+
+function TransferButton() {
+  const swo = useAtomValue(swoAtom);
+  const address = useAtomValue(addressAtom);
   const [pending, setPending] = useState(false);
 
-  const handleTransfer = useCallback(async () => {
+  const handleTransfer = async () => {
+    if (!swo || !address) return;
     setPending(true);
     try {
-      const program = Effect.gen(function* () {
-        const contractWrite = yield* Services.ContractWriteService;
-        const result = yield* contractWrite.invoke({
-          abi: erc20Abi,
-          address: tokenAddress,
-          functionName: "transfer",
-          args: [recipient, amount],
-        });
-        return result.transaction_hash;
-      }).pipe(
-        Effect.provide(Presets.SepoliaWalletStack({ swo }))
-      );
-
-      const hash = await Effect.runPromise(program);
-      setTxHash(hash);
-    } catch (e) {
-      console.error(e);
+      const result = await runWithWallet(swo, transferZeroEth(address));
+      if (Either.isLeft(result)) {
+        console.error("Transfer failed:", result.left);
+      } else {
+        console.log("TX hash:", result.right);
+      }
     } finally {
       setPending(false);
     }
-  }, [swo, recipient, amount]);
+  };
 
   return (
-    <button onClick={handleTransfer} disabled={pending}>
-      {pending ? "Sending..." : "Transfer"}
+    <button onClick={handleTransfer} disabled={!swo || pending}>
+      {pending ? "Sending..." : "Transfer 0 ETH"}
     </button>
   );
 }
 ```
 
-## Wallet Connection Pattern
+**Why imperative for mutations?** The wallet layer depends on the `StarknetWindowObject` which is only available after the user connects. Atoms work best with static runtimes. For dynamic dependencies, imperative `Effect.runPromise` is the natural fit.
 
-Manage wallet state with React context:
+## Auto-Refresh and Cache Lifetime
 
-```typescript
-import { createContext, useContext, useState, useCallback } from "react";
-import { Effect } from "effect";
-import { Services, Presets } from "@kundera-sn/kundera-effect";
-import type { StarknetWindowObject } from "@kundera-sn/kundera-ts/provider";
-
-interface WalletState {
-  swo: StarknetWindowObject | null;
-  address: string | null;
-  connect: (swo: StarknetWindowObject) => Promise<void>;
-}
-
-const WalletContext = createContext<WalletState>(null!);
-
-export function WalletProvider({ children }) {
-  const [swo, setSwo] = useState<StarknetWindowObject | null>(null);
-  const [address, setAddress] = useState<string | null>(null);
-
-  const connect = useCallback(async (walletSwo: StarknetWindowObject) => {
-    const program = Effect.gen(function* () {
-      const wallet = yield* Services.WalletProviderService;
-      const accounts = yield* wallet.requestAccounts();
-      return accounts[0];
-    }).pipe(
-      Effect.provide(Services.WalletProviderLive(walletSwo))
-    );
-
-    const addr = await Effect.runPromise(program);
-    setSwo(walletSwo);
-    setAddress(addr);
-  }, []);
-
-  return (
-    <WalletContext.Provider value={{ swo, address, connect }}>
-      {children}
-    </WalletContext.Provider>
-  );
-}
-
-export const useWallet = () => useContext(WalletContext);
-```
-
-## Contract Read Hook
-
-A reusable hook for contract reads:
+By default, atoms fetch once on mount. For data that changes frequently (like block numbers), add auto-refresh behaviors:
 
 ```typescript
-import { useEffect, useState } from "react";
-import { Effect } from "effect";
-import { Services, Presets } from "@kundera-sn/kundera-effect";
-import type { Abi } from "@kundera-sn/kundera-ts/abi";
+import { Atom } from "@effect-atom/atom";
+import { JsonRpc } from "@kundera-sn/kundera-effect";
 
-interface UseContractReadOptions {
-  abi: Abi;
-  address: string;
-  functionName: string;
-  args: unknown[];
-  enabled?: boolean;
-}
-
-function useContractRead<T>({ abi, address, functionName, args, enabled = true }: UseContractReadOptions) {
-  const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!enabled) return;
-
-    setLoading(true);
-    const program = Effect.gen(function* () {
-      const contract = yield* Services.ContractService;
-      return yield* contract.readContract({ abi, address, functionName, args });
-    }).pipe(
-      Effect.provide(Presets.MainnetProvider()),
-      Effect.provide(Services.ContractLive),
-    );
-
-    Effect.runPromise(program)
-      .then((result) => setData(result as T))
-      .catch((e) => setError(e instanceof Error ? e : new Error(String(e))))
-      .finally(() => setLoading(false));
-  }, [address, functionName, JSON.stringify(args), enabled]);
-
-  return { data, error, loading };
-}
-
-// Usage
-function Balance({ owner }) {
-  const { data: balance, loading } = useContractRead<bigint>({
-    abi: erc20Abi,
-    address: TOKEN_ADDRESS,
-    functionName: "balanceOf",
-    args: [owner],
-  });
-
-  if (loading) return <span>...</span>;
-  return <span>{balance?.toString()}</span>;
-}
-```
-
-## Error Boundaries
-
-Handle Effect errors in React error boundaries:
-
-```typescript
-import { Effect, Either } from "effect";
-
-// Convert Effect errors to React-friendly format
-async function runSafe<A>(effect: Effect.Effect<A, unknown, never>): Promise<Either.Either<unknown, A>> {
-  return Effect.runPromise(Effect.either(effect));
-}
-
-// In component
-const result = await runSafe(
-  JsonRpc.blockNumber().pipe(Effect.provide(Presets.SepoliaProvider()))
+// Re-fetch when the user returns to the tab
+export const blockNumberAtom = provider.atom(JsonRpc.blockNumber()).pipe(
+  Atom.refreshOnWindowFocus,
 );
 
-if (Either.isLeft(result)) {
-  // Handle error in UI
-} else {
-  // Use result.right
+// Keep the atom alive even when no component subscribes
+// (prevents re-fetching on remount)
+export const chainIdAtom = provider.atom(JsonRpc.chainId()).pipe(
+  Atom.keepAlive,
+);
+
+// Combine: auto-refresh + keep alive
+export const latestBlockAtom = provider.atom(JsonRpc.blockNumber()).pipe(
+  Atom.refreshOnWindowFocus,
+  Atom.keepAlive,
+);
+```
+
+<Info>
+`Atom.keepAlive` prevents the atom from being garbage collected when all subscribers unmount. Use it for data that's expensive to re-fetch and rarely changes (chain ID, contract metadata).
+</Info>
+
+## Manual Refresh
+
+Use `useAtomRefresh` to give users a "refresh" button:
+
+```tsx
+import { useAtomValue, useAtomRefresh } from "@effect-atom/atom-react";
+import { Result } from "@effect-atom/atom";
+import { blockNumberAtom } from "./atoms";
+
+function BlockNumber() {
+  const result = useAtomValue(blockNumberAtom);
+  const refresh = useAtomRefresh(blockNumberAtom);
+
+  return (
+    <div>
+      <p>
+        Block:{" "}
+        {Result.builder(result)
+          .onInitial(() => "Loading...")
+          .onSuccess((n: number) => n.toLocaleString())
+          .onFailure(() => "Error")
+          .render()}
+      </p>
+      <button onClick={refresh}>Refresh</button>
+    </div>
+  );
 }
 ```
+
+## Suspense Mode
+
+For apps using React Suspense boundaries, use `useAtomSuspense` instead of `useAtomValue`. This throws a promise during loading and an error on failure, letting Suspense/ErrorBoundary handle those states:
+
+```tsx
+import { useAtomSuspense } from "@effect-atom/atom-react";
+import { Suspense } from "react";
+import { blockNumberAtom } from "./atoms";
+
+function BlockNumberDisplay() {
+  // Suspends until data is ready — no Initial/Failure handling needed
+  const blockNumber = useAtomSuspense(blockNumberAtom);
+
+  return <p>Block: {blockNumber.toLocaleString()}</p>;
+}
+
+function App() {
+  return (
+    <Suspense fallback={<p>Loading block...</p>}>
+      <BlockNumberDisplay />
+    </Suspense>
+  );
+}
+```
+
+<Warning>
+`useAtomSuspense` throws on failure. Wrap with an [Error Boundary](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary) to catch failures gracefully.
+</Warning>
+
+## Mutations as Atoms
+
+For operations that benefit from reactive state tracking (pending/success/failure), you can model them as atoms using `runtime.fn` and `useAtomSet`. The effect must only depend on services available in the runtime's layer:
+
+```typescript
+import { Atom } from "@effect-atom/atom";
+import { Effect } from "effect";
+import { JsonRpc } from "@kundera-sn/kundera-effect";
+
+// Mutation atom that fetches a block — uses only ProviderService (in readLayer)
+export const fetchBlockAtom = provider.fn(
+  (blockNumber: number) => JsonRpc.getBlockWithTxHashes(blockNumber),
+);
+```
+
+Use `useAtomSet` to trigger the mutation and `useAtomValue` to track its state:
+
+```tsx
+import { useAtomValue, useAtomSet } from "@effect-atom/atom-react";
+import { Result } from "@effect-atom/atom";
+import { fetchBlockAtom } from "./atoms";
+
+function BlockLookup() {
+  const result = useAtomValue(fetchBlockAtom);
+  const fetchBlock = useAtomSet(fetchBlockAtom);
+
+  return (
+    <div>
+      <button onClick={() => fetchBlock(123456)}>
+        Fetch Block #123456
+      </button>
+      {Result.builder(result)
+        .onInitial(() => null)
+        .onSuccess((block) => <p>Block hash: {block.block_hash}</p>)
+        .onFailure(() => <p>Fetch failed</p>)
+        .render()}
+    </div>
+  );
+}
+```
+
+<Info>
+`runtime.fn` is best when the effect only depends on services in the runtime's layer. For **wallet mutations** (which require `ContractWriteService`, `WalletProviderService`, etc.), stick with the imperative `runWithWallet` pattern shown above — the wallet layer is dynamic (created after user connects) and can't be baked into a static runtime.
+</Info>
+
+## Derived Atoms
+
+Transform an atom's value with `Atom.map`:
+
+```typescript
+import { Atom, Result } from "@effect-atom/atom";
+import { blockNumberAtom } from "./atoms";
+
+// Derive a formatted string from block number
+export const blockLabelAtom = Atom.map(blockNumberAtom, (result) =>
+  Result.match(result, {
+    onInitial: () => "Loading...",
+    onSuccess: (n) => `Block #${n.toLocaleString()}`,
+    onFailure: () => "Error",
+  }),
+);
+```
+
+For combining multiple atoms, use `Atom.readable`:
+
+```typescript
+import { Atom, Result } from "@effect-atom/atom";
+import { blockNumberAtom, chainIdAtom } from "./atoms";
+
+export const networkInfoAtom = Atom.readable((get) => {
+  const block = get(blockNumberAtom);
+  const chain = get(chainIdAtom);
+  return { block, chain };
+});
+```
+
+## Error Handling
+
+Handle errors using `Result` pattern matching with `Cause` for detailed error inspection:
+
+```tsx
+import { Cause } from "effect";
+import { Result } from "@effect-atom/atom";
+import { useAtomValue } from "@effect-atom/atom-react";
+
+function BalanceWithErrors({ address }: { address: string }) {
+  const result = useAtomValue(balanceOf(address));
+
+  return Result.match(result, {
+    onInitial: () => <p>Loading...</p>,
+    onSuccess: (balance) => <p>{formatEth(balance)} ETH</p>,
+    onFailure: (cause) => {
+      const error = Cause.squash(cause);
+
+      if ("_tag" in error && error._tag === "TransportError") {
+        return <p>Network error — check your connection</p>;
+      }
+      if ("_tag" in error && error._tag === "ContractError") {
+        return <p>Contract call failed: {error.message}</p>;
+      }
+
+      return <p>Unknown error: {String(error)}</p>;
+    },
+  });
+}
+```
+
+## Architecture Summary
+
+| Concern | Pattern | Tool |
+|---------|---------|------|
+| Provider setup | `Atom.runtime(layer)` | Module-level, static |
+| Chain reads | `provider.atom(effect)` | Reactive, cached |
+| Client state | `Atom.make(value)` | Writable atoms |
+| Parameterized reads | `Atom.family(fn)` | Keyed atom instances |
+| Async rendering | `Result.builder(result)` | Initial / Success / Failure |
+| Wallet mutations | `Effect.runPromise` | Imperative, dynamic layer |
+| Auto-refresh | `Atom.refreshOnWindowFocus` | Re-fetch on tab focus |
+| Cache lifetime | `Atom.keepAlive` | Prevent GC on unmount |
+| Manual refresh | `useAtomRefresh(atom)` | User-triggered re-fetch |
+| Suspense | `useAtomSuspense(atom)` | React Suspense integration |
+| Mutation atoms | `runtime.fn(params => effect)` | Reactive state tracking |
+| Derived values | `Atom.map(atom, fn)` / `Atom.readable(get => ...)` | Transform or combine atoms |
+
+## Common Mistakes
+
+- **Creating runtimes inside components** — `Atom.runtime` must be at module level. Creating it in a component body causes a new runtime on every render.
+- **Forgetting `RegistryProvider`** — all hooks throw without a `RegistryProvider` ancestor. Wrap at the app root.
+- **Using `useAtomValue` for dynamic wallet layers** — atoms need static layers. Use imperative `Effect.runPromise` for post-connection wallet operations.
+- **Not wrapping `useAtomSuspense` in error boundaries** — failures throw. Add an error boundary or users see a white screen.
+- **Stale `Atom.family` references** — `Atom.family` returns a new atom each call. In loops, memoize with a `Map` or React `useMemo`.
 
 ## Tips
 
-- **One runtime per app** — don't create a new runtime per component render
-- **Layer outside render** — define layers as module-level constants, not inside components
-- **Error at boundary** — use `Effect.either` or `Effect.catchAll` before `runPromise`
-- **Cleanup** — use `ManagedRuntime.dispose` in cleanup when using scoped resources (WebSocket)
+- **One runtime per layer graph** — don't create runtimes inside components
+- **Compose layers before `Atom.runtime`** — never chain multiple `Effect.provide` calls
+- **Use `Atom.family` for dynamic keys** — each unique param gets a separate cached atom
+- **Split reads and writes** — atoms for reads, imperative for wallet mutations
+- **`Result.builder` over manual state** — eliminates useState/useEffect boilerplate for async data
+- **Conditional rendering for optional deps** — render the atom consumer only when the key exists
+- **`Atom.keepAlive` for expensive data** — chain ID, contract ABIs, config that rarely changes
+- **`Atom.refreshOnWindowFocus` for live data** — block number, balances, anything that drifts
 
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="TanStack Query" icon="react" href="/effect/guides/tanstack-query">
+    Alternative React integration for non-Effect codebases.
+  </Card>
   <Card title="Presets" icon="sliders" href="/effect/modules/presets">
     Pre-composed layers for common setups.
   </Card>
-  <Card title="Wallet Provider" icon="wallet" href="/effect/services/wallet-provider">
-    Wallet integration service.
+  <Card title="Layers" icon="layer-group" href="/effect/guides/layers">
+    Layer composition patterns and service graph.
   </Card>
   <Card title="Error Handling" icon="triangle-exclamation" href="/effect/guides/error-handling">
     Error types and handling patterns.

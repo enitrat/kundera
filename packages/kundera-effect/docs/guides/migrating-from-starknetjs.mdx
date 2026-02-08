@@ -1,0 +1,443 @@
+---
+title: Migrating from starknet.js
+description: Step-by-step migration guide from starknet.js to kundera-effect.
+---
+
+# Migrating from starknet.js
+
+This guide helps you migrate from [starknet.js](https://www.starknetjs.com/) to `@kundera-sn/kundera-effect`. The migration can be done incrementally — you can use both libraries side by side.
+
+## Why Migrate?
+
+| Benefit | starknet.js | kundera-effect |
+|---------|-------------|----------------|
+| **Error handling** | `try/catch` with `unknown` | Typed errors (`RpcError`, `TransportError`, `ContractError`) |
+| **Dependencies** | Pass provider/account everywhere | Services via Layer composition |
+| **Testability** | Mock imports or constructor args | Swap layers with test implementations |
+| **Composition** | Manual promise chaining | `Effect.gen`, `pipe`, retry, timeout built-in |
+| **Type safety** | String hex addresses | Branded `Uint8Array` types (`Felt252Type`, `ContractAddressType`) |
+| **Retry/fallback** | Manual implementation | `Effect.retry`, `Schedule`, `FallbackHttpProviderLive` |
+
+## Core Concepts
+
+### Effect.gen vs async/await
+
+```typescript
+// starknet.js
+async function getBlockAndBalance(address: string) {
+  const provider = new RpcProvider({ nodeUrl: rpcUrl });
+  const block = await provider.getBlockNumber();
+  const balance = await provider.callContract({
+    contractAddress: ethAddress,
+    entrypoint: "balance_of",
+    calldata: [address],
+  });
+  return { block, balance };
+}
+
+// kundera-effect
+import { Effect } from "effect";
+import { JsonRpc, Services } from "@kundera-sn/kundera-effect";
+import { ContractAddress, Uint256 } from "@kundera-sn/kundera-ts";
+
+const getBlockAndBalance = (address: string) =>
+  Effect.gen(function* () {
+    const block = yield* JsonRpc.blockNumber();
+    const balance = yield* Services.readContract({
+      contractAddress: ContractAddress(ethAddress),
+      abi: erc20Abi,
+      functionName: "balance_of",
+      args: [ContractAddress(address)],
+    });
+    return { block, balance };
+  });
+```
+
+`yield*` is like `await` but tracks errors and dependencies in the type system.
+
+### Layer Composition vs Constructor Configuration
+
+```typescript
+// starknet.js — configuration at construction
+const provider = new RpcProvider({ nodeUrl: "https://..." });
+const account = new Account(provider, accountAddress, privateKey);
+
+// kundera-effect — compose layers
+import { Presets } from "@kundera-sn/kundera-effect";
+
+const provider = Presets.SepoliaProvider();
+
+// For wallet operations:
+const walletStack = Presets.SepoliaWalletStack({
+  swo: window.starknet_argentX,
+});
+```
+
+### Typed Errors vs Exceptions
+
+```typescript
+// starknet.js — unknown error type
+try {
+  const result = await provider.getBlockNumber();
+} catch (e) {
+  // e is unknown — must narrow manually
+  if (e instanceof Error) { /* ... */ }
+}
+
+// kundera-effect — errors in type signature
+import { Effect } from "effect";
+import { JsonRpc } from "@kundera-sn/kundera-effect";
+
+const program = JsonRpc.blockNumber();
+// Type: Effect<number, TransportError | RpcError, ProviderService>
+//                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+//                       typed error channel
+
+program.pipe(
+  Effect.catchTag("TransportError", (e) => {
+    // e.operation, e.message — fully typed
+    return Effect.succeed(-1);
+  }),
+);
+```
+
+## Side-by-Side Comparisons
+
+### Getting Block Number
+
+```typescript
+// starknet.js
+import { RpcProvider } from "starknet";
+const provider = new RpcProvider({ nodeUrl: rpcUrl });
+const blockNumber = await provider.getBlockNumber();
+
+// kundera-effect
+import { Effect } from "effect";
+import { JsonRpc, Presets } from "@kundera-sn/kundera-effect";
+
+const blockNumber = await Effect.runPromise(
+  JsonRpc.blockNumber().pipe(Effect.provide(Presets.SepoliaProvider())),
+);
+```
+
+### Reading Contract State
+
+```typescript
+// starknet.js
+import { RpcProvider, Contract } from "starknet";
+
+const provider = new RpcProvider({ nodeUrl: rpcUrl });
+const contract = new Contract(abi, contractAddress, provider);
+const balance = await contract.balance_of(accountAddress);
+
+// kundera-effect
+import { Effect, Layer } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+import { ContractAddress, Uint256 } from "@kundera-sn/kundera-ts";
+
+const providerLayer = Presets.SepoliaProvider();
+const readStack = Layer.mergeAll(
+  providerLayer,
+  Services.ContractLive.pipe(Layer.provide(providerLayer)),
+);
+
+const balance = await Effect.runPromise(
+  Services.readContract({
+    contractAddress: ContractAddress(contractAddress),
+    abi,
+    functionName: "balance_of",
+    args: [ContractAddress(accountAddress)],
+  }).pipe(Effect.map(Uint256.toBigInt), Effect.provide(readStack)),
+);
+```
+
+### Sending Transactions
+
+```typescript
+// starknet.js
+import { RpcProvider, Account, Contract } from "starknet";
+
+const provider = new RpcProvider({ nodeUrl: rpcUrl });
+const account = new Account(provider, accountAddress, privateKey);
+const contract = new Contract(abi, tokenAddress, account);
+
+const tx = await contract.transfer(recipientAddress, { low: 1000n, high: 0n });
+const receipt = await provider.waitForTransaction(tx.transaction_hash);
+
+// kundera-effect (browser wallet)
+import { Effect } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+import { ContractAddress, Uint256 } from "@kundera-sn/kundera-ts";
+
+const program = Effect.gen(function* () {
+  const contractWrite = yield* Services.ContractWriteService;
+  const { transactionHash, receipt } = yield* contractWrite.invokeContractAndWait({
+    contractAddress: ContractAddress(tokenAddress),
+    abi,
+    functionName: "transfer",
+    args: [ContractAddress(recipientAddress), Uint256.from(1000n)],
+  });
+  return { transactionHash, receipt };
+}).pipe(
+  Effect.provide(Presets.SepoliaWalletStack({ swo: window.starknet_argentX })),
+);
+
+const result = await Effect.runPromise(program);
+```
+
+### Event Queries
+
+```typescript
+// starknet.js
+import { RpcProvider } from "starknet";
+
+const provider = new RpcProvider({ nodeUrl: rpcUrl });
+const events = await provider.getEvents({
+  from_block: { block_number: 100000 },
+  to_block: { block_number: 100100 },
+  address: contractAddress,
+  keys: [[transferEventSelector]],
+  chunk_size: 100,
+});
+
+// kundera-effect
+import { Effect } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const eventService = yield* Services.EventService;
+  const response = yield* eventService.getEvents({
+    from_block: { block_number: 100000 },
+    to_block: { block_number: 100100 },
+    address: contractAddress,
+    keys: [[transferEventSelector]],
+    chunk_size: 100,
+  });
+  return response.events;
+}).pipe(
+  Effect.provide(Presets.SepoliaProvider()),
+  Effect.provide(Services.EventLive),
+);
+```
+
+### Event Streaming
+
+```typescript
+// starknet.js — no built-in streaming, must poll manually
+async function pollEvents(provider, filter, onEvent) {
+  let lastBlock = filter.from_block.block_number;
+  while (true) {
+    const events = await provider.getEvents({ ...filter, from_block: { block_number: lastBlock } });
+    for (const event of events.events) onEvent(event);
+    if (events.events.length > 0) {
+      lastBlock = Math.max(...events.events.map((e) => e.block_number)) + 1;
+    }
+    await new Promise((r) => setTimeout(r, 15000));
+  }
+}
+
+// kundera-effect — built-in streaming with deduplication
+import { Effect, Stream } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const eventService = yield* Services.EventService;
+  const stream = eventService.watchEvents({
+    filter: {
+      from_block: "latest",
+      address: contractAddress,
+      keys: [[transferEventSelector]],
+      chunk_size: 100,
+    },
+    pollInterval: "15 seconds",
+  });
+
+  // Consume events reactively
+  yield* Stream.runForEach(stream, (event) =>
+    Effect.log(`Transfer: ${event.from_address}`),
+  );
+});
+```
+
+## Step-by-Step Migration
+
+### Step 1: Add Dependencies
+
+```bash
+pnpm add @kundera-sn/kundera-effect @kundera-sn/kundera-ts effect
+```
+
+### Step 2: Create Base Provider
+
+```typescript
+// src/provider.ts
+import { Presets } from "@kundera-sn/kundera-effect";
+
+export const provider = Presets.SepoliaProvider();
+```
+
+### Step 3: Migrate One Function at a Time
+
+Start with read-only operations:
+
+```typescript
+// Before: starknet.js
+export async function getBalance(address: string) {
+  const provider = new RpcProvider({ nodeUrl: rpcUrl });
+  const contract = new Contract(erc20Abi, ethAddress, provider);
+  return contract.balance_of(address);
+}
+
+// After: kundera-effect
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+import { ContractAddress, Uint256 } from "@kundera-sn/kundera-ts";
+
+export const getBalance = (address: string) =>
+  Services.readContract({
+    contractAddress: ContractAddress(ethAddress),
+    abi: erc20Abi,
+    functionName: "balance_of",
+    args: [ContractAddress(address)],
+  }).pipe(Effect.map(Uint256.toBigInt));
+```
+
+### Step 4: Add Error Handling
+
+```typescript
+export const getBalanceSafe = (address: string) =>
+  getBalance(address).pipe(
+    Effect.retry({ times: 3 }),
+    Effect.timeout("10 seconds"),
+    Effect.catchTag("TransportError", () => Effect.succeed(0n)),
+    Effect.catchTag("ContractError", () => Effect.succeed(0n)),
+  );
+```
+
+### Step 5: Create Test Layers
+
+```typescript
+import { Presets } from "@kundera-sn/kundera-effect";
+
+export const testProvider = Presets.TestProviderPreset({
+  starknet_blockNumber: 42,
+  starknet_chainId: "0x534e5f5345504f4c4941",
+});
+```
+
+## Incremental Migration with tryPromise
+
+You can keep starknet.js in place and wrap it so it composes with Effect:
+
+```typescript
+import { Effect } from "effect";
+import { RpcProvider } from "starknet";
+
+const provider = new RpcProvider({ nodeUrl: rpcUrl });
+
+export const getBlockNumber = () =>
+  Effect.tryPromise({
+    try: () => provider.getBlockNumber(),
+    catch: (error) => new Error(`RPC failed: ${String(error)}`),
+  });
+```
+
+Once you're ready, replace the starknet.js call with the `JsonRpc.blockNumber()` free function and provide a `Provider` layer instead.
+
+## Common Gotchas
+
+### 1. Forgetting to Provide Layers
+
+```typescript
+// ❌ Runtime error: missing ProviderService
+await Effect.runPromise(program);
+
+// ✅ Always provide required layers
+await Effect.runPromise(program.pipe(Effect.provide(provider)));
+```
+
+### 2. Not Yielding Effects
+
+```typescript
+// ❌ Returns Effect, doesn't execute
+Effect.gen(function* () {
+  JsonRpc.blockNumber(); // Missing yield*!
+});
+
+// ✅ Yield all Effects
+Effect.gen(function* () {
+  return yield* JsonRpc.blockNumber();
+});
+```
+
+### 3. Mixing Promises and Effects
+
+```typescript
+// ❌ Breaks Effect error tracking
+Effect.gen(function* () {
+  const result = await somePromise(); // Don't use await inside generators!
+});
+
+// ✅ Wrap promises with Effect.promise
+Effect.gen(function* () {
+  const result = yield* Effect.promise(() => somePromise());
+});
+```
+
+### 4. Address Type Differences
+
+```typescript
+// starknet.js — string addresses
+const address = "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
+
+// kundera-ts — branded Uint8Array
+import { ContractAddress } from "@kundera-sn/kundera-ts";
+const address = ContractAddress("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7");
+// ContractAddressType (branded Uint8Array)
+```
+
+### 5. Uint256 Handling
+
+```typescript
+// starknet.js — { low, high } object or uint256.bnToUint256()
+import { uint256 } from "starknet";
+const amount = uint256.bnToUint256(1000n);
+
+// kundera-ts — Uint256.from() / Uint256.toBigInt()
+import { Uint256 } from "@kundera-sn/kundera-ts";
+const amount = Uint256.from(1000n);
+const bigint = Uint256.toBigInt(amount);
+```
+
+## Quick Reference
+
+| starknet.js | kundera-effect |
+|-------------|----------------|
+| `new RpcProvider({ nodeUrl })` | `Presets.SepoliaProvider()` |
+| `provider.getBlockNumber()` | `JsonRpc.blockNumber()` |
+| `new Contract(abi, addr, provider)` | `Services.readContract({ abi, contractAddress, ... })` |
+| `new Account(provider, addr, key)` | `Presets.SepoliaWalletStack({ swo })` |
+| `contract.functionName(args)` | `Services.readContract({ functionName, args })` |
+| `provider.waitForTransaction(hash)` | `contractWrite.invokeContractAndWait(...)` |
+| `provider.getEvents(filter)` | `eventService.getEvents(filter)` |
+| `try/catch` | `Effect.catchTag("ErrorType", ...)` |
+| `await` | `yield*` |
+| Manual retry loop | `Effect.retry({ times: 3 })` |
+| Manual polling | `eventService.watchEvents({ pollInterval: "15 seconds" })` |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="React Integration" icon="react" href="/effect/guides/react-integration">
+    React patterns with effect-atom.
+  </Card>
+  <Card title="Layers" icon="layer-group" href="/effect/guides/layers">
+    Understanding layer composition.
+  </Card>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/effect/guides/error-handling">
+    Typed error patterns.
+  </Card>
+  <Card title="Testing" icon="flask" href="/effect/guides/testing">
+    Mock layers for unit tests.
+  </Card>
+</CardGroup>

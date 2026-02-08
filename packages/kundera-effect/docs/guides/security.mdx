@@ -1,0 +1,257 @@
+---
+title: Security
+description: Wallet secrets, environment patterns, safe logging, and key redaction for production Starknet dApps.
+---
+
+# Security
+
+Starknet dApps handle wallet secrets, signing operations, and sensitive RPC data. This guide covers the security patterns you should follow when building with kundera-effect.
+
+## Wallet Secrets
+
+### Never Store Private Keys in Code
+
+```typescript
+// ❌ NEVER
+const PRIVATE_KEY = "0x123abc...";
+
+// ✅ Environment variable (server-side only)
+const PRIVATE_KEY = process.env.STARKNET_PRIVATE_KEY;
+if (!PRIVATE_KEY) throw new Error("STARKNET_PRIVATE_KEY not set");
+```
+
+### Browser Wallets Are the Only Safe Path for Frontend
+
+In browser dApps, never handle raw private keys. Use `StarknetWindowObject` (SNIP-compatible wallet extensions):
+
+```typescript
+import { Presets } from "@kundera-sn/kundera-effect";
+
+// The wallet extension holds the private key — your app never sees it
+const stack = Presets.SepoliaWalletStack({
+  swo: window.starknet_argentX,
+});
+```
+
+### Environment Variables
+
+For backend scripts and bots that need direct key access:
+
+```bash
+# .env (NEVER commit this file)
+STARKNET_PRIVATE_KEY=0x...
+STARKNET_ACCOUNT_ADDRESS=0x...
+STARKNET_RPC_URL=https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_8/YOUR_KEY
+```
+
+```typescript
+import { Effect } from "effect";
+import { Presets } from "@kundera-sn/kundera-effect";
+
+const rpcUrl = process.env.STARKNET_RPC_URL;
+if (!rpcUrl) throw new Error("STARKNET_RPC_URL not set");
+
+const provider = Presets.createProvider(rpcUrl);
+```
+
+Add to `.gitignore`:
+```
+.env
+.env.local
+.env.*.local
+```
+
+## Safe Logging
+
+### Redact Sensitive Fields
+
+Never log raw wallet responses, transaction payloads, or RPC params that may contain addresses or calldata you don't want exposed:
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+// ❌ BAD: Logs entire RPC payload including potential secrets
+Services.withRequestInterceptor((ctx) =>
+  Effect.sync(() => {
+    console.log("Request:", JSON.stringify(ctx));  // May contain API keys in URL
+    return ctx;
+  }),
+);
+
+// ✅ GOOD: Log method name only, redact params
+Services.withRequestInterceptor((ctx) =>
+  Effect.sync(() => {
+    console.log(`→ ${ctx.method}`);
+    return ctx;
+  }),
+);
+```
+
+### Redact Error Causes
+
+Error causes may contain request bodies, URLs with API keys, or internal state:
+
+```typescript
+import { Cause, Effect } from "effect";
+
+const program = myEffect.pipe(
+  Effect.catchAllCause((cause) => {
+    // ❌ BAD: Cause.pretty may expose URLs and params
+    console.error(Cause.pretty(cause));
+
+    // ✅ GOOD: Extract only what's needed
+    const error = Cause.squash(cause);
+    if ("_tag" in error) {
+      console.error(`Error: ${error._tag} — ${error.message}`);
+    }
+    return Effect.succeed(null);
+  }),
+);
+```
+
+### Production Logging
+
+In production, strip debug interceptors and use structured logging:
+
+```typescript
+// Only enable verbose interceptors in development
+if (process.env.NODE_ENV === "development") {
+  program = program.pipe(
+    Services.withRequestInterceptor((ctx) =>
+      Effect.sync(() => { console.debug(`→ ${ctx.method}`); return ctx; }),
+    ),
+  );
+}
+```
+
+## API Key Protection
+
+### Never Expose Keys in Frontend Bundles
+
+```typescript
+// ❌ BAD: Key is visible in browser devtools
+const provider = Presets.createProvider(
+  "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_8/sk-1234567890",
+);
+
+// ✅ GOOD: Use a backend proxy that adds the key
+const provider = Presets.createProvider("https://my-backend.example.com/rpc");
+```
+
+### RPC URL Best Practices
+
+| Environment | Pattern |
+|-------------|---------|
+| Development | Use public endpoints (BlastAPI free) — no key needed |
+| Staging | Use `.env` with test API keys |
+| Production (browser) | Proxy through your backend, add key server-side |
+| Production (server) | Environment variable, never hardcoded |
+
+## Transaction Safety
+
+### Always Validate Before Signing
+
+```typescript
+import { Effect, Either } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+import { ContractAddress, Uint256 } from "@kundera-sn/kundera-ts";
+
+const safeTransfer = (params: { to: string; amount: bigint }) =>
+  Effect.gen(function* () {
+    // Validate address format
+    const recipient = ContractAddress(params.to);
+
+    // Validate amount is reasonable (prevent accidental huge transfers)
+    if (params.amount > 100n * 10n ** 18n) {
+      return yield* Effect.fail(new Error("Transfer exceeds safety limit"));
+    }
+
+    const contractWrite = yield* Services.ContractWriteService;
+    return yield* contractWrite.invokeContract({
+      contractAddress: ContractAddress(ETH_TOKEN),
+      abi: ERC20_ABI,
+      functionName: "transfer",
+      args: [recipient, Uint256.from(params.amount)],
+    });
+  });
+```
+
+### Simulate Before Execution
+
+Use `simulateContract` to dry-run transactions before sending:
+
+```typescript
+import { Effect } from "effect";
+import { Services } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  // Simulate first
+  const simulation = yield* Services.simulateContract({
+    contractAddress,
+    abi,
+    functionName: "transfer",
+    args: [recipient, amount],
+    simulationFlags: ["SKIP_VALIDATE", "SKIP_FEE_CHARGE"],
+  });
+
+  // Check simulation result before proceeding
+  console.log("Estimated fee:", simulation.feeEstimation);
+
+  // Only then execute
+  const contractWrite = yield* Services.ContractWriteService;
+  return yield* contractWrite.invokeContract({
+    contractAddress,
+    abi,
+    functionName: "transfer",
+    args: [recipient, amount],
+  });
+});
+```
+
+## Typed Errors Prevent Silent Failures
+
+kundera-effect uses typed error channels — errors can't be silently ignored:
+
+```typescript
+// The type system tells you exactly what can go wrong:
+// Effect<Result, ContractError | WalletError | RpcError, ContractWriteService>
+
+// You MUST handle or propagate each error tag
+const program = transferEffect.pipe(
+  Effect.catchTag("WalletError", (e) =>
+    Effect.fail(new Error(`Wallet rejected: ${e.message}`)),
+  ),
+  Effect.catchTag("ContractError", (e) =>
+    Effect.fail(new Error(`Contract call failed: ${e.message}`)),
+  ),
+  Effect.catchTag("RpcError", (e) =>
+    Effect.fail(new Error(`RPC error ${e.code}: ${e.message}`)),
+  ),
+);
+```
+
+## Checklist
+
+- [ ] No private keys in source code
+- [ ] `.env` files in `.gitignore`
+- [ ] API keys not exposed in frontend bundles
+- [ ] Transport interceptors stripped in production
+- [ ] Error logging redacts sensitive fields
+- [ ] Transfers validated before signing
+- [ ] Critical transactions simulated first
+- [ ] All error tags handled (no untyped catch-all)
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Error Handling" icon="triangle-exclamation" href="/effect/guides/error-handling">
+    Typed error patterns.
+  </Card>
+  <Card title="Debugging" icon="bug" href="/effect/guides/debugging">
+    Safe debugging patterns.
+  </Card>
+  <Card title="Wallet Provider" icon="wallet" href="/effect/services/wallet-provider">
+    Wallet integration service.
+  </Card>
+</CardGroup>
