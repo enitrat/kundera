@@ -1,0 +1,67 @@
+---
+session: general
+date: 2026-02-08
+status: partial
+outcome: PARTIAL_PLUS
+---
+
+goal: Implemented core missing kundera-effect primitives/services (AccountService, EventService, BatchService) with tests and full package validation
+now: Apply breaking-change cleanup pass (remove legacy compatibility paths), then update docs/exports to match the new strict API surface
+
+test: pnpm --filter @kundera-sn/kundera-effect test:run && pnpm --filter @kundera-sn/kundera-effect typecheck && pnpm --filter @kundera-sn/kundera-effect build
+
+done_this_session:
+  - task: Implemented AccountService for programmatic signing/execute/declare/deploy flows and fee estimation (non-wallet automation use cases unblocked)
+    files: [packages/kundera-effect/src/services/AccountService.ts]
+  - task: Implemented EventService with polling stream, dedupe, and ABI event decoding
+    files: [packages/kundera-effect/src/services/EventService.ts]
+  - task: Implemented BatchService with requestMany/callMany and queue-based enqueue batching
+    files: [packages/kundera-effect/src/services/BatchService.ts]
+  - task: Added transport/provider batch plumbing (requestRawBatch/requestBatch) required by BatchService
+    files: [packages/kundera-effect/src/services/TransportService.ts, packages/kundera-effect/src/services/ProviderService.ts]
+  - task: Wired new services/presets exports and stack composition, including fallback provider alias and test provider preset
+    files: [packages/kundera-effect/src/services/index.ts, packages/kundera-effect/src/presets/index.ts]
+  - task: Added/updated comprehensive test coverage for AccountService/EventService/BatchService and batch transport behavior
+    files: [packages/kundera-effect/src/services/__tests__/AccountService.test.ts, packages/kundera-effect/src/services/__tests__/EventService.test.ts, packages/kundera-effect/src/services/__tests__/BatchService.test.ts, packages/kundera-effect/src/services/__tests__/TransportService.test.ts, packages/kundera-effect/src/presets/__tests__/index.test.ts]
+
+blockers: []
+
+questions:
+  - Should next pass remove all fallback compatibility branches immediately (e.g., sequential fallback in BatchService when requestBatch is absent), or keep one short deprecation phase?
+  - Should wallet-legacy option aliases (`silentMode` vs `silent_mode`) be removed now in the same breaking pass?
+
+decisions:
+  - breaking_changes_preferred: User confirmed there are no external consumers, so API cleanup should favor correctness/simplicity over backward compatibility.
+  - keep_kundera_ts_as_source_of_truth: New services wrap kundera-ts primitives/builders instead of re-implementing crypto/RPC internals.
+  - strict_validation_pipeline: All new code validated via test/typecheck/build in package scope before handoff.
+
+findings:
+  - account_service_ready: Programmatic account transactions now exist in kundera-effect; previous wallet-only limitation is resolved.
+  - event_stream_ready: Event polling + dedupe + ABI decode is in place and tested; no websocket subscription wrappers yet.
+  - batch_integration_ready: Transport and provider now support batch requests; BatchService can queue and flush batched calls.
+  - cleanup_opportunity: New services still include some compatibility/fallback branches that can now be removed aggressively under breaking-change policy.
+
+worked:
+  - Iterative typecheck-first implementation for new services, then test hardening.
+  - Reusing kundera-ts account hash/signing/ABI/event utilities directly.
+  - Adding integration tests for behavior-critical paths (batch, streams, account tx composition).
+
+failed:
+  - Initial AccountService tests failed before loading WASM crypto backend; fixed by explicit `loadWasmCrypto()` in test setup.
+  - Initial stream tests indexed Chunk like arrays; fixed by converting to arrays before assertions.
+
+next:
+  - Remove legacy compatibility paths in `packages/kundera-effect/src/services/BatchService.ts` and `packages/kundera-effect/src/services/ProviderService.ts`:
+    require `requestBatch` as non-optional in ProviderService shape, delete sequential fallback branch, and fail fast at compile-time instead of runtime.
+  - Remove legacy input aliases and compatibility shims in wallet/account surface:
+    normalize on one naming style (`snake_case` for RPC-facing structures), remove dual-option acceptance where only legacy consumers needed it.
+  - Tighten service contracts for breaking-mode API:
+    make optional transport/provider batch methods required end-to-end, simplify call signatures, and remove dead/legacy overloads.
+  - Integrate cleanup safely by updating these files together in one atomic pass:
+    `packages/kundera-effect/src/services/TransportService.ts`, `packages/kundera-effect/src/services/ProviderService.ts`, `packages/kundera-effect/src/services/BatchService.ts`, `packages/kundera-effect/src/services/index.ts`, and affected tests.
+  - Update docs and top-level package docs to reflect new strict API (no legacy compatibility guarantees).
+  - Optional follow-up from audit backlog (still not implemented): domain primitive schemas and websocket subscription stream wrappers.
+
+files:
+  created: [packages/kundera-effect/src/services/AccountService.ts, packages/kundera-effect/src/services/EventService.ts, packages/kundera-effect/src/services/BatchService.ts, packages/kundera-effect/src/services/__tests__/AccountService.test.ts, packages/kundera-effect/src/services/__tests__/EventService.test.ts, packages/kundera-effect/src/services/__tests__/BatchService.test.ts]
+  modified: [packages/kundera-effect/src/services/TransportService.ts, packages/kundera-effect/src/services/ProviderService.ts, packages/kundera-effect/src/services/index.ts, packages/kundera-effect/src/services/__tests__/TransportService.test.ts, packages/kundera-effect/src/presets/index.ts, packages/kundera-effect/src/presets/__tests__/index.test.ts]

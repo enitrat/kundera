@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/skills/contract-read.ts","./src/skills/contract-write.ts","./src/skills/wallet-account.ts","./src/skills/wallet-modal-starknetkit.ts"],"version":"5.9.3"}

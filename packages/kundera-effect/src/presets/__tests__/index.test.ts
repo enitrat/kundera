@@ -181,4 +181,48 @@ describe("presets", () => {
       expect(writerResult.receipt.transaction_hash).toBe("0xbeef");
     }).pipe(Effect.provide(stack));
   });
+
+  it.effect("FallbackProvider alias accepts url tuples", () => {
+    vi.stubGlobal("fetch", mockedFetch);
+
+    mockedFetch.mockImplementation(async (_input, init) => {
+      const body = JSON.parse(String(init?.body ?? "{}")) as { id?: number; method: string };
+      return new Response(
+        JSON.stringify({
+          jsonrpc: "2.0",
+          id: body.id ?? 1,
+          result: "0x534e5f5345504f4c4941",
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    });
+
+    return Effect.gen(function* () {
+      const chainId = yield* JsonRpc.chainId();
+      expect(chainId).toBe("0x534e5f5345504f4c4941");
+    }).pipe(
+      Effect.provide(
+        Presets.FallbackProvider([
+          "https://rpc-primary.example",
+          "https://rpc-secondary.example",
+        ]),
+      ),
+    );
+  });
+
+  it.effect("TestProviderPreset composes canned responses", () =>
+    Effect.gen(function* () {
+      const chainId = yield* JsonRpc.chainId();
+      expect(chainId).toBe("0x534e5f5345504f4c4941");
+    }).pipe(
+      Effect.provide(
+        Presets.TestProviderPreset({
+          starknet_chainId: "0x534e5f5345504f4c4941",
+        }),
+      ),
+    ),
+  );
 });

@@ -1,190 +1,157 @@
-# Implementation Report: Signed Integer Primitives Library
-Generated: 2026-02-04
+# Implementation Report: kundera-effect Services Audit (6 core services)
+Generated: 2026-02-08T12:00:00Z
 
 ## Task
-Implement signed integer primitives library (Int8, Int16, Int32, Int64, Int128) for kundera-ts with Cairo prime field encoding support.
+Audit and fix 6 service files in `packages/kundera-effect/src/services/` for Effect-TS best practices compliance:
+- NonceManagerService.ts
+- TransactionService.ts
+- WalletProviderService.ts
+- ContractWriteService.ts
+- FeeEstimatorService.ts
+- ContractRegistry.ts
 
-## TDD Summary
+## Audit Results (Per-File)
 
-### Tests Written (First)
-All tests were written before implementation following TDD methodology.
+### NonceManagerService.ts
+| Check | Result |
+|-------|--------|
+| No console.log/warn/error | PASS |
+| No `let` for shared mutable state | PASS |
+| No manual retry loops | PASS (N/A) |
+| No Date.now() inside Effect.gen | PASS |
+| No hardcoded RPC method strings | PASS -- uses `Rpc.ChainIdRequest()`, `Rpc.GetNonceRequest()` |
+| All errors use Data.TaggedError | PASS -- `NonceError` |
+| Layer uses `satisfies *Shape` | PASS -- `satisfies NonceManagerServiceShape` |
+| All functions use Effect.gen/flatMap | PASS |
+| No undocumented `as T` casts | PASS -- no casts |
+| No unused imports/dead code | PASS |
+| **Race condition in consume()** | **FIXED** -- `Ref.get` + `Ref.update` replaced with atomic `Ref.modify` |
+| **Race condition in increment()** | **FIXED** -- `getDelta` + `setDelta` replaced with single `Ref.update` |
 
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/Int8.test.ts` - 41 tests for Int8
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/Int16.test.ts` - 31 tests for Int16
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/Int32.test.ts` - 31 tests for Int32
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/Int64.test.ts` - 30 tests for Int64
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/Int128.test.ts` - 54 tests for Int128
+### TransactionService.ts
+| Check | Result |
+|-------|--------|
+| No console.log/warn/error | PASS |
+| No `let` for shared mutable state | PASS |
+| No manual retry loops | PASS -- uses `Effect.retry` + `Schedule` |
+| No Date.now() inside Effect.gen | PASS |
+| No hardcoded RPC method strings | PASS -- uses `Rpc.GetTransactionReceiptRequest()` |
+| All errors use Data.TaggedError | PASS -- `TransactionError`, `RpcError`, `WalletError` |
+| Layer uses `satisfies *Shape` | PASS -- `satisfies TransactionServiceShape` |
+| All functions use Effect.gen/flatMap | PASS |
+| No undocumented `as T` casts | PASS |
+| No unused imports/dead code | PASS |
 
-### Implementation
-For each signed integer type (Int8, Int16, Int32, Int64, Int128), created:
+### WalletProviderService.ts
+| Check | Result |
+|-------|--------|
+| No console.log/warn/error | PASS |
+| No `let` for shared mutable state | PASS |
+| No manual retry loops | PASS |
+| No Date.now() inside Effect.gen | PASS |
+| No hardcoded RPC method strings | N/A -- wallet methods are SNIP standard strings, not Starknet RPC |
+| All errors use Data.TaggedError | PASS -- `WalletError`, `RpcError` |
+| Layer uses `satisfies *Shape` | PASS -- `satisfies WalletProviderServiceShape` |
+| All functions use Effect.gen/flatMap | PASS |
+| `as T` cast on line 146 | PASS -- documented trust boundary (lines 144-145) |
+| No unused imports/dead code | PASS |
+| **Retry FiberRefs not applied** | **DOCUMENTED** -- added JSDoc explaining the limitation |
 
-1. **`types.ts`** - Branded type definitions using TypeScript's structural typing with brand pattern
-2. **`constants.ts`** - MIN, MAX, SIZE, and PRIME constants
-3. **`errors.ts`** - RangeError and ParseError classes
-4. **`from.ts`** - Factory function accepting bigint/number/string
-5. **`toBigInt.ts`** - Convert to signed bigint
-6. **`toHex.ts`** - Convert to hex string (with `-0x` prefix for negatives)
-7. **`toFelt.ts`** - **CRITICAL**: Cairo field encoding (negative values encoded as PRIME + value)
-8. **`fromFelt.ts`** - Decode from felt back to signed integer
-9. **`Int*.ts`** - Main namespace export with utility functions
-10. **`index.ts`** - Barrel exports
+### ContractWriteService.ts
+| Check | Result |
+|-------|--------|
+| No console.log/warn/error | PASS |
+| No `let` for shared mutable state | PASS |
+| No manual retry loops | PASS |
+| No Date.now() inside Effect.gen | PASS |
+| No hardcoded RPC method strings | PASS -- delegates to FeeEstimatorService/TransactionService |
+| All errors use Data.TaggedError | PASS -- `ContractError` |
+| Layer uses `satisfies *Shape` | PASS -- `satisfies ContractWriteServiceShape` |
+| All functions use Effect.gen/flatMap | PASS |
+| EstimatableTransaction imported from FeeEstimatorService | PASS -- line 24 |
+| No unused imports/dead code | PASS |
+
+### FeeEstimatorService.ts
+| Check | Result |
+|-------|--------|
+| No console.log/warn/error | PASS |
+| No `let` for shared mutable state | PASS |
+| No manual retry loops | PASS |
+| No Date.now() inside Effect.gen | PASS |
+| No hardcoded RPC method strings | PASS -- uses `Rpc.EstimateFeeRequest()` |
+| All errors use Data.TaggedError | PASS (type-only imports) |
+| Layer uses `satisfies *Shape` | PASS -- `satisfies FeeEstimatorServiceShape` |
+| All functions use Effect.gen/flatMap | PASS |
+| No undocumented `as T` casts | PASS |
+| No unused imports/dead code | PASS |
+
+### ContractRegistry.ts
+| Check | Result |
+|-------|--------|
+| No console.log/warn/error | PASS |
+| No `let` for shared mutable state | PASS |
+| No manual retry loops | PASS (N/A) |
+| No Date.now() inside Effect.gen | PASS (N/A) |
+| No hardcoded RPC method strings | PASS (N/A) |
+| Not a Context.Tag (intentional) | PASS -- documented in JSDoc |
+| All `as` casts documented | PASS -- comments on lines 33, 40-41, 45 |
+| No unused imports/dead code | PASS |
+
+## Changes Made
+
+### 1. NonceManagerService.ts -- Atomic nonce operations
+
+**File:** `/Users/msaug/workspace/kundera/packages/kundera-effect/src/services/NonceManagerService.ts`
+
+`consume()` had a race condition: `Ref.get(deltasRef)` followed by `Ref.update(deltasRef, ...)` are two separate operations. If two fibers call `consume()` concurrently for the same address, both read the same delta and both increment by 1, producing duplicate nonces.
+
+Fixed by replacing with `Ref.modify` which atomically reads and updates in a single operation:
+
+```typescript
+// Before (non-atomic):
+const delta = yield* getDelta(key);
+const nonce = onChainNonce + delta;
+yield* setDelta(key, delta + 1n);
+
+// After (atomic):
+const delta = yield* Ref.modify(deltasRef, (deltas) => {
+  const currentDelta = deltas.get(key) ?? 0n;
+  const next = new Map(deltas);
+  next.set(key, currentDelta + 1n);
+  return [currentDelta, next] as const;
+});
+return onChainNonce + delta;
+```
+
+Same fix applied to `increment()` -- replaced `getDelta` + `setDelta` with a single `Ref.update`:
+
+```typescript
+// Before (non-atomic):
+const delta = yield* getDelta(key);
+yield* setDelta(key, delta + 1n);
+
+// After (atomic):
+return Ref.update(deltasRef, (deltas) => {
+  const currentDelta = deltas.get(key) ?? 0n;
+  const next = new Map(deltas);
+  next.set(key, currentDelta + 1n);
+  return next;
+});
+```
+
+### 2. WalletProviderService.ts -- Document retry limitation
+
+**File:** `/Users/msaug/workspace/kundera/packages/kundera-effect/src/services/WalletProviderService.ts`
+
+Added JSDoc to `makeWalletProviderService` documenting that retry FiberRefs (`withRetries`, `withRetrySchedule`) have no effect on wallet calls. Only `RequestOptions.timeoutMs` is forwarded.
 
 ## Test Results
-```
-187 pass
-0 fail
-258 expect() calls
-Ran 187 tests across 5 files. [101.00ms]
-```
-
-## Key Implementation Details
-
-### Cairo Field Encoding (NOT Two's Complement!)
-
-The critical insight is that Cairo uses prime field arithmetic, not two's complement:
-
-```typescript
-// toFelt.ts - Encoding negative values
-export function toFelt(value: Int128Type): Felt252Type {
-  const bigintValue = value as bigint;
-  if (bigintValue >= 0n) {
-    return Felt252.fromBigInt(bigintValue);
-  }
-  // Negative: encode as PRIME + value
-  // e.g., -1 becomes PRIME - 1
-  return Felt252.fromBigInt(PRIME + bigintValue);
-}
-
-// fromFelt.ts - Decoding back to signed
-export function fromFelt(felt: Felt252Type): Int128Type {
-  const value = Felt252.toBigInt(felt);
-  if (value <= MAX) {
-    return from(value);  // Positive
-  }
-  // Value > MAX means negative number encoded as PRIME + negative
-  return from(value - PRIME);
-}
-```
-
-### Test Coverage
-- Positive boundaries: 0, MAX, MAX-1
-- Negative boundaries: MIN, MIN+1, -1
-- toFelt/fromFelt roundtrip for positive AND negative values
-- Verified -1 encodes as PRIME - 1
-- Verified MIN encodes correctly as PRIME + MIN
-
-### Ranges Implemented
-| Type | MIN | MAX |
-|------|-----|-----|
-| Int8 | -128 | 127 |
-| Int16 | -32768 | 32767 |
-| Int32 | -2147483648 | 2147483647 |
-| Int64 | -2^63 | 2^63 - 1 |
-| Int128 | -2^127 | 2^127 - 1 |
-
-## Files Created
-
-### Int8
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/types.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/constants.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/errors.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/from.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/toBigInt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/toHex.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/toFelt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/fromFelt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/Int8.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/index.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int8/Int8.test.ts`
-
-### Int16
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/types.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/constants.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/errors.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/from.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/toBigInt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/toHex.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/toFelt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/fromFelt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/Int16.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/index.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int16/Int16.test.ts`
-
-### Int32
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/types.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/constants.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/errors.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/from.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/toBigInt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/toHex.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/toFelt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/fromFelt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/Int32.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/index.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int32/Int32.test.ts`
-
-### Int64
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/types.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/constants.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/errors.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/from.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/toBigInt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/toHex.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/toFelt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/fromFelt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/Int64.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/index.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int64/Int64.test.ts`
-
-### Int128
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/types.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/constants.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/errors.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/from.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/toBigInt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/toHex.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/toFelt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/fromFelt.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/Int128.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/index.ts`
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/Int128/Int128.test.ts`
-
-### Updated Files
-- `/Users/msaug/workspace/kundera/packages/kundera-ts/src/primitives/index.ts` - Added exports for all signed integer types
-
-## Usage Example
-
-```typescript
-import { Int128, type Int128Type } from '@kundera-sn/kundera-ts';
-
-// Create signed integers
-const positive = Int128.from(42n);
-const negative = Int128.from(-42n);
-const fromString = Int128.from('-12345');
-
-// Convert to Cairo field encoding
-const felt = Int128.toFelt(negative);  // PRIME - 42
-
-// Decode from felt back to signed
-const decoded = Int128.fromFelt(felt);  // -42n
-
-// Utility functions
-Int128.isNegative(negative);  // true
-Int128.isPositive(positive);  // true
-Int128.isZero(Int128.from(0n));  // true
-Int128.equals(positive, Int128.from(42n));  // true
-
-// Constants
-Int128.ZERO;  // 0n
-Int128.ONE;   // 1n
-Int128.MIN;   // -2^127
-Int128.MAX;   // 2^127 - 1
-```
+- Total: 63 tests across 14 files
+- Passed: 63
+- Failed: 0
+- Type errors: 0
 
 ## Notes
-
-1. **No arithmetic operations** - These primitives focus on type safety and Cairo encoding. Arithmetic should be done with regular bigint and then validated.
-
-2. **Pre-existing Uint128/Uint256 test failures** - The repository has incomplete Uint128 and Uint256 modules with tests but no implementation. These are not part of this task.
-
-3. **Internal representation** - Values are stored as signed bigints internally. The branded type system ensures type safety at compile time.
+- All 6 files already complied with the majority of best practices checks. Prior work (Rpc.*Request() migration, EstimatableTransaction dedup) was already complete.
+- The `getDelta` and `setDelta` helpers remain because `get` (read-only) still uses `getDelta` and `reset` still uses `setDelta`. These are fine as non-atomic standalone operations.
+- No architecture changes made. Context.Tag + satisfies pattern is consistent across all services.

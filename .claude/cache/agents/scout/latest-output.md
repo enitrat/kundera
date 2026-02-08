@@ -1,394 +1,277 @@
-# Codebase Report: FunctionRet Type Implementation and Typed decodeOutput
-Generated: 2026-02-05
+# Stale API Usage Report
+Generated: 2026-02-07
 
 ## Summary
-The typed `decodeOutput` feature uses TypeScript's type inference with `abi-wan-kanabi` to provide compile-time type safety for ABI function return values. The `FunctionRet<TAbi, TFunctionName>` type extracts the return type from the ABI definition.
 
-## 1. FunctionRet Type Definition
+Found **35+ files** with stale API usage after the JSON-RPC refactoring. The codebase was refactored to use `provider.request(Rpc.XxxRequest(...))` pattern but documentation still shows old APIs.
 
-### Location
-✓ VERIFIED: External dependency `abi-wan-kanabi@2.2.4`
+---
 
-**File:** `node_modules/.pnpm/abi-wan-kanabi@2.2.4/node_modules/abi-wan-kanabi/dist/kanabi.d.ts`
+## Critical Issues
 
-**Definition:**
+### 1. `starknet_call` Function — KILLED, Still Referenced
+
+**Status**: Function was DELETED in refactor, but docs still import/call it
+
+**Found in 26 locations:**
+
+#### TypeScript Docs (Both `/docs` and `/packages/kundera-ts/docs`)
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `docs/typescript/overview.mdx` | 38, 48, 104, 116, 134 | Imports `starknet_call`, shows usage examples |
+| `packages/kundera-ts/docs/overview.mdx` | 38, 48, 104, 116, 134 | Duplicate of above (symlinked?) |
+| `docs/typescript/api/jsonrpc.mdx` | 42 | Migration table references `starknet_call` |
+| `packages/kundera-ts/docs/api/jsonrpc.mdx` | 42 | Duplicate |
+| `docs/typescript/skills/contract-read.mdx` | 6, 47 | "Built on `starknet_call`" |
+| `packages/kundera-ts/docs/skills/contract-read.mdx` | 6, 47 | Duplicate |
+| `docs/typescript/skills/contract-multicall.mdx` | 62, 63, 64 | JSON examples with method: "starknet_call" |
+| `packages/kundera-ts/docs/skills/contract-multicall.mdx` | 62, 63, 64 | Duplicate |
+| `docs/typescript/skills/http-provider.mdx` | 32 | Example shows `method: 'starknet_call'` |
+| `packages/kundera-ts/docs/skills/http-provider.mdx` | 32 | Duplicate |
+
+#### Effect Docs
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `docs/effect/primitives/contract-address.mdx` | 320 | JSON example: `method: "starknet_call"` |
+| `docs/effect/guides/error-handling.mdx` | 39, 146, 242, 347 | `Rpc.starknet_call()` usage (Effect version) |
+| `docs/effect/modules/jsonrpc.mdx` | 39 | `Rpc.starknet_call()` example |
+| `docs/effect/modules/abi.mdx` | 386 | JSON example |
+| `docs/effect/modules/transport.mdx` | 63 | `Transport.createRequest('starknet_call', ...)` |
+
+#### Shared/Guide Docs
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `docs/shared/architecture.mdx` | 99, 102, 204, 226 | Imports + usage + diagrams |
+| `docs/shared/why-kundera.mdx` | 64, 92, 102 | Comparison examples |
+| `docs/guides/migration-from-starknetjs.mdx` | 392 | Migration example |
+
+#### Generated API Docs
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `docs/generated-api/jsonrpc/namespaces/Rpc.mdx` | 160 | `method: "starknet_call"` |
+| `docs/generated-api/provider.mdx` | 1131 | Schema definition (long type) |
+| `docs/generated-api/abi.mdx` | 1512 | Comment: "ready for starknet_call" |
+
+#### Type Definitions (Not Docs, But Stale)
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `types/abi/calldata.d.ts` | 79 | JSDoc: "ready for starknet_call" |
+| `types/rpc/methods/call.d.ts` | 6 | Exports dead `starknet_call` function |
+| `types/rpc/methods/index.d.ts` | 16 | Re-exports `starknet_call` |
+
+**What it should be:**
+
 ```typescript
-export type FunctionRet<
-  TAbi extends Abi, 
-  TFunctionName extends ExtractAbiFunctionNames<TAbi>
-> = ExtractAbiFunction<TAbi, TFunctionName>['outputs'] extends readonly [] 
-  ? void 
-  : StringToPrimitiveType<TAbi, ExtractAbiFunction<TAbi, TFunctionName>['outputs'][0]['type']>;
+// OLD (DEAD)
+import { starknet_call } from '@kundera-sn/kundera-ts/jsonrpc';
+const result = await starknet_call(transport, request, 'latest');
+
+// NEW (CORRECT)
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
+const result = await provider.request(Rpc.CallRequest(request, 'latest'));
 ```
 
-### How It Works
+---
 
-1. **Extract function from ABI** - Uses `ExtractAbiFunction` to get the specific function entry
-2. **Check outputs** - If `outputs` is empty array, return `void`
-3. **Map first output to primitive** - Uses `StringToPrimitiveType` to convert Cairo type string to TypeScript type
-4. **Type mapping** - Uses configured types from `Config` interface (see kanabi-config.d.ts)
+### 2. `provider.getBlockNumber()` — Method Does NOT Exist
 
-### Type Mapping Chain
+**Status**: HttpProvider has no `getBlockNumber()` method, docs incorrectly show it
+
+**Found in 13 locations:**
+
+| File | Line | Context | Fix |
+|------|------|---------|-----|
+| `docs/index.mdx` | 23 | Effect example: `ProviderService.getBlockNumber()` | OK — Effect services have this method |
+| `docs/index.mdx` | 37 | **TS example: `await provider.getBlockNumber()`** | ❌ Change to `provider.request(Rpc.BlockNumberRequest())` |
+| `docs/typescript/guides/provider/providers.mdx` | 28 | States provider **doesn't** have this method ✓ | OK — correctly documents the limitation |
+| `packages/kundera-ts/docs/guides/provider/providers.mdx` | 28 | Duplicate ✓ | OK |
+| `docs/effect/overview.mdx` | 339 | Effect: `provider.getBlockNumber()` | OK — Effect provider has this |
+| `docs/effect/guides/react-integration.mdx` | 110 | Effect example | OK |
+| `docs/effect/guides/testing.mdx` | 28, 57 | Effect test examples | OK |
+| `docs/guides/typescript-to-effect.mdx` | 19, 29, 100, 110, 185 | Comparison (shows TS vs Effect) | Line 19, 100: ❌ Fix TS side |
+| `docs/guides/migration-from-starknetjs.mdx` | 79, 427 | Migration examples | ❌ Fix both |
+
+**Issue breakdown:**
+- **Effect examples (8 occurrences)**: CORRECT — `ProviderService` has typed methods
+- **TypeScript examples (5 occurrences)**: INCORRECT — `HttpProvider` does NOT have `getBlockNumber()`
+
+**What it should be:**
 
 ```typescript
-StringToPrimitiveType<TAbi, T> 
-  → checks if T is primitive (felt252, u256, etc.)
-  → checks if T is generic (Array<T>, Option<T>, Result<T,E>)
-  → checks if T is tuple
-  → checks if T is struct (looks up in ABI)
-  → checks if T is enum (looks up in ABI)
+// OLD (WRONG for HttpProvider)
+const provider = new HttpProvider("https://...");
+const block = await provider.getBlockNumber();
+
+// NEW (CORRECT)
+import { Rpc } from '@kundera-sn/kundera-ts/jsonrpc';
+const block = await provider.request(Rpc.BlockNumberRequest());
 ```
 
-**Primitive Lookup:**
+---
+
+### 3. `ContractAddress.from()` vs `ContractAddress()`
+
+**Status**: Per CLAUDE.md line 218, should use constructor form `ContractAddress()` not `ContractAddress.from()`
+
+**Found in 20+ locations:**
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `docs/typescript/primitives/contract-address.mdx` | 47, 52 | Shows `ContractAddress.from()` API |
+| `docs/typescript/concepts/error-handling.mdx` | 17, 42, 70, 77, 88, 117, 138, 153 | All examples use `.from()` |
+| `docs/typescript/concepts/branded-types.mdx` | 30, 42, 61, 62, 65, 90, 114 | Constructor examples + note on line 90 |
+| `docs/typescript/concepts/type-safe-values.mdx` | 33, 57, 93 | Usage examples |
+
+**Note**: Line 90 in `branded-types.mdx` says:
+> "All Kundera documentation shows the **recommended API** using constructors like `ContractAddress.from()`, `ClassHash.from()`, etc."
+
+This directly contradicts CLAUDE.md which says:
+> "**Constructor preference**: Use `Felt()`, `Address()`, `ClassHash()` not `Felt.from()`, `Address.from()`, `ClassHash.from()`"
+
+**Decision needed**: Is the constructor `ContractAddress()` or `ContractAddress.from()`? Docs say `.from()`, CLAUDE.md says bare constructor.
+
+---
+
+### 4. `ClassHash.from()` vs `ClassHash()`
+
+**Status**: Same issue as ContractAddress
+
+**Found in 20+ locations:**
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `docs/typescript/primitives/class-hash.mdx` | 31, 36 | Shows `ClassHash.from()` API |
+| `docs/typescript/concepts/branded-types.mdx` | 31, 90 | Usage + recommendation |
+| `docs/typescript/concepts/type-safe-values.mdx` | 34, 58 | Examples |
+| `docs/typescript/api/primitives.mdx` | 106 | API reference signature |
+| `docs/effect/primitives/contract-address.mdx` | 38, 389 | Effect examples (Effect uses `.from()`) |
+| `docs/effect/primitives/index.mdx` | 36, 142, 264, 365 | Multiple Effect examples |
+| `docs/effect/primitives/class-hash.mdx` | 25, 40 | Effect API |
+| `docs/effect/modules/crypto.mdx` | 234, 235, 274, 319 | Crypto operations |
+| `docs/getting-started/quickstart.mdx` | 85 | Quickstart example |
+
+**Pattern observed:**
+- **TypeScript docs**: Mix of `ClassHash.from()` and constructor form
+- **Effect docs**: Consistently use `ClassHash.from()` (Effect primitives return Effects)
+
+**Hypothesis**: Effect wrappers use `.from()` because validation is effectful. Pure TS uses bare constructor?
+
+---
+
+## Development/Internal Docs
+
+### `development/INTEGRATION_TESTING.md`
+
+**Line 30**: Lists RPC methods tested, includes:
+> "`getBlockNumber`, `getBlockWithTxHashes`, ..."
+
+**Context**: This is a research doc about starknet.js testing, NOT Kundera API docs. The method names refer to starknet.js provider methods, not Kundera.
+
+**Verdict**: NOT a bug — this doc describes external library patterns.
+
+---
+
+## Type Definition Files (Not Docs, But Exposed)
+
+### `types/abi/calldata.d.ts`
+
+**Line 79**: JSDoc comment says:
+> "Returns selector and calldata ready for starknet_call or execute."
+
+Should be:
+> "Returns selector and calldata ready for provider.request() or account.execute()."
+
+### `types/rpc/methods/call.d.ts`
+
+**Line 6**: Exports dead function:
 ```typescript
-{
-  'core::felt252': ResolvedConfig['FeltType'],
-  'core::integer::u256': ResolvedConfig['U256Type'],
-  'core::starknet::contract_address::ContractAddress': ResolvedConfig['AddressType'],
-  'core::bool': boolean,
-  // etc.
-}
-```
-
-## 2. decodeOutput Implementation
-
-### Location
-✓ VERIFIED: `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/calldata.ts:179-206`
-
-**Signature (Typed Overload):**
-```typescript
-export function decodeOutput<
-  TAbi extends KanabiAbi,
-  TFunctionName extends ExtractAbiFunctionNames<TAbi>
->(
-  abi: TAbi,
-  fnName: TFunctionName,
-  output: bigint[]
-): Result<FunctionRet<TAbi, TFunctionName>>;
-```
-
-**Signature (Untyped Fallback):**
-```typescript
-export function decodeOutput(
-  abi: Abi,
-  fnName: string,
-  output: bigint[]
-): Result<CairoValue[]>;
-```
-
-### Implementation Flow
-
-```typescript
-// 1. Parse ABI
-const parsedResult = getParsedAbi(abi);
-
-// 2. Get function entry
-const fnResult = getFunction(parsed, fnName);
-const fn = fnResult.result;
-
-// 3. Decode outputs using output members
-return decodeOutputs(output, fn.entry.outputs, parsed);
-```
-
-**Runtime decoding** is handled by `decodeOutputs()` in `decode.ts:303`, which:
-- Iterates through output members
-- Decodes each value according to its Cairo type
-- Returns array of `CairoValue[]`
-
-**Type system** ensures the returned `CairoValue[]` matches `FunctionRet<TAbi, TFunctionName>` at compile time.
-
-## 3. Current ABI Type System
-
-### Core Types
-
-**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/types.ts`
-
-| Type | Purpose |
-|------|---------|
-| `Abi` | Array of ABI entries |
-| `AbiEntry` | Union of function/struct/enum/event/constructor/interface/impl |
-| `AbiFunctionEntry` | Function definition with inputs/outputs |
-| `AbiMember` | Input/output parameter |
-| `ParsedAbi` | Indexed ABI with Maps for fast lookup |
-| `CairoValue` | Runtime value type (bigint/string/boolean/array/object/enum) |
-| `DecodedStruct` | Object with named fields |
-| `Result<T, E>` | Voltaire-style result type |
-
-### Kanabi Integration Types
-
-**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/calldata.ts:7-20`
-
-```typescript
-import type {
-  Abi as KanabiAbi,
-  ExtractAbiFunction,
-  ExtractAbiFunctionNames,
-  ExtractArgs,
-  FunctionRet,
-} from 'abi-wan-kanabi/kanabi';
-```
-
-### Type Configuration
-
-**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/kanabi-config.d.ts`
-
-Declares module augmentation for `abi-wan-kanabi` to map Cairo types to Kundera branded types:
-
-```typescript
-declare module 'abi-wan-kanabi' {
-  export interface Config {
-    FeltType: Felt252Type;
-    AddressType: ContractAddressType;
-    ClassHashType: ClassHashType;
-    BigIntType: bigint;
-    U8Type: Uint8Type;
-    U16Type: Uint16Type;
-    // ... all integer types
-  }
-}
-```
-
-This allows `FunctionRet` to resolve to branded primitive types like `Uint256Type` instead of raw `bigint`.
-
-### FunctionArgs Type
-
-**Location:** `abi-wan-kanabi/dist/kanabi.d.ts`
-
-```typescript
-export type FunctionArgs<
-  TAbi extends Abi, 
-  TFunctionName extends ExtractAbiFunctionNames<TAbi>
-> = ExtractAbiFunction<TAbi, TFunctionName>['inputs'] extends readonly [] 
-  ? [] 
-  : _BuildArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>['inputs'], []> extends [infer T] 
-    ? T 
-    : _BuildArgs<TAbi, ExtractAbiFunction<TAbi, TFunctionName>['inputs'], []>;
-```
-
-**Purpose:** Extract input parameter types for type-safe `encodeCalldata`
-
-## 4. Contract Interaction Patterns
-
-### Pattern 1: Manual Read (contract-read.ts)
-
-**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/docs/skills/contract-read.ts:44-76`
-
-```typescript
-export async function readContract(
+export declare function starknet_call(
   transport: Transport,
-  params: ReadContractParams,
-): Promise<ContractResult<unknown[]>> {
-  const { abi, address, functionName, args = [], blockId } = params;
-
-  // 1. Encode calldata
-  const calldataResult = encodeCalldata(abi, functionName, args as any);
-  
-  // 2. Prepare JSON-RPC call
-  const selector = getFunctionSelectorHex(functionName);
-  const calldata = calldataResult.result.map((value) => Felt252(value).toHex());
-  
-  const call: FunctionCall = {
-    contract_address: address,
-    entry_point_selector: selector,
-    calldata: calldata as any,
-  };
-
-  // 3. Call via transport
-  const output = await starknet_call(transport, call, blockId) as string[];
-  
-  // 4. Decode output
-  const outputFelts = output.map((value) => BigInt(value));
-  const decoded = decodeOutput(abi, functionName, outputFelts);
-  
-  return ok(decoded.result);
-}
+  request: FunctionCall,
+  blockId?: BlockId
+): Promise<string[]>;
 ```
 
-**Usage:**
+**Status**: Type def for function that was deleted. Should be removed or marked deprecated.
+
+### `types/rpc/methods/index.d.ts`
+
+**Line 16**: Re-exports the dead function:
 ```typescript
-import { readContract } from './contract-read';
-import { httpTransport } from '@kundera-sn/kundera-ts/transport';
-
-const result = await readContract(transport, {
-  abi: ERC20_ABI,
-  address: '0x...',
-  functionName: 'balance_of',
-  args: [accountAddress],
-});
+export { starknet_call } from './call.js';
 ```
 
-### Pattern 2: Viem-Style Contract (contract-viem.ts)
+---
 
-**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/docs/skills/contract-viem.ts:137-176`
+## Recommendations
 
-```typescript
-export async function readContract(
-  transport: Transport,
-  params: ReadContractParams,
-): Promise<ContractResult<unknown[]>> {
-  // Similar to Pattern 1 but with more comprehensive error handling
-  
-  // Uses same primitives:
-  // - encodeCalldata() for args
-  // - starknet_call() for RPC
-  // - decodeOutput() for results
-}
+### Immediate Actions (P0)
+
+1. **Kill `starknet_call` references** in all TypeScript docs
+   - Replace with `provider.request(Rpc.CallRequest(...))`
+   - Update migration guides
+   - Remove from API reference
+
+2. **Fix TypeScript `getBlockNumber()` examples**
+   - Line 37 in `docs/index.mdx`
+   - Lines 19, 100 in `docs/guides/typescript-to-effect.mdx`
+   - Lines 79, 427 in `docs/guides/migration-from-starknetjs.mdx`
+
+3. **Remove dead type definitions**
+   - Delete `types/rpc/methods/call.d.ts` (or mark `@deprecated`)
+   - Remove export from `types/rpc/methods/index.d.ts`
+
+### Clarification Needed (Discuss)
+
+4. **Constructor naming convention**
+   - CLAUDE.md says: `ContractAddress()`, `ClassHash()` (bare)
+   - Docs say: `ContractAddress.from()`, `ClassHash.from()`
+   - Effect uses: `.from()` (because effectful)
+   
+   **Question**: Is the convention different for TS vs Effect? If so, docs need section explaining this.
+
+### Lower Priority (P1)
+
+5. **Update JSDoc comments**
+   - `types/abi/calldata.d.ts` line 79
+
+6. **Audit generated API docs**
+   - `docs/generated-api/*` files have stale content
+   - May need re-generation or manual fixes
+
+---
+
+## Search Commands Used
+
+```bash
+# Pattern detection
+tldr search "starknet_call" /Users/msaug/workspace/kundera
+tldr search "getBlockNumber" /Users/msaug/workspace/kundera
+tldr search "ContractAddress\.from\(" /Users/msaug/workspace/kundera
+tldr search "ClassHash\.from\(" /Users/msaug/workspace/kundera
+
+# File enumeration
+find /Users/msaug/workspace/kundera/docs -name "*.mdx"
+find /Users/msaug/workspace/kundera/packages/kundera-ts/docs -name "*.mdx"
+
+# Full grep
+grep -rn "starknet_call" /Users/msaug/workspace/kundera/docs --include="*.mdx"
+grep -rn "\.getBlockNumber" /Users/msaug/workspace/kundera/docs --include="*.mdx"
+grep -rn "ContractAddress\.from(" /Users/msaug/workspace/kundera/docs --include="*.mdx"
+grep -rn "ClassHash\.from(" /Users/msaug/workspace/kundera/docs --include="*.mdx"
 ```
 
-**Also includes:**
-- `writeContract()` - invoke transactions
-- `simulateContract()` - transaction simulation
-- `estimateFee()` - fee estimation
-- `watchContractEvent()` - event polling
+---
 
-### Pattern 3: Multicall (contract-multicall.ts)
+## Next Steps
 
-**File:** `/Users/msaug/workspace/kundera/packages/kundera-ts/docs/skills/contract-multicall.ts:57-111`
-
-```typescript
-export async function multicall(
-  transport: Transport,
-  params: MulticallParams,
-): Promise<ContractResult<unknown[][]>> {
-  const { abi, address, calls } = params;
-
-  // Encode each call
-  for (const call of calls) {
-    const calldata = encodeCalldata(abi, call.functionName, call.args || []);
-    // ...
-  }
-
-  // Execute aggregate call
-  const output = await starknet_call(transport, aggregateCall);
-
-  // Decode each result
-  for (const meta of callMetadata) {
-    const outputFelts = /* extract from aggregate output */;
-    const decoded = decodeOutput(meta.abi, meta.functionName, outputFelts);
-    results.push(decoded.result);
-  }
-}
-```
-
-## 5. Usage Examples
-
-### Example 1: Basic Typed Decode
-
-✓ VERIFIED: `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/index.test.ts:338`
-
-```typescript
-const result = decodeOutput(ERC20_ABI, 'balance_of', output);
-expect(result.error).toBeNull();
-// result.result is typed as CairoValue[] (or FunctionRet if using typed overload)
-```
-
-### Example 2: Integer Types Round-Trip
-
-✓ VERIFIED: `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/integer-types.test.ts:111-119`
-
-```typescript
-const TEST_ABI: Abi = [{
-  type: 'function',
-  name: 'test_all_integers',
-  outputs: [{ name: 'result', type: 'core::integer::u256' }],
-  // ...
-}];
-
-const outputData = [1000000000000000000n, 0n]; // low, high
-
-const result = decodeOutput(TEST_ABI, 'test_all_integers', outputData);
-expect(result.error).toBeNull();
-// result.result is Uint256Type (via FunctionRet inference)
-expect(Uint256.toBigInt(result.result![0])).toBe(1000000000000000000n);
-```
-
-### Example 3: decodeOutputObject (Named Fields)
-
-✓ VERIFIED: `/Users/msaug/workspace/kundera/packages/kundera-ts/src/abi/calldata.ts:217-244`
-
-```typescript
-const result = decodeOutputObject(ERC20_ABI, 'balance_of', output);
-// Returns: Result<{ balance: Uint256Type }>
-// Named fields instead of positional array
-```
-
-## Key Insights
-
-### Type Safety Architecture
-
-1. **Compile-time inference** - `FunctionRet` extracts return type from ABI at compile time
-2. **Runtime decoding** - `decodeOutputs()` performs actual decoding at runtime
-3. **Branded types** - Kundera primitives (Uint256Type, Felt252Type) replace raw bigint
-4. **Config-driven** - Type mappings declared in kanabi-config.d.ts
-
-### Dual API Pattern
-
-```typescript
-// Typed API (with generic parameters)
-decodeOutput<TAbi, TFunctionName>(abi: TAbi, fnName: TFunctionName, ...)
-  → Result<FunctionRet<TAbi, TFunctionName>>
-
-// Untyped API (without generics)
-decodeOutput(abi: Abi, fnName: string, ...)
-  → Result<CairoValue[]>
-```
-
-**TypeScript picks the typed overload when:**
-- `abi` is typed as specific ABI (const assertion or `as const`)
-- `fnName` is string literal type (not `string`)
-
-### Limitations
-
-1. **Single return value** - `FunctionRet` only handles `outputs[0]`, multi-output functions return array
-2. **No tuple unpacking** - Must index into result array for multiple outputs
-3. **Requires const assertion** - ABI must be `as const` for inference to work
-
-## Architecture Map
-
-```
-[User Code]
-    ↓
-[decodeOutput<TAbi, TFunctionName>]  ← Type inference happens here
-    ↓
-[getParsedAbi] → Parse ABI into indexed structure
-    ↓
-[getFunction] → Lookup function by name
-    ↓
-[decodeOutputs] → Runtime decoding (decode.ts)
-    ↓
-    ├─ [decodeValue] → Decode single value
-    │     ↓
-    │     ├─ Primitive (felt252, u256, etc.)
-    │     ├─ Array/Tuple
-    │     ├─ Struct (recursive)
-    │     └─ Enum
-    │
-[Result<FunctionRet<TAbi, TFunctionName>>]  ← Typed return value
-```
-
-## Files Reference
-
-| File | Purpose | Entry Points |
-|------|---------|--------------|
-| `src/abi/types.ts` | Core ABI type definitions | `Abi`, `CairoValue`, `Result` |
-| `src/abi/calldata.ts` | High-level encode/decode API | `decodeOutput`, `decodeOutputObject` |
-| `src/abi/decode.ts` | Runtime decoding logic | `decodeOutputs`, `decodeValue` |
-| `src/abi/parse.ts` | ABI parsing and indexing | `parseAbi`, `getFunction` |
-| `src/abi/kanabi-config.d.ts` | Type config for abi-wan-kanabi | Module augmentation |
-| `src/abi/index.ts` | Public API re-exports | All ABI functions |
-| `docs/skills/contract-read.ts` | Manual read pattern | `readContract()` |
-| `docs/skills/contract-viem.ts` | Viem-style helpers | `readContract()`, `writeContract()` |
-| `docs/skills/contract-multicall.ts` | Batch calls | `multicall()` |
-
-## Testing Coverage
-
-✓ VERIFIED Test files:
-- `src/abi/index.test.ts` - Core ABI encode/decode tests
-- `src/abi/integer-types.test.ts` - Integer type integration tests
-- `docs/skills/contract-read.test.ts` - Contract read pattern validation
-
-## Open Questions
-
-1. **Multi-output handling** - How should FunctionRet handle functions with multiple outputs?
-2. **Tuple unpacking** - Should there be a typed variant that unpacks tuples?
-3. **Named vs positional** - When to use `decodeOutput` vs `decodeOutputObject`?
+1. Decide on constructor convention (bare vs `.from()`)
+2. Update all TypeScript docs to use `provider.request(Rpc.*Request())`
+3. Remove dead `starknet_call` function exports
+4. Re-run `pnpm docs:generate` to refresh generated API docs
+5. Add CI check to prevent `starknet_call` from appearing in docs

@@ -13,6 +13,15 @@ Wallet-first Effect services for Starknet.
 - Schema-first primitive input decoding (`Primitives`)
 - Typed errors and Layer-based dependency injection
 
+## Strict API mode
+
+This package now targets strict, non-legacy behavior:
+
+- `TransportService` requires `requestRawBatch` and `requestBatch`.
+- `ProviderService` requires `requestBatch`.
+- `BatchService` always delegates batch execution to `ProviderService.requestBatch` (no sequential fallback path).
+- `WalletProviderService.requestAccounts` accepts `silent_mode` only.
+
 ## Install
 
 ```bash
@@ -61,4 +70,17 @@ const program = Effect.gen(function* () {
   );
   return yield* JsonRpc.getNonce(address, "latest");
 });
+```
+
+## Request policy overrides (Effect-native)
+
+```ts
+import { Effect } from "effect";
+import * as Schedule from "effect/Schedule";
+import { JsonRpc, Services } from "@kundera-sn/kundera-effect";
+
+const resilient = JsonRpc.blockNumber().pipe(
+  Services.withTimeout("5 seconds"),
+  Services.withRetrySchedule(Schedule.recurs(2)),
+);
 ```

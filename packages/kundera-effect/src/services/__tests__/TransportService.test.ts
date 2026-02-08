@@ -283,4 +283,74 @@ describe("TransportService", () => {
       expect(receivedTimeout).toBe(1000);
     }).pipe(Effect.provide(TransportLive(transport)));
   });
+
+  it.effect("requestBatch returns decoded results in order", () => {
+    const transport: Transport = {
+      type: "custom",
+      request: async () =>
+        ({
+          jsonrpc: "2.0",
+          id: 1,
+          result: "unused",
+        }) as JsonRpcResponse<string>,
+      requestBatch: async (requests) =>
+        requests.map((request) => ({
+          jsonrpc: "2.0",
+          id: request.id ?? 0,
+          result: request.method,
+        })) as JsonRpcResponse<string>[],
+    };
+
+    return Effect.gen(function* () {
+      const results = yield* Effect.flatMap(TransportService, (service) =>
+        service.requestBatch<string>([
+          { method: "starknet_chainId" },
+          { method: "starknet_blockNumber" },
+        ]),
+      );
+
+      expect(results).toEqual(["starknet_chainId", "starknet_blockNumber"]);
+    }).pipe(Effect.provide(TransportLive(transport)));
+  });
+
+  it.effect("requestBatch maps JSON-RPC errors to RpcError", () => {
+    const transport: Transport = {
+      type: "custom",
+      request: async () =>
+        ({
+          jsonrpc: "2.0",
+          id: 1,
+          result: "unused",
+        }) as JsonRpcResponse<string>,
+      requestBatch: async (requests) =>
+        requests.map((request, index) =>
+          index === 1
+            ? ({
+                jsonrpc: "2.0",
+                id: request.id ?? 0,
+                error: { code: -32001, message: "boom" },
+              } as JsonRpcResponse<string>)
+            : ({
+                jsonrpc: "2.0",
+                id: request.id ?? 0,
+                result: request.method,
+              } as JsonRpcResponse<string>),
+        ),
+    };
+
+    return Effect.gen(function* () {
+      const error = yield* Effect.flip(
+        Effect.flatMap(TransportService, (service) =>
+          service.requestBatch<string>([
+            { method: "starknet_chainId" },
+            { method: "starknet_blockNumber" },
+          ]),
+        ),
+      );
+
+      expect(error._tag).toBe("RpcError");
+      expect(error.method).toBe("starknet_blockNumber");
+      expect(error.code).toBe(-32001);
+    }).pipe(Effect.provide(TransportLive(transport)));
+  });
 });

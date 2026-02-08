@@ -38,6 +38,25 @@ export {
 } from "./ProviderService.js";
 
 export {
+  AccountLive,
+  AccountService,
+  type AccountEstimateFeeOptions,
+  type AccountLiveOptions,
+  type AccountRequestOptions,
+  type AccountServiceShape,
+  type SignTransaction,
+} from "./AccountService.js";
+
+export {
+  BatchLive,
+  BatchService,
+  type BatchCallRequest,
+  type BatchQueueConfig,
+  type BatchRequest,
+  type BatchServiceShape,
+} from "./BatchService.js";
+
+export {
   WalletProviderLive,
   WalletProviderService,
   type RequestAccountsOptions,
@@ -90,6 +109,16 @@ export {
 } from "./ContractRegistry.js";
 
 export {
+  EventLive,
+  EventService,
+  type DecodeEventParams,
+  type EventReadOptions,
+  type EventServiceShape,
+  type WatchDecodedEventsOptions,
+  type WatchEventsOptions,
+} from "./EventService.js";
+
+export {
   DefaultNonceManagerLive,
   NonceManagerService,
   type NonceManagerServiceShape,
@@ -104,10 +133,12 @@ export {
   type WaitForReceiptOptions,
 } from "./TransactionService.js";
 
+import { BatchLive } from "./BatchService.js";
 import { ContractLive } from "./ContractService.js";
 import { ContractWriteLive } from "./ContractWriteService.js";
 import { DefaultNonceManagerLive } from "./NonceManagerService.js";
 import { ChainLive } from "./ChainService.js";
+import { EventLive } from "./EventService.js";
 import { FeeEstimatorLive } from "./FeeEstimatorService.js";
 import { HttpProviderLive } from "./ProviderService.js";
 import { TransactionLive } from "./TransactionService.js";
@@ -127,7 +158,9 @@ export const WalletBaseStack = (
     import("./ContractService.js").ContractService |
     import("./NonceManagerService.js").NonceManagerService |
     import("./FeeEstimatorService.js").FeeEstimatorService |
-    import("./ChainService.js").ChainService
+    import("./ChainService.js").ChainService |
+    import("./EventService.js").EventService |
+    import("./BatchService.js").BatchService
 > => {
   const providerLayer = HttpProviderLive(options.rpcUrl, options.rpcTransportOptions);
   const walletLayer = WalletProviderLive(options.swo);
@@ -139,6 +172,8 @@ export const WalletBaseStack = (
   const chainLayer = ChainLive({ rpcUrl: options.rpcUrl }).pipe(
     Layer.provide(baseDependencies),
   );
+  const eventLayer = EventLive.pipe(Layer.provide(providerLayer));
+  const batchLayer = BatchLive().pipe(Layer.provide(providerLayer));
 
   return Layer.mergeAll(
     baseDependencies,
@@ -146,6 +181,8 @@ export const WalletBaseStack = (
     nonceLayer,
     feeLayer,
     chainLayer,
+    eventLayer,
+    batchLayer,
   );
 };
 
@@ -159,7 +196,9 @@ export const WalletTransactionStack = (
   import("./ContractService.js").ContractService |
   import("./NonceManagerService.js").NonceManagerService |
   import("./FeeEstimatorService.js").FeeEstimatorService |
-  import("./ChainService.js").ChainService
+  import("./ChainService.js").ChainService |
+  import("./EventService.js").EventService |
+  import("./BatchService.js").BatchService
 > => {
   const base = WalletBaseStack(options);
   const txLayer = TransactionLive.pipe(Layer.provide(base));

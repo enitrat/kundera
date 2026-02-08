@@ -49,4 +49,21 @@ export const makeMockProvider = (
               message: `No mock for ${method}`,
             }),
           ),
+    requestBatch: <T>(
+      requests: readonly {
+        readonly method: string;
+        readonly params?: readonly unknown[];
+      }[],
+    ) =>
+      Effect.forEach(requests, (request) =>
+        request.method in responses
+          ? Effect.succeed(responses[request.method] as T)
+          : Effect.fail(
+              new RpcError({
+                method: request.method,
+                code: -32601,
+                message: `No mock for ${request.method}`,
+              }),
+            ),
+      ),
   } satisfies ProviderServiceShape);

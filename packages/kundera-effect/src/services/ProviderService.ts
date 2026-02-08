@@ -18,6 +18,14 @@ export interface ProviderServiceShape {
     params?: readonly unknown[],
     options?: RequestOptions,
   ) => Effect.Effect<T, TransportError | RpcError>;
+
+  readonly requestBatch: <T>(
+    requests: readonly {
+      readonly method: string;
+      readonly params?: readonly unknown[];
+    }[],
+    options?: RequestOptions,
+  ) => Effect.Effect<readonly T[], TransportError | RpcError>;
 }
 
 export class ProviderService extends Context.Tag("@kundera/ProviderService")<
@@ -33,6 +41,7 @@ export const ProviderLive: Layer.Layer<ProviderService, never, TransportService>
 
       return {
         request: transport.request,
+        requestBatch: transport.requestBatch,
       } satisfies ProviderServiceShape;
     }),
   );
@@ -84,57 +93,65 @@ export const FallbackHttpProviderLive = (
         ),
       );
 
-      return {
-        request: <T>(
-          method: string,
-          params?: readonly unknown[],
-          options?: RequestOptions,
-        ): Effect.Effect<T, TransportError | RpcError> => {
-          const allFailed: Effect.Effect<T, TransportError | RpcError> = Effect.fail(
-            new TransportError({
-              operation: method,
-              message: "All fallback provider endpoints failed",
-            }),
-          );
+      const request: ProviderServiceShape["request"] = <T>(
+        method: string,
+        params?: readonly unknown[],
+        options?: RequestOptions,
+      ): Effect.Effect<T, TransportError | RpcError> => {
+        const allFailed: Effect.Effect<T, TransportError | RpcError> = Effect.fail(
+          new TransportError({
+            operation: method,
+            message: "All fallback provider endpoints failed",
+          }),
+        );
 
-          return transports.reduceRight<Effect.Effect<T, TransportError | RpcError>>(
-            (fallback, { endpoint, transport }) => {
-              const attempts = Math.max(endpoint.attempts ?? 1, 1);
-              const retryDelayMs = Math.max(endpoint.retryDelayMs ?? 0, 0);
+        return transports.reduceRight<Effect.Effect<T, TransportError | RpcError>>(
+          (fallback, { endpoint, transport }) => {
+            const attempts = Math.max(endpoint.attempts ?? 1, 1);
+            const retryDelayMs = Math.max(endpoint.retryDelayMs ?? 0, 0);
 
-              const attempt: Effect.Effect<T, TransportError | RpcError> =
-                Effect.gen(function* () {
-                  const result = yield* transport.request<T>(method, params, options).pipe(
-                    Effect.catchTag("RpcError", (error): Effect.Effect<T, TransportError | RpcError> =>
-                      isRetryableRpcError(error)
-                        ? Effect.fail(
-                            new TransportError({
-                              operation: `${method}@${endpoint.url}`,
-                              message: `Retryable RPC error: ${error.message}`,
-                              cause: error,
-                            }),
-                          )
-                        : Effect.fail(error),
-                    ),
-                  );
-                  return result;
-                });
+            const attempt: Effect.Effect<T, TransportError | RpcError> =
+              Effect.gen(function* () {
+                const result = yield* transport.request<T>(method, params, options).pipe(
+                  Effect.catchTag("RpcError", (error): Effect.Effect<T, TransportError | RpcError> =>
+                    isRetryableRpcError(error)
+                      ? Effect.fail(
+                          new TransportError({
+                            operation: `${method}@${endpoint.url}`,
+                            message: `Retryable RPC error: ${error.message}`,
+                            cause: error,
+                          }),
+                        )
+                      : Effect.fail(error),
+                  ),
+                );
+                return result;
+              });
 
-              return attempt.pipe(
-                Effect.retry(
-                  Schedule.recurs(attempts - 1).pipe(
-                    Schedule.addDelay(() => `${retryDelayMs} millis`),
-                    Schedule.whileInput(
-                      (error: TransportError | RpcError) => error._tag === "TransportError",
-                    ),
+            return attempt.pipe(
+              Effect.retry(
+                Schedule.recurs(attempts - 1).pipe(
+                  Schedule.addDelay(() => `${retryDelayMs} millis`),
+                  Schedule.whileInput(
+                    (error: TransportError | RpcError) => error._tag === "TransportError",
                   ),
                 ),
-                Effect.catchTag("TransportError", () => fallback),
-              );
-            },
-            allFailed,
-          );
-        },
+              ),
+              Effect.catchTag("TransportError", () => fallback),
+            );
+          },
+          allFailed,
+        );
+      };
+
+      const requestBatch: ProviderServiceShape["requestBatch"] = (requests, options) =>
+        Effect.forEach(requests, (requestEntry) =>
+          request(requestEntry.method, requestEntry.params, options),
+        );
+
+      return {
+        request,
+        requestBatch,
       } satisfies ProviderServiceShape;
     }),
   );

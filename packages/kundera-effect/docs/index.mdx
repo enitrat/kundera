@@ -11,3 +11,10 @@ Primary modules:
 - `jsonrpc`: free functions for read operations
 - `primitives`: schema-first input decoding helpers (`decode*`, `*.Hex` schemas)
 - `presets`: ready-to-use provider and wallet stack presets
+- request policy helpers are fiber-local and Effect-native (`withTimeout`, `withRetrySchedule`, `withTracing`)
+
+Strict API guarantees:
+
+- batch methods are required across transport and provider services
+- wallet account requests use `silent_mode` (legacy `silentMode` alias removed)
+- batch execution no longer falls back to sequential provider calls

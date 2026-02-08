@@ -59,11 +59,24 @@ export interface TransportServiceShape {
     options?: RequestOptions,
   ) => Effect.Effect<JsonRpcResponse<T>, TransportError>;
 
+  readonly requestRawBatch: <T>(
+    requests: readonly JsonRpcRequest[],
+    options?: RequestOptions,
+  ) => Effect.Effect<readonly JsonRpcResponse<T>[], TransportError>;
+
   readonly request: <T>(
     method: string,
     params?: readonly unknown[],
     options?: RequestOptions,
   ) => Effect.Effect<T, TransportError | RpcError>;
+
+  readonly requestBatch: <T>(
+    requests: readonly {
+      readonly method: string;
+      readonly params?: readonly unknown[];
+    }[],
+    options?: RequestOptions,
+  ) => Effect.Effect<readonly T[], TransportError | RpcError>;
 
   readonly close: Effect.Effect<void>;
 }
@@ -311,6 +324,156 @@ const makeTransportService = (
         return response.result as T;
       });
 
+    const requestRawBatch = <T>(
+      requests: readonly JsonRpcRequest[],
+      options?: RequestOptions,
+    ): Effect.Effect<readonly JsonRpcResponse<T>[], TransportError> =>
+      Effect.gen(function* () {
+        if (requests.length === 0) {
+          return [] as const;
+        }
+
+        const startedAt = yield* Clock.currentTimeMillis;
+        const fiberTimeout = yield* FiberRef.get(timeoutRef);
+        const fiberRetries = yield* FiberRef.get(retriesRef);
+        const fiberRetryDelay = yield* FiberRef.get(retryDelayRef);
+        const fiberRetrySchedule = yield* FiberRef.get(retryScheduleRef);
+        const tracingEnabled = yield* FiberRef.get(tracingRef);
+        const requestInterceptor = yield* FiberRef.get(requestInterceptorRef);
+        const responseInterceptor = yield* FiberRef.get(responseInterceptorRef);
+        const errorInterceptor = yield* FiberRef.get(errorInterceptorRef);
+
+        const interceptedRequests = yield* Effect.forEach(requests, (request) =>
+          requestInterceptor({
+            request,
+            options,
+          }).pipe(Effect.map((context) => context.request)),
+        );
+
+        const timeoutDuration =
+          options?.timeout !== undefined
+            ? Duration.decode(options.timeout)
+            : options?.timeoutMs !== undefined
+              ? Duration.millis(options.timeoutMs)
+              : fiberTimeout;
+
+        const retries = Math.max(options?.retries ?? fiberRetries ?? 0, 0);
+        const retryDelay = options?.retryDelay !== undefined
+          ? Duration.decode(options.retryDelay)
+          : options?.retryDelayMs !== undefined
+            ? Duration.millis(options.retryDelayMs)
+            : (fiberRetryDelay ?? Duration.millis(0));
+        const retrySchedule = options?.retrySchedule ?? fiberRetrySchedule;
+
+        const timeoutMs =
+          timeoutDuration === undefined ? undefined : Duration.toMillis(timeoutDuration);
+        const retryDelayMs = Duration.toMillis(retryDelay);
+
+        if (tracingEnabled) {
+          yield* Effect.logDebug("transport.requestBatch.start", {
+            requestCount: interceptedRequests.length,
+            timeoutMs,
+            retries,
+            retryDelayMs,
+          });
+        }
+
+        const responses = yield* attemptRequest(
+          "requestRawBatch",
+          () =>
+            transport.requestBatch<T>(
+              [...interceptedRequests],
+              timeoutMs ? { timeout: timeoutMs } : undefined,
+            ),
+          {
+            retries,
+            retryDelay,
+            retrySchedule,
+          },
+        ).pipe(
+          Effect.catchTag("TransportError", (error) => {
+            const representativeRequest =
+              interceptedRequests[0] ?? createRequest("batch");
+
+            return Effect.flatMap(Clock.currentTimeMillis, (now) =>
+              errorInterceptor({
+                request: representativeRequest,
+                error,
+                durationMs: Number(now - startedAt),
+              }).pipe(Effect.zipRight(Effect.fail(error))),
+            );
+          }),
+        );
+
+        const responseTime = yield* Clock.currentTimeMillis;
+        const durationMs = Number(responseTime - startedAt);
+
+        const interceptedResponses = yield* Effect.forEach(
+          responses,
+          (response, index) => {
+            const requestForResponse =
+              interceptedRequests[index] ?? interceptedRequests[0] ?? createRequest("batch");
+
+            return responseInterceptor({
+              request: requestForResponse,
+              response,
+              durationMs,
+            }).pipe(Effect.map((context) => context.response));
+          },
+        );
+
+        if (tracingEnabled) {
+          const endTime = yield* Clock.currentTimeMillis;
+          yield* Effect.logDebug("transport.requestBatch.end", {
+            requestCount: interceptedRequests.length,
+            durationMs: Number(endTime - startedAt),
+          });
+        }
+
+        return interceptedResponses;
+      });
+
+    const requestBatch = <T>(
+      requests: readonly {
+        readonly method: string;
+        readonly params?: readonly unknown[];
+      }[],
+      options?: RequestOptions,
+    ): Effect.Effect<readonly T[], TransportError | RpcError> =>
+      Effect.gen(function* () {
+        if (requests.length === 0) {
+          return [] as const;
+        }
+
+        const payloads = yield* Effect.forEach(requests, (entry) =>
+          Effect.map(nextRequestId, (id) =>
+            createRequest(entry.method, entry.params ? [...entry.params] : undefined, id),
+          ),
+        );
+
+        const responses = yield* requestRawBatch<T>(payloads, options);
+
+        return yield* Effect.forEach(responses, (response, index) => {
+          const request = requests[index];
+          const method = request?.method ?? "unknown";
+
+          if (isJsonRpcError(response)) {
+            return Effect.fail(
+              new RpcError({
+                method,
+                code: response.error.code,
+                message: response.error.message,
+                data: response.error.data,
+              }),
+            );
+          }
+
+          // Trust boundary: batch result values are assumed to match the
+          // caller-declared generic result type per request index.
+          return Effect.succeed(response.result as T);
+        });
+      });
+
     const close: TransportServiceShape["close"] =
       typeof transport.close === "function"
         ? Effect.tryPromise({
@@ -326,7 +489,9 @@ const makeTransportService = (
 
     return {
       requestRaw,
+      requestRawBatch,
       request,
+      requestBatch,
       close,
     } satisfies TransportServiceShape;
   });

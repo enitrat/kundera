@@ -1,0 +1,44 @@
+---
+session: general
+date: 2026-02-08
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Implement domain primitive Effect schemas in kundera-effect using kundera-ts fromRpc/toRpc converters and validate with tests
+now: Review and document the new Primitives domain RPC schemas, then decide if tests should be split into per-schema files for maintainability
+test: pnpm --filter @kundera-sn/kundera-effect test:run && pnpm --filter @kundera-sn/kundera-effect typecheck && pnpm --filter @kundera-sn/kundera-effect build
+
+done_this_session:
+  - task: Added strict-breaking cleanup across transport/provider/batch/wallet surfaces and aligned tests/docs
+    files: [packages/kundera-effect/src/services/TransportService.ts, packages/kundera-effect/src/services/ProviderService.ts, packages/kundera-effect/src/services/BatchService.ts, packages/kundera-effect/src/services/WalletProviderService.ts, packages/kundera-effect/src/services/__tests__/TransportService.test.ts, packages/kundera-effect/src/services/__tests__/BatchService.test.ts, packages/kundera-effect/src/services/__tests__/WalletProviderService.test.ts, packages/kundera-effect/README.md, packages/kundera-effect/docs/index.mdx]
+  - task: Implemented domain primitive RPC schema wrappers as thin transformOrFail bridges over kundera-ts converters
+    files: [packages/kundera-effect/src/primitives/schema/BlockHeader.ts, packages/kundera-effect/src/primitives/schema/Block.ts, packages/kundera-effect/src/primitives/schema/Transaction.ts, packages/kundera-effect/src/primitives/schema/Receipt.ts, packages/kundera-effect/src/primitives/schema/Event.ts, packages/kundera-effect/src/primitives/schema/StateUpdate.ts, packages/kundera-effect/src/primitives/schema/FeeEstimate.ts, packages/kundera-effect/src/primitives/schema/Trace.ts]
+  - task: Exposed new schema surface and decode helpers, then expanded primitive tests for success/failure coverage
+    files: [packages/kundera-effect/src/primitives/schema/index.ts, packages/kundera-effect/src/primitives/index.ts, packages/kundera-effect/src/primitives/decode.ts, packages/kundera-effect/src/primitives/__tests__/index.test.ts]
+
+blockers: []
+
+questions: [Should we keep a single primitives domain-schema test file or split into one file per schema module for clarity?]
+
+decisions:
+  - no_shared_schema_guards_file: Removed `_guards.ts` after user feedback and inlined runtime guard helpers per schema file to keep each schema explicit/self-contained.
+  - converter_bridge_pattern: Domain schemas delegate all parse/encode semantics to kundera-ts `fromRpc`/`toRpc` functions and only wrap errors into ParseResult.Type.
+  - validation_standard: Kept package-level validation as test:run + typecheck + build for every substantial API surface change.
+
+findings:
+  - domain_schema_surface_added: `Primitives` now exposes RPC schemas for BlockHeader/Block/Transaction/Receipt/Event/StateUpdate/FeeEstimate/Trace and companion decode helpers.
+  - quality_signal_positive: Validation command chain passes after changes (83 tests, clean typecheck, successful build).
+  - design_feedback_actioned: Indirection concern about shared guard utility was resolved immediately by deleting `_guards.ts` and localizing checks.
+
+worked: [Using `Schema.transformOrFail` with direct `fromRpc`/`toRpc` delegation, local explicit guards per schema module, iterative typecheck-first fixes before test run]
+failed: [Initial shared `_guards.ts` abstraction added unnecessary indirection and was removed in favor of local guards]
+
+next:
+  - Add docs/examples showing boundary-decoding usage with `Primitives.*.Rpc` and `decode*` helpers for JSON-RPC payloads.
+  - Decide whether to split `src/primitives/__tests__/index.test.ts` into per-domain-schema files as coverage grows.
+  - Optional hardening: add targeted invalid-payload tests for each new domain schema variant (especially trace unions).
+
+files:
+  created: [packages/kundera-effect/src/primitives/schema/BlockHeader.ts, packages/kundera-effect/src/primitives/schema/Block.ts, packages/kundera-effect/src/primitives/schema/Transaction.ts, packages/kundera-effect/src/primitives/schema/Receipt.ts, packages/kundera-effect/src/primitives/schema/Event.ts, packages/kundera-effect/src/primitives/schema/StateUpdate.ts, packages/kundera-effect/src/primitives/schema/FeeEstimate.ts, packages/kundera-effect/src/primitives/schema/Trace.ts, thoughts/shared/handoffs/general/2026-02-08_16-11_domain-primitives-schema-implementation.yaml]
+  modified: [packages/kundera-effect/src/primitives/schema/index.ts, packages/kundera-effect/src/primitives/index.ts, packages/kundera-effect/src/primitives/decode.ts, packages/kundera-effect/src/primitives/__tests__/index.test.ts, packages/kundera-effect/src/services/TransportService.ts, packages/kundera-effect/src/services/ProviderService.ts, packages/kundera-effect/src/services/BatchService.ts, packages/kundera-effect/src/services/WalletProviderService.ts, packages/kundera-effect/src/services/__tests__/TransportService.test.ts, packages/kundera-effect/src/services/__tests__/BatchService.test.ts, packages/kundera-effect/src/services/__tests__/WalletProviderService.test.ts, packages/kundera-effect/src/services/__tests__/_mocks.ts, packages/kundera-effect/src/testing/TestTransport.ts, packages/kundera-effect/README.md, packages/kundera-effect/docs/index.mdx]

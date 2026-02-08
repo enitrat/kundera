@@ -3,12 +3,14 @@ import type { HttpTransportOptions } from "@kundera-sn/kundera-ts/transport";
 
 import { HttpProviderLive } from "../services/ProviderService.js";
 import {
+  FallbackHttpProviderFromUrls,
   type FallbackProviderEndpoint,
   FallbackHttpProviderLive,
   type WalletTransactionStackOptions,
   WalletBaseStack,
   WalletTransactionStack,
 } from "../services/index.js";
+import { TestProvider } from "../testing/index.js";
 
 export const STARKNET_MAINNET_RPC =
   "https://starknet-mainnet.public.blastapi.io/rpc/v0_8";
@@ -22,6 +24,10 @@ export const createProvider = (url: string, options?: HttpTransportOptions) =>
 export const createFallbackProvider = (
   endpoints: readonly [FallbackProviderEndpoint, ...FallbackProviderEndpoint[]],
 ) => FallbackHttpProviderLive(endpoints);
+
+export { FallbackHttpProviderFromUrls as FallbackProvider };
+
+export { TestProvider as TestProviderPreset };
 
 export const MainnetProvider = (options?: HttpTransportOptions) =>
   HttpProviderLive(STARKNET_MAINNET_RPC, options);

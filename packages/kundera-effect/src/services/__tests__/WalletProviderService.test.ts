@@ -90,11 +90,11 @@ describe("WalletProviderService", () => {
     });
   });
 
-  it.effect("maps legacy silentMode to silent_mode", () => {
+  it.effect("forwards silent_mode for requestAccounts", () => {
     let payload: WalletRequestArguments | undefined;
 
     const program = Effect.flatMap(WalletProviderService, (wallet) =>
-      wallet.requestAccounts({ silentMode: true }),
+      wallet.requestAccounts({ silent_mode: true }),
     ).pipe(
       Effect.provide(
         WalletProviderLive(

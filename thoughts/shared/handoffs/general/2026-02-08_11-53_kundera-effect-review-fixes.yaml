@@ -1,0 +1,87 @@
+---
+session: general
+date: 2026-02-08
+status: complete
+outcome: SUCCEEDED
+---
+
+goal: Fix all P2 issues and critical gaps in kundera-effect, start Voltaire parity
+now: Continue Voltaire parity - readContract free function, block/event streaming, request batching
+
+test: pnpm --filter kundera-effect test:run && pnpm --filter kundera-effect typecheck
+
+done_this_session:
+  - task: Replace Schema.Any casts with Schema.declare type guards in all 4 schema files
+    files: [src/primitives/schema/Felt252.ts, src/primitives/schema/ContractAddress.ts, src/primitives/schema/StorageKey.ts, src/primitives/schema/ClassHash.ts]
+  - task: Replace 6 hardcoded RPC method strings with Rpc.*Request() builders
+    files: [src/services/ChainService.ts, src/services/NonceManagerService.ts, src/services/FeeEstimatorService.ts, src/services/TransactionService.ts]
+  - task: Replace Date.now() with Clock.currentTimeMillis (4 instances)
+    files: [src/services/TransportService.ts]
+  - task: Deduplicate EstimatableTransaction type (was in both FeeEstimatorService and ContractWriteService)
+    files: [src/services/ContractWriteService.ts]
+  - task: Refactor FallbackProvider to use TransportService layers instead of raw httpTransport - FiberRef config now respected
+    files: [src/services/ProviderService.ts]
+  - task: Remove phantom SignerService and RawProviderService from CLAUDE.md architecture docs
+    files: [CLAUDE.md]
+  - task: Add chainId caching via Ref<Option> in ChainService
+    files: [src/services/ChainService.ts]
+  - task: Fix FallbackProvider type inference with Effect.gen wrapper and explicit annotations
+    files: [src/services/ProviderService.ts]
+
+blockers: []
+
+questions:
+  - Should kundera-effect migrate from Context.Tag to Effect.Service pattern? Currently aligned with Voltaire which uses Context.Tag. Effect best practices skill recommends Effect.Service with accessors.
+  - Should errors migrate from Data.TaggedError to Schema.TaggedError? Voltaire and kundera both use Data.TaggedError, but Schema.TaggedError enables serialization.
+
+decisions:
+  - keep_context_tag: Voltaire alignment over Effect best practices skill - Context.Tag + Shape + Layer + satisfies pattern retained
+  - keep_data_tagged_error: Data.TaggedError kept per Voltaire alignment and kundera CLAUDE.md
+  - schema_declare_over_any: Schema.declare with runtime type guards (instanceof Uint8Array && length === 32) replaces Schema.Any cast
+  - fallback_uses_transport_service: FallbackProvider now resolves TransportServiceShape per endpoint instead of raw httpTransport
+  - clock_over_date_now: Clock.currentTimeMillis in Effect.gen for TestClock compatibility; flatMap pattern for arrow function contexts
+
+findings:
+  - fallback_fiberref_bypass: FallbackHttpProviderLive was creating raw transports, completely bypassing all FiberRef config (timeout, retries, interceptors)
+  - yield_in_arrow: "yield*" cannot be used inside arrow function callbacks in Effect.gen - use Effect.flatMap(Clock.currentTimeMillis, ...) instead
+  - reduceRight_type_inference: TypeScript cannot infer generic T through pipe chains in reduceRight - explicit type parameter on reduceRight<Effect<T, ...>> needed
+  - schedule_whileinput: Schedule.whileInput with typed predicate works better than retry({while:}) for error-type-aware retry
+
+worked:
+  - Schema.declare with type guard validates branded Uint8Array types correctly
+  - Effect.provide(ContextTag, Layer) resolves service shape from layer inside Effect.gen
+  - Effect.gen wrapper around pipe chain fixes type inference for catchTag/retry
+
+failed:
+  - Direct yield* Clock.currentTimeMillis inside arrow fn callback of Effect.catchTag - syntax error, yield not valid outside generator
+  - Effect.retry({while: (error: E) => boolean}) loses type narrowing vs Schedule.whileInput
+
+next:
+  - Add readContract free function (typed contract read without Contract instance)
+  - Add Bytes encoding schemas alongside Hex for binary protocols
+  - Block/event streaming with Effect.Stream
+  - Request batching in HttpTransport
+  - simulateContract (simulate invoke before sending)
+  - Per-code RPC error classes for precise catchTag handling
+  - P3 fixes - WalletProvider retry FiberRefs, NonceManager atomic consume, TestTransport requestRaw dieMessage
+
+files:
+  created:
+    - packages/kundera-effect/docs/voltaire-effect-reference.md
+    - .claude/cache/voltaire-effect-patterns.md
+    - .claude/cache/kundera-effect-audit.md
+    - .claude/cache/voltaire-effect-examples.md
+    - .claude/cache/voltaire-schema-patterns.md
+  modified:
+    - packages/kundera-effect/src/primitives/schema/Felt252.ts
+    - packages/kundera-effect/src/primitives/schema/ContractAddress.ts
+    - packages/kundera-effect/src/primitives/schema/StorageKey.ts
+    - packages/kundera-effect/src/primitives/schema/ClassHash.ts
+    - packages/kundera-effect/src/services/ChainService.ts
+    - packages/kundera-effect/src/services/NonceManagerService.ts
+    - packages/kundera-effect/src/services/FeeEstimatorService.ts
+    - packages/kundera-effect/src/services/TransactionService.ts
+    - packages/kundera-effect/src/services/TransportService.ts
+    - packages/kundera-effect/src/services/ContractWriteService.ts
+    - packages/kundera-effect/src/services/ProviderService.ts
+    - packages/kundera-effect/CLAUDE.md
