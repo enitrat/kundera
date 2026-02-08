@@ -90,21 +90,31 @@ export const DefaultNonceManagerLive: Layer.Layer<
         return next;
       });
 
-    const get: NonceManagerServiceShape["get"] = (address, options) =>
+    const resolveNonceContext = (
+      address: ContractAddressType,
+      options?: NonceRequestOptions,
+    ): Effect.Effect<
+      { readonly key: string; readonly onChainNonce: bigint },
+      NonceError | TransportError | RpcError
+    > =>
       Effect.gen(function* () {
         const addressHex = address.toHex();
         const chainId = yield* resolveChainId(options);
         const blockId = options?.blockId ?? "pending";
         const key = toNonceKey(chainId, addressHex);
-
         const nonceReq = Rpc.GetNonceRequest(blockId, addressHex);
         const onChainNonceHex = yield* provider.request<string>(
           nonceReq.method,
           nonceReq.params,
           options?.requestOptions,
         );
-
         const onChainNonce = yield* parseNonce(addressHex, onChainNonceHex);
+        return { key, onChainNonce } as const;
+      });
+
+    const get: NonceManagerServiceShape["get"] = (address, options) =>
+      Effect.gen(function* () {
+        const { key, onChainNonce } = yield* resolveNonceContext(address, options);
         const delta = yield* getDelta(key);
 
         return onChainNonce + delta;
@@ -112,17 +122,7 @@ export const DefaultNonceManagerLive: Layer.Layer<
 
     const consume: NonceManagerServiceShape["consume"] = (address, options) =>
       Effect.gen(function* () {
-        const addressHex = address.toHex();
-        const chainId = yield* resolveChainId(options);
-        const blockId = options?.blockId ?? "pending";
-        const key = toNonceKey(chainId, addressHex);
-        const nonceReq = Rpc.GetNonceRequest(blockId, addressHex);
-        const onChainNonceHex = yield* provider.request<string>(
-          nonceReq.method,
-          nonceReq.params,
-          options?.requestOptions,
-        );
-        const onChainNonce = yield* parseNonce(addressHex, onChainNonceHex);
+        const { key, onChainNonce } = yield* resolveNonceContext(address, options);
 
         // Atomic read-and-increment via Ref.modify to prevent duplicate nonces
         // when multiple fibers call consume() concurrently for the same address.
