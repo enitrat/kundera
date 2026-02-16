@@ -2,24 +2,24 @@
  * Account Hash + Types Tests
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import "../test-utils/setupCrypto";
 import {
-	type ResourceBoundsMapping,
-	type InvokeTransactionV3,
+	DEFAULT_RESOURCE_BOUNDS,
 	type DeclareTransactionV3,
 	type DeployAccountTransactionV3,
-	TRANSACTION_VERSION,
-	DEFAULT_RESOURCE_BOUNDS,
+	type InvokeTransactionV3,
+	type ResourceBoundsMapping,
 	TRANSACTION_HASH_PREFIX,
-	hashTipAndResourceBounds,
-	encodeDAModes,
-	hashCalldata,
-	computeInvokeV3Hash,
+	TRANSACTION_VERSION,
+	computeContractAddress,
 	computeDeclareV3Hash,
 	computeDeployAccountV3Hash,
-	computeContractAddress,
+	computeInvokeV3Hash,
 	computeSelector,
+	encodeDAModes,
+	hashCalldata,
+	hashTipAndResourceBounds,
 } from "./index.js";
 const describeIfCrypto = describe;
 

@@ -4,21 +4,21 @@
  * Decode calldata (felt array) back to Cairo values.
  */
 
+import { decodeShortString } from "../primitives/index.js";
+import { getEnum, getStruct, parseType } from "./parse.js";
 import {
-	type CairoValue,
+	type AbiMember,
+	type AbiOutput,
 	type CairoEnumValue,
+	type CairoValue,
 	type DecodedStruct,
 	type ParsedAbi,
 	type ParsedType,
-	type AbiMember,
-	type AbiOutput,
 	type Result,
-	ok,
-	err,
 	abiError,
+	err,
+	ok,
 } from "./types.js";
-import { decodeShortString } from "../primitives/index.js";
-import { parseType, getStruct, getEnum } from "./parse.js";
 
 // ============ Decode Context ============
 
@@ -28,6 +28,13 @@ import { parseType, getStruct, getEnum } from "./parse.js";
 interface DecodeContext {
 	data: bigint[];
 	offset: number;
+}
+
+function requirePresent<T>(value: T | undefined, message: string): T {
+	if (value === undefined) {
+		throw new Error(message);
+	}
+	return value;
 }
 
 /**
@@ -83,14 +90,23 @@ function decodeByType(
 			return decodePrimitive(ctx, type.name);
 
 		case "array":
-		case "span":
-			return decodeArray(ctx, type.inner!, abi);
+		case "span": {
+			const innerType = requirePresent(
+				type.inner,
+				`Missing inner type for ${type.kind}`,
+			);
+			return decodeArray(ctx, innerType, abi);
+		}
 
-		case "tuple":
-			return decodeTuple(ctx, type.members!, abi);
+		case "tuple": {
+			const memberTypes = requirePresent(type.members, "Missing tuple members");
+			return decodeTuple(ctx, memberTypes, abi);
+		}
 
-		case "option":
-			return decodeOption(ctx, type.inner!, abi);
+		case "option": {
+			const innerType = requirePresent(type.inner, "Missing option inner type");
+			return decodeOption(ctx, innerType, abi);
+		}
 
 		case "struct": {
 			// Check if it's actually an enum (parseType defaults unknown types to struct)
@@ -344,8 +360,11 @@ export function decodeOutputsObject(
 
 	const result: DecodedStruct = {};
 	for (let i = 0; i < outputs.length; i++) {
-		const output = outputs[i]!;
-		const value = decoded.result[i]!;
+		const output = requirePresent(outputs[i], `Missing output at index ${i}`);
+		const value = requirePresent(
+			decoded.result[i],
+			`Missing decoded output at index ${i}`,
+		);
 		result[output.name ?? `output_${i}`] = value;
 	}
 
@@ -398,8 +417,11 @@ export function decodeArgsObject(
 
 	const result: DecodedStruct = {};
 	for (let i = 0; i < inputs.length; i++) {
-		const input = inputs[i]!;
-		const value = decoded.result[i]!;
+		const input = requirePresent(inputs[i], `Missing input at index ${i}`);
+		const value = requirePresent(
+			decoded.result[i],
+			`Missing decoded input at index ${i}`,
+		);
 		result[input.name] = value;
 	}
 

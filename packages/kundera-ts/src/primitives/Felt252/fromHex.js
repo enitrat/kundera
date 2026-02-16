@@ -14,7 +14,7 @@ export function fromHex(hex) {
 	/** @type {bigint} */
 	let value;
 	try {
-		value = BigInt("0x" + (clean.length === 0 ? "0" : clean));
+		value = BigInt(`0x${clean.length === 0 ? "0" : clean}`);
 	} catch {
 		throw new Error("Invalid hex string");
 	}

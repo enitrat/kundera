@@ -1,6 +1,6 @@
-import type { Felt252Type } from "../Felt252/types.js";
-import type { ContractAddressType } from "../ContractAddress/types.js";
 import type { ClassHashType } from "../ClassHash/types.js";
+import type { ContractAddressType } from "../ContractAddress/types.js";
+import type { Felt252Type } from "../Felt252/types.js";
 
 export interface ContractStorageDiffItemType {
 	address: ContractAddressType;

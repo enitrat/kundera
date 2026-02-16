@@ -1,5 +1,5 @@
-import { MIN, MAX } from "./constants.js";
-import { Int128RangeError, Int128ParseError } from "./errors.js";
+import { MAX, MIN } from "./constants.js";
+import { Int128ParseError, Int128RangeError } from "./errors.js";
 
 /**
  * Create an Int128 from various input types.

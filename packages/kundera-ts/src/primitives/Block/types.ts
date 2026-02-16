@@ -1,8 +1,8 @@
-import type { Felt252Type } from "../Felt252/types.js";
-import type { BlockHeaderWithCommitmentsType } from "../BlockHeader/types.js";
-import type { TxnWithHashType, TxnType } from "../Transaction/types.js";
-import type { TxnReceiptType } from "../Receipt/types.js";
 import type { BlockStatus } from "../../jsonrpc/types.js";
+import type { BlockHeaderWithCommitmentsType } from "../BlockHeader/types.js";
+import type { Felt252Type } from "../Felt252/types.js";
+import type { TxnReceiptType } from "../Receipt/types.js";
+import type { TxnType, TxnWithHashType } from "../Transaction/types.js";
 
 export interface BlockWithTxHashesType extends BlockHeaderWithCommitmentsType {
 	status: BlockStatus;

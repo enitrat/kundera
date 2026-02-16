@@ -1,4 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type {
+	BlockHeader,
+	BlockHeaderWithCommitments,
+} from "../../jsonrpc/types.js";
+import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
 import {
 	blockHeaderFromRpc,
 	blockHeaderWithCommitmentsFromRpc,
@@ -9,11 +14,6 @@ import {
 	blockHeaderWithCommitmentsToRpc,
 	resourcePriceToRpc,
 } from "./toRpc.js";
-import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
-import type {
-	BlockHeader,
-	BlockHeaderWithCommitments,
-} from "../../jsonrpc/types.js";
 
 function canon(hex: string): string {
 	return feltFromHex(hex).toHex();

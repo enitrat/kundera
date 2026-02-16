@@ -5,9 +5,9 @@
  * and bump allocator for memory management.
  */
 
-import { existsSync, readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Felt252, type Felt252Type } from "../primitives/index.js";
 import { ErrorCode, type WasmExports, type WasmInstance } from "./types.js";
 
@@ -37,7 +37,7 @@ const wasiShim = {
 	// Environment
 	environ_get: () => 0,
 	environ_sizes_get: (countPtr: number, sizePtr: number) => {
-		const view = new DataView(wasmInstance!.memory.buffer);
+		const view = new DataView(wasmInstance?.memory.buffer);
 		view.setUint32(countPtr, 0, true);
 		view.setUint32(sizePtr, 0, true);
 		return 0;
@@ -46,7 +46,7 @@ const wasiShim = {
 	// Args
 	args_get: () => 0,
 	args_sizes_get: (countPtr: number, sizePtr: number) => {
-		const view = new DataView(wasmInstance!.memory.buffer);
+		const view = new DataView(wasmInstance?.memory.buffer);
 		view.setUint32(countPtr, 0, true);
 		view.setUint32(sizePtr, 0, true);
 		return 0;
@@ -69,7 +69,7 @@ const wasiShim = {
 		_iovsLen: number,
 		nwrittenPtr: number,
 	) => {
-		const view = new DataView(wasmInstance!.memory.buffer);
+		const view = new DataView(wasmInstance?.memory.buffer);
 		view.setUint32(nwrittenPtr, 0, true);
 		return 0;
 	},
@@ -81,7 +81,7 @@ const wasiShim = {
 
 	// Random (important for crypto!)
 	random_get: (bufPtr: number, bufLen: number) => {
-		const view = new Uint8Array(wasmInstance!.memory.buffer, bufPtr, bufLen);
+		const view = new Uint8Array(wasmInstance?.memory.buffer, bufPtr, bufLen);
 		if (typeof crypto !== "undefined" && crypto.getRandomValues) {
 			crypto.getRandomValues(view);
 		} else {
@@ -107,7 +107,7 @@ function align(offset: number, alignment: number): number {
  * Allocate memory from bump allocator
  */
 function malloc(size: number): number {
-	const memory = wasmInstance!.memory;
+	const memory = wasmInstance?.memory;
 	const aligned = align(memoryOffset, ALIGNMENT);
 	const end = aligned + size;
 
@@ -139,7 +139,7 @@ function resetAllocator(): void {
  * Write Felt252 to WASM memory
  */
 function writeFelt(felt: Felt252Type, ptr: number): void {
-	const view = new Uint8Array(wasmInstance!.memory.buffer, ptr, FELT_SIZE);
+	const view = new Uint8Array(wasmInstance?.memory.buffer, ptr, FELT_SIZE);
 	view.set(felt);
 }
 
@@ -147,7 +147,7 @@ function writeFelt(felt: Felt252Type, ptr: number): void {
  * Read Felt252 from WASM memory
  */
 function readFelt(ptr: number): Felt252Type {
-	const view = new Uint8Array(wasmInstance!.memory.buffer, ptr, FELT_SIZE);
+	const view = new Uint8Array(wasmInstance?.memory.buffer, ptr, FELT_SIZE);
 	return Felt252(new Uint8Array(view));
 }
 
@@ -444,8 +444,7 @@ export function wasmPoseidonHashMany(inputs: Felt252Type[]): Felt252Type {
 
 	// Pack inputs into contiguous buffer
 	const ptrInputs = malloc(inputs.length * FELT_SIZE);
-	for (let i = 0; i < inputs.length; i++) {
-		const input = inputs[i]!;
+	for (const [i, input] of inputs.entries()) {
 		writeFelt(input, ptrInputs + i * FELT_SIZE);
 	}
 

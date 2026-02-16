@@ -5,14 +5,16 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { WalletProvider } from "./WalletProvider.js";
 import { walletTransport } from "../transport/wallet.js";
+import { WalletProvider } from "./WalletProvider.js";
 import type { StarknetWindowObject } from "./wallet/types.js";
 
 /** Create a mock SWO. */
 function mockSwo(
-	requestImpl: (args: { type: string; params?: unknown }) => Promise<unknown> = () =>
-		Promise.resolve(null),
+	requestImpl: (args: {
+		type: string;
+		params?: unknown;
+	}) => Promise<unknown> = () => Promise.resolve(null),
 ): StarknetWindowObject {
 	return {
 		id: "mock",
@@ -64,7 +66,17 @@ describe("WalletProvider", () => {
 
 		const result = await provider.request({
 			method: "wallet_addInvokeTransaction",
-			params: [{ calls: [{ contract_address: "0x1", entry_point: "transfer", calldata: ["0x2"] }] }],
+			params: [
+				{
+					calls: [
+						{
+							contract_address: "0x1",
+							entry_point: "transfer",
+							calldata: ["0x2"],
+						},
+					],
+				},
+			],
 		});
 
 		expect(result).toEqual({ transaction_hash: "0xtx123" });

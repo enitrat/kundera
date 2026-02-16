@@ -287,9 +287,9 @@ describe("poll", () => {
 			});
 
 			expect(onPoll).toHaveBeenCalledTimes(3);
-			expect((onPoll.mock.calls[0] as any[])[1]).toBe(0);
-			expect((onPoll.mock.calls[1] as any[])[1]).toBe(1);
-			expect((onPoll.mock.calls[2] as any[])[1]).toBe(2);
+			expect((onPoll.mock.calls[0] as unknown[])[1]).toBe(0);
+			expect((onPoll.mock.calls[1] as unknown[])[1]).toBe(1);
+			expect((onPoll.mock.calls[2] as unknown[])[1]).toBe(2);
 		});
 
 		it("should be called on each poll attempt", async () => {

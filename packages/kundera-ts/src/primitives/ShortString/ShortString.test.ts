@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { encodeShortString } from "./encodeShortString";
-import { encodeShortStringHex } from "./encodeShortStringHex";
-import { decodeShortString } from "./decodeShortString";
 import { Felt252 } from "../Felt252/Felt252";
 import { MAX_SHORT_STRING_LENGTH } from "../Felt252/constants";
 import { Felt } from "../index";
+import { decodeShortString } from "./decodeShortString";
+import { encodeShortString } from "./encodeShortString";
+import { encodeShortStringHex } from "./encodeShortStringHex";
 
 describe("Short String", () => {
 	test("MAX_SHORT_STRING_LENGTH is 31", () => {

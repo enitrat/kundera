@@ -9,22 +9,32 @@ import type { TypedProvider } from "./TypedProvider.js";
 import type { StarknetRpcSchema } from "./schemas/StarknetRpcSchema.js";
 import type { ProviderEventMap } from "./types.js";
 
+type TestProvider = TypedProvider<StarknetRpcSchema, ProviderEventMap>;
+
 describe("TypedProvider", () => {
 	it("provides type-safe request method", async () => {
-		const provider: TypedProvider<StarknetRpcSchema, ProviderEventMap> = {
-			request: (async ({ method, params }: any) => {
-				void params;
-				if (method === "starknet_blockNumber") {
-					return 123;
-				}
-				if (method === "starknet_chainId") {
-					return "0x534e5f5345504f4c4941";
-				}
-				if (method === "starknet_getBlockTransactionCount") {
-					return 5;
-				}
-				throw new Error("Unsupported method");
-			}) as any,
+		const request = (async ({
+			method,
+			params,
+		}: {
+			method: string;
+			params?: unknown;
+		}) => {
+			void params;
+			if (method === "starknet_blockNumber") {
+				return 123;
+			}
+			if (method === "starknet_chainId") {
+				return "0x534e5f5345504f4c4941";
+			}
+			if (method === "starknet_getBlockTransactionCount") {
+				return 5;
+			}
+			throw new Error("Unsupported method");
+		}) as TestProvider["request"];
+
+		const provider: TestProvider = {
+			request,
 			on: () => provider,
 			removeListener: () => provider,
 		};
@@ -48,17 +58,25 @@ describe("TypedProvider", () => {
 	});
 
 	it("validates parameters at compile time", async () => {
-		const provider: TypedProvider<StarknetRpcSchema, ProviderEventMap> = {
-			request: (async ({ method, params }: any) => {
-				void params;
-				if (method === "starknet_getNonce") {
-					return "0x1";
-				}
-				if (method === "starknet_call") {
-					return ["0x1"];
-				}
-				throw new Error("Unsupported method");
-			}) as any,
+		const request = (async ({
+			method,
+			params,
+		}: {
+			method: string;
+			params?: unknown;
+		}) => {
+			void params;
+			if (method === "starknet_getNonce") {
+				return "0x1";
+			}
+			if (method === "starknet_call") {
+				return ["0x1"];
+			}
+			throw new Error("Unsupported method");
+		}) as TestProvider["request"];
+
+		const provider: TestProvider = {
+			request,
 			on: () => provider,
 			removeListener: () => provider,
 		};
@@ -85,8 +103,8 @@ describe("TypedProvider", () => {
 		let chainChangedCalled = false;
 		let accountsChangedCalled = false;
 
-		const provider: TypedProvider<StarknetRpcSchema, ProviderEventMap> = {
-			request: (async () => 0) as any,
+		const provider: TestProvider = {
+			request: (async () => 0) as unknown as TestProvider["request"],
 			on: (event, listener) => {
 				if (event === "chainChanged") {
 					setTimeout(() => listener("0x2"), 0);
@@ -116,8 +134,8 @@ describe("TypedProvider", () => {
 	});
 
 	it("supports method chaining for event listeners", () => {
-		const provider: TypedProvider<StarknetRpcSchema, ProviderEventMap> = {
-			request: (async () => 0) as any,
+		const provider: TestProvider = {
+			request: (async () => 0) as unknown as TestProvider["request"],
 			on: () => provider,
 			removeListener: () => provider,
 		};

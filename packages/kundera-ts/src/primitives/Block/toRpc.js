@@ -1,6 +1,6 @@
 import { blockHeaderWithCommitmentsToRpc } from "../BlockHeader/toRpc.js";
-import { transactionToRpc, txnToRpc } from "../Transaction/toRpc.js";
 import { receiptToRpc } from "../Receipt/toRpc.js";
+import { transactionToRpc, txnToRpc } from "../Transaction/toRpc.js";
 
 /**
  * @param {import('./types.js').BlockWithTxHashesType} block

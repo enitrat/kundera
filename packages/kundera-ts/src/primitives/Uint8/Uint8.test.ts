@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { Uint8, MIN, MAX, SIZE } from "./index.js";
+import { describe, expect, it } from "vitest";
+import { MAX, MIN, SIZE, Uint8 } from "./index.js";
 
 describe("Uint8", () => {
 	describe("constants", () => {

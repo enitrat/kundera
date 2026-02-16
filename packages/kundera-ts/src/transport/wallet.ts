@@ -10,9 +10,9 @@
 
 import type { StarknetWindowObject } from "../provider/wallet/types.js";
 import type {
-	Transport,
 	JsonRpcRequest,
 	JsonRpcResponse,
+	Transport,
 	TransportRequestOptions,
 } from "./types.js";
 import { JsonRpcErrorCode, createErrorResponse } from "./types.js";
@@ -74,11 +74,12 @@ export function walletTransport(swo: StarknetWindowObject): Transport {
 			try {
 				// SWO expects { type, params } — flatten single-element arrays
 				// since wallet methods take a single object param, not an array.
-				const params = Array.isArray(request.params) && request.params.length === 1
-					? request.params[0]
-					: Array.isArray(request.params) && request.params.length === 0
-						? undefined
-						: request.params;
+				const params =
+					Array.isArray(request.params) && request.params.length === 1
+						? request.params[0]
+						: Array.isArray(request.params) && request.params.length === 0
+							? undefined
+							: request.params;
 
 				const result = await withTimeout(
 					swo.request({
@@ -108,9 +109,7 @@ export function walletTransport(swo: StarknetWindowObject): Transport {
 			options?: TransportRequestOptions,
 		): Promise<JsonRpcResponse<T>[]> {
 			// Wallets don't support batch — execute sequentially
-			return Promise.all(
-				requests.map((req) => this.request<T>(req, options)),
-			);
+			return Promise.all(requests.map((req) => this.request<T>(req, options)));
 		},
 	};
 }

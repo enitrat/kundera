@@ -7,9 +7,9 @@
 import {
 	getNative,
 	getWasmModule,
+	isWasmLoadedInternal,
 	setWasmLoaded,
 	setWasmModule,
-	isWasmLoadedInternal,
 } from "./state.js";
 
 /**

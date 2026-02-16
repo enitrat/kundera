@@ -6,25 +6,25 @@
  * Every assertion uses exact values from the fixture data — no "toBeGreaterThan(0)" hand-waving.
  */
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { mswServer } from "./setup-msw.js";
-import { HttpProvider } from "../provider/HttpProvider.js";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Rpc } from "../jsonrpc/index.js";
 import type {
+	BlockWithReceipts,
 	BlockWithTxHashes,
 	BlockWithTxs,
-	BlockWithReceipts,
 	StateUpdate,
 } from "../jsonrpc/types.js";
+import { HttpProvider } from "../provider/HttpProvider.js";
+import { mswServer } from "./setup-msw.js";
 
 // Block primitives
 import {
-	blockWithTxHashesFromRpc,
-	blockWithTxsFromRpc,
 	blockWithReceiptsFromRpc,
-	blockWithTxHashesToRpc,
-	blockWithTxsToRpc,
 	blockWithReceiptsToRpc,
+	blockWithTxHashesFromRpc,
+	blockWithTxHashesToRpc,
+	blockWithTxsFromRpc,
+	blockWithTxsToRpc,
 } from "../primitives/Block/index.js";
 import {
 	blockHeaderFromRpc,
@@ -118,9 +118,7 @@ describe("RPC integration (recorded fixtures)", () => {
 	});
 
 	it("blockHashAndNumber returns exact fixture values", async () => {
-		const result = await provider.request(
-			Rpc.BlockHashAndNumberRequest(),
-		);
+		const result = await provider.request(Rpc.BlockHashAndNumberRequest());
 		expect(result.block_hash).toBe(
 			"0x332d2b1de37a1c79b18c2d3f8c8b33695d2d94d58d7f8ad50d379cc9d748307",
 		);
@@ -152,9 +150,7 @@ describe("RPC integration (recorded fixtures)", () => {
 		expect(header.block_number).toBe(BLOCK_NUMBER);
 		expect(header.new_root.toBigInt()).toBe(BigInt(NEW_ROOT));
 		expect(header.timestamp).toBe(TIMESTAMP);
-		expect(header.sequencer_address.toBigInt()).toBe(
-			BigInt(SEQUENCER_ADDRESS),
-		);
+		expect(header.sequencer_address.toBigInt()).toBe(BigInt(SEQUENCER_ADDRESS));
 		expect(header.l1_da_mode).toBe("BLOB");
 		expect(header.starknet_version).toBe(STARKNET_VERSION);
 		expect(header.l1_gas_price.price_in_fri.toBigInt()).toBe(
@@ -185,9 +181,7 @@ describe("RPC integration (recorded fixtures)", () => {
 		const w = wire as BlockWithTxHashes;
 
 		const header = blockHeaderWithCommitmentsFromRpc(w);
-		expect(header.event_commitment.toBigInt()).toBe(
-			BigInt(EVENT_COMMITMENT),
-		);
+		expect(header.event_commitment.toBigInt()).toBe(BigInt(EVENT_COMMITMENT));
 		expect(header.transaction_commitment.toBigInt()).toBe(
 			BigInt(TRANSACTION_COMMITMENT),
 		);
@@ -223,16 +217,17 @@ describe("RPC integration (recorded fixtures)", () => {
 		expect(block.block_number).toBe(BLOCK_NUMBER);
 		expect(block.status).toBe("ACCEPTED_ON_L1");
 		expect(block.transactions).toHaveLength(TX_COUNT);
-		expect(block.transactions[0]!.toBigInt()).toBe(
-			BigInt(INVOKE_TX_HASH),
-		);
+		expect(block.transactions[0]?.toBigInt()).toBe(BigInt(INVOKE_TX_HASH));
 
 		// Round-trip
 		const back = blockWithTxHashesToRpc(block);
 		expect(back.block_number).toBe(BLOCK_NUMBER);
 		expect(back.status).toBe("ACCEPTED_ON_L1");
 		expect(back.transactions).toHaveLength(TX_COUNT);
-		expect(BigInt(back.transactions[0]!)).toBe(BigInt(INVOKE_TX_HASH));
+		const firstTxHash = back.transactions[0];
+		expect(firstTxHash).toBeDefined();
+		if (!firstTxHash) throw new Error("Expected first tx hash");
+		expect(BigInt(firstTxHash)).toBe(BigInt(INVOKE_TX_HASH));
 	});
 
 	it("getBlockWithTxs → full transaction objects", async () => {
@@ -244,22 +239,20 @@ describe("RPC integration (recorded fixtures)", () => {
 		expect(block.block_number).toBe(BLOCK_NUMBER);
 		expect(block.transactions).toHaveLength(TX_COUNT);
 
-		const firstTx = block.transactions[0]!;
+		const firstTx = block.transactions[0];
+		expect(firstTx).toBeDefined();
+		if (!firstTx) throw new Error("Expected first tx");
 		expect(firstTx.type).toBe("INVOKE");
-		expect(firstTx.transaction_hash.toBigInt()).toBe(
-			BigInt(INVOKE_TX_HASH),
-		);
+		expect(firstTx.transaction_hash.toBigInt()).toBe(BigInt(INVOKE_TX_HASH));
 		if (firstTx.type === "INVOKE" && "sender_address" in firstTx) {
-			expect(firstTx.sender_address.toBigInt()).toBe(
-				BigInt(INVOKE_SENDER),
-			);
+			expect(firstTx.sender_address.toBigInt()).toBe(BigInt(INVOKE_SENDER));
 		}
 
 		// Round-trip
 		const back = blockWithTxsToRpc(block);
 		expect(back.transactions).toHaveLength(TX_COUNT);
-		expect(back.transactions[0]!.type).toBe("INVOKE");
-		expect(BigInt(back.transactions[0]!.transaction_hash)).toBe(
+		expect(back.transactions[0]?.type).toBe("INVOKE");
+		expect(BigInt(back.transactions[0]?.transaction_hash)).toBe(
 			BigInt(INVOKE_TX_HASH),
 		);
 	});
@@ -273,7 +266,9 @@ describe("RPC integration (recorded fixtures)", () => {
 		expect(block.block_number).toBe(BLOCK_NUMBER);
 		expect(block.transactions).toHaveLength(TX_COUNT);
 
-		const first = block.transactions[0]!;
+		const first = block.transactions[0];
+		expect(first).toBeDefined();
+		if (!first) throw new Error("Expected first block receipt");
 		// In blockWithReceipts, type and transaction_hash are on receipt, not transaction
 		expect(first.receipt.type).toBe("INVOKE");
 		expect(first.receipt.execution_status).toBe("SUCCEEDED");
@@ -285,7 +280,7 @@ describe("RPC integration (recorded fixtures)", () => {
 		// Round-trip
 		const back = blockWithReceiptsToRpc(block);
 		expect(back.transactions).toHaveLength(TX_COUNT);
-		expect(back.transactions[0]!.receipt.type).toBe("INVOKE");
+		expect(back.transactions[0]?.receipt.type).toBe("INVOKE");
 	});
 
 	// --- Transaction ---
@@ -323,10 +318,8 @@ describe("RPC integration (recorded fixtures)", () => {
 		expect(receipt.execution_status).toBe("SUCCEEDED");
 		expect(receipt.finality_status).toBe("ACCEPTED_ON_L1");
 		expect(receipt.block_number).toBe(BLOCK_NUMBER);
-		expect(receipt.block_hash!.toBigInt()).toBe(BigInt(BLOCK_HASH));
-		expect(receipt.transaction_hash.toBigInt()).toBe(
-			BigInt(INVOKE_TX_HASH),
-		);
+		expect(receipt.block_hash?.toBigInt()).toBe(BigInt(BLOCK_HASH));
+		expect(receipt.transaction_hash.toBigInt()).toBe(BigInt(INVOKE_TX_HASH));
 		expect(receipt.actual_fee.amount.toBigInt()).toBe(
 			BigInt("0x31b5c3733b8a59"),
 		);
@@ -354,25 +347,26 @@ describe("RPC integration (recorded fixtures)", () => {
 		expect(wire.events).toHaveLength(10);
 		expect(wire.continuation_token).toBe("800000-10");
 
-		const event = emittedEventFromRpc(wire.events[0]!);
+		const firstWireEvent = wire.events[0];
+		expect(firstWireEvent).toBeDefined();
+		if (!firstWireEvent) throw new Error("Expected first wire event");
+		const event = emittedEventFromRpc(firstWireEvent);
 		expect(event.block_number).toBe(BLOCK_NUMBER);
 		expect(event.block_hash.toBigInt()).toBe(BigInt(BLOCK_HASH));
-		expect(event.transaction_hash.toBigInt()).toBe(
-			BigInt(INVOKE_TX_HASH),
-		);
+		expect(event.transaction_hash.toBigInt()).toBe(BigInt(INVOKE_TX_HASH));
 		expect(event.from_address.toBigInt()).toBe(
 			BigInt(
 				"0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
 			),
 		);
 		expect(event.keys).toHaveLength(1);
-		expect(event.keys[0]!.toBigInt()).toBe(
+		expect(event.keys[0]?.toBigInt()).toBe(
 			BigInt(
 				"0x99cd8bde557814842a3121e8ddfd433a539b8c9f14bf31ebf108d12e6196e9",
 			),
 		);
 		expect(event.data).toHaveLength(4);
-		expect(event.data[0]!.toBigInt()).toBe(BigInt(INVOKE_SENDER));
+		expect(event.data[0]?.toBigInt()).toBe(BigInt(INVOKE_SENDER));
 
 		// Round-trip
 		const back = emittedEventToRpc(event);
@@ -481,9 +475,7 @@ describe("RPC integration (recorded fixtures)", () => {
 			expect(trace.execute_invocation).toBeDefined();
 			const exec = trace.execute_invocation;
 			if ("contract_address" in exec) {
-				expect(exec.contract_address.toBigInt()).toBe(
-					BigInt(INVOKE_SENDER),
-				);
+				expect(exec.contract_address.toBigInt()).toBe(BigInt(INVOKE_SENDER));
 				expect(exec.entry_point_selector.toBigInt()).toBe(
 					BigInt(
 						"0x15d40a3d6ca2ac30f4031e42be28da9b056fef9bb7357ac5e85627ee876e5ad",

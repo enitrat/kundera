@@ -19,8 +19,14 @@ interface CryptoState {
 	wasmLoaded: boolean;
 }
 
-// Initialize or retrieve the global state
-const state: CryptoState = ((globalThis as any)[KUNDERA_CRYPTO_STATE] ??= {
+type GlobalCryptoStateHost = typeof globalThis & {
+	[KUNDERA_CRYPTO_STATE]?: CryptoState;
+	require?: (id: string) => unknown;
+};
+
+const globalStateHost = globalThis as GlobalCryptoStateHost;
+
+const createInitialState = (): CryptoState => ({
 	native: null,
 	nativeChecked: false,
 	wasm: null,
@@ -28,10 +34,35 @@ const state: CryptoState = ((globalThis as any)[KUNDERA_CRYPTO_STATE] ??= {
 	wasmLoaded: false,
 });
 
-function tryRequire(path: string): any | null {
-	const req = (globalThis as { require?: (id: string) => any }).require;
+// Initialize or retrieve the global state
+const state: CryptoState =
+	globalStateHost[KUNDERA_CRYPTO_STATE] ?? createInitialState();
+if (globalStateHost[KUNDERA_CRYPTO_STATE] === undefined) {
+	globalStateHost[KUNDERA_CRYPTO_STATE] = state;
+}
+
+function tryRequire(path: string): unknown | null {
+	const req = globalStateHost.require;
 	if (typeof req !== "function") return null;
 	return req(path);
+}
+
+function isNativeModule(
+	value: unknown,
+): value is NonNullable<CryptoState["native"]> {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		"isNativeAvailable" in value &&
+		typeof (value as { isNativeAvailable?: unknown }).isNativeAvailable ===
+			"function"
+	);
+}
+
+function isWasmModule(
+	value: unknown,
+): value is NonNullable<CryptoState["wasm"]> {
+	return typeof value === "object" && value !== null;
 }
 
 /**
@@ -44,9 +75,14 @@ export function getNative(): CryptoState["native"] {
 			const hasBun =
 				typeof (globalThis as { Bun?: unknown }).Bun !== "undefined";
 			if (hasBun) {
-				state.native = tryRequire("../native/index.js");
-				if (!state.native?.isNativeAvailable()) {
+				const nativeModule = tryRequire("../native/index.js");
+				if (
+					!isNativeModule(nativeModule) ||
+					!nativeModule.isNativeAvailable()
+				) {
 					state.native = null;
+				} else {
+					state.native = nativeModule;
 				}
 			}
 		} catch {
@@ -63,7 +99,8 @@ export function getWasmModule(): CryptoState["wasm"] {
 	if (!state.wasmChecked) {
 		state.wasmChecked = true;
 		try {
-			state.wasm = tryRequire("../wasm-loader/index.js");
+			const wasmModule = tryRequire("../wasm-loader/index.js");
+			state.wasm = isWasmModule(wasmModule) ? wasmModule : null;
 		} catch {
 			state.wasm = null;
 		}

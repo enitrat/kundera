@@ -6,6 +6,13 @@
  * @module provider/WebSocketProvider
  */
 
+import type {
+	EventsSubscriptionParams,
+	NewHeadsSubscriptionParams,
+	PendingTransactionsSubscriptionParams,
+	TransactionReceiptsSubscriptionParams,
+} from "../jsonrpc/types.js";
+import { isJsonRpcError } from "../transport/types.js";
 import type { TypedProvider } from "./TypedProvider.js";
 import type { StarknetRpcSchema } from "./schemas/StarknetRpcSchema.js";
 import type {
@@ -16,22 +23,15 @@ import type {
 	Response,
 	RpcError,
 } from "./types.js";
-import type {
-	NewHeadsSubscriptionParams,
-	EventsSubscriptionParams,
-	PendingTransactionsSubscriptionParams,
-	TransactionReceiptsSubscriptionParams,
-} from "../jsonrpc/types.js";
-import { isJsonRpcError } from "../transport/types.js";
 let _requestId = 0;
 function nextRequestId(): number {
 	return ++_requestId;
 }
 import type { JsonRpcRequest } from "../transport/types.js";
 import {
-	webSocketTransport,
 	type WebSocketTransport,
 	type WebSocketTransportOptions,
+	webSocketTransport,
 } from "../transport/websocket.js";
 
 /**
@@ -181,11 +181,11 @@ export class WebSocketProvider implements TypedProvider<StarknetRpcSchema> {
 	): void {
 		const listeners = this.eventListeners.get(event);
 		if (listeners) {
-			listeners.forEach((listener) => {
+			for (const listener of listeners) {
 				(listener as (...eventArgs: Parameters<ProviderEventMap[E]>) => void)(
 					...args,
 				);
-			});
+			}
 		}
 	}
 

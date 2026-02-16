@@ -22,12 +22,29 @@ export enum StarkResult {
 	NoSquareRoot = 6,
 }
 
-// Lazily loaded koffi module
-let koffi: any = null;
-let koffiChecked = false;
-
 // FFI function signatures (all return int32 status code)
-type FfiFn = (...args: any[]) => number;
+type FfiFn = (...args: unknown[]) => number;
+
+interface KoffiLibrary {
+	func(signature: string): FfiFn;
+}
+
+interface KoffiModule {
+	load(path: string): KoffiLibrary;
+}
+
+function isKoffiModule(value: unknown): value is KoffiModule {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		"load" in value &&
+		typeof (value as { load?: unknown }).load === "function"
+	);
+}
+
+// Lazily loaded koffi module
+let koffi: KoffiModule | null = null;
+let koffiChecked = false;
 
 interface NativeFns {
 	felt_add: FfiFn;
@@ -50,7 +67,7 @@ interface NativeFns {
 }
 
 // Loaded library instance and bound functions
-let lib: any = null;
+let lib: KoffiLibrary | null = null;
 let libraryPath: string | null = null;
 let fns: NativeFns | null = null;
 
@@ -62,8 +79,13 @@ function loadKoffi(): boolean {
 	koffiChecked = true;
 
 	try {
-		koffi = require("koffi");
-		return true;
+		const maybeKoffi = require("koffi");
+		if (isKoffiModule(maybeKoffi)) {
+			koffi = maybeKoffi;
+			return true;
+		}
+		koffi = null;
+		return false;
 	} catch {
 		koffi = null;
 		return false;

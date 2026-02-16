@@ -4,7 +4,7 @@
  * Cairo-compatible serialization for Starknet types.
  */
 
-import { type Felt252Type, Felt252 } from "../primitives/index.js";
+import { Felt252, type Felt252Type } from "../primitives/index.js";
 
 /**
  * Serialize a u256 as two felts [low, high]
@@ -40,7 +40,7 @@ export function serializeArray(felts: Felt252Type[]): Felt252Type[] {
  */
 export function deserializeArray(
 	felts: Felt252Type[],
-	offset: number = 0,
+	offset = 0,
 ): { array: Felt252Type[]; nextOffset: number } {
 	const lengthFelt = felts[offset];
 	if (!lengthFelt) {

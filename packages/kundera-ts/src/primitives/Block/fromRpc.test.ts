@@ -1,20 +1,20 @@
-import { describe, it, expect } from "vitest";
-import {
-	blockWithTxHashesFromRpc,
-	blockWithTxsFromRpc,
-	blockWithReceiptsFromRpc,
-} from "./fromRpc.js";
-import {
-	blockWithTxHashesToRpc,
-	blockWithTxsToRpc,
-	blockWithReceiptsToRpc,
-} from "./toRpc.js";
-import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
+import { describe, expect, it } from "vitest";
 import type {
+	BlockWithReceipts,
 	BlockWithTxHashes,
 	BlockWithTxs,
-	BlockWithReceipts,
 } from "../../jsonrpc/types.js";
+import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
+import {
+	blockWithReceiptsFromRpc,
+	blockWithTxHashesFromRpc,
+	blockWithTxsFromRpc,
+} from "./fromRpc.js";
+import {
+	blockWithReceiptsToRpc,
+	blockWithTxHashesToRpc,
+	blockWithTxsToRpc,
+} from "./toRpc.js";
 
 function canon(hex: string): string {
 	return feltFromHex(hex).toHex();
@@ -52,7 +52,7 @@ describe("BlockWithTxHashes", () => {
 		const rich = blockWithTxHashesFromRpc(wire);
 		expect(rich.status).toBe("ACCEPTED_ON_L2");
 		expect(rich.transactions.length).toBe(2);
-		expect(rich.transactions[0]!.toBigInt()).toBe(BigInt("0xaa"));
+		expect(rich.transactions[0]?.toBigInt()).toBe(BigInt("0xaa"));
 		const back = blockWithTxHashesToRpc(rich);
 		expect(back.status).toBe("ACCEPTED_ON_L2");
 		expect(back.transactions[0]).toBe(canon("0xaa"));
@@ -81,7 +81,7 @@ describe("BlockWithTxs", () => {
 		const rich = blockWithTxsFromRpc(wire);
 		expect(rich.status).toBe("ACCEPTED_ON_L1");
 		expect(rich.transactions.length).toBe(1);
-		expect(rich.transactions[0]!.type).toBe("INVOKE");
+		expect(rich.transactions[0]?.type).toBe("INVOKE");
 		const back = blockWithTxsToRpc(rich);
 		expect(back.transactions.length).toBe(1);
 	});
@@ -120,8 +120,8 @@ describe("BlockWithReceipts", () => {
 		const rich = blockWithReceiptsFromRpc(wire);
 		expect(rich.status).toBe("ACCEPTED_ON_L2");
 		expect(rich.transactions.length).toBe(1);
-		expect(rich.transactions[0]!.transaction.type).toBe("INVOKE");
-		expect(rich.transactions[0]!.receipt.type).toBe("INVOKE");
+		expect(rich.transactions[0]?.transaction.type).toBe("INVOKE");
+		expect(rich.transactions[0]?.receipt.type).toBe("INVOKE");
 		const back = blockWithReceiptsToRpc(rich);
 		expect(back.transactions.length).toBe(1);
 	});

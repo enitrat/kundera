@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { Int8 } from "./Int8.js";
-import { MIN, MAX, PRIME } from "./constants.js";
 import { Felt252 } from "../Felt252/index.js";
+import { Int8 } from "./Int8.js";
+import { MAX, MIN, PRIME } from "./constants.js";
 
 describe("Int8", () => {
 	describe("constants", () => {

@@ -1,6 +1,6 @@
 import type { Felt252Type } from "../../primitives/Felt252/types.js";
-import type { Signature } from "./types.js";
 import { Felt252 } from "../../primitives/index.js";
+import type { Signature } from "./types.js";
 
 type WasmLib = {
 	wasmSign: (privateKey: Felt252Type, messageHash: Felt252Type) => Signature;

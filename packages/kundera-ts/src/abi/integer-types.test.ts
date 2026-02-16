@@ -6,11 +6,16 @@
 
 import { describe, expect, it } from "vitest";
 import "../test-utils/setupCrypto";
-import {
-	encodeCalldata,
-	decodeCalldata,
-	decodeOutput,
-} from "./index.js";
+import * as Int8 from "../primitives/Int8/index.js";
+import type { Int8Type } from "../primitives/Int8/index.js";
+import * as Int16 from "../primitives/Int16/index.js";
+import type { Int16Type } from "../primitives/Int16/index.js";
+import * as Int32 from "../primitives/Int32/index.js";
+import type { Int32Type } from "../primitives/Int32/index.js";
+import * as Int64 from "../primitives/Int64/index.js";
+import type { Int64Type } from "../primitives/Int64/index.js";
+import * as Int128 from "../primitives/Int128/index.js";
+import type { Int128Type } from "../primitives/Int128/index.js";
 import * as Uint8 from "../primitives/Uint8/index.js";
 import type { Uint8Type } from "../primitives/Uint8/index.js";
 import * as Uint16 from "../primitives/Uint16/index.js";
@@ -23,16 +28,7 @@ import * as Uint128 from "../primitives/Uint128/index.js";
 import type { Uint128Type } from "../primitives/Uint128/index.js";
 import * as Uint256 from "../primitives/Uint256/index.js";
 import type { Uint256Type } from "../primitives/Uint256/index.js";
-import * as Int8 from "../primitives/Int8/index.js";
-import type { Int8Type } from "../primitives/Int8/index.js";
-import * as Int16 from "../primitives/Int16/index.js";
-import type { Int16Type } from "../primitives/Int16/index.js";
-import * as Int32 from "../primitives/Int32/index.js";
-import type { Int32Type } from "../primitives/Int32/index.js";
-import * as Int64 from "../primitives/Int64/index.js";
-import type { Int64Type } from "../primitives/Int64/index.js";
-import * as Int128 from "../primitives/Int128/index.js";
-import type { Int128Type } from "../primitives/Int128/index.js";
+import { decodeCalldata, decodeOutput, encodeCalldata } from "./index.js";
 
 const TEST_ABI = [
 	{
@@ -74,7 +70,7 @@ describe("Integer Types - ABI Integration", () => {
 		expect(result.error).toBeNull();
 		expect(result.result).toBeDefined();
 		// u8, u16, u32, u64, u128, u256(2 felts = low+high), i8, i16, i32, i64, i128 = 12 total
-		expect(result.result!.length).toBeGreaterThan(10);
+		expect(result.result?.length).toBeGreaterThan(10);
 	});
 
 	it("should decode unsigned integer types", () => {
@@ -94,17 +90,20 @@ describe("Integer Types - ABI Integration", () => {
 
 		const encoded = encodeCalldata(TEST_ABI, "test_all_integers", args);
 		expect(encoded.error).toBeNull();
+		expect(encoded.result).toBeDefined();
+		if (!encoded.result) throw new Error("Expected encoded calldata");
 
 		const decoded = decodeCalldata(
 			TEST_ABI,
 			"test_all_integers",
-			encoded.result!,
+			encoded.result,
 		);
 		expect(decoded.error).toBeNull();
 		expect(decoded.result).toBeDefined();
+		if (!decoded.result) throw new Error("Expected decoded calldata");
 
 		// Verify the values round-trip correctly
-		const values = decoded.result!;
+		const values = decoded.result;
 		expect(Uint8.toBigInt(values[0] as Uint8Type)).toBe(42n);
 		expect(Uint16.toBigInt(values[1] as Uint16Type)).toBe(1000n);
 		expect(Uint32.toBigInt(values[2] as Uint32Type)).toBe(100000n);
@@ -126,8 +125,9 @@ describe("Integer Types - ABI Integration", () => {
 		const result = decodeOutput(TEST_ABI, "test_all_integers", outputData);
 		expect(result.error).toBeNull();
 		expect(result.result).toBeDefined();
+		if (result.result === null) throw new Error("Expected decoded output");
 		// decodeOutput unwraps single output to scalar
-		expect(Uint256.toBigInt(result.result! as Uint256Type)).toBe(
+		expect(Uint256.toBigInt(result.result as Uint256Type)).toBe(
 			1000000000000000000n,
 		);
 	});

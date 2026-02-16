@@ -4,27 +4,27 @@
  * Handles all Cairo types: felt, integers, addresses, arrays, structs.
  */
 
-import type { Felt252Type } from "../../primitives/Felt252/types.js";
+import { ClassHash } from "../../primitives/ClassHash/index.js";
+import { ContractAddress } from "../../primitives/ContractAddress/index.js";
 import { Felt252 } from "../../primitives/Felt252/index.js";
+import type { Felt252Type } from "../../primitives/Felt252/types.js";
+import { Int8 } from "../../primitives/Int8/index.js";
+import { Int16 } from "../../primitives/Int16/index.js";
+import { Int32 } from "../../primitives/Int32/index.js";
+import { Int64 } from "../../primitives/Int64/index.js";
+import { Int128 } from "../../primitives/Int128/index.js";
+import { encodeShortString } from "../../primitives/ShortString/index.js";
 import { Uint8 } from "../../primitives/Uint8/index.js";
 import { Uint16 } from "../../primitives/Uint16/index.js";
 import { Uint32 } from "../../primitives/Uint32/index.js";
 import { Uint64 } from "../../primitives/Uint64/index.js";
 import { Uint128 } from "../../primitives/Uint128/index.js";
 import { Uint256 } from "../../primitives/Uint256/index.js";
-import { Int8 } from "../../primitives/Int8/index.js";
-import { Int16 } from "../../primitives/Int16/index.js";
-import { Int32 } from "../../primitives/Int32/index.js";
-import { Int64 } from "../../primitives/Int64/index.js";
-import { Int128 } from "../../primitives/Int128/index.js";
-import { ContractAddress } from "../../primitives/ContractAddress/index.js";
-import { ClassHash } from "../../primitives/ClassHash/index.js";
-import { encodeShortString } from "../../primitives/ShortString/index.js";
 import { poseidonHashMany, snKeccak } from "../hash.js";
+import { Snip12EncodingError } from "./errors.js";
 // hashType imported for future use in complex type encoding
 import { hashType as _hashType } from "./hashType.js";
-import { Snip12EncodingError } from "./errors.js";
-import type { TypeDefinitions, MessageValue } from "./types.js";
+import type { MessageValue, TypeDefinitions } from "./types.js";
 
 /**
  * Factory for encode value function

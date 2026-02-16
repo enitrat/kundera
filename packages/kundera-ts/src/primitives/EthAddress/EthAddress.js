@@ -1,6 +1,6 @@
+import { MAX_ETH_ADDRESS } from "./constants.js";
 import { from } from "./from.js";
 import { isValid } from "./isValid.js";
-import { MAX_ETH_ADDRESS } from "./constants.js";
 
 /**
  * EthAddress namespace with constructor and utilities

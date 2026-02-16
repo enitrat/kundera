@@ -1,6 +1,6 @@
 import {
-	poseidonHash as poseidonHashScure,
 	poseidonHashMany as poseidonHashManyScure,
+	poseidonHash as poseidonHashScure,
 } from "@scure/starknet";
 import { Felt252 } from "../../primitives/Felt252/index.js";
 

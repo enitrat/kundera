@@ -9,21 +9,21 @@ import { Felt252, type Felt252Type } from "../primitives/index.js";
 import {
 	isNativeAvailable,
 	feltAdd as nativeFeltAdd,
-	feltSub as nativeFeltSub,
-	feltMul as nativeFeltMul,
 	feltDiv as nativeFeltDiv,
-	feltNeg as nativeFeltNeg,
 	feltInverse as nativeFeltInverse,
+	feltMul as nativeFeltMul,
+	feltNeg as nativeFeltNeg,
 	feltPow as nativeFeltPow,
 	feltSqrt as nativeFeltSqrt,
+	feltSub as nativeFeltSub,
+	getPublicKey as nativeGetPublicKey,
+	keccak256 as nativeKeccak256,
 	pedersenHash as nativePedersenHash,
 	poseidonHash as nativePoseidonHash,
 	poseidonHashMany as nativePoseidonHashMany,
-	keccak256 as nativeKeccak256,
-	getPublicKey as nativeGetPublicKey,
+	recover as nativeRecover,
 	sign as nativeSign,
 	verify as nativeVerify,
-	recover as nativeRecover,
 } from "./loader.js";
 
 /**

@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
 import {
-	serializeU256,
+	CairoSerde,
+	deserializeArray,
 	deserializeU256,
 	serializeArray,
-	deserializeArray,
 	serializeByteArray,
-	CairoSerde,
+	serializeU256,
 } from "./index";
 
 describe("CairoSerde namespace", () => {

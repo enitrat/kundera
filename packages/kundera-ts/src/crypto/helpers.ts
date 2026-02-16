@@ -26,7 +26,7 @@ export class CryptoNotInitializedError extends Error {
  *   wasm: (w, a, b) => Felt252(w.wasmFeltAdd(a, b))
  * });
  */
-export function withCrypto<Args extends any[], R>(operation: {
+export function withCrypto<Args extends unknown[], R>(operation: {
 	native: (impl: NonNullable<ReturnType<typeof getNative>>, ...args: Args) => R;
 	wasm: (impl: NonNullable<ReturnType<typeof getWasm>>, ...args: Args) => R;
 }): (...args: Args) => R {

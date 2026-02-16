@@ -6,8 +6,8 @@
  * @module provider/HttpProvider
  */
 
-import type { JsonRpcRequest, Transport } from "../transport/types.js";
 import { httpTransport } from "../transport/http.js";
+import type { JsonRpcRequest, Transport } from "../transport/types.js";
 let _requestId = 0;
 function nextRequestId(): number {
 	return ++_requestId;

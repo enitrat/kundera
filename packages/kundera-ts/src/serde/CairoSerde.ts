@@ -4,11 +4,11 @@
  * Namespace object for Cairo serialization/deserialization operations.
  */
 
-import { serializeU256 } from "./serializeU256.js";
+import { deserializeArray } from "./deserializeArray.js";
 import { deserializeU256 } from "./deserializeU256.js";
 import { serializeArray } from "./serializeArray.js";
-import { deserializeArray } from "./deserializeArray.js";
 import { serializeByteArray } from "./serializeByteArray.js";
+import { serializeU256 } from "./serializeU256.js";
 
 export const CairoSerde = {
 	serializeU256,

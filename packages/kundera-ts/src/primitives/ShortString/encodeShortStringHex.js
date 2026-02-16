@@ -8,5 +8,5 @@ import { encodeShortString } from "./encodeShortString.js";
  */
 export function encodeShortStringHex(str) {
 	const felt = encodeShortString(str);
-	return "0x" + felt.toBigInt().toString(16);
+	return `0x${felt.toBigInt().toString(16)}`;
 }

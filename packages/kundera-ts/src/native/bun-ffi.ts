@@ -5,7 +5,7 @@
  * Only imported when running in Bun runtime.
  */
 
-import { dlopen, FFIType, ptr, type Pointer } from "bun:ffi";
+import { FFIType, type Pointer, dlopen, ptr } from "bun:ffi";
 import type { Felt252Type } from "../primitives/index.js";
 import { getNativeLibPath } from "./platform.js";
 
@@ -173,7 +173,7 @@ function copyResult(out: Uint8Array): Felt252Type {
 // ============ Exported Functions ============
 
 export function feltAdd(a: Felt252Type, b: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.felt_add(feltPtr(a), feltPtr(b), ptr(out));
 	checkResult(result);
@@ -181,7 +181,7 @@ export function feltAdd(a: Felt252Type, b: Felt252Type): Felt252Type {
 }
 
 export function feltSub(a: Felt252Type, b: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.felt_sub(feltPtr(a), feltPtr(b), ptr(out));
 	checkResult(result);
@@ -189,7 +189,7 @@ export function feltSub(a: Felt252Type, b: Felt252Type): Felt252Type {
 }
 
 export function feltMul(a: Felt252Type, b: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.felt_mul(feltPtr(a), feltPtr(b), ptr(out));
 	checkResult(result);
@@ -197,7 +197,7 @@ export function feltMul(a: Felt252Type, b: Felt252Type): Felt252Type {
 }
 
 export function feltDiv(a: Felt252Type, b: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.felt_div(feltPtr(a), feltPtr(b), ptr(out));
 	checkResult(result);
@@ -205,7 +205,7 @@ export function feltDiv(a: Felt252Type, b: Felt252Type): Felt252Type {
 }
 
 export function feltNeg(a: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.felt_neg(feltPtr(a), ptr(out));
 	checkResult(result);
@@ -213,7 +213,7 @@ export function feltNeg(a: Felt252Type): Felt252Type {
 }
 
 export function feltInverse(a: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.felt_inverse(feltPtr(a), ptr(out));
 	checkResult(result);
@@ -221,7 +221,7 @@ export function feltInverse(a: Felt252Type): Felt252Type {
 }
 
 export function feltPow(base: Felt252Type, exp: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.felt_pow(feltPtr(base), feltPtr(exp), ptr(out));
 	checkResult(result);
@@ -229,7 +229,7 @@ export function feltPow(base: Felt252Type, exp: Felt252Type): Felt252Type {
 }
 
 export function feltSqrt(a: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.felt_sqrt(feltPtr(a), ptr(out));
 	checkResult(result);
@@ -237,7 +237,7 @@ export function feltSqrt(a: Felt252Type): Felt252Type {
 }
 
 export function pedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.starknet_pedersen_hash(
 		feltPtr(a),
@@ -249,7 +249,7 @@ export function pedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type {
 }
 
 export function poseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.starknet_poseidon_hash(
 		feltPtr(a),
@@ -261,7 +261,7 @@ export function poseidonHash(a: Felt252Type, b: Felt252Type): Felt252Type {
 }
 
 export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	// Pack inputs into contiguous buffer
 	const packed = new Uint8Array(inputs.length * 32);
 	for (let i = 0; i < inputs.length; i++) {
@@ -285,7 +285,7 @@ export function poseidonHashMany(inputs: Felt252Type[]): Felt252Type {
  * Standard Keccak256 hash (full 32 bytes)
  */
 export function keccak256(data: Uint8Array): Uint8Array {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const dataPtr = data.length > 0 ? ptr(data) : ptr(new Uint8Array(1));
 	const result = lib.symbols.keccak256(dataPtr, data.length, ptr(out));
@@ -297,7 +297,7 @@ export function keccak256(data: Uint8Array): Uint8Array {
  * Starknet Keccak256 (truncated to 250 bits, returns Felt252)
  */
 export function snKeccak256(data: Uint8Array): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const dataPtr = data.length > 0 ? ptr(data) : ptr(new Uint8Array(1));
 	const result = lib.symbols.starknet_keccak256(dataPtr, data.length, ptr(out));
@@ -306,7 +306,7 @@ export function snKeccak256(data: Uint8Array): Felt252Type {
 }
 
 export function getPublicKey(privateKey: Felt252Type): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.starknet_get_public_key(
 		feltPtr(privateKey),
@@ -325,7 +325,7 @@ export function sign(
 	privateKey: Felt252Type,
 	messageHash: Felt252Type,
 ): NativeSignature {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const outR = new Uint8Array(32);
 	const outS = new Uint8Array(32);
 	const result = lib.symbols.starknet_sign(
@@ -347,7 +347,7 @@ export function verify(
 	r: Felt252Type,
 	s: Felt252Type,
 ): boolean {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const result = lib.symbols.starknet_verify(
 		feltPtr(publicKey),
 		feltPtr(messageHash),
@@ -366,7 +366,7 @@ export function recover(
 	s: Felt252Type,
 	v: Felt252Type,
 ): Felt252Type {
-	const lib = loadLibrary()!;
+	const lib = loadLibrary();
 	const out = new Uint8Array(32);
 	const result = lib.symbols.starknet_recover(
 		feltPtr(messageHash),

@@ -84,7 +84,10 @@ describe("Rpc request builders", () => {
 	});
 
 	it("builds estimate fee request", () => {
-		const req = Rpc.EstimateFeeRequest([{ type: "INVOKE" } as any]);
+		type EstimateFeeTx = Parameters<typeof Rpc.EstimateFeeRequest>[0][number];
+		const req = Rpc.EstimateFeeRequest([
+			{ type: "INVOKE" } as unknown as EstimateFeeTx,
+		]);
 		expect(req).toEqual({
 			method: "starknet_estimateFee",
 			params: [[{ type: "INVOKE" }], [], "latest"],
@@ -100,7 +103,11 @@ describe("Rpc request builders", () => {
 	});
 
 	it("builds add invoke transaction request", () => {
-		const tx = { type: "INVOKE", sender_address: "0x1" } as any;
+		type AddInvokeTx = Parameters<typeof Rpc.AddInvokeTransactionRequest>[0];
+		const tx = {
+			type: "INVOKE",
+			sender_address: "0x1",
+		} as unknown as AddInvokeTx;
 		const req = Rpc.AddInvokeTransactionRequest(tx);
 		expect(req).toEqual({
 			method: "starknet_addInvokeTransaction",
@@ -117,8 +124,11 @@ describe("Rpc request builders", () => {
 	});
 
 	it("builds simulate transactions request", () => {
+		type SimulateTx = Parameters<
+			typeof Rpc.SimulateTransactionsRequest
+		>[1][number];
 		const req = Rpc.SimulateTransactionsRequest("latest", [
-			{ type: "INVOKE" } as any,
+			{ type: "INVOKE" } as unknown as SimulateTx,
 		]);
 		expect(req).toEqual({
 			method: "starknet_simulateTransactions",

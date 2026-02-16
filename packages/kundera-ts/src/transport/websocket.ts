@@ -6,16 +6,16 @@
  * @module transport/websocket
  */
 
+import type { WsNotificationPayload } from "../jsonrpc/types.js";
 import {
 	type EventTransport,
-	type TransportEvents,
+	JsonRpcErrorCode,
 	type JsonRpcRequest,
 	type JsonRpcResponse,
+	type TransportEvents,
 	type TransportRequestOptions,
-	JsonRpcErrorCode,
 	createErrorResponse,
 } from "./types.js";
-import type { WsNotificationPayload } from "../jsonrpc/types.js";
 
 // ============ WebSocket Transport Options ============
 
@@ -174,9 +174,11 @@ export function webSocketTransport(
 				| undefined;
 			const subscriptionId = params?.subscription_id ?? params?.subscription;
 			if (subscriptionId && subscriptions.has(subscriptionId)) {
-				const callbacks = subscriptions.get(subscriptionId)!;
-				for (const callback of callbacks) {
-					callback(params?.result as WsNotificationPayload);
+				const callbacks = subscriptions.get(subscriptionId);
+				if (callbacks) {
+					for (const callback of callbacks) {
+						callback(params?.result as WsNotificationPayload);
+					}
 				}
 			}
 			emit("message", message);
@@ -206,7 +208,7 @@ export function webSocketTransport(
 		}
 
 		reconnectAttempts++;
-		const delay = reconnectDelay * Math.pow(1.5, reconnectAttempts - 1);
+		const delay = reconnectDelay * 1.5 ** (reconnectAttempts - 1);
 
 		reconnectTimeout = setTimeout(() => {
 			transport.connect().catch((error) => {
@@ -327,24 +329,35 @@ export function webSocketTransport(
 
 			return new Promise((resolve) => {
 				const requestTimeout = options?.timeout ?? timeout;
-				const timeoutId = setTimeout(() => {
-					pendingRequests.delete(requestWithId.id!);
+				const requestId = requestWithId.id;
+				if (requestId === null || requestId === undefined) {
 					resolve(
 						createErrorResponse(
-							requestWithId.id ?? null,
+							null,
+							JsonRpcErrorCode.InternalError,
+							"Request id missing",
+						) as JsonRpcResponse<T>,
+					);
+					return;
+				}
+				const timeoutId = setTimeout(() => {
+					pendingRequests.delete(requestId);
+					resolve(
+						createErrorResponse(
+							requestId,
 							JsonRpcErrorCode.InternalError,
 							`Request timeout after ${requestTimeout}ms`,
 						) as JsonRpcResponse<T>,
 					);
 				}, requestTimeout);
 
-				pendingRequests.set(requestWithId.id!, {
+				pendingRequests.set(requestId, {
 					resolve: resolve as (response: JsonRpcResponse) => void,
 					reject: () => {},
 					timeoutId,
 				});
 
-				ws!.send(JSON.stringify(requestWithId));
+				ws?.send(JSON.stringify(requestWithId));
 			});
 		},
 
@@ -378,7 +391,7 @@ export function webSocketTransport(
 			if (!subscriptions.has(subscriptionId)) {
 				subscriptions.set(subscriptionId, new Set());
 			}
-			subscriptions.get(subscriptionId)!.add(callback);
+			subscriptions.get(subscriptionId)?.add(callback);
 		},
 
 		unsubscribe(
@@ -400,8 +413,8 @@ export function webSocketTransport(
 				eventListeners.set(event, new Set());
 			}
 			eventListeners
-				.get(event)!
-				.add(listener as EventListener<keyof TransportEvents>);
+				.get(event)
+				?.add(listener as EventListener<keyof TransportEvents>);
 			return transport;
 		},
 

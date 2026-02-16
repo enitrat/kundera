@@ -4,6 +4,19 @@
  * High-level API for compiling function calldata.
  */
 
+import type {
+	InferArgs,
+	InferFunctionName,
+	InferReturn,
+} from "./abi-type-inference.js";
+import {
+	decodeArgs,
+	decodeArgsObject,
+	decodeOutputs,
+	decodeOutputsObject,
+} from "./decode.js";
+import { encodeArgs, encodeArgsObject } from "./encode.js";
+import { computeSelector, getFunction, parseAbi } from "./parse.js";
 import {
 	type AbiLike,
 	type CairoValue,
@@ -12,19 +25,6 @@ import {
 	type Result,
 	ok,
 } from "./types.js";
-import type {
-	InferArgs,
-	InferFunctionName,
-	InferReturn,
-} from "./abi-type-inference.js";
-import { parseAbi, getFunction, computeSelector } from "./parse.js";
-import { encodeArgs, encodeArgsObject } from "./encode.js";
-import {
-	decodeArgs,
-	decodeArgsObject,
-	decodeOutputs,
-	decodeOutputsObject,
-} from "./decode.js";
 
 function isArgsArray(
 	args: readonly CairoValue[] | Record<string, CairoValue>,
@@ -54,9 +54,8 @@ function encodeCalldataInternal(
 	// Encode arguments
 	if (isArgsArray(args)) {
 		return encodeArgs(fn.entry.inputs, args, parsed);
-	} else {
-		return encodeArgsObject(fn.entry.inputs, args, parsed);
 	}
+	return encodeArgsObject(fn.entry.inputs, args, parsed);
 }
 
 // ============ ABI Caching ============
@@ -212,7 +211,15 @@ export function decodeOutput<
 	// Unwrap: 0 outputs → null, 1 output → scalar, 2+ → array
 	const arr = arrayResult.result;
 	if (arr.length === 0) return ok(null) as Ret;
-	if (arr.length === 1) return ok(arr[0]!) as Ret;
+	if (arr.length === 1) {
+		const first = arr[0];
+		if (first === undefined) {
+			return err(
+				abiError("DECODE_ERROR", "Expected one output value but found none"),
+			) as Ret;
+		}
+		return ok(first) as Ret;
+	}
 	return ok(arr) as Ret;
 }
 
@@ -227,11 +234,7 @@ export function decodeOutput<
 export function decodeOutputObject<
 	TAbi extends AbiLike,
 	TFunctionName extends InferFunctionName<TAbi> & string,
->(
-	abi: TAbi,
-	fnName: TFunctionName,
-	output: bigint[],
-): Result<DecodedStruct> {
+>(abi: TAbi, fnName: TFunctionName, output: bigint[]): Result<DecodedStruct> {
 	// Parse ABI
 	const parsedResult = getParsedAbi(abi);
 	if (parsedResult.error) {
@@ -266,7 +269,7 @@ export function getFunctionSelector(fnName: string): bigint {
  * @returns Selector as hex string (0x...)
  */
 export function getFunctionSelectorHex(fnName: string): string {
-	return "0x" + computeSelector(fnName).toString(16);
+	return `0x${computeSelector(fnName).toString(16)}`;
 }
 
 /**
@@ -298,7 +301,7 @@ export function compileCalldata<
 	const selector = computeSelector(fnName);
 
 	return ok({
-		selectorHex: "0x" + selector.toString(16),
-		calldata: encoded.result.map((v) => "0x" + v.toString(16)),
+		selectorHex: `0x${selector.toString(16)}`,
+		calldata: encoded.result.map((v) => `0x${v.toString(16)}`),
 	});
 }

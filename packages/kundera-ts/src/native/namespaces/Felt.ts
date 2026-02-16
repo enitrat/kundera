@@ -8,13 +8,13 @@
 import { Felt as FeltPrimitives } from "../../primitives/index.js";
 import {
 	feltAdd,
-	feltSub,
-	feltMul,
 	feltDiv,
-	feltNeg,
 	feltInverse,
+	feltMul,
+	feltNeg,
 	feltPow,
 	feltSqrt,
+	feltSub,
 } from "../crypto.js";
 
 // Merge primitive Felt namespace with crypto ops (preserve call signature)

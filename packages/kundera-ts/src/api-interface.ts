@@ -6,12 +6,12 @@
  */
 
 import type {
-	Felt252Type,
-	Felt252Input,
-	ContractAddressType,
 	ClassHashType,
-	StorageKeyType,
+	ContractAddressType,
 	EthAddressType,
+	Felt252Input,
+	Felt252Type,
+	StorageKeyType,
 } from "./primitives/index.js";
 
 export interface FeltConstructor {

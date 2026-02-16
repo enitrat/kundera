@@ -1,5 +1,5 @@
-import { MIN, MAX } from "./constants.js";
-import { Int8RangeError, Int8ParseError } from "./errors.js";
+import { MAX, MIN } from "./constants.js";
+import { Int8ParseError, Int8RangeError } from "./errors.js";
 
 /**
  * Create an Int8 from various input types.

@@ -6,14 +6,16 @@
  * @module provider/TypedProvider
  */
 
-import type { ProviderEventMap } from "./types.js";
 import type { RpcSchema } from "./RpcSchema.js";
 import type { RequestFn } from "./request/RequestFn.js";
+import type { ProviderEventMap } from "./types.js";
 
 export interface TypedProvider<
 	TRpcSchema extends RpcSchema = RpcSchema,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	TEventMap extends Record<string, (...args: any[]) => void> = ProviderEventMap,
+	TEventMap extends Record<
+		string,
+		(...args: unknown[]) => void
+	> = ProviderEventMap,
 > {
 	request: RequestFn<TRpcSchema>;
 

@@ -5,9 +5,9 @@
  * and provides paths to native libraries.
  */
 
-import { join, dirname } from "path";
-import { existsSync } from "fs";
+import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
@@ -77,7 +77,6 @@ export function getNativeExtension(): string {
 			return ".dylib";
 		case "win32":
 			return ".dll";
-		case "linux":
 		default:
 			return ".so";
 	}

@@ -12,7 +12,7 @@ import {
 	type Felt252Type,
 	encodeShortString as encodeShortStringPrimitive,
 } from "../primitives/index.js";
-import { type Result, ok, err, abiError, type AbiLike } from "./types.js";
+import { type AbiLike, type Result, abiError, err, ok } from "./types.js";
 
 // ============ Empty Array Hash Constant ============
 
@@ -116,7 +116,7 @@ export interface CompiledSierraCasm {
  */
 function encodeShortStringHex(str: string): string {
 	const value = encodeShortStringPrimitive(str);
-	return "0x" + value.toBigInt().toString(16);
+	return `0x${value.toBigInt().toString(16)}`;
 }
 
 // ============ JSON Formatting ============

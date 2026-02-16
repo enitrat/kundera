@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { Keccak256, hash, hashHex, DIGEST_SIZE } from "./index.js";
+import { DIGEST_SIZE, Keccak256, hash, hashHex } from "./index.js";
 
 describe("Keccak256", () => {
 	test("DIGEST_SIZE is 32", () => {

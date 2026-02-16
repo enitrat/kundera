@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { ByteArray, BYTES_PER_WORD } from "./index";
+import { BYTES_PER_WORD, ByteArray } from "./index";
 
 describe("ByteArray", () => {
 	test("from empty Uint8Array", () => {

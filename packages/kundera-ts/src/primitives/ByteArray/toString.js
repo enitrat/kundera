@@ -6,7 +6,9 @@ import { toBytes } from "./toBytes.js";
  * @param {import('./types.js').ByteArrayType} byteArray
  * @returns {string}
  */
-export function toString(byteArray) {
+function byteArrayToString(byteArray) {
 	const decoder = new TextDecoder();
 	return decoder.decode(toBytes(byteArray));
 }
+
+export { byteArrayToString as toString };

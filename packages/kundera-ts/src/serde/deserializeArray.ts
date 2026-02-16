@@ -1,11 +1,11 @@
-import { type Felt252Type } from "../primitives/index.js";
+import type { Felt252Type } from "../primitives/index.js";
 
 /**
  * Deserialize an array of felts (reads length prefix)
  */
 export function deserializeArray(
 	felts: Felt252Type[],
-	offset: number = 0,
+	offset = 0,
 ): { array: Felt252Type[]; nextOffset: number } {
 	const lengthFelt = felts[offset];
 	if (!lengthFelt) {

@@ -24,5 +24,5 @@ export function computeSelector(name: string): bigint {
  */
 export function computeSelectorHex(name: string): string {
 	const selector = computeSelector(name);
-	return "0x" + selector.toString(16);
+	return `0x${selector.toString(16)}`;
 }

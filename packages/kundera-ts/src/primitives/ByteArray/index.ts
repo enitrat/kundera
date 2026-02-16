@@ -4,13 +4,13 @@ export type { ByteArrayType, ByteArrayInput, ByteArrayData } from "./types.js";
 // Constants
 export { BYTES_PER_WORD, BYTE_ARRAY_MAGIC } from "./constants.js";
 
+import { BYTES_PER_WORD, BYTE_ARRAY_MAGIC } from "./constants.js";
 // Functions
 import { from as _from } from "./from.js";
 import { fromString as _fromString } from "./fromString.js";
+import { length as _length } from "./length.js";
 import { toBytes as _toBytes } from "./toBytes.js";
 import { toString as _toString } from "./toString.js";
-import { length as _length } from "./length.js";
-import { BYTES_PER_WORD, BYTE_ARRAY_MAGIC } from "./constants.js";
 
 // Internal exports
 export { from as _from } from "./from.js";
@@ -23,7 +23,7 @@ export { length as _length } from "./length.js";
 export const from = _from;
 export const fromString = _fromString;
 export const toBytes = _toBytes;
-export const toString = _toString;
+export { _toString as toString };
 export const length = _length;
 
 /**

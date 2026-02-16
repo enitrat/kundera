@@ -72,7 +72,11 @@ export class BatchQueue<T, R> {
 			const results = await this.processBatch(items);
 
 			for (let i = 0; i < batch.length; i++) {
-				batch[i]?.resolve(results[i]!);
+				const entry = batch[i];
+				const result = results[i];
+				if (entry && result !== undefined) {
+					entry.resolve(result);
+				}
 			}
 		} catch (error) {
 			if (this.onError) {

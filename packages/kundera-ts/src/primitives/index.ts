@@ -5,12 +5,12 @@
  * This file is a barrel that composes the per-primitive modules.
  */
 
-import { Felt252 } from "./Felt252/index.js";
+import { ClassHash } from "./ClassHash/index.js";
 import {
 	ContractAddress,
 	MAX_CONTRACT_ADDRESS,
 } from "./ContractAddress/index.js";
-import { ClassHash } from "./ClassHash/index.js";
+import { Felt252 } from "./Felt252/index.js";
 import { StorageKey } from "./StorageKey/index.js";
 
 // Felt252

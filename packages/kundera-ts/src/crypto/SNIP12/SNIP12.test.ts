@@ -4,22 +4,22 @@
  * Comprehensive tests for typed structured data hashing on Starknet.
  */
 
-import { describe, expect, it, beforeAll } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
+import { Felt252 } from "../../primitives/index.js";
 import { isNativeAvailable, loadWasmCrypto } from "../index.js";
 import {
 	SNIP12,
-	encodeType,
-	hashType,
-	hashStruct,
-	hashDomain,
-	hashTypedData,
-	Snip12TypeNotFoundError,
-	Snip12InvalidMessageError,
-	Snip12InvalidDomainError,
 	Snip12EncodingError,
+	Snip12InvalidDomainError,
+	Snip12InvalidMessageError,
+	Snip12TypeNotFoundError,
+	encodeType,
+	hashDomain,
+	hashStruct,
+	hashType,
+	hashTypedData,
 } from "./index.js";
 import type { Domain, TypeDefinitions, TypedData } from "./types.js";
-import { Felt252 } from "../../primitives/index.js";
 
 // Crypto readiness is ensured by beforeAll below
 

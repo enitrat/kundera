@@ -7,11 +7,11 @@
  */
 
 import {
-	type Transport,
+	JsonRpcErrorCode,
 	type JsonRpcRequest,
 	type JsonRpcResponse,
+	type Transport,
 	type TransportRequestOptions,
-	JsonRpcErrorCode,
 	createErrorResponse,
 	matchBatchResponses,
 } from "./types.js";
