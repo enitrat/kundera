@@ -1,10 +1,18 @@
 import { describe, expect, it } from "@effect/vitest";
-import type { BlockWithTxHashes } from "@kundera-sn/kundera-ts/jsonrpc";
+import {
+	Rpc,
+	type BlockWithTxHashes,
+} from "@kundera-sn/kundera-ts/jsonrpc";
 import { Effect, Layer, Stream } from "effect";
 
 import { RpcError } from "../../errors.js";
 import { BlockStreamLive, BlockStreamService } from "../BlockStreamService.js";
-import { ProviderService } from "../ProviderService.js";
+import { HttpProviderLive, ProviderService } from "../ProviderService.js";
+import {
+	LIVE_STREAM_REQUEST_OPTIONS,
+	LIVE_STREAM_RPC_URL,
+	RUN_LIVE_STREAM_TESTS,
+} from "./_liveRpc.js";
 
 const ZERO_PRICE = {
 	price_in_fri: "0x0",
@@ -258,3 +266,51 @@ describe("BlockStreamService", () => {
 		}).pipe(Effect.provide(BlockStreamLive), Effect.provide(providerLayer));
 	});
 });
+
+// Enable with:
+// KUNDERA_EFFECT_RUN_LIVE_STREAM_TESTS=1
+// Optional URL override:
+// KUNDERA_EFFECT_STREAM_RPC_URL=https://api.cartridge.gg/x/starknet/sepolia
+(RUN_LIVE_STREAM_TESTS ? describe : describe.skip)(
+	"BlockStreamService (live RPC)",
+	() => {
+		it.effect("backfill reads latest block from configured rpc url", () => {
+			const providerLayer = HttpProviderLive(LIVE_STREAM_RPC_URL);
+			const blockStreamLayer = BlockStreamLive.pipe(
+				Layer.provide(providerLayer),
+			);
+
+			return Effect.gen(function* () {
+				const provider = yield* ProviderService;
+				const { method, params } = Rpc.BlockNumberRequest();
+				const chainHead = yield* provider.request<number>(
+					method,
+					params,
+					LIVE_STREAM_REQUEST_OPTIONS,
+				);
+
+				const events = yield* Effect.flatMap(BlockStreamService, (stream) =>
+					stream
+						.backfill({
+							fromBlock: chainHead,
+							toBlock: chainHead,
+							chunkSize: 1,
+							requestOptions: LIVE_STREAM_REQUEST_OPTIONS,
+						})
+						.pipe(Stream.runCollect),
+				);
+				const collected = Array.from(events);
+				const first = collected[0];
+				const block = first?.type === "blocks" ? first.blocks[0] : undefined;
+
+				expect(collected).toHaveLength(1);
+				expect(first?.type).toBe("blocks");
+				expect(block?.block_number).toBe(chainHead);
+				expect(block?.block_hash).toMatch(/^0x[0-9a-fA-F]+$/);
+			}).pipe(
+				Effect.provide(blockStreamLayer),
+				Effect.provide(providerLayer),
+			);
+		});
+	},
+);

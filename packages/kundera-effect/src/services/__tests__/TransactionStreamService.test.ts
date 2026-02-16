@@ -9,10 +9,16 @@ import { Effect, Layer, Stream } from "effect";
 
 import { RpcError } from "../../errors.js";
 import { ProviderService } from "../ProviderService.js";
+import { HttpProviderLive } from "../ProviderService.js";
 import {
 	TransactionStreamLive,
 	TransactionStreamService,
 } from "../TransactionStreamService.js";
+import {
+	LIVE_STREAM_REQUEST_OPTIONS,
+	LIVE_STREAM_RPC_URL,
+	RUN_LIVE_STREAM_TESTS,
+} from "./_liveRpc.js";
 
 const ZERO_PRICE = {
 	price_in_fri: "0x0",
@@ -317,3 +323,42 @@ describe("TransactionStreamService", () => {
 		);
 	});
 });
+
+// Enable with:
+// KUNDERA_EFFECT_RUN_LIVE_STREAM_TESTS=1
+// Optional URL override:
+// KUNDERA_EFFECT_STREAM_RPC_URL=https://api.cartridge.gg/x/starknet/sepolia
+(RUN_LIVE_STREAM_TESTS ? describe : describe.skip)(
+	"TransactionStreamService (live RPC)",
+	() => {
+		it.effect("track emits dropped for unknown hash after maxPendingPolls", () => {
+			const providerLayer = HttpProviderLive(LIVE_STREAM_RPC_URL);
+			const transactionStreamLayer = TransactionStreamLive.pipe(
+				Layer.provide(providerLayer),
+			);
+
+			return Effect.gen(function* () {
+				const events = yield* Effect.flatMap(
+					TransactionStreamService,
+					(stream) =>
+						stream
+							.track("0x1234", {
+								maxPendingPolls: 1,
+								pollInterval: 0,
+								requestOptions: LIVE_STREAM_REQUEST_OPTIONS,
+							})
+							.pipe(Stream.take(1), Stream.runCollect),
+				);
+				const first = Array.from(events)[0];
+
+				expect(first?.type).toBe("dropped");
+				if (first?.type === "dropped") {
+					expect(first.reason).toContain("1 polls");
+				}
+			}).pipe(
+				Effect.provide(transactionStreamLayer),
+				Effect.provide(providerLayer),
+			);
+		});
+	},
+);
