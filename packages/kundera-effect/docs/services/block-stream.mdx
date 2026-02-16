@@ -5,7 +5,7 @@ description: Stream Starknet blocks with historical backfill and reorg detection
 
 # Block Stream Service
 
-`BlockStreamService` provides polling-based block streaming for Starknet with:
+`BlockStreamService` streams Starknet blocks over polling or websocket modes with:
 
 - historical backfill (`backfill`)
 - live block watch (`watch`)
@@ -78,6 +78,19 @@ const program = Effect.gen(function* () {
   Effect.provide(Presets.SepoliaProvider()),
   Effect.provide(Services.BlockStreamLive),
 );
+```
+
+## Watch New Blocks Over WebSocket
+
+```typescript
+const websocketStream = blocks.watch({
+  streamMode: "websocket",
+  websocket: {
+    url: "wss://api.cartridge.gg/x/starknet/sepolia",
+  },
+  fromBlock: 500_000,
+  include: "header",
+});
 ```
 
 ## Backfill Historical Blocks

@@ -116,6 +116,7 @@ export {
 	type BlockStreamInclude,
 	type BlockStreamMetadata,
 	type BlockStreamServiceShape,
+	type BlockStreamWebSocketOptions,
 	type BlocksEvent,
 	type LightBlock,
 	type ReorgEvent,
@@ -152,6 +153,7 @@ export {
 	type TransactionTrackEvent,
 	type TransactionStreamFilter,
 	type TransactionStreamServiceShape,
+	type TransactionStreamWebSocketOptions,
 	type WatchConfirmedTransactionsOptions,
 	type WatchPendingTransactionsOptions,
 } from "./TransactionStreamService.js";

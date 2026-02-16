@@ -2,11 +2,17 @@ import {
 	type BlockWithReceipts,
 	type BlockWithTxHashes,
 	type BlockWithTxs,
+	type NewHead,
 	type PreConfirmedBlockWithReceipts,
 	type PreConfirmedBlockWithTxHashes,
 	type PreConfirmedBlockWithTxs,
+	type ReorgData,
 	Rpc,
 } from "@kundera-sn/kundera-ts/jsonrpc";
+import {
+	WebSocketProvider,
+	type WebSocketProviderOptions,
+} from "@kundera-sn/kundera-ts/provider";
 import { Context, Effect, Layer, Ref, Stream } from "effect";
 import * as Duration from "effect/Duration";
 
@@ -76,11 +82,18 @@ export interface BackfillBlocksOptions<
 	readonly chunkSize?: number;
 }
 
+export interface BlockStreamWebSocketOptions {
+	readonly url: string;
+	readonly providerOptions?: Omit<WebSocketProviderOptions, "url">;
+}
+
 export interface WatchBlocksOptions<
 	TInclude extends BlockStreamInclude = "header",
 > extends BlockStreamReadOptions {
 	readonly fromBlock?: number;
 	readonly include?: TInclude;
+	readonly streamMode?: "polling" | "websocket";
+	readonly websocket?: BlockStreamWebSocketOptions;
 	readonly pollInterval?: Duration.DurationInput;
 	readonly maxTrackedBlocks?: number;
 }
@@ -154,6 +167,9 @@ const mapRequestError =
 			cause,
 			context,
 		});
+
+const isReorgData = (payload: NewHead | ReorgData): payload is ReorgData =>
+	"starting_block_number" in payload && "ending_block_number" in payload;
 
 export const BlockStreamLive: Layer.Layer<
 	BlockStreamService,
@@ -424,128 +440,279 @@ export const BlockStreamLive: Layer.Layer<
 			);
 		};
 
-		const watch: BlockStreamServiceShape["watch"] = <
-			TInclude extends BlockStreamInclude = "header",
-		>(
-			options?: WatchBlocksOptions<TInclude>,
-		): Stream.Stream<BlockStreamEvent<TInclude>, BlockStreamError> =>
-			Stream.unwrap(
-				Effect.gen(function* () {
-					const include = options?.include ?? ("header" as TInclude);
-					const pollInterval = Duration.decode(
-						options?.pollInterval ?? "3 seconds",
-					);
-					const maxTrackedBlocks = Math.max(options?.maxTrackedBlocks ?? 64, 2);
-
-					if (
-						options?.fromBlock !== undefined &&
-						!isNonNegativeInteger(options.fromBlock)
-					) {
-						return Stream.fail(
-							toBlockStreamError(
-								"watch",
-								"fromBlock must be a non-negative integer",
-								{
-									context: { fromBlock: options.fromBlock },
-								},
-							),
+			const watch: BlockStreamServiceShape["watch"] = <
+				TInclude extends BlockStreamInclude = "header",
+			>(
+				options?: WatchBlocksOptions<TInclude>,
+			): Stream.Stream<BlockStreamEvent<TInclude>, BlockStreamError> =>
+				Stream.unwrap(
+					Effect.gen(function* () {
+						const include = options?.include ?? ("header" as TInclude);
+						const pollInterval = Duration.decode(
+							options?.pollInterval ?? "3 seconds",
 						);
-					}
+						const streamMode = options?.streamMode ?? "polling";
+						const maxTrackedBlocks = Math.max(options?.maxTrackedBlocks ?? 64, 2);
 
-					const firstPollRef = yield* Ref.make(true);
-					const cursorRef = yield* Ref.make<number | undefined>(
-						options?.fromBlock,
-					);
-					const trackedRef = yield* Ref.make<readonly LightBlock[]>([]);
-
-					const poll = Effect.gen(function* () {
-						const firstPoll = yield* Ref.get(firstPollRef);
-						if (firstPoll) {
-							yield* Ref.set(firstPollRef, false);
-						} else {
-							yield* Effect.sleep(pollInterval);
+						if (
+							options?.fromBlock !== undefined &&
+							!isNonNegativeInteger(options.fromBlock)
+						) {
+							return Stream.fail(
+								toBlockStreamError(
+									"watch",
+									"fromBlock must be a non-negative integer",
+									{
+										context: { fromBlock: options.fromBlock },
+									},
+								),
+							);
 						}
 
-						const chainHead = yield* getBlockNumber(
-							options?.requestOptions,
-						).pipe(
-							Effect.mapError(
-								mapRequestError("watch", {
-									operation: "getBlockNumber",
+						const cursorRef = yield* Ref.make<number | undefined>(
+							options?.fromBlock,
+						);
+						const trackedRef = yield* Ref.make<readonly LightBlock[]>([]);
+						const collectEventsForRange = (
+							startBlock: number,
+							chainHead: number,
+							initialTracked: readonly LightBlock[],
+						): Effect.Effect<
+							{
+								readonly events: readonly BlockStreamEvent<TInclude>[];
+								readonly nextTracked: readonly LightBlock[];
+							},
+							BlockStreamError
+						> =>
+							Effect.gen(function* () {
+								const blockNumbers = range(startBlock, chainHead);
+								const events: BlockStreamEvent<TInclude>[] = [];
+								let tracked = initialTracked;
+
+								for (const blockNumber of blockNumbers) {
+									const block = yield* getBlockByNumber(
+										blockNumber,
+										include,
+										options?.requestOptions,
+									).pipe(
+										Effect.mapError(
+											mapRequestError("watch", {
+												operation: "getBlockByNumber",
+												blockNumber,
+												include,
+											}),
+										),
+									);
+
+									const trackedHead = tracked[tracked.length - 1];
+									if (
+										!trackedHead ||
+										trackedHead.block_hash === block.parent_hash
+									) {
+										tracked = trimTracked(
+											[...tracked, toLightBlock(block)],
+											maxTrackedBlocks,
+										);
+										events.push({
+											type: "blocks",
+											blocks: [block],
+											metadata: { chainHead },
+										});
+										continue;
+									}
+
+									const resolvedReorg = yield* resolveReorg(
+										block,
+										tracked,
+										chainHead,
+										include,
+										maxTrackedBlocks,
+										options?.requestOptions,
+									);
+									tracked = resolvedReorg.nextTracked;
+									events.push(resolvedReorg.event);
+								}
+
+								return {
+									events,
+									nextTracked: tracked,
+								} as const;
+							});
+
+						if (streamMode === "websocket") {
+							const websocket = options?.websocket;
+							if (!websocket?.url) {
+								return Stream.fail(
+									toBlockStreamError(
+										"watch",
+										"websocket.url is required when streamMode is websocket",
+									),
+								);
+							}
+
+							const subscriptionParams =
+								options?.fromBlock !== undefined
+									? ({ block_id: { block_number: options.fromBlock } } as const)
+									: undefined;
+
+							return Stream.acquireRelease(
+								Effect.tryPromise({
+									try: async () => {
+										const provider = new WebSocketProvider({
+											url: websocket.url,
+											...(websocket.providerOptions ?? {}),
+										});
+										await provider.connect();
+										return provider;
+									},
+									catch: (cause) =>
+										toBlockStreamError(
+											"watch",
+											"Failed to connect websocket provider",
+											{
+												cause,
+												context: {
+													url: websocket.url,
+												},
+											},
+										),
 								}),
-							),
-						);
+								(provider) =>
+									Effect.sync(() => {
+										provider.disconnect();
+									}).pipe(Effect.orDie),
+							).pipe(
+								Stream.flatMap((wsProvider) =>
+									Stream.fromAsyncIterable(
+										wsProvider.events.newHeads(subscriptionParams),
+										(cause) =>
+											toBlockStreamError(
+												"watch",
+												"WebSocket newHeads stream failed",
+												{
+													cause,
+													context: {
+														url: websocket.url,
+													},
+												},
+											),
+									),
+								),
+								Stream.mapEffect((notification) =>
+									Effect.gen(function* () {
+										if (isReorgData(notification)) {
+											const tracked = yield* Ref.get(trackedRef);
+											const removed = tracked
+												.filter(
+													(candidate) =>
+														candidate.block_number >=
+														notification.starting_block_number,
+												)
+												.slice()
+												.reverse();
+											const retained = tracked.filter(
+												(candidate) =>
+													candidate.block_number <
+													notification.starting_block_number,
+											);
+											const commonAncestor =
+												retained.length > 0
+													? (retained[retained.length - 1] ?? null)
+													: null;
 
-						const currentCursor = yield* Ref.get(cursorRef);
-						const startBlock = currentCursor ?? chainHead;
+											yield* Ref.set(trackedRef, retained);
+											yield* Ref.set(
+												cursorRef,
+												notification.starting_block_number,
+											);
 
-						if (currentCursor === undefined) {
-							yield* Ref.set(cursorRef, startBlock);
+											return [
+												{
+													type: "reorg",
+													removed,
+													added: [],
+													commonAncestor,
+													metadata: {
+														chainHead: notification.ending_block_number,
+													},
+												} satisfies ReorgEvent<TInclude>,
+											] as const;
+										}
+
+										const chainHead = notification.block_number;
+										const currentCursor = yield* Ref.get(cursorRef);
+										const startBlock =
+											currentCursor ?? options?.fromBlock ?? chainHead;
+										if (currentCursor === undefined) {
+											yield* Ref.set(cursorRef, startBlock);
+										}
+
+										if (startBlock > chainHead) {
+											return [] as const;
+										}
+
+										const tracked = yield* Ref.get(trackedRef);
+										const processed = yield* collectEventsForRange(
+											startBlock,
+											chainHead,
+											tracked,
+										);
+										yield* Ref.set(trackedRef, processed.nextTracked);
+										yield* Ref.set(cursorRef, chainHead + 1);
+
+										return processed.events;
+									}),
+								),
+								Stream.flatMap((events) => Stream.fromIterable(events)),
+							);
 						}
 
-						if (startBlock > chainHead) {
-							return [] as const;
-						}
+						const firstPollRef = yield* Ref.make(true);
+						const poll = Effect.gen(function* () {
+							const firstPoll = yield* Ref.get(firstPollRef);
+							if (firstPoll) {
+								yield* Ref.set(firstPollRef, false);
+							} else {
+								yield* Effect.sleep(pollInterval);
+							}
 
-						const blockNumbers = range(startBlock, chainHead);
-						const events: BlockStreamEvent<TInclude>[] = [];
-						let tracked = yield* Ref.get(trackedRef);
-
-						for (const blockNumber of blockNumbers) {
-							const block = yield* getBlockByNumber(
-								blockNumber,
-								include,
+							const chainHead = yield* getBlockNumber(
 								options?.requestOptions,
 							).pipe(
 								Effect.mapError(
 									mapRequestError("watch", {
-										operation: "getBlockByNumber",
-										blockNumber,
-										include,
+										operation: "getBlockNumber",
 									}),
 								),
 							);
 
-							const trackedHead = tracked[tracked.length - 1];
-							if (
-								!trackedHead ||
-								trackedHead.block_hash === block.parent_hash
-							) {
-								tracked = trimTracked(
-									[...tracked, toLightBlock(block)],
-									maxTrackedBlocks,
-								);
-								events.push({
-									type: "blocks",
-									blocks: [block],
-									metadata: { chainHead },
-								});
-								continue;
+							const currentCursor = yield* Ref.get(cursorRef);
+							const startBlock = currentCursor ?? chainHead;
+							if (currentCursor === undefined) {
+								yield* Ref.set(cursorRef, startBlock);
 							}
 
-							const resolvedReorg = yield* resolveReorg(
-								block,
-								tracked,
+							if (startBlock > chainHead) {
+								return [] as const;
+							}
+
+							const tracked = yield* Ref.get(trackedRef);
+							const processed = yield* collectEventsForRange(
+								startBlock,
 								chainHead,
-								include,
-								maxTrackedBlocks,
-								options?.requestOptions,
+								tracked,
 							);
-							tracked = resolvedReorg.nextTracked;
-							events.push(resolvedReorg.event);
-						}
+							yield* Ref.set(trackedRef, processed.nextTracked);
+							yield* Ref.set(cursorRef, chainHead + 1);
 
-						yield* Ref.set(trackedRef, tracked);
-						yield* Ref.set(cursorRef, chainHead + 1);
+							return processed.events;
+						});
 
-						return events;
-					});
-
-					return Stream.repeatEffect(poll).pipe(
-						Stream.flatMap((events) => Stream.fromIterable(events)),
-					);
-				}),
-			);
+						return Stream.repeatEffect(poll).pipe(
+							Stream.flatMap((events) => Stream.fromIterable(events)),
+						);
+					}),
+				);
 
 		return {
 			backfill,

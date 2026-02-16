@@ -5,7 +5,7 @@ description: Stream pending and confirmed Starknet transactions and track single
 
 # Transaction Stream Service
 
-`TransactionStreamService` provides polling-based transaction streams:
+`TransactionStreamService` provides polling and websocket transaction streams:
 
 - `watchPending` for mempool-like pending block transactions
 - `watchConfirmed` for confirmed transactions with configurable confirmations
@@ -69,6 +69,14 @@ const pending = txStream.watchPending({
 });
 ```
 
+```typescript
+const pendingWs = txStream.watchPending({
+  streamMode: "websocket",
+  websocket: { url: "wss://api.cartridge.gg/x/starknet/sepolia" },
+  filter: { senderAddress: "0x0123..." },
+});
+```
+
 ## Watch Confirmed Transactions
 
 ```typescript
@@ -81,6 +89,15 @@ const confirmed = txStream.watchConfirmed({
 yield* Stream.runForEach(confirmed, (event) =>
   Effect.log(`Confirmed ${event.transaction.transaction_hash} at ${event.blockNumber}`)
 );
+```
+
+```typescript
+const confirmedWs = txStream.watchConfirmed({
+  streamMode: "websocket",
+  websocket: { url: "wss://api.cartridge.gg/x/starknet/sepolia" },
+  confirmations: 3,
+  fromBlock: 500_000,
+});
 ```
 
 ## Track a Transaction Lifecycle

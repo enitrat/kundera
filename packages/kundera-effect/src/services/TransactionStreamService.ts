@@ -1,12 +1,19 @@
 import type { Felt252Type } from "@kundera-sn/kundera-ts";
 import {
 	type BlockWithTxs,
+	type NewHead,
+	type PendingTransaction,
 	type PreConfirmedBlockWithTxs,
+	type ReorgData,
 	Rpc,
 	type TransactionStatus,
 	type TxnReceiptWithBlockInfo,
 	type TxnWithHash,
 } from "@kundera-sn/kundera-ts/jsonrpc";
+import {
+	WebSocketProvider,
+	type WebSocketProviderOptions,
+} from "@kundera-sn/kundera-ts/provider";
 import { Context, Effect, Either, Layer, Ref, Stream } from "effect";
 import * as Duration from "effect/Duration";
 
@@ -66,9 +73,16 @@ export interface TransactionStreamReadOptions {
 	readonly requestOptions?: RequestOptions;
 }
 
+export interface TransactionStreamWebSocketOptions {
+	readonly url: string;
+	readonly providerOptions?: Omit<WebSocketProviderOptions, "url">;
+}
+
 export interface WatchPendingTransactionsOptions
 	extends TransactionStreamReadOptions {
 	readonly filter?: TransactionStreamFilter;
+	readonly streamMode?: "polling" | "websocket";
+	readonly websocket?: TransactionStreamWebSocketOptions;
 	readonly pollInterval?: Duration.DurationInput;
 	readonly maxSeenTransactions?: number;
 }
@@ -78,6 +92,8 @@ export interface WatchConfirmedTransactionsOptions
 	readonly filter?: TransactionStreamFilter;
 	readonly confirmations?: number;
 	readonly fromBlock?: number;
+	readonly streamMode?: "polling" | "websocket";
+	readonly websocket?: TransactionStreamWebSocketOptions;
 	readonly pollInterval?: Duration.DurationInput;
 	readonly maxSeenTransactions?: number;
 }
@@ -112,6 +128,11 @@ interface SeenState {
 	readonly set: ReadonlySet<string>;
 }
 
+const emptySeenState = (): SeenState => ({
+	order: [],
+	set: new Set<string>(),
+});
+
 const BLOCK_NOT_FOUND_CODE: RpcError["code"] = 24;
 const INVALID_TRANSACTION_HASH_CODE: RpcError["code"] = 25;
 const TRANSACTION_HASH_NOT_FOUND_CODE: RpcError["code"] = 29;
@@ -144,6 +165,23 @@ const isPendingReceiptError = (error: RpcError): boolean => {
 		message.includes("not found") ||
 		message.includes("not received") ||
 		message.includes("pending")
+	);
+};
+
+const isTransactionLookupMiss = (error: RpcError): boolean => {
+	const code = rpcErrorCodeOf(error);
+	if (
+		code === BLOCK_NOT_FOUND_CODE ||
+		code === INVALID_TRANSACTION_HASH_CODE ||
+		code === TRANSACTION_HASH_NOT_FOUND_CODE
+	) {
+		return true;
+	}
+
+	const message = errorMessageOf(error).toLowerCase();
+	return (
+		message.includes("not found") ||
+		message.includes("unknown transaction")
 	);
 };
 
@@ -229,6 +267,11 @@ const mapRequestError =
 			cause,
 			context,
 		});
+
+const isReorgData = (
+	payload: PendingTransaction | NewHead | ReorgData,
+): payload is ReorgData =>
+	"starting_block_number" in payload && "ending_block_number" in payload;
 
 const dedupeById = <T>(
 	items: readonly T[],
@@ -316,8 +359,7 @@ export const TransactionStreamLive: Layer.Layer<
 			transactionHash: string,
 			requestOptions?: RequestOptions,
 		): Effect.Effect<TxnReceiptWithBlockInfo, TransportError | RpcError> => {
-			const { method, params } =
-				Rpc.GetTransactionReceiptRequest(transactionHash);
+			const { method, params } = Rpc.GetTransactionReceiptRequest(transactionHash);
 			return provider.request<TxnReceiptWithBlockInfo>(
 				method,
 				params,
@@ -329,42 +371,170 @@ export const TransactionStreamLive: Layer.Layer<
 			transactionHash: string,
 			requestOptions?: RequestOptions,
 		): Effect.Effect<TransactionStatus, TransportError | RpcError> => {
-			const { method, params } =
-				Rpc.GetTransactionStatusRequest(transactionHash);
-			return provider.request<TransactionStatus>(
-				method,
-				params,
-				requestOptions,
-			);
+			const { method, params } = Rpc.GetTransactionStatusRequest(transactionHash);
+			return provider.request<TransactionStatus>(method, params, requestOptions);
 		};
 
 		const getTransactionByHash = (
 			transactionHash: string,
 			requestOptions?: RequestOptions,
 		): Effect.Effect<TxnWithHash, TransportError | RpcError> => {
-			const { method, params } =
-				Rpc.GetTransactionByHashRequest(transactionHash);
+			const { method, params } = Rpc.GetTransactionByHashRequest(transactionHash);
 			return provider.request<TxnWithHash>(method, params, requestOptions);
 		};
+
+		const createWebSocketProviderStream = (
+			operation: "watchPending" | "watchConfirmed",
+			websocket: TransactionStreamWebSocketOptions,
+		): Stream.Stream<WebSocketProvider, TransactionStreamError> =>
+			Stream.acquireRelease(
+				Effect.tryPromise({
+					try: async () => {
+						const nextProvider = new WebSocketProvider({
+							url: websocket.url,
+							...(websocket.providerOptions ?? {}),
+						});
+						await nextProvider.connect();
+						return nextProvider;
+					},
+					catch: (cause) =>
+						toTransactionStreamError(
+							operation,
+							"Failed to connect websocket provider",
+							{
+								cause,
+								context: { url: websocket.url },
+							},
+						),
+				}),
+				(nextProvider) =>
+					Effect.sync(() => {
+						nextProvider.disconnect();
+					}).pipe(Effect.orDie),
+			);
 
 		const watchPending: TransactionStreamServiceShape["watchPending"] = (
 			options,
 		) =>
 			Stream.unwrap(
 				Effect.gen(function* () {
-					const pollInterval = Duration.decode(
-						options?.pollInterval ?? "3 seconds",
-					);
+					const streamMode = options?.streamMode ?? "polling";
 					const maxSeenTransactions = Math.max(
 						options?.maxSeenTransactions ?? 20_000,
 						1,
 					);
-					const firstPollRef = yield* Ref.make(true);
-					const seenRef = yield* Ref.make<SeenState>({
-						order: [],
-						set: new Set<string>(),
-					});
+					const seenRef = yield* Ref.make<SeenState>(emptySeenState());
 
+					if (streamMode === "websocket") {
+						const websocket = options?.websocket;
+						if (!websocket?.url) {
+							return Stream.fail(
+								toTransactionStreamError(
+									"watchPending",
+									"websocket.url is required when streamMode is websocket",
+								),
+							);
+						}
+
+						const senderAddress =
+							options?.filter?.senderAddress === undefined
+								? undefined
+								: Array.isArray(options.filter.senderAddress)
+									? [...options.filter.senderAddress]
+									: [options.filter.senderAddress];
+						const subscriptionParams =
+							senderAddress && senderAddress.length > 0
+								? ({ sender_address: senderAddress } as const)
+								: undefined;
+
+						return createWebSocketProviderStream(
+							"watchPending",
+							websocket,
+						).pipe(
+							Stream.flatMap((wsProvider) =>
+								Stream.fromAsyncIterable(
+									wsProvider.events.pendingTransactions(subscriptionParams),
+									(cause) =>
+										toTransactionStreamError(
+											"watchPending",
+											"WebSocket pendingTransactions stream failed",
+											{
+												cause,
+												context: { url: websocket.url },
+											},
+										),
+								),
+							),
+							Stream.mapEffect((notification) =>
+								Effect.gen(function* () {
+									if (isReorgData(notification)) {
+										yield* Ref.set(seenRef, emptySeenState());
+										return [] as const;
+									}
+
+									if (typeof notification.transaction_hash !== "string") {
+										return [] as const;
+									}
+
+									const fresh = yield* dedupeById(
+										[notification],
+										(candidate) => candidate.transaction_hash,
+										maxSeenTransactions,
+										seenRef,
+									);
+									const candidate = fresh[0];
+									if (!candidate) {
+										return [] as const;
+									}
+
+									const transactionResult = yield* getTransactionByHash(
+										candidate.transaction_hash,
+										options?.requestOptions,
+									).pipe(Effect.either);
+
+									if (Either.isLeft(transactionResult)) {
+										const failure = transactionResult.left;
+										if (
+											isRpcError(failure) &&
+											isTransactionLookupMiss(failure)
+										) {
+											return [] as const;
+										}
+
+										return yield* Effect.fail(
+											toTransactionStreamError(
+												"watchPending",
+												errorMessageOf(failure),
+												{
+													cause: failure,
+													context: {
+														operation: "getTransactionByHash",
+														transactionHash: candidate.transaction_hash,
+													},
+												},
+											),
+										);
+									}
+
+									const transaction = transactionResult.right;
+									if (!matchesFilter(transaction, options?.filter)) {
+										return [] as const;
+									}
+
+									return [
+										{
+											type: "pending",
+											transaction,
+										} satisfies PendingTransactionEvent,
+									] as const;
+								}),
+							),
+							Stream.flatMap((events) => Stream.fromIterable(events)),
+						);
+					}
+
+					const pollInterval = Duration.decode(options?.pollInterval ?? "3 seconds");
+					const firstPollRef = yield* Ref.make(true);
 					const poll = Effect.gen(function* () {
 						const firstPoll = yield* Ref.get(firstPollRef);
 						if (firstPoll) {
@@ -408,10 +578,8 @@ export const TransactionStreamLive: Layer.Layer<
 		) =>
 			Stream.unwrap(
 				Effect.gen(function* () {
+					const streamMode = options?.streamMode ?? "polling";
 					const confirmations = Math.max(options?.confirmations ?? 1, 1);
-					const pollInterval = Duration.decode(
-						options?.pollInterval ?? "3 seconds",
-					);
 					const maxSeenTransactions = Math.max(
 						options?.maxSeenTransactions ?? 20_000,
 						1,
@@ -432,15 +600,152 @@ export const TransactionStreamLive: Layer.Layer<
 						);
 					}
 
-					const firstPollRef = yield* Ref.make(true);
 					const cursorRef = yield* Ref.make<number | undefined>(
 						options?.fromBlock,
 					);
-					const seenRef = yield* Ref.make<SeenState>({
-						order: [],
-						set: new Set<string>(),
-					});
+					const seenRef = yield* Ref.make<SeenState>(emptySeenState());
 
+					const collectConfirmedEventsForRange = (
+						startBlock: number,
+						confirmedHead: number,
+						chainHead: number,
+					): Effect.Effect<
+						readonly ConfirmedTransactionEvent[],
+						TransactionStreamError
+					> =>
+						Effect.gen(function* () {
+							const candidates: {
+								readonly transaction: TxnWithHash;
+								readonly blockNumber: number;
+								readonly blockHash: string;
+								readonly confirmations: number;
+							}[] = [];
+
+							for (const blockNumber of range(startBlock, confirmedHead)) {
+								const block = yield* getBlockByNumber(
+									blockNumber,
+									options?.requestOptions,
+								).pipe(
+									Effect.mapError(
+										mapRequestError("watchConfirmed", {
+											operation: "getBlockByNumber",
+											blockNumber,
+										}),
+									),
+								);
+
+								for (const transaction of block.transactions) {
+									if (!matchesFilter(transaction, options?.filter)) {
+										continue;
+									}
+
+									candidates.push({
+										transaction,
+										blockNumber: block.block_number,
+										blockHash: block.block_hash,
+										confirmations: Math.max(chainHead - block.block_number + 1, 0),
+									});
+								}
+							}
+
+							const freshCandidates = yield* dedupeById(
+								candidates,
+								(candidate) => candidate.transaction.transaction_hash,
+								maxSeenTransactions,
+								seenRef,
+							);
+
+							return freshCandidates.map((candidate) => ({
+								type: "confirmed",
+								transaction: candidate.transaction,
+								blockNumber: candidate.blockNumber,
+								blockHash: candidate.blockHash,
+								confirmations: candidate.confirmations,
+							})) as readonly ConfirmedTransactionEvent[];
+						});
+
+					if (streamMode === "websocket") {
+						const websocket = options?.websocket;
+						if (!websocket?.url) {
+							return Stream.fail(
+								toTransactionStreamError(
+									"watchConfirmed",
+									"websocket.url is required when streamMode is websocket",
+								),
+							);
+						}
+
+						const subscriptionParams =
+							options?.fromBlock !== undefined
+								? ({ block_id: { block_number: options.fromBlock } } as const)
+								: undefined;
+
+						return createWebSocketProviderStream(
+							"watchConfirmed",
+							websocket,
+						).pipe(
+							Stream.flatMap((wsProvider) =>
+								Stream.fromAsyncIterable(
+									wsProvider.events.newHeads(subscriptionParams),
+									(cause) =>
+										toTransactionStreamError(
+											"watchConfirmed",
+											"WebSocket newHeads stream failed",
+											{
+												cause,
+												context: { url: websocket.url },
+											},
+										),
+								),
+							),
+							Stream.mapEffect((notification) =>
+								Effect.gen(function* () {
+									if (isReorgData(notification)) {
+										const resetCursor =
+											options?.fromBlock !== undefined
+												? Math.max(
+														options.fromBlock,
+														notification.starting_block_number,
+													)
+												: notification.starting_block_number;
+										yield* Ref.set(cursorRef, resetCursor);
+										yield* Ref.set(seenRef, emptySeenState());
+										return [] as const;
+									}
+
+									const chainHead = notification.block_number;
+									const confirmedHead = chainHead - confirmations + 1;
+									if (confirmedHead < 0) {
+										return [] as const;
+									}
+
+									const currentCursor = yield* Ref.get(cursorRef);
+									const startBlock =
+										currentCursor ?? options?.fromBlock ?? confirmedHead;
+									if (currentCursor === undefined) {
+										yield* Ref.set(cursorRef, startBlock);
+									}
+
+									if (startBlock > confirmedHead) {
+										return [] as const;
+									}
+
+									const events = yield* collectConfirmedEventsForRange(
+										startBlock,
+										confirmedHead,
+										chainHead,
+									);
+									yield* Ref.set(cursorRef, confirmedHead + 1);
+
+									return events;
+								}),
+							),
+							Stream.flatMap((events) => Stream.fromIterable(events)),
+						);
+					}
+
+					const pollInterval = Duration.decode(options?.pollInterval ?? "3 seconds");
+					const firstPollRef = yield* Ref.make(true);
 					const poll = Effect.gen(function* () {
 						const firstPoll = yield* Ref.get(firstPollRef);
 						if (firstPoll) {
@@ -449,9 +754,7 @@ export const TransactionStreamLive: Layer.Layer<
 							yield* Effect.sleep(pollInterval);
 						}
 
-						const chainHead = yield* getBlockNumber(
-							options?.requestOptions,
-						).pipe(
+						const chainHead = yield* getBlockNumber(options?.requestOptions).pipe(
 							Effect.mapError(
 								mapRequestError("watchConfirmed", {
 									operation: "getBlockNumber",
@@ -474,59 +777,14 @@ export const TransactionStreamLive: Layer.Layer<
 							return [] as const;
 						}
 
-						const candidates: {
-							readonly transaction: TxnWithHash;
-							readonly blockNumber: number;
-							readonly blockHash: string;
-							readonly confirmations: number;
-						}[] = [];
-
-						for (const blockNumber of range(startBlock, confirmedHead)) {
-							const block = yield* getBlockByNumber(
-								blockNumber,
-								options?.requestOptions,
-							).pipe(
-								Effect.mapError(
-									mapRequestError("watchConfirmed", {
-										operation: "getBlockByNumber",
-										blockNumber,
-									}),
-								),
-							);
-
-							for (const transaction of block.transactions) {
-								if (!matchesFilter(transaction, options?.filter)) {
-									continue;
-								}
-
-								candidates.push({
-									transaction,
-									blockNumber: block.block_number,
-									blockHash: block.block_hash,
-									confirmations: Math.max(
-										chainHead - block.block_number + 1,
-										0,
-									),
-								});
-							}
-						}
-
+						const events = yield* collectConfirmedEventsForRange(
+							startBlock,
+							confirmedHead,
+							chainHead,
+						);
 						yield* Ref.set(cursorRef, confirmedHead + 1);
 
-						const freshCandidates = yield* dedupeById(
-							candidates,
-							(candidate) => candidate.transaction.transaction_hash,
-							maxSeenTransactions,
-							seenRef,
-						);
-
-						return freshCandidates.map((candidate) => ({
-							type: "confirmed",
-							transaction: candidate.transaction,
-							blockNumber: candidate.blockNumber,
-							blockHash: candidate.blockHash,
-							confirmations: candidate.confirmations,
-						})) as readonly ConfirmedTransactionEvent[];
+						return events;
 					});
 
 					return Stream.repeatEffect(poll).pipe(
@@ -540,9 +798,7 @@ export const TransactionStreamLive: Layer.Layer<
 				Effect.gen(function* () {
 					const transactionHash = toTransactionHash(txHash);
 					const confirmations = Math.max(options?.confirmations ?? 1, 1);
-					const pollInterval = Duration.decode(
-						options?.pollInterval ?? "3 seconds",
-					);
+					const pollInterval = Duration.decode(options?.pollInterval ?? "3 seconds");
 					const maxPendingPolls = options?.maxPendingPolls;
 
 					if (
@@ -625,9 +881,7 @@ export const TransactionStreamLive: Layer.Layer<
 								});
 							}
 
-							const chainHead = yield* getBlockNumber(
-								options?.requestOptions,
-							).pipe(
+							const chainHead = yield* getBlockNumber(options?.requestOptions).pipe(
 								Effect.mapError(
 									mapRequestError("track", {
 										operation: "getBlockNumber",
@@ -635,10 +889,7 @@ export const TransactionStreamLive: Layer.Layer<
 									}),
 								),
 							);
-							const observedConfirmations = Math.max(
-								chainHead - blockNumber + 1,
-								0,
-							);
+							const observedConfirmations = Math.max(chainHead - blockNumber + 1, 0);
 
 							if (observedConfirmations < confirmations) {
 								return pendingOrDropped(pollCount, {
