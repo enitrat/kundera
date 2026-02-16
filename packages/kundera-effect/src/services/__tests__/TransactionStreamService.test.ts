@@ -18,6 +18,7 @@ import {
 	LIVE_STREAM_REQUEST_OPTIONS,
 	LIVE_STREAM_RPC_URL,
 	RUN_LIVE_STREAM_TESTS,
+	withLiveRpcLogs,
 } from "./_liveRpc.js";
 
 const ZERO_PRICE = {
@@ -328,6 +329,8 @@ describe("TransactionStreamService", () => {
 // KUNDERA_EFFECT_RUN_LIVE_STREAM_TESTS=1
 // Optional URL override:
 // KUNDERA_EFFECT_STREAM_RPC_URL=https://api.cartridge.gg/x/starknet/sepolia
+// Optional logs:
+// KUNDERA_EFFECT_STREAM_RPC_LOGS=1
 (RUN_LIVE_STREAM_TESTS ? describe : describe.skip)(
 	"TransactionStreamService (live RPC)",
 	() => {
@@ -356,6 +359,7 @@ describe("TransactionStreamService", () => {
 					expect(first.reason).toContain("1 polls");
 				}
 			}).pipe(
+				withLiveRpcLogs,
 				Effect.provide(transactionStreamLayer),
 				Effect.provide(providerLayer),
 			);

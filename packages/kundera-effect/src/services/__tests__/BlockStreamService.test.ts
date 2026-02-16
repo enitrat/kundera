@@ -12,6 +12,7 @@ import {
 	LIVE_STREAM_REQUEST_OPTIONS,
 	LIVE_STREAM_RPC_URL,
 	RUN_LIVE_STREAM_TESTS,
+	withLiveRpcLogs,
 } from "./_liveRpc.js";
 
 const ZERO_PRICE = {
@@ -271,6 +272,8 @@ describe("BlockStreamService", () => {
 // KUNDERA_EFFECT_RUN_LIVE_STREAM_TESTS=1
 // Optional URL override:
 // KUNDERA_EFFECT_STREAM_RPC_URL=https://api.cartridge.gg/x/starknet/sepolia
+// Optional logs:
+// KUNDERA_EFFECT_STREAM_RPC_LOGS=1
 (RUN_LIVE_STREAM_TESTS ? describe : describe.skip)(
 	"BlockStreamService (live RPC)",
 	() => {
@@ -308,6 +311,7 @@ describe("BlockStreamService", () => {
 				expect(block?.block_number).toBe(chainHead);
 				expect(block?.block_hash).toMatch(/^0x[0-9a-fA-F]+$/);
 			}).pipe(
+				withLiveRpcLogs,
 				Effect.provide(blockStreamLayer),
 				Effect.provide(providerLayer),
 			);
