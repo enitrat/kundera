@@ -1,5 +1,5 @@
-import { MAX, PRIME } from "./constants.js";
 import { Felt252 } from "../Felt252/index.js";
+import { MAX, PRIME } from "./constants.js";
 import { from } from "./from.js";
 
 /**

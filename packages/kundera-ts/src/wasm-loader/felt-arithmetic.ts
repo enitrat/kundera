@@ -5,14 +5,14 @@
  */
 
 import type { Felt252Type } from "../primitives/index.js";
-import { wasmInstance, FELT_SIZE } from "./state.js";
 import {
+	checkResult,
 	malloc,
+	readFelt,
 	resetAllocator,
 	writeFelt,
-	readFelt,
-	checkResult,
 } from "./memory.js";
+import { FELT_SIZE, wasmInstance } from "./state.js";
 
 export function wasmFeltAdd(a: Felt252Type, b: Felt252Type): Felt252Type {
 	if (!wasmInstance) throw new Error("WASM not loaded");

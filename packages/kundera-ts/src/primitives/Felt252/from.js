@@ -1,6 +1,6 @@
-import { withFeltPrototype } from "./internal.js";
-import { fromHex } from "./fromHex.js";
 import { fromBigInt } from "./fromBigInt.js";
+import { fromHex } from "./fromHex.js";
+import { withFeltPrototype } from "./internal.js";
 
 /**
  * Create Felt252 from various input types

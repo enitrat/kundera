@@ -4,7 +4,7 @@
  * Namespace object for ECDSA operations on the Stark curve using WASM.
  */
 
-import { sign, verify, getPublicKey, recover } from "../crypto.js";
+import { getPublicKey, recover, sign, verify } from "../crypto.js";
 
 export const StarkCurve = {
 	sign,

@@ -38,8 +38,7 @@ export interface WalletProviderOptions {
 export type WalletProviderEventMap = {
 	accountsChanged(accounts: string[]): void;
 	networkChanged(chainId: string): void;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	[key: string]: (...args: any[]) => void;
+	[key: string]: (...args: unknown[]) => void;
 };
 
 export class WalletProvider

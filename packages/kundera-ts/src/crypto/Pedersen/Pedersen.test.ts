@@ -5,8 +5,8 @@
  */
 
 import { describe, expect, test } from "vitest";
-import { Pedersen, hash, hashMany } from "./index";
 import { Felt252 } from "../../primitives/Felt252/index.js";
+import { Pedersen, hash, hashMany } from "./index";
 
 describe("Pedersen", () => {
 	// Test vectors from @scure/starknet test suite

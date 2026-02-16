@@ -17,12 +17,12 @@ export { toHex as _toHex } from "./toHex.js";
 export { toBigInt as _toBigInt } from "./toBigInt.js";
 export { toFelt as _toFelt } from "./toFelt.js";
 
+import { MAX, MIN, SIZE } from "./constants.js";
 // Import for wrappers and namespace
 import { from as _from } from "./from.js";
-import { toHex as _toHex } from "./toHex.js";
 import { toBigInt as _toBigInt } from "./toBigInt.js";
 import { toFelt as _toFelt } from "./toFelt.js";
-import { MIN, MAX, SIZE } from "./constants.js";
+import { toHex as _toHex } from "./toHex.js";
 
 // Public wrappers (accept multiple input types)
 export const from = _from;

@@ -16,7 +16,7 @@ export function decodeShortString(felt) {
 	if (typeof felt === "bigint") {
 		value = felt;
 	} else if (typeof felt === "string") {
-		value = BigInt(felt.startsWith("0x") ? felt : "0x" + felt);
+		value = BigInt(felt.startsWith("0x") ? felt : `0x${felt}`);
 	} else {
 		value = felt.toBigInt();
 	}

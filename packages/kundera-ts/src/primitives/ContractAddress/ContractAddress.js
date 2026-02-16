@@ -1,7 +1,7 @@
+import { MAX_CONTRACT_ADDRESS } from "./constants.js";
 import { from } from "./from.js";
 import { fromHex } from "./fromHex.js";
 import { isValid } from "./isValid.js";
-import { MAX_CONTRACT_ADDRESS } from "./constants.js";
 
 /**
  * ContractAddress namespace with constructor and utilities

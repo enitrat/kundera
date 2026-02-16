@@ -1,24 +1,24 @@
-import { describe, it, expect } from "vitest";
-import {
-	orderedEventFromRpc,
-	orderedMessageFromRpc,
-	functionInvocationFromRpc,
-	revertibleFunctionInvocationFromRpc,
-	transactionTraceFromRpc,
-} from "./fromRpc.js";
-import {
-	orderedEventToRpc,
-	orderedMessageToRpc,
-	functionInvocationToRpc,
-	revertibleFunctionInvocationToRpc,
-	transactionTraceToRpc,
-} from "./toRpc.js";
-import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
+import { describe, expect, it } from "vitest";
 import type {
 	FunctionInvocation,
 	InvokeTxnTrace,
 	L1HandlerTxnTrace,
 } from "../../jsonrpc/types.js";
+import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
+import {
+	functionInvocationFromRpc,
+	orderedEventFromRpc,
+	orderedMessageFromRpc,
+	revertibleFunctionInvocationFromRpc,
+	transactionTraceFromRpc,
+} from "./fromRpc.js";
+import {
+	functionInvocationToRpc,
+	orderedEventToRpc,
+	orderedMessageToRpc,
+	revertibleFunctionInvocationToRpc,
+	transactionTraceToRpc,
+} from "./toRpc.js";
 
 function canon(hex: string): string {
 	return feltFromHex(hex).toHex();
@@ -29,10 +29,10 @@ describe("orderedEvent", () => {
 		const wire = { order: 0, keys: ["0x01", "0x02"], data: ["0x03"] };
 		const rich = orderedEventFromRpc(wire);
 		expect(rich.order).toBe(0);
-		expect(rich.keys[0]!.toBigInt()).toBe(1n);
+		expect(rich.keys[0]?.toBigInt()).toBe(1n);
 		const back = orderedEventToRpc(rich);
 		expect(back.order).toBe(0);
-		expect(back.keys[0]!).toBe(canon("0x01"));
+		expect(back.keys[0]).toBe(canon("0x01"));
 	});
 });
 
@@ -70,7 +70,7 @@ describe("functionInvocation", () => {
 		expect(rich.events.length).toBe(1);
 		const back = functionInvocationToRpc(rich);
 		expect(back.contract_address).toBe(canon("0x01"));
-		expect(back.events[0]!.keys[0]!).toBe(canon("0x07"));
+		expect(back.events[0]?.keys[0]).toBe(canon("0x07"));
 	});
 });
 

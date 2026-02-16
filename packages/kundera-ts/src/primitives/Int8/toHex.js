@@ -11,8 +11,8 @@ export function toHex(value) {
 	const bigintValue = /** @type {bigint} */ (value);
 
 	if (bigintValue < 0n) {
-		return "-0x" + (-bigintValue).toString(16);
+		return `-0x${(-bigintValue).toString(16)}`;
 	}
 
-	return "0x" + bigintValue.toString(16);
+	return `0x${bigintValue.toString(16)}`;
 }

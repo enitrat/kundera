@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { ClassHash } from "./ClassHash";
 import { Felt252 } from "../Felt252/Felt252";
+import { ClassHash } from "./ClassHash";
 
 describe("ClassHash", () => {
 	test("creates valid class hash", () => {

@@ -1,6 +1,6 @@
-import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
 import { fromHex as addressFromHex } from "../ContractAddress/fromHex.js";
 import { eventFromRpc } from "../Event/fromRpc.js";
+import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
 
 /**
  * @param {import('../../jsonrpc/types.js').FeePayment} rpc

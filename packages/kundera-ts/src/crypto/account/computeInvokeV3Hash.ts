@@ -6,17 +6,17 @@
 
 import {
 	Felt252,
-	type Felt252Type,
 	type Felt252Input,
+	type Felt252Type,
 } from "../../primitives/index.js";
-import { poseidonHashMany } from "../hash.js";
 import {
-	TRANSACTION_HASH_PREFIX,
 	type InvokeTransactionV3,
+	TRANSACTION_HASH_PREFIX,
 } from "../account-types.js";
-import { hashTipAndResourceBounds } from "./hashTipAndResourceBounds.js";
+import { poseidonHashMany } from "../hash.js";
 import { encodeDAModes } from "./encodeDAModes.js";
 import { hashCalldata } from "./hashCalldata.js";
+import { hashTipAndResourceBounds } from "./hashTipAndResourceBounds.js";
 
 /**
  * Compute transaction hash for INVOKE_V3

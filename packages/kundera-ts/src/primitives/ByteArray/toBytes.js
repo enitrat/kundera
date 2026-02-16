@@ -39,8 +39,9 @@ export function toBytes(byteArray) {
  * @param {number} len
  */
 function bigIntToBytes(value, out, offset, len) {
+	let current = value;
 	for (let i = len - 1; i >= 0; i--) {
-		out[offset + i] = Number(value & 0xffn);
-		value >>= 8n;
+		out[offset + i] = Number(current & 0xffn);
+		current >>= 8n;
 	}
 }

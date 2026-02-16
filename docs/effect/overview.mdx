@@ -49,6 +49,8 @@ TransportService (HTTP / WebSocket connection)
        ├─ FeeEstimatorService (fee estimation)
        ├─ NonceManagerService (nonce tracking)
        ├─ ContractService (read calls, ABI encoding)
+       ├─ BlockStreamService (block backfill + live watch + reorg detection)
+       ├─ TransactionStreamService (pending/confirmed/track streams)
        ├─ EventService (event filtering + decoding)
        └─ BatchService (batched RPC requests)
 

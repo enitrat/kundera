@@ -1,10 +1,10 @@
-import type { Felt252Type } from "../Felt252/types.js";
+import type {
+	TxnExecutionStatus,
+	TxnFinalityStatus,
+} from "../../jsonrpc/types.js";
 import type { ContractAddressType } from "../ContractAddress/types.js";
 import type { EventType } from "../Event/types.js";
-import type {
-	TxnFinalityStatus,
-	TxnExecutionStatus,
-} from "../../jsonrpc/types.js";
+import type { Felt252Type } from "../Felt252/types.js";
 
 export interface FeePaymentType {
 	amount: Felt252Type;

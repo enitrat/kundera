@@ -1,4 +1,4 @@
-import { MIN, MAX } from "./constants.js";
+import { MAX, MIN } from "./constants.js";
 
 export class Int16RangeError extends RangeError {
 	/**

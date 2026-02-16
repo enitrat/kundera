@@ -5,7 +5,7 @@
  */
 
 import { Felt252, type Felt252Input } from "../../primitives/index.js";
-import { sign as signPrimitive, type Signature } from "../ecdsa.js";
+import { type Signature, sign as signPrimitive } from "../ecdsa.js";
 
 /**
  * Sign a raw message hash with a private key.

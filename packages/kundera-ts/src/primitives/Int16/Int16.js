@@ -1,9 +1,9 @@
-import { MIN, MAX, SIZE, PRIME } from "./constants.js";
+import { MAX, MIN, PRIME, SIZE } from "./constants.js";
 import { from } from "./from.js";
-import { toBigInt } from "./toBigInt.js";
-import { toHex } from "./toHex.js";
-import { toFelt } from "./toFelt.js";
 import { fromFelt } from "./fromFelt.js";
+import { toBigInt } from "./toBigInt.js";
+import { toFelt } from "./toFelt.js";
+import { toHex } from "./toHex.js";
 
 const int16Zero = from(0n);
 const int16One = from(1n);

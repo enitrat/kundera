@@ -1,6 +1,6 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { HttpProvider } from "./HttpProvider.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Rpc } from "../jsonrpc/index.js";
+import { HttpProvider } from "./HttpProvider.js";
 
 const makeJsonResponse = (payload: unknown) =>
 	Promise.resolve({

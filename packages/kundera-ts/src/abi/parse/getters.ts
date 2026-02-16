@@ -5,15 +5,15 @@
  */
 
 import {
-	type ParsedAbi,
-	type IndexedFunction,
-	type IndexedEvent,
-	type IndexedStruct,
 	type IndexedEnum,
+	type IndexedEvent,
+	type IndexedFunction,
+	type IndexedStruct,
+	type ParsedAbi,
 	type Result,
-	ok,
-	err,
 	abiError,
+	err,
+	ok,
 } from "../types.js";
 
 /**
@@ -34,7 +34,7 @@ export function getFunction(
 		try {
 			const selectorHex = nameOrSelector.startsWith("0x")
 				? nameOrSelector.toLowerCase()
-				: "0x" + BigInt(nameOrSelector).toString(16);
+				: `0x${BigInt(nameOrSelector).toString(16)}`;
 
 			const bySelector = abi.functionsBySelector.get(selectorHex);
 			if (bySelector) {
@@ -68,7 +68,7 @@ export function getEvent(
 		try {
 			const selectorHex = nameOrSelector.startsWith("0x")
 				? nameOrSelector.toLowerCase()
-				: "0x" + BigInt(nameOrSelector).toString(16);
+				: `0x${BigInt(nameOrSelector).toString(16)}`;
 
 			const bySelector = abi.eventsBySelector.get(selectorHex);
 			if (bySelector) {

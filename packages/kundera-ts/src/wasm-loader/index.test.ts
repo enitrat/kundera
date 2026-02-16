@@ -5,24 +5,35 @@
  * Skips if WASM artifact not present.
  */
 
-import { describe, expect, test, beforeAll } from "vitest";
+import { beforeAll, describe, expect, test } from "vitest";
+import { Felt252 } from "../primitives/index";
 import {
-	isWasmAvailable,
 	getWasmPath,
-	loadWasmCrypto,
+	isWasmAvailable,
 	isWasmLoaded,
+	loadWasmCrypto,
 	wasmFeltAdd,
 	wasmFeltMul,
+	wasmGetPublicKey,
 	wasmPedersenHash,
 	wasmPoseidonHash,
-	wasmGetPublicKey,
 	wasmSign,
 	wasmVerify,
 } from "./index";
-import { Felt252 } from "../primitives/index";
 
 // Check if WASM is available
 const wasmAvailable = isWasmAvailable();
+
+async function loadNativeIfAvailable(): Promise<
+	typeof import("../native/index.js") | null
+> {
+	try {
+		const native = await import("../native/index.js");
+		return native.isNativeAvailable() ? native : null;
+	} catch {
+		return null;
+	}
+}
 
 describe("WASM Loader", () => {
 	beforeAll(async () => {
@@ -132,14 +143,8 @@ describe("WASM Loader", () => {
 		test("pedersen hash matches between native and wasm", async () => {
 			if (!wasmAvailable) return;
 
-			// Import native
-			let native;
-			try {
-				native = await import("../native/index.js");
-				if (!native.isNativeAvailable()) return;
-			} catch {
-				return; // Native not available
-			}
+			const native = await loadNativeIfAvailable();
+			if (!native) return;
 
 			const a = Felt252(12345);
 			const b = Felt252(67890);
@@ -153,13 +158,8 @@ describe("WASM Loader", () => {
 		test("poseidon hash matches between native and wasm", async () => {
 			if (!wasmAvailable) return;
 
-			let native;
-			try {
-				native = await import("../native/index.js");
-				if (!native.isNativeAvailable()) return;
-			} catch {
-				return;
-			}
+			const native = await loadNativeIfAvailable();
+			if (!native) return;
 
 			const a = Felt252(12345);
 			const b = Felt252(67890);
@@ -173,13 +173,8 @@ describe("WASM Loader", () => {
 		test("sign produces same signature in native and wasm", async () => {
 			if (!wasmAvailable) return;
 
-			let native;
-			try {
-				native = await import("../native/index.js");
-				if (!native.isNativeAvailable()) return;
-			} catch {
-				return;
-			}
+			const native = await loadNativeIfAvailable();
+			if (!native) return;
 
 			const privateKey = Felt252(0x123456789abcdef0123456789abcdefn);
 			const messageHash = Felt252(0xdeadbeefcafebabedeadbeefcafebaben);

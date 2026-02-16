@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
 import {
+	ensureLoaded,
 	hash,
-	hashSync,
 	hashHex,
 	hashHexSync,
-	ensureLoaded,
+	hashSync,
 	isLoaded,
 } from "./hash.wasm.js";
 

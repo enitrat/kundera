@@ -1,4 +1,4 @@
-import { type Felt252Type } from "../primitives/index.js";
+import type { Felt252Type } from "../primitives/index.js";
 
 /**
  * Deserialize two felts [low, high] to u256

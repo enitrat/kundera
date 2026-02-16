@@ -1,4 +1,4 @@
-import { verify as scureVerify, Signature } from "@scure/starknet";
+import { Signature, verify as scureVerify } from "@scure/starknet";
 import { toBigIntInternal } from "../../primitives/Felt252/index.js";
 import { feltToHex64, hexToBytes } from "./utils.js";
 

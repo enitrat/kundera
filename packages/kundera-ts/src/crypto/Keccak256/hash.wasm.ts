@@ -7,8 +7,8 @@
  * For standard Keccak256, use the pure JS backend which uses @noble/hashes.
  */
 
-import type { Keccak256Hash } from "./types.js";
 import { hash as pureHash, hashHex as pureHashHex } from "./hash.js";
+import type { Keccak256Hash } from "./types.js";
 
 let loaded = false;
 

@@ -5,14 +5,16 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
-import { walletTransport } from "./wallet.js";
-import { isJsonRpcError } from "./types.js";
 import type { StarknetWindowObject } from "../provider/wallet/types.js";
+import { isJsonRpcError } from "./types.js";
+import { walletTransport } from "./wallet.js";
 
 /** Create a mock SWO with a configurable request handler. */
 function mockSwo(
-	requestImpl: (args: { type: string; params?: unknown }) => Promise<unknown> = () =>
-		Promise.resolve(null),
+	requestImpl: (args: {
+		type: string;
+		params?: unknown;
+	}) => Promise<unknown> = () => Promise.resolve(null),
 ): StarknetWindowObject {
 	return {
 		id: "mock",
@@ -52,7 +54,11 @@ describe("walletTransport", () => {
 		const swo = mockSwo(() => Promise.resolve({ transaction_hash: "0xabc" }));
 		const transport = walletTransport(swo);
 
-		const invokeParams = { calls: [{ contract_address: "0x1", entry_point: "transfer", calldata: [] }] };
+		const invokeParams = {
+			calls: [
+				{ contract_address: "0x1", entry_point: "transfer", calldata: [] },
+			],
+		};
 		await transport.request({
 			jsonrpc: "2.0",
 			id: 1,
@@ -84,7 +90,9 @@ describe("walletTransport", () => {
 	});
 
 	it("wraps successful result in JSON-RPC envelope", async () => {
-		const transport = walletTransport(mockSwo(() => Promise.resolve(["0xabc"])));
+		const transport = walletTransport(
+			mockSwo(() => Promise.resolve(["0xabc"])),
+		);
 
 		const response = await transport.request({
 			jsonrpc: "2.0",
@@ -191,7 +199,10 @@ describe("walletTransport", () => {
 			expect(responses).toHaveLength(2);
 			expect((responses[0] as { result: string[] }).result).toEqual(["0x1"]);
 			expect((responses[1] as { result: string }).result).toBe("SN_MAIN");
-			expect(callOrder).toEqual(["wallet_requestAccounts", "wallet_requestChainId"]);
+			expect(callOrder).toEqual([
+				"wallet_requestAccounts",
+				"wallet_requestChainId",
+			]);
 		});
 	});
 });

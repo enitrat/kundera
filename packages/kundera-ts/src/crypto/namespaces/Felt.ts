@@ -8,13 +8,13 @@
 import { Felt252 as FeltPrimitives } from "../../primitives/index.js";
 import {
 	feltAdd,
-	feltSub,
-	feltMul,
 	feltDiv,
-	feltNeg,
 	feltInverse,
+	feltMul,
+	feltNeg,
 	feltPow,
 	feltSqrt,
+	feltSub,
 } from "../arithmetic.js";
 
 // Merge primitive Felt namespace with arithmetic ops (preserve call signature)

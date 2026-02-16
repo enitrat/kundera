@@ -1,5 +1,5 @@
-import type { Felt252Type } from "../Felt252/types.js";
 import type { ContractAddressType } from "../ContractAddress/types.js";
+import type { Felt252Type } from "../Felt252/types.js";
 
 export interface EventType {
 	from_address: ContractAddressType;

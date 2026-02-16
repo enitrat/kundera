@@ -1,7 +1,7 @@
-import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
 import { blockHeaderWithCommitmentsFromRpc } from "../BlockHeader/fromRpc.js";
-import { transactionFromRpc, txnFromRpc } from "../Transaction/fromRpc.js";
+import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
 import { receiptFromRpc } from "../Receipt/fromRpc.js";
+import { transactionFromRpc, txnFromRpc } from "../Transaction/fromRpc.js";
 
 /**
  * @param {import('../../jsonrpc/types.js').BlockWithTxHashes} rpc

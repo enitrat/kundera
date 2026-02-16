@@ -64,21 +64,21 @@ export {
 import {
 	isNativeAvailable,
 	feltAdd as nativeFeltAdd,
-	feltSub as nativeFeltSub,
-	feltMul as nativeFeltMul,
 	feltDiv as nativeFeltDiv,
-	feltNeg as nativeFeltNeg,
 	feltInverse as nativeFeltInverse,
+	feltMul as nativeFeltMul,
+	feltNeg as nativeFeltNeg,
 	feltPow as nativeFeltPow,
 	feltSqrt as nativeFeltSqrt,
+	feltSub as nativeFeltSub,
+	getPublicKey as nativeGetPublicKey,
+	keccak256 as nativeKeccak256,
 	pedersenHash as nativePedersenHash,
 	poseidonHash as nativePoseidonHash,
 	poseidonHashMany as nativePoseidonHashMany,
-	keccak256 as nativeKeccak256,
-	getPublicKey as nativeGetPublicKey,
+	recover as nativeRecover,
 	sign as nativeSign,
 	verify as nativeVerify,
-	recover as nativeRecover,
 } from "./loader.js";
 
 // ============ Helper ============
@@ -269,26 +269,26 @@ export const StarkCurve = {
 
 import type { KunderaAPI as _KunderaAPI } from "../api-interface.js";
 import {
+	Address,
+	Class,
+	ClassHash,
+	ContractAddress,
+	EthAddress,
 	FIELD_PRIME,
 	MAX_ADDRESS,
 	MAX_CONTRACT_ADDRESS,
 	MAX_ETH_ADDRESS,
-	ContractAddress,
-	ClassHash,
-	StorageKey,
-	EthAddress,
-	Address,
-	Class,
 	Storage,
+	StorageKey,
 } from "../primitives/index.js";
 
 import {
-	serializeU256,
+	CairoSerde,
+	deserializeArray,
 	deserializeU256,
 	serializeArray,
-	deserializeArray,
 	serializeByteArray,
-	CairoSerde,
+	serializeU256,
 } from "../serde/index.js";
 
 // Type validator - ensures all exports match _KunderaAPI interface

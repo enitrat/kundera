@@ -7,8 +7,8 @@
  */
 
 import type { Felt252Type } from "../primitives/index.js";
-import { isBun, isNode, getRuntime } from "./platform.js";
 import * as nodeFfi from "./node-ffi.js";
+import { getRuntime, isBun, isNode } from "./platform.js";
 
 // Re-export platform utilities
 export {
@@ -115,12 +115,11 @@ function requireBackend(): NativeBackend {
 			throw new Error(
 				"Native library not found. Build with: cargo build --release",
 			);
-		} else {
-			throw new Error(
-				"Native FFI not available. Install koffi: npm install koffi\n" +
-					"And build the native library: cargo build --release",
-			);
 		}
+		throw new Error(
+			"Native FFI not available. Install koffi: npm install koffi\n" +
+				"And build the native library: cargo build --release",
+		);
 	}
 	return b;
 }
@@ -132,7 +131,7 @@ function requireBackend(): NativeBackend {
  */
 export function isNativeAvailable(): boolean {
 	const b = getBackend();
-	return b !== null && b.isAvailable();
+	return b?.isAvailable();
 }
 
 // ============ Felt Arithmetic ============

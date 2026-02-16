@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
+import { Felt } from "../index";
 import { Felt252 } from "./Felt252";
 import { FIELD_PRIME } from "./constants";
-import { Felt } from "../index";
 
 describe("Felt252", () => {
 	test("from number", () => {
@@ -57,13 +57,13 @@ describe("Felt252", () => {
 	});
 
 	test("rejects hex >= FIELD_PRIME", () => {
-		expect(() => Felt252.fromHex("0x" + FIELD_PRIME.toString(16))).toThrow(
+		expect(() => Felt252.fromHex(`0x${FIELD_PRIME.toString(16)}`)).toThrow(
 			"exceeds",
 		);
 	});
 
 	test("rejects hex string too long", () => {
-		expect(() => Felt252.fromHex("0x" + "f".repeat(65))).toThrow("too long");
+		expect(() => Felt252.fromHex(`0x${"f".repeat(65)}`)).toThrow("too long");
 	});
 
 	test("rejects invalid hex string", () => {

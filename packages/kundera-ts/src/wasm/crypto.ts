@@ -9,20 +9,20 @@ import { Felt252, type Felt252Type } from "../primitives/index.js";
 import {
 	isWasmLoaded,
 	wasmFeltAdd,
-	wasmFeltSub,
-	wasmFeltMul,
 	wasmFeltDiv,
-	wasmFeltNeg,
 	wasmFeltInverse,
+	wasmFeltMul,
+	wasmFeltNeg,
 	wasmFeltPow,
 	wasmFeltSqrt,
+	wasmFeltSub,
+	wasmGetPublicKey,
 	wasmPedersenHash,
 	wasmPoseidonHash,
 	wasmPoseidonHashMany,
-	wasmGetPublicKey,
+	wasmRecover,
 	wasmSign,
 	wasmVerify,
-	wasmRecover,
 } from "../wasm-loader/index.js";
 
 /**

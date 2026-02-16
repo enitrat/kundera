@@ -23,6 +23,7 @@ import type {
 	ContractClass,
 	EventsFilter,
 	EventsResponse,
+	EventsSubscriptionParams,
 	FeeEstimate,
 	FunctionCall,
 	MessageFeeEstimate,
@@ -42,9 +43,8 @@ import type {
 	TransactionReceiptsSubscriptionParams,
 	TransactionStatus,
 	TransactionTrace,
-	TxnWithHash,
 	TxnReceiptWithBlockInfo,
-	EventsSubscriptionParams,
+	TxnWithHash,
 } from "../../jsonrpc/types.js";
 
 export type StarknetRpcSchema = readonly [

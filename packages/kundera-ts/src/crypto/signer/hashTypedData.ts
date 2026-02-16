@@ -4,15 +4,15 @@
  * SNIP-12 typed data hashing implementation.
  */
 
-import {
-	Felt252,
-	type Felt252Type,
-	type Felt252Input,
-} from "../../primitives/index.js";
 import { Uint128 } from "../../primitives/Uint128/index.js";
 import { Uint256 } from "../../primitives/Uint256/index.js";
-import { poseidonHashMany } from "../hash.js";
+import {
+	Felt252,
+	type Felt252Input,
+	type Felt252Type,
+} from "../../primitives/index.js";
 import type { TypedData } from "../account-types.js";
+import { poseidonHashMany } from "../hash.js";
 
 /**
  * SNIP-12 typed data prefix

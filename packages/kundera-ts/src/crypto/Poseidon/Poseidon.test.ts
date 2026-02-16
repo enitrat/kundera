@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { Poseidon, hash, hashMany } from "./index.js";
 import { Felt252 } from "../../primitives/Felt252/index.js";
+import { Poseidon, hash, hashMany } from "./index.js";
 
 describe("Poseidon", () => {
 	// Test vectors from @scure/starknet (cairo-lang 0.11 cross-tested)

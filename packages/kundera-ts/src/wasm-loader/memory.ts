@@ -5,15 +5,15 @@
  */
 
 import { Felt252, type Felt252Type } from "../primitives/index.js";
-import { ErrorCode } from "./types.js";
 import {
-	wasmInstance,
+	ALIGNMENT,
+	DEFAULT_HEAP_BASE,
+	FELT_SIZE,
 	memoryOffset,
 	setMemoryOffset,
-	DEFAULT_HEAP_BASE,
-	ALIGNMENT,
-	FELT_SIZE,
+	wasmInstance,
 } from "./state.js";
+import { ErrorCode } from "./types.js";
 
 /**
  * Align offset to boundary
@@ -26,7 +26,7 @@ export function align(offset: number, alignment: number): number {
  * Allocate memory from bump allocator
  */
 export function malloc(size: number): number {
-	const memory = wasmInstance!.memory;
+	const memory = wasmInstance?.memory;
 	const aligned = align(memoryOffset, ALIGNMENT);
 	const end = aligned + size;
 
@@ -58,7 +58,7 @@ export function resetAllocator(): void {
  * Write Felt252 to WASM memory
  */
 export function writeFelt(felt: Felt252Type, ptr: number): void {
-	const view = new Uint8Array(wasmInstance!.memory.buffer, ptr, FELT_SIZE);
+	const view = new Uint8Array(wasmInstance?.memory.buffer, ptr, FELT_SIZE);
 	view.set(felt);
 }
 
@@ -66,7 +66,7 @@ export function writeFelt(felt: Felt252Type, ptr: number): void {
  * Read Felt252 from WASM memory
  */
 export function readFelt(ptr: number): Felt252Type {
-	const view = new Uint8Array(wasmInstance!.memory.buffer, ptr, FELT_SIZE);
+	const view = new Uint8Array(wasmInstance?.memory.buffer, ptr, FELT_SIZE);
 	return Felt252(new Uint8Array(view));
 }
 

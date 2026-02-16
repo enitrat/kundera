@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { WebSocketProvider } from "./WebSocketProvider.js";
 
 type MessageEventLike = { data: string };
@@ -125,7 +125,9 @@ describe("WebSocketProvider", () => {
 		const provider = new WebSocketProvider("ws://localhost:9545");
 		await provider.connect();
 
-		const ws = MockWebSocket.instances[0]!;
+		const ws = MockWebSocket.instances[0];
+		expect(ws).toBeDefined();
+		if (!ws) throw new Error("Expected mock websocket instance");
 		const stream = provider.events.newHeads();
 
 		const nextPromise = stream.next();
@@ -147,7 +149,8 @@ describe("WebSocketProvider", () => {
 		});
 
 		const next = await nextPromise;
-		expect((next.value as any)?.block_hash).toBe("0x1");
+		const head = next.value as { block_hash?: string } | undefined;
+		expect(head?.block_hash).toBe("0x1");
 
 		await stream.return?.();
 	});

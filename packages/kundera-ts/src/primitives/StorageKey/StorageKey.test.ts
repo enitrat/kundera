@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { StorageKey } from "./StorageKey";
 import { Felt252 } from "../Felt252/Felt252";
+import { StorageKey } from "./StorageKey";
 
 describe("StorageKey", () => {
 	test("creates valid storage key", () => {

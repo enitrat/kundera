@@ -9,18 +9,18 @@
 
 import {
 	Felt252,
-	type Felt252Type,
 	type Felt252Input,
+	type Felt252Type,
 } from "../primitives/index.js";
-import { poseidonHashMany, pedersenHash, snKeccak } from "./index.js";
 import {
-	TRANSACTION_HASH_PREFIX,
-	type InvokeTransactionV3,
+	type DataAvailabilityMode,
 	type DeclareTransactionV3,
 	type DeployAccountTransactionV3,
+	type InvokeTransactionV3,
 	type ResourceBoundsMapping,
-	type DataAvailabilityMode,
+	TRANSACTION_HASH_PREFIX,
 } from "./account-types.js";
+import { pedersenHash, poseidonHashMany, snKeccak } from "./index.js";
 
 // ============ Resource Bounds Encoding ============
 
@@ -396,9 +396,7 @@ export function computeSelector(name: string): Felt252Type {
 		return snKeccak(nameBytes);
 	} catch (e) {
 		throw new Error(
-			`Unknown selector for "${name}". ` +
-				`Either add to KNOWN_SELECTORS or implement snKeccak. ` +
-				`Original error: ${e instanceof Error ? e.message : String(e)}`,
+			`Unknown selector for "${name}". Either add to KNOWN_SELECTORS or implement snKeccak. Original error: ${e instanceof Error ? e.message : String(e)}`,
 		);
 	}
 }
@@ -406,4 +404,8 @@ export function computeSelector(name: string): Felt252Type {
 /**
  * Standard selectors (precomputed)
  */
-export const EXECUTE_SELECTOR = Felt252(KNOWN_SELECTORS["__execute__"]!);
+const executeSelector = KNOWN_SELECTORS.__execute__;
+if (!executeSelector) {
+	throw new Error("Missing __execute__ selector in KNOWN_SELECTORS");
+}
+export const EXECUTE_SELECTOR = Felt252(executeSelector);

@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { eventFromRpc, emittedEventFromRpc } from "./fromRpc.js";
-import { eventToRpc, emittedEventToRpc } from "./toRpc.js";
+import { describe, expect, it } from "vitest";
+import type { EmittedEvent, Event } from "../../jsonrpc/types.js";
 import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
-import type { Event, EmittedEvent } from "../../jsonrpc/types.js";
+import { emittedEventFromRpc, eventFromRpc } from "./fromRpc.js";
+import { emittedEventToRpc, eventToRpc } from "./toRpc.js";
 
 function canon(hex: string): string {
 	return feltFromHex(hex).toHex();
@@ -19,8 +19,8 @@ describe("Event", () => {
 		const result = eventFromRpc(wire);
 		expect(result.from_address.toBigInt()).toBe(1n);
 		expect(result.keys.length).toBe(2);
-		expect(result.keys[0]!.toBigInt()).toBe(2n);
-		expect(result.data[0]!.toBigInt()).toBe(4n);
+		expect(result.keys[0]?.toBigInt()).toBe(2n);
+		expect(result.data[0]?.toBigInt()).toBe(4n);
 	});
 
 	it("round-trips through toRpc", () => {

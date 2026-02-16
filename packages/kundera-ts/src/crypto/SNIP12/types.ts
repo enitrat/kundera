@@ -5,20 +5,20 @@
  * @see https://github.com/starknet-io/SNIPs/blob/main/SNIPS/snip-12.md
  */
 
-import type { Felt252Type } from "../../primitives/Felt252/types.js";
-import type { ContractAddressType } from "../../primitives/ContractAddress/types.js";
 import type { ClassHashType } from "../../primitives/ClassHash/types.js";
+import type { ContractAddressType } from "../../primitives/ContractAddress/types.js";
+import type { Felt252Type } from "../../primitives/Felt252/types.js";
+import type { Int8Type } from "../../primitives/Int8/types.js";
+import type { Int16Type } from "../../primitives/Int16/types.js";
+import type { Int32Type } from "../../primitives/Int32/types.js";
+import type { Int64Type } from "../../primitives/Int64/types.js";
+import type { Int128Type } from "../../primitives/Int128/types.js";
 import type { Uint8Type } from "../../primitives/Uint8/types.js";
 import type { Uint16Type } from "../../primitives/Uint16/types.js";
 import type { Uint32Type } from "../../primitives/Uint32/types.js";
 import type { Uint64Type } from "../../primitives/Uint64/types.js";
 import type { Uint128Type } from "../../primitives/Uint128/types.js";
 import type { Uint256Type } from "../../primitives/Uint256/types.js";
-import type { Int8Type } from "../../primitives/Int8/types.js";
-import type { Int16Type } from "../../primitives/Int16/types.js";
-import type { Int32Type } from "../../primitives/Int32/types.js";
-import type { Int64Type } from "../../primitives/Int64/types.js";
-import type { Int128Type } from "../../primitives/Int128/types.js";
 
 /**
  * SNIP-12 Domain separator fields

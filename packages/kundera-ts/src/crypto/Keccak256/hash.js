@@ -18,10 +18,7 @@ export function hash(data) {
  */
 export function hashHex(data) {
 	const h = hash(data);
-	return (
-		"0x" +
-		Array.from(h)
-			.map((b) => b.toString(16).padStart(2, "0"))
-			.join("")
-	);
+	return `0x${Array.from(h)
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("")}`;
 }

@@ -1,4 +1,4 @@
-import { type Felt252Type, Felt252 } from "../primitives/index.js";
+import { Felt252, type Felt252Type } from "../primitives/index.js";
 
 /**
  * Serialize a u256 as two felts [low, high]

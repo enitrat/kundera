@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
-import { ContractAddress } from "./ContractAddress";
-import { MAX_CONTRACT_ADDRESS } from "./constants";
 import { Felt252 } from "../Felt252/Felt252";
 import { Address } from "../index";
+import { ContractAddress } from "./ContractAddress";
+import { MAX_CONTRACT_ADDRESS } from "./constants";
 
 describe("ContractAddress", () => {
 	test("creates valid address", () => {

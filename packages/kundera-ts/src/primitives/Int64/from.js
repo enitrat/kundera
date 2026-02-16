@@ -1,5 +1,5 @@
-import { MIN, MAX } from "./constants.js";
-import { Int64RangeError, Int64ParseError } from "./errors.js";
+import { MAX, MIN } from "./constants.js";
+import { Int64ParseError, Int64RangeError } from "./errors.js";
 
 /**
  * Create an Int64 from various input types.

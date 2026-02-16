@@ -7,27 +7,27 @@
 
 import type { KunderaAPI as _KunderaAPI } from "../api-interface.js";
 import {
+	Address,
+	Class,
+	ClassHash,
+	ContractAddress,
+	EthAddress,
 	FIELD_PRIME,
+	Felt252,
 	MAX_ADDRESS,
 	MAX_CONTRACT_ADDRESS,
 	MAX_ETH_ADDRESS,
-	Felt252,
-	ContractAddress,
-	ClassHash,
-	StorageKey,
-	EthAddress,
-	Address,
-	Class,
 	Storage,
+	StorageKey,
 } from "../primitives/index.js";
 
 import {
-	serializeU256,
+	CairoSerde,
+	deserializeArray,
 	deserializeU256,
 	serializeArray,
-	deserializeArray,
 	serializeByteArray,
-	CairoSerde,
+	serializeU256,
 } from "../serde/index.js";
 
 import {
@@ -37,26 +37,26 @@ import {
 } from "../wasm-loader/index.js";
 
 import {
+	feltAdd,
+	feltDiv,
+	feltInverse,
+	feltMul,
+	feltNeg,
+	feltPow,
+	feltSqrt,
+	feltSub,
+	getPublicKey,
 	isNativeAvailable,
 	pedersenHash,
 	poseidonHash,
 	poseidonHashMany,
-	snKeccak,
-	feltAdd,
-	feltSub,
-	feltMul,
-	feltDiv,
-	feltNeg,
-	feltInverse,
-	feltPow,
-	feltSqrt,
-	sign,
-	verify,
-	getPublicKey,
 	recover,
+	sign,
+	snKeccak,
+	verify,
 } from "./crypto.js";
 
-import { Pedersen, Poseidon, Felt, StarkCurve } from "./namespaces/index.js";
+import { Felt, Pedersen, Poseidon, StarkCurve } from "./namespaces/index.js";
 
 // Type validator - ensures all exports match _KunderaAPI interface
 const _wasmAPI = {

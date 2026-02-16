@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type { FeeEstimate } from "../../jsonrpc/types.js";
+import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
 import { feeEstimateFromRpc } from "./fromRpc.js";
 import { feeEstimateToRpc } from "./toRpc.js";
-import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
-import type { FeeEstimate } from "../../jsonrpc/types.js";
 
 function canon(hex: string): string {
 	return feltFromHex(hex).toHex();

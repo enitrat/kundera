@@ -6,22 +6,29 @@
 
 import { describe, expect, it } from "vitest";
 import "../test-utils/setupCrypto";
-import {
-	parseAbi,
-	encodeCalldata,
-	decodeCalldata,
-	decodeOutput,
-	decodeEvent,
-	computeSelector,
-	getFunctionSelector,
-	getEventSelector,
-	encodeValue,
-	decodeValue,
-	type Abi,
-} from "./index.js";
 import { encodeShortString } from "../primitives/index.js";
+import {
+	type Abi,
+	computeSelector,
+	decodeCalldata,
+	decodeEvent,
+	decodeOutput,
+	decodeValue,
+	encodeCalldata,
+	encodeValue,
+	getEventSelector,
+	getFunctionSelector,
+	parseAbi,
+} from "./index.js";
 
 const describeIfCrypto = describe;
+
+function requirePresent<T>(value: T | null | undefined, message: string): T {
+	if (value === null || value === undefined) {
+		throw new Error(message);
+	}
+	return value;
+}
 
 // ============ Test ABI (ERC20-like) ============
 
@@ -162,7 +169,7 @@ describeIfCrypto("ABI Parsing", () => {
 		expect(result.error).toBeNull();
 		expect(result.result).not.toBeNull();
 
-		const parsed = result.result!;
+		const parsed = requirePresent(result.result, "Expected parsed ABI");
 		expect(parsed.functions.size).toBeGreaterThan(0);
 		expect(parsed.events.size).toBeGreaterThan(0);
 		expect(parsed.functions.has("transfer")).toBe(true);
@@ -190,14 +197,14 @@ describeIfCrypto("ABI Parsing", () => {
 		const result = parseAbi(ERC20_ABI);
 		expect(result.error).toBeNull();
 
-		const parsed = result.result!;
+		const parsed = requirePresent(result.result, "Expected parsed ABI");
 		const transferFn = parsed.functions.get("transfer");
 		expect(transferFn).not.toBeUndefined();
 
 		// Should be able to lookup by selector hex
-		const bySelector = parsed.functionsBySelector.get(transferFn!.selectorHex);
+		const bySelector = parsed.functionsBySelector.get(transferFn?.selectorHex);
 		expect(bySelector).not.toBeUndefined();
-		expect(bySelector!.entry.name).toBe("transfer");
+		expect(bySelector?.entry.name).toBe("transfer");
 	});
 });
 
@@ -285,13 +292,13 @@ describeIfCrypto("Calldata Encoding", () => {
 	it("should error on unknown function", () => {
 		const result = encodeCalldata(ERC20_ABI, "nonexistent", []);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("FUNCTION_NOT_FOUND");
+		expect(result.error?.code).toBe("FUNCTION_NOT_FOUND");
 	});
 
 	it("should error on argument count mismatch", () => {
 		const result = encodeCalldata(ERC20_ABI, "transfer", [0x123n]); // missing amount
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("INVALID_ARGS");
+		expect(result.error?.code).toBe("INVALID_ARGS");
 	});
 });
 
@@ -329,7 +336,11 @@ describeIfCrypto("Calldata Decoding", () => {
 		const encoded = encodeCalldata(ERC20_ABI, "transfer", args);
 		expect(encoded.error).toBeNull();
 
-		const decoded = decodeCalldata(ERC20_ABI, "transfer", encoded.result!);
+		const decoded = decodeCalldata(
+			ERC20_ABI,
+			"transfer",
+			requirePresent(encoded.result, "Expected encoded calldata"),
+		);
 		expect(decoded.error).toBeNull();
 		expect(decoded.result).toEqual(args);
 	});
@@ -438,10 +449,10 @@ describeIfCrypto("Event Decoding", () => {
 
 		expect(result.error).toBeNull();
 		expect(result.result).not.toBeNull();
-		expect(result.result!.name).toBe("Transfer");
-		expect(result.result!.args["from"]).toBe(from);
-		expect(result.result!.args["to"]).toBe(to);
-		expect(result.result!.args["amount"]).toBe(1000n);
+		expect(result.result?.name).toBe("Transfer");
+		expect(result.result?.args.from).toBe(from);
+		expect(result.result?.args.to).toBe(to);
+		expect(result.result?.args.amount).toBe(1000n);
 	});
 
 	it("should decode event by selector", () => {
@@ -449,7 +460,7 @@ describeIfCrypto("Event Decoding", () => {
 
 		const result = decodeEvent(
 			ERC20_ABI,
-			"0x" + transferSelector.toString(16),
+			`0x${transferSelector.toString(16)}`,
 			{
 				keys: [transferSelector, 0x111n, 0x222n],
 				data: [500n, 0n],
@@ -457,7 +468,7 @@ describeIfCrypto("Event Decoding", () => {
 		);
 
 		expect(result.error).toBeNull();
-		expect(result.result!.name).toBe("Transfer");
+		expect(result.result?.name).toBe("Transfer");
 	});
 
 	it("should error on unknown event", () => {
@@ -467,7 +478,7 @@ describeIfCrypto("Event Decoding", () => {
 		});
 
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("EVENT_NOT_FOUND");
+		expect(result.error?.code).toBe("EVENT_NOT_FOUND");
 	});
 });
 
@@ -488,9 +499,9 @@ describeIfCrypto(
 			expect(result.error).toBeNull();
 
 			// Verify encoding
-			expect(result.result![0]).toBe(recipient);
-			expect(result.result![1]).toBe(amount); // low (fits in u128)
-			expect(result.result![2]).toBe(0n); // high = 0
+			expect(result.result?.[0]).toBe(recipient);
+			expect(result.result?.[1]).toBe(amount); // low (fits in u128)
+			expect(result.result?.[2]).toBe(0n); // high = 0
 		});
 
 		it("u256 max value encodes correctly", () => {
@@ -502,8 +513,8 @@ describeIfCrypto(
 			expect(result.error).toBeNull();
 
 			// Both limbs should be max u128
-			expect(result.result![1]).toBe(u128Max); // low
-			expect(result.result![2]).toBe(u128Max); // high
+			expect(result.result?.[1]).toBe(u128Max); // low
+			expect(result.result?.[2]).toBe(u128Max); // high
 		});
 	},
 );
@@ -528,8 +539,8 @@ describeIfCrypto("Error Handling (Voltaire-style)", () => {
 
 	it("error includes code and message", () => {
 		const result = encodeCalldata(ERC20_ABI, "nonexistent", []);
-		expect(result.error!.code).toBe("FUNCTION_NOT_FOUND");
-		expect(result.error!.message).toContain("nonexistent");
+		expect(result.error?.code).toBe("FUNCTION_NOT_FOUND");
+		expect(result.error?.message).toContain("nonexistent");
 	});
 });
 
@@ -541,9 +552,13 @@ describeIfCrypto("Encode/Decode Roundtrip", () => {
 		for (const original of values) {
 			const encoded = encodeCalldata(ERC20_ABI, "balance_of", [original]);
 			expect(encoded.error).toBeNull();
-			const decoded = decodeCalldata(ERC20_ABI, "balance_of", encoded.result!);
+			const decoded = decodeCalldata(
+				ERC20_ABI,
+				"balance_of",
+				requirePresent(encoded.result, "Expected encoded calldata"),
+			);
 			expect(decoded.error).toBeNull();
-			expect(decoded.result![0]).toBe(original);
+			expect(decoded.result?.[0]).toBe(original);
 		}
 	});
 
@@ -559,9 +574,13 @@ describeIfCrypto("Encode/Decode Roundtrip", () => {
 		for (const amount of values) {
 			const encoded = encodeCalldata(ERC20_ABI, "transfer", [0x1n, amount]);
 			expect(encoded.error).toBeNull();
-			const decoded = decodeCalldata(ERC20_ABI, "transfer", encoded.result!);
+			const decoded = decodeCalldata(
+				ERC20_ABI,
+				"transfer",
+				requirePresent(encoded.result, "Expected encoded calldata"),
+			);
 			expect(decoded.error).toBeNull();
-			expect(decoded.result![1]).toBe(amount);
+			expect(decoded.result?.[1]).toBe(amount);
 		}
 	});
 
@@ -578,10 +597,10 @@ describeIfCrypto("Encode/Decode Roundtrip", () => {
 			const decoded = decodeCalldata(
 				EXTENDED_ABI,
 				"process_array",
-				encoded.result!,
+				requirePresent(encoded.result, "Expected encoded calldata"),
 			);
 			expect(decoded.error).toBeNull();
-			expect(decoded.result![0]).toEqual(arr);
+			expect(decoded.result?.[0]).toEqual(arr);
 		}
 	});
 
@@ -597,12 +616,12 @@ describeIfCrypto("Encode/Decode Roundtrip", () => {
 			const decoded = decodeCalldata(
 				EXTENDED_ABI,
 				"process_struct",
-				encoded.result!,
+				requirePresent(encoded.result, "Expected encoded calldata"),
 			);
 			expect(decoded.error).toBeNull();
-			const result = decoded.result![0] as Record<string, bigint>;
-			expect(result["field_a"]).toBe(data.field_a);
-			expect(result["field_b"]).toBe(data.field_b);
+			const result = decoded.result?.[0] as Record<string, bigint>;
+			expect(result.field_a).toBe(data.field_a);
+			expect(result.field_b).toBe(data.field_b);
 		}
 	});
 
@@ -612,29 +631,50 @@ describeIfCrypto("Encode/Decode Roundtrip", () => {
 			{ variant: "VariantA", value: null },
 		]);
 		expect(encA.error).toBeNull();
-		const decA = decodeCalldata(EXTENDED_ABI, "process_enum", encA.result!);
+		const decA = decodeCalldata(
+			EXTENDED_ABI,
+			"process_enum",
+			requirePresent(encA.result, "Expected encoded calldata"),
+		);
 		expect(decA.error).toBeNull();
-		expect((decA.result![0] as any).variant).toBe("VariantA");
+		const decAValue = decA.result?.[0] as
+			| { variant?: string; value?: unknown }
+			| undefined;
+		expect(decAValue?.variant).toBe("VariantA");
 
 		// VariantB (felt252)
 		const encB = encodeCalldata(EXTENDED_ABI, "process_enum", [
 			{ variant: "VariantB", value: 42n },
 		]);
 		expect(encB.error).toBeNull();
-		const decB = decodeCalldata(EXTENDED_ABI, "process_enum", encB.result!);
+		const decB = decodeCalldata(
+			EXTENDED_ABI,
+			"process_enum",
+			requirePresent(encB.result, "Expected encoded calldata"),
+		);
 		expect(decB.error).toBeNull();
-		expect((decB.result![0] as any).variant).toBe("VariantB");
-		expect((decB.result![0] as any).value).toBe(42n);
+		const decBValue = decB.result?.[0] as
+			| { variant?: string; value?: unknown }
+			| undefined;
+		expect(decBValue?.variant).toBe("VariantB");
+		expect(decBValue?.value).toBe(42n);
 
 		// VariantC (u256)
 		const encC = encodeCalldata(EXTENDED_ABI, "process_enum", [
 			{ variant: "VariantC", value: 1n << 200n },
 		]);
 		expect(encC.error).toBeNull();
-		const decC = decodeCalldata(EXTENDED_ABI, "process_enum", encC.result!);
+		const decC = decodeCalldata(
+			EXTENDED_ABI,
+			"process_enum",
+			requirePresent(encC.result, "Expected encoded calldata"),
+		);
 		expect(decC.error).toBeNull();
-		expect((decC.result![0] as any).variant).toBe("VariantC");
-		expect((decC.result![0] as any).value).toBe(1n << 200n);
+		const decCValue = decC.result?.[0] as
+			| { variant?: string; value?: unknown }
+			| undefined;
+		expect(decCValue?.variant).toBe("VariantC");
+		expect(decCValue?.value).toBe(1n << 200n);
 	});
 });
 
@@ -646,7 +686,7 @@ describeIfCrypto("Error Cases", () => {
 		const tooLarge = 1n << 252n;
 		const result = encodeCalldata(ERC20_ABI, "balance_of", [tooLarge]);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("ENCODE_ERROR");
+		expect(result.error?.code).toBe("ENCODE_ERROR");
 	});
 
 	it("rejects invalid enum variant", () => {
@@ -654,7 +694,7 @@ describeIfCrypto("Error Cases", () => {
 			{ variant: "NonexistentVariant", value: null },
 		]);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("ENCODE_ERROR");
+		expect(result.error?.code).toBe("ENCODE_ERROR");
 	});
 
 	it("rejects missing struct field", () => {
@@ -662,20 +702,20 @@ describeIfCrypto("Error Cases", () => {
 			{ field_a: 100n }, // missing field_b
 		]);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("ENCODE_ERROR");
+		expect(result.error?.code).toBe("ENCODE_ERROR");
 	});
 
 	it("rejects wrong argument count", () => {
 		const result = encodeCalldata(ERC20_ABI, "transfer", [0x123n]); // missing amount
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("INVALID_ARGS");
+		expect(result.error?.code).toBe("INVALID_ARGS");
 	});
 
 	it("rejects decode with truncated data", () => {
 		// u256 needs 2 felts, provide only 1
 		const result = decodeOutput(ERC20_ABI, "balance_of", [1000n]);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("DECODE_ERROR");
+		expect(result.error?.code).toBe("DECODE_ERROR");
 	});
 });
 
@@ -764,7 +804,7 @@ describeIfCrypto("Starknet.js v6.23.1 Golden Vectors", () => {
 			{ variant: "VariantA", value: null }, // index 0
 		]);
 		expect(someResult.error).toBeNull();
-		expect(someResult.result![0]).toBe(0n); // VariantA is index 0
+		expect(someResult.result?.[0]).toBe(0n); // VariantA is index 0
 	});
 
 	/**
@@ -808,7 +848,11 @@ describeIfCrypto("Short String Encoding/Decoding", () => {
 		const parsed = parseAbi(SHORTSTRING_ABI);
 		expect(parsed.error).toBeNull();
 
-		const result = encodeValue("hello", "shortstring", parsed.result!);
+		const result = encodeValue(
+			"hello",
+			"shortstring",
+			requirePresent(parsed.result, "Expected parsed ABI"),
+		);
 		expect(result.error).toBeNull();
 		expect(result.result).toEqual([448378203247n]); // 0x68656c6c6f
 	});
@@ -818,7 +862,11 @@ describeIfCrypto("Short String Encoding/Decoding", () => {
 		expect(parsed.error).toBeNull();
 
 		// Already encoded as bigint
-		const result = encodeValue(448378203247n, "shortstring", parsed.result!);
+		const result = encodeValue(
+			448378203247n,
+			"shortstring",
+			requirePresent(parsed.result, "Expected parsed ABI"),
+		);
 		expect(result.error).toBeNull();
 		expect(result.result).toEqual([448378203247n]);
 	});
@@ -827,10 +875,14 @@ describeIfCrypto("Short String Encoding/Decoding", () => {
 		const parsed = parseAbi(SHORTSTRING_ABI);
 		expect(parsed.error).toBeNull();
 
-		const result = decodeValue([448378203247n], "shortstring", parsed.result!);
+		const result = decodeValue(
+			[448378203247n],
+			"shortstring",
+			requirePresent(parsed.result, "Expected parsed ABI"),
+		);
 		expect(result.error).toBeNull();
-		expect(result.result!.value).toBe("hello");
-		expect(result.result!.consumed).toBe(1);
+		expect(result.result?.value).toBe("hello");
+		expect(result.result?.consumed).toBe(1);
 	});
 
 	it("roundtrip shortstring encoding/decoding", () => {
@@ -838,12 +890,17 @@ describeIfCrypto("Short String Encoding/Decoding", () => {
 		expect(parsed.error).toBeNull();
 
 		const original = "test_name";
-		const encoded = encodeValue(original, "shortstring", parsed.result!);
+		const parsedAbi = requirePresent(parsed.result, "Expected parsed ABI");
+		const encoded = encodeValue(original, "shortstring", parsedAbi);
 		expect(encoded.error).toBeNull();
 
-		const decoded = decodeValue(encoded.result!, "shortstring", parsed.result!);
+		const decoded = decodeValue(
+			requirePresent(encoded.result, "Expected encoded shortstring"),
+			"shortstring",
+			parsedAbi,
+		);
 		expect(decoded.error).toBeNull();
-		expect(decoded.result!.value).toBe(original);
+		expect(decoded.result?.value).toBe(original);
 	});
 
 	it("encodes via high-level encodeCalldata", () => {
@@ -865,5 +922,4 @@ describeIfCrypto("Short String Encoding/Decoding", () => {
 		expect(result.error).toBeNull();
 		expect(result.result).toBe("my_token");
 	});
-
 });

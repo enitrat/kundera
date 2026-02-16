@@ -11,8 +11,8 @@ import type {
 	RpcMethodReturnType,
 	RpcSchema,
 } from "../RpcSchema.js";
-import type { RequestOptions } from "./RequestOptions.js";
 import type { RequestArguments } from "./RequestArguments.js";
+import type { RequestOptions } from "./RequestOptions.js";
 
 export type RequestFn<TRpcSchema extends RpcSchema> = <
 	TMethod extends RpcMethodNames<TRpcSchema>,

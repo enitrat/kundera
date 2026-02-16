@@ -6,26 +6,26 @@
  *   cargo build --release
  */
 
-import { describe, expect, test, beforeAll } from "vitest";
+import { beforeAll, describe, expect, test } from "vitest";
+import { FIELD_PRIME, Felt252 } from "../primitives/index";
 import {
-	isNativeAvailable,
-	getNativeLibraryPath,
 	feltAdd,
-	feltSub,
-	feltMul,
 	feltDiv,
-	feltNeg,
 	feltInverse,
+	feltMul,
+	feltNeg,
 	feltPow,
 	feltSqrt,
+	feltSub,
+	getNativeLibraryPath,
+	getPublicKey,
+	isNativeAvailable,
 	pedersenHash,
 	poseidonHash,
 	poseidonHashMany,
-	getPublicKey,
 	sign,
 	verify,
 } from "./index";
-import { Felt252, FIELD_PRIME } from "../primitives/index";
 
 describe("Native FFI", () => {
 	// Skip all tests if native library isn't available

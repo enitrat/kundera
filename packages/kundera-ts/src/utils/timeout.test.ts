@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+	TimeoutError,
 	createDeferred,
 	executeWithTimeout,
 	sleep,
-	TimeoutError,
 	withTimeout,
 	wrapWithTimeout,
 } from "./timeout.js";

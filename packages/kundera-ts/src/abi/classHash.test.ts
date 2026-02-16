@@ -9,11 +9,11 @@ import { describe, expect, it } from "vitest";
 import "../test-utils/setupCrypto";
 import { encodeShortStringHex } from "../primitives/index.js";
 import {
+	type CompiledSierra,
+	type CompiledSierraCasm,
 	classHashFromSierra,
 	compiledClassHashFromCasm,
 	extractAbi,
-	type CompiledSierra,
-	type CompiledSierraCasm,
 } from "./classHash.js";
 
 const describeIfCrypto = describe;
@@ -83,27 +83,33 @@ describe("classHashFromSierra", () => {
 	});
 
 	it("should error on missing sierra_program", () => {
-		const invalid = { ...minimalSierra, sierra_program: undefined } as any;
+		const invalid = {
+			...minimalSierra,
+			sierra_program: undefined,
+		} as unknown as CompiledSierra;
 		const result = classHashFromSierra(invalid);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("INVALID_ABI");
+		expect(result.error?.code).toBe("INVALID_ABI");
 	});
 
 	it("should error on missing entry_points_by_type", () => {
 		const invalid = {
 			...minimalSierra,
 			entry_points_by_type: undefined,
-		} as any;
+		} as unknown as CompiledSierra;
 		const result = classHashFromSierra(invalid);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("INVALID_ABI");
+		expect(result.error?.code).toBe("INVALID_ABI");
 	});
 
 	it("should error on missing abi", () => {
-		const invalid = { ...minimalSierra, abi: undefined } as any;
+		const invalid = {
+			...minimalSierra,
+			abi: undefined,
+		} as unknown as CompiledSierra;
 		const result = classHashFromSierra(invalid);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("INVALID_ABI");
+		expect(result.error?.code).toBe("INVALID_ABI");
 	});
 
 	it("should produce different hash for different programs", () => {
@@ -223,17 +229,23 @@ describeIfCrypto("compiledClassHashFromCasm", () => {
 	});
 
 	it("should error on missing bytecode", () => {
-		const invalid = { ...minimalCasm, bytecode: undefined } as any;
+		const invalid = {
+			...minimalCasm,
+			bytecode: undefined,
+		} as unknown as CompiledSierraCasm;
 		const result = compiledClassHashFromCasm(invalid);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("INVALID_ABI");
+		expect(result.error?.code).toBe("INVALID_ABI");
 	});
 
 	it("should error on missing entry_points_by_type", () => {
-		const invalid = { ...minimalCasm, entry_points_by_type: undefined } as any;
+		const invalid = {
+			...minimalCasm,
+			entry_points_by_type: undefined,
+		} as unknown as CompiledSierraCasm;
 		const result = compiledClassHashFromCasm(invalid);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("INVALID_ABI");
+		expect(result.error?.code).toBe("INVALID_ABI");
 	});
 
 	it("should produce different hash for different bytecode", () => {
@@ -290,7 +302,7 @@ describe("extractAbi", () => {
 		const result = extractAbi(sierra);
 		expect(result.error).toBeNull();
 		expect(result.result).toHaveLength(1);
-		if (result.result && result.result[0]) {
+		if (result.result?.[0]) {
 			expect(result.result[0].name).toBe("test");
 		}
 	});
@@ -316,21 +328,23 @@ describe("extractAbi", () => {
 		const artifact = {} as unknown as { abi: string };
 		const result = extractAbi(artifact);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("INVALID_ABI");
+		expect(result.error?.code).toBe("INVALID_ABI");
 	});
 
 	it("should error on invalid ABI JSON string", () => {
 		const artifact = { abi: "not json" };
 		const result = extractAbi(artifact);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("INVALID_ABI");
+		expect(result.error?.code).toBe("INVALID_ABI");
 	});
 
 	it("should error on non-array ABI", () => {
-		const artifact = { abi: { notAnArray: true } } as any;
+		const artifact = {
+			abi: { notAnArray: true },
+		} as unknown as Parameters<typeof extractAbi>[0];
 		const result = extractAbi(artifact);
 		expect(result.error).not.toBeNull();
-		expect(result.error!.code).toBe("INVALID_ABI");
+		expect(result.error?.code).toBe("INVALID_ABI");
 	});
 });
 
@@ -353,7 +367,9 @@ describeIfCrypto("Error Handling (Voltaire-style)", () => {
 		expect(goodResult.result).not.toBeNull();
 
 		// Bad result
-		const badResult = classHashFromSierra({ invalid: true } as any);
+		const badResult = classHashFromSierra({
+			invalid: true,
+		} as unknown as CompiledSierra);
 		expect(badResult).toHaveProperty("result");
 		expect(badResult).toHaveProperty("error");
 		expect(badResult.result).toBeNull();
@@ -361,9 +377,11 @@ describeIfCrypto("Error Handling (Voltaire-style)", () => {
 	});
 
 	it("error includes code and message", () => {
-		const result = classHashFromSierra({ invalid: true } as any);
-		expect(result.error!.code).toBeTruthy();
-		expect(result.error!.message).toBeTruthy();
+		const result = classHashFromSierra({
+			invalid: true,
+		} as unknown as CompiledSierra);
+		expect(result.error?.code).toBeTruthy();
+		expect(result.error?.message).toBeTruthy();
 	});
 });
 

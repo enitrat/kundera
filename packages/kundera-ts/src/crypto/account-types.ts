@@ -7,7 +7,7 @@
  * @module crypto/account-types
  */
 
-import { type Felt252Input } from "../primitives/index.js";
+import type { Felt252Input } from "../primitives/index.js";
 import type { Signature } from "./index.js";
 
 // ============ Resource Bounds ============

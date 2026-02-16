@@ -1,5 +1,5 @@
-import { MIN, MAX } from "./constants.js";
-import { Int32RangeError, Int32ParseError } from "./errors.js";
+import { MAX, MIN } from "./constants.js";
+import { Int32ParseError, Int32RangeError } from "./errors.js";
 
 /**
  * Create an Int32 from various input types.

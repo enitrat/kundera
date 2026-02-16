@@ -61,9 +61,9 @@ export { hashTypedData } from "./hashTypedData.js";
 
 // Namespace export for convenient usage
 import { encodeType } from "./encodeType.js";
-import { hashType } from "./hashType.js";
-import { hashStruct } from "./hashStruct.js";
 import { hashDomain } from "./hashDomain.js";
+import { hashStruct } from "./hashStruct.js";
+import { hashType } from "./hashType.js";
 import { hashTypedData } from "./hashTypedData.js";
 
 /**

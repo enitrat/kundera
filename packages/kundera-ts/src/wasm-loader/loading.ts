@@ -4,13 +4,13 @@
  * Functions for loading the WASM crypto module.
  */
 
-import { existsSync, readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-import type { WasmExports } from "./types.js";
-import { wasmInstance, setWasmInstance } from "./state.js";
-import { getWasiShim } from "./wasi-shim.js";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { resetAllocator } from "./memory.js";
+import { setWasmInstance, wasmInstance } from "./state.js";
+import type { WasmExports } from "./types.js";
+import { getWasiShim } from "./wasi-shim.js";
 
 /**
  * Find the WASM file

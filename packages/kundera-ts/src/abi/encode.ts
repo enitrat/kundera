@@ -5,23 +5,30 @@
  */
 
 import {
-	type Felt252Type,
-	Felt252,
 	FIELD_PRIME,
+	Felt252,
+	type Felt252Type,
 	encodeShortString,
 } from "../primitives/index.js";
+import { getEnum, getStruct, parseType } from "./parse.js";
 import {
-	type CairoValue,
+	type AbiMember,
 	type CairoEnumValue,
+	type CairoValue,
 	type ParsedAbi,
 	type ParsedType,
-	type AbiMember,
 	type Result,
-	ok,
-	err,
 	abiError,
+	err,
+	ok,
 } from "./types.js";
-import { parseType, getStruct, getEnum } from "./parse.js";
+
+function requirePresent<T>(value: T | undefined, message: string): T {
+	if (value === undefined) {
+		throw new Error(message);
+	}
+	return value;
+}
 
 // ============ Value Coercion ============
 
@@ -83,14 +90,23 @@ function encodeByType(
 			return encodePrimitive(value, type.name);
 
 		case "array":
-		case "span":
-			return encodeArray(value as CairoValue[], type.inner!, abi);
+		case "span": {
+			const innerType = requirePresent(
+				type.inner,
+				`Missing inner type for ${type.kind}`,
+			);
+			return encodeArray(value as CairoValue[], innerType, abi);
+		}
 
-		case "tuple":
-			return encodeTuple(value as CairoValue[], type.members!, abi);
+		case "tuple": {
+			const memberTypes = requirePresent(type.members, "Missing tuple members");
+			return encodeTuple(value as CairoValue[], memberTypes, abi);
+		}
 
-		case "option":
-			return encodeOption(value, type.inner!, abi);
+		case "option": {
+			const innerType = requirePresent(type.inner, "Missing option inner type");
+			return encodeOption(value, innerType, abi);
+		}
 
 		case "struct": {
 			// Check if it's actually an enum (parseType defaults unknown types to struct)

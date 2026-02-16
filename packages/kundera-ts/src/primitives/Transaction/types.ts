@@ -1,7 +1,7 @@
-import type { Felt252Type } from "../Felt252/types.js";
-import type { ContractAddressType } from "../ContractAddress/types.js";
-import type { ClassHashType } from "../ClassHash/types.js";
 import type { DAMode } from "../../jsonrpc/types.js";
+import type { ClassHashType } from "../ClassHash/types.js";
+import type { ContractAddressType } from "../ContractAddress/types.js";
+import type { Felt252Type } from "../Felt252/types.js";
 
 export interface ResourceBoundsType {
 	max_amount: Felt252Type;

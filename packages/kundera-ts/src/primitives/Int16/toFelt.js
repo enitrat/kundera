@@ -1,5 +1,5 @@
-import { PRIME } from "./constants.js";
 import { Felt252 } from "../Felt252/index.js";
+import { PRIME } from "./constants.js";
 
 /**
  * Convert an Int16 to a Felt252 using Cairo field encoding.

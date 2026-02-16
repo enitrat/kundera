@@ -35,10 +35,6 @@ export class Snip12TypeNotFoundError extends Snip12Error {
  */
 export class Snip12InvalidMessageError extends Snip12Error {
 	override name = "Snip12InvalidMessageError";
-
-	constructor(message: string, context?: Record<string, unknown>) {
-		super(message, context);
-	}
 }
 
 /**
@@ -46,10 +42,6 @@ export class Snip12InvalidMessageError extends Snip12Error {
  */
 export class Snip12InvalidDomainError extends Snip12Error {
 	override name = "Snip12InvalidDomainError";
-
-	constructor(message: string, context?: Record<string, unknown>) {
-		super(message, context);
-	}
 }
 
 /**
@@ -57,8 +49,4 @@ export class Snip12InvalidDomainError extends Snip12Error {
  */
 export class Snip12EncodingError extends Snip12Error {
 	override name = "Snip12EncodingError";
-
-	constructor(message: string, context?: Record<string, unknown>) {
-		super(message, context);
-	}
 }

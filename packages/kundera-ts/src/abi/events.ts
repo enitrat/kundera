@@ -4,20 +4,20 @@
  * Decode Starknet event logs using ABI definitions.
  */
 
+import { computeSelector, getEvent, parseAbi, parseType } from "./parse.js";
 import {
 	type Abi,
+	type AbiEventMember,
 	type CairoValue,
 	type DecodedEvent,
 	type DecodedStruct,
 	type ParsedAbi,
 	type ParsedType,
-	type AbiEventMember,
 	type Result,
-	ok,
-	err,
 	abiError,
+	err,
+	ok,
 } from "./types.js";
-import { parseAbi, getEvent, parseType, computeSelector } from "./parse.js";
 
 // ============ ABI Caching ============
 
@@ -67,6 +67,13 @@ interface DecodeContext {
 	offset: number;
 }
 
+function requirePresent<T>(value: T | undefined, message: string): T {
+	if (value === undefined) {
+		throw new Error(message);
+	}
+	return value;
+}
+
 function readNext(ctx: DecodeContext): bigint {
 	if (ctx.offset >= ctx.values.length) {
 		throw new Error(`Unexpected end of event data at offset ${ctx.offset}`);
@@ -94,17 +101,26 @@ function decodeByType(
 			return decodePrimitive(ctx, type.name);
 
 		case "array":
-		case "span":
-			return decodeArray(ctx, type.inner!, abi);
+		case "span": {
+			const innerType = requirePresent(
+				type.inner,
+				`Missing inner type for ${type.kind}`,
+			);
+			return decodeArray(ctx, innerType, abi);
+		}
 
-		case "tuple":
-			return decodeTuple(ctx, type.members!, abi);
+		case "tuple": {
+			const memberTypes = requirePresent(type.members, "Missing tuple members");
+			return decodeTuple(ctx, memberTypes, abi);
+		}
 
 		case "struct":
 			return decodeStruct(ctx, type, abi);
 
-		case "option":
-			return decodeOption(ctx, type.inner!, abi);
+		case "option": {
+			const innerType = requirePresent(type.inner, "Missing option inner type");
+			return decodeOption(ctx, innerType, abi);
+		}
 
 		case "enum":
 			return decodeEnum(ctx, type, abi);
@@ -261,14 +277,13 @@ export function decodeEvent(
 				name: event.entry.name,
 				args,
 			});
-		} else {
-			// Enum events are more complex, handle as flat data for now
-			const args = decodeFlatEvent(keys, data);
-			return ok({
-				name: event.entry.name,
-				args,
-			});
 		}
+		// Enum events are more complex, handle as flat data for now
+		const args = decodeFlatEvent(keys, data);
+		return ok({
+			name: event.entry.name,
+			args,
+		});
 	} catch (error) {
 		return err(
 			abiError(
@@ -348,11 +363,11 @@ export function decodeEventBySelector(
 		);
 	}
 
-	const selector = eventData.keys[0]!;
+	const selector = requirePresent(eventData.keys[0], "Event selector missing");
 	const selectorHex =
 		typeof selector === "string"
 			? selector.toLowerCase()
-			: "0x" + selector.toString(16);
+			: `0x${selector.toString(16)}`;
 
 	return decodeEvent(abi, selectorHex, eventData);
 }
@@ -374,5 +389,5 @@ export function getEventSelector(eventName: string): bigint {
  * @returns Selector as hex string (0x...)
  */
 export function getEventSelectorHex(eventName: string): string {
-	return "0x" + computeSelector(eventName).toString(16);
+	return `0x${computeSelector(eventName).toString(16)}`;
 }

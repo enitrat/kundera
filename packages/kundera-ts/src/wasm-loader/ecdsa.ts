@@ -5,15 +5,15 @@
  */
 
 import type { Felt252Type } from "../primitives/index.js";
-import { ErrorCode } from "./types.js";
-import { wasmInstance, FELT_SIZE } from "./state.js";
 import {
+	checkResult,
 	malloc,
+	readFelt,
 	resetAllocator,
 	writeFelt,
-	readFelt,
-	checkResult,
 } from "./memory.js";
+import { FELT_SIZE, wasmInstance } from "./state.js";
+import { ErrorCode } from "./types.js";
 
 export interface WasmSignature {
 	r: Felt252Type;

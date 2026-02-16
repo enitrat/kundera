@@ -5,10 +5,10 @@ export { verify } from "./verify.js";
 export { getPublicKey, getPublicKeyFull } from "./getPublicKey.js";
 export { recover } from "./recover.js";
 
-import { sign } from "./sign.js";
-import { verify } from "./verify.js";
 import { getPublicKey, getPublicKeyFull } from "./getPublicKey.js";
 import { recover } from "./recover.js";
+import { sign } from "./sign.js";
+import { verify } from "./verify.js";
 
 /**
  * ECDSA namespace with all functions

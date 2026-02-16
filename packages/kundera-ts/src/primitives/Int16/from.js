@@ -1,5 +1,5 @@
-import { MIN, MAX } from "./constants.js";
-import { Int16RangeError, Int16ParseError } from "./errors.js";
+import { MAX, MIN } from "./constants.js";
+import { Int16ParseError, Int16RangeError } from "./errors.js";
 
 /**
  * Create an Int16 from various input types.

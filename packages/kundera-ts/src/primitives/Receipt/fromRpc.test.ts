@@ -1,23 +1,23 @@
-import { describe, it, expect } from "vitest";
-import {
-	receiptFromRpc,
-	receiptWithBlockInfoFromRpc,
-	feePaymentFromRpc,
-	msgToL1FromRpc,
-} from "./fromRpc.js";
-import {
-	receiptToRpc,
-	receiptWithBlockInfoToRpc,
-	feePaymentToRpc,
-	msgToL1ToRpc,
-} from "./toRpc.js";
-import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
+import { describe, expect, it } from "vitest";
 import type {
-	TxnReceipt,
-	TxnReceiptWithBlockInfo,
 	FeePayment,
 	MsgToL1,
+	TxnReceipt,
+	TxnReceiptWithBlockInfo,
 } from "../../jsonrpc/types.js";
+import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
+import {
+	feePaymentFromRpc,
+	msgToL1FromRpc,
+	receiptFromRpc,
+	receiptWithBlockInfoFromRpc,
+} from "./fromRpc.js";
+import {
+	feePaymentToRpc,
+	msgToL1ToRpc,
+	receiptToRpc,
+	receiptWithBlockInfoToRpc,
+} from "./toRpc.js";
 
 function canon(hex: string): string {
 	return feltFromHex(hex).toHex();
@@ -96,7 +96,7 @@ describe("receipt", () => {
 		}
 		const back = receiptToRpc(rich);
 		if (back.type === "DEPLOY_ACCOUNT") {
-			expect((back as any).contract_address).toBe(canon("0xca"));
+			expect(back.contract_address).toBe(canon("0xca"));
 		}
 	});
 });

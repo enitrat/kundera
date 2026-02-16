@@ -6,8 +6,8 @@
 
 import {
 	Felt252,
-	type Felt252Type,
 	type Felt252Input,
+	type Felt252Type,
 } from "../../primitives/index.js";
 import { pedersenHash } from "../hash.js";
 import { CONTRACT_ADDRESS_PREFIX } from "./constants.js";

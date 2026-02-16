@@ -5,9 +5,9 @@
  */
 
 import { Felt252, type Felt252Type } from "../../primitives/index.js";
+import type { ResourceBoundsMapping } from "../account-types.js";
 import { poseidonHashMany } from "../hash.js";
 import { RESOURCE_TYPE } from "./constants.js";
-import type { ResourceBoundsMapping } from "../account-types.js";
 
 /**
  * Encode a single resource bound into a felt

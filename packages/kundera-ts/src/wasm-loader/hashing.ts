@@ -5,14 +5,14 @@
  */
 
 import type { Felt252Type } from "../primitives/index.js";
-import { wasmInstance, FELT_SIZE } from "./state.js";
 import {
+	checkResult,
 	malloc,
+	readFelt,
 	resetAllocator,
 	writeFelt,
-	readFelt,
-	checkResult,
 } from "./memory.js";
+import { FELT_SIZE, wasmInstance } from "./state.js";
 
 export function wasmPedersenHash(a: Felt252Type, b: Felt252Type): Felt252Type {
 	if (!wasmInstance) throw new Error("WASM not loaded");
@@ -62,8 +62,7 @@ export function wasmPoseidonHashMany(inputs: Felt252Type[]): Felt252Type {
 
 	// Pack inputs into contiguous buffer
 	const ptrInputs = malloc(inputs.length * FELT_SIZE);
-	for (let i = 0; i < inputs.length; i++) {
-		const input = inputs[i]!;
+	for (const [i, input] of inputs.entries()) {
 		writeFelt(input, ptrInputs + i * FELT_SIZE);
 	}
 

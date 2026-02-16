@@ -5,19 +5,19 @@
  */
 
 import {
-	type AbiLike,
-	type AbiFunctionEntry,
-	type AbiEventEntry,
 	type AbiConstructorEntry,
-	type ParsedAbi,
-	type IndexedFunction,
-	type IndexedEvent,
-	type IndexedStruct,
+	type AbiEventEntry,
+	type AbiFunctionEntry,
+	type AbiLike,
 	type IndexedEnum,
+	type IndexedEvent,
+	type IndexedFunction,
+	type IndexedStruct,
+	type ParsedAbi,
 	type Result,
-	ok,
-	err,
 	abiError,
+	err,
+	ok,
 } from "../types.js";
 import { computeSelector } from "./computeSelector.js";
 import { getShortName } from "./parseType.js";
@@ -33,7 +33,7 @@ export function parseAbi(abi: AbiLike): Result<ParsedAbi> {
 		const eventsBySelector = new Map<string, IndexedEvent>();
 		const structs = new Map<string, IndexedStruct>();
 		const enums = new Map<string, IndexedEnum>();
-		let constructor: AbiConstructorEntry | undefined;
+		let constructorEntry: AbiConstructorEntry | undefined;
 
 		// Count overloads for deterministic naming
 		const functionCounts = new Map<string, number>();
@@ -103,7 +103,7 @@ export function parseAbi(abi: AbiLike): Result<ParsedAbi> {
 				}
 
 				case "constructor": {
-					constructor = entry;
+					constructorEntry = entry;
 					break;
 				}
 
@@ -138,7 +138,7 @@ export function parseAbi(abi: AbiLike): Result<ParsedAbi> {
 			eventsBySelector,
 			structs,
 			enums,
-			...(constructor ? { constructor } : {}),
+			...(constructorEntry ? { constructor: constructorEntry } : {}),
 		};
 		return ok(parsed);
 	} catch (error) {
@@ -162,7 +162,7 @@ function indexFunction(
 	indices: Map<string, number>,
 ): void {
 	const selector = computeSelector(entry.name);
-	const selectorHex = "0x" + selector.toString(16);
+	const selectorHex = `0x${selector.toString(16)}`;
 
 	const indexed: IndexedFunction = {
 		entry,
@@ -202,7 +202,7 @@ function indexEvent(
 	indices: Map<string, number>,
 ): void {
 	const selector = computeSelector(entry.name);
-	const selectorHex = "0x" + selector.toString(16);
+	const selectorHex = `0x${selector.toString(16)}`;
 
 	const indexed: IndexedEvent = {
 		entry,

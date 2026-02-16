@@ -5,15 +5,15 @@
  * Tests JSON-RPC 2.0 compliance, batching, and error handling.
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-	httpTransport,
-	createRequest,
-	createErrorResponse,
-	matchBatchResponses,
-	isJsonRpcError,
 	type JsonRpcRequest,
 	type JsonRpcResponse,
+	createErrorResponse,
+	createRequest,
+	httpTransport,
+	isJsonRpcError,
+	matchBatchResponses,
 } from "./index.js";
 
 // ============ Utility Tests ============
@@ -91,11 +91,11 @@ describe("Transport Utilities", () => {
 
 			const matched = matchBatchResponses(requests, responses);
 
-			expect(matched[0]!.id).toBe(1);
+			expect(matched[0]?.id).toBe(1);
 			expect((matched[0] as { result: string }).result).toBe("a-result");
-			expect(matched[1]!.id).toBe(2);
+			expect(matched[1]?.id).toBe(2);
 			expect((matched[1] as { result: string }).result).toBe("b-result");
-			expect(matched[2]!.id).toBe(3);
+			expect(matched[2]?.id).toBe(3);
 			expect((matched[2] as { result: string }).result).toBe("c-result");
 		});
 
@@ -112,8 +112,11 @@ describe("Transport Utilities", () => {
 
 			const matched = matchBatchResponses(requests, responses);
 
-			expect(matched[0]!.id).toBe(1);
-			expect(isJsonRpcError(matched[1]!)).toBe(true);
+			expect(matched[0]?.id).toBe(1);
+			const missing = matched[1];
+			expect(missing).toBeDefined();
+			if (!missing) throw new Error("Expected synthesized missing response");
+			expect(isJsonRpcError(missing)).toBe(true);
 		});
 	});
 });
@@ -166,7 +169,9 @@ describe("HTTP Transport", () => {
 			method: "starknet_blockNumber",
 		});
 
-		const call = mockFetch.mock.calls[0]!;
+		const call = mockFetch.mock.calls[0];
+		expect(call).toBeDefined();
+		if (!call) throw new Error("Expected fetch call");
 		const body = JSON.parse((call[1] as RequestInit).body as string);
 		expect(body.id).toBeDefined();
 	});
@@ -236,9 +241,9 @@ describe("HTTP Transport", () => {
 			]);
 
 			// Responses should be matched to request order
-			expect(responses[0]!.id).toBe(1);
+			expect(responses[0]?.id).toBe(1);
 			expect((responses[0] as { result: number }).result).toBe(100);
-			expect(responses[1]!.id).toBe(2);
+			expect(responses[1]?.id).toBe(2);
 			expect((responses[1] as { result: string }).result).toBe("chain-id");
 		});
 	});
@@ -264,7 +269,7 @@ describe("JSON-RPC 2.0 Compliance", () => {
 		await transport.request({ jsonrpc: "2.0", id: 1, method: "test" });
 
 		const body = JSON.parse(
-			(mockFetch.mock.calls[0]![1] as RequestInit).body as string,
+			(mockFetch.mock.calls[0]?.[1] as RequestInit).body as string,
 		);
 		expect(body.jsonrpc).toBe("2.0");
 	});
@@ -276,7 +281,7 @@ describe("JSON-RPC 2.0 Compliance", () => {
 		await transport.request({ jsonrpc: "2.0", method: "notify" });
 
 		const body = JSON.parse(
-			(mockFetch.mock.calls[0]![1] as RequestInit).body as string,
+			(mockFetch.mock.calls[0]?.[1] as RequestInit).body as string,
 		);
 		// We auto-assign id for internal tracking
 		expect(body.id).toBeDefined();
@@ -303,11 +308,11 @@ describe("JSON-RPC 2.0 Compliance", () => {
 		]);
 
 		// Responses should be reordered to match request order
-		expect(responses[0]!.id).toBe("a");
+		expect(responses[0]?.id).toBe("a");
 		expect((responses[0] as { result: number }).result).toBe(1);
-		expect(responses[1]!.id).toBe("b");
+		expect(responses[1]?.id).toBe("b");
 		expect((responses[1] as { result: number }).result).toBe(2);
-		expect(responses[2]!.id).toBe("c");
+		expect(responses[2]?.id).toBe("c");
 		expect((responses[2] as { result: number }).result).toBe(3);
 	});
 });

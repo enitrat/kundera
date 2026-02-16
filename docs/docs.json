@@ -51,9 +51,11 @@
                   "effect/services/account",
                   "effect/services/wallet-provider",
                   "effect/services/transaction",
+                  "effect/services/transaction-stream",
                   "effect/services/fee-estimator",
                   "effect/services/nonce-manager",
                   "effect/services/chain",
+                  "effect/services/block-stream",
                   "effect/services/event",
                   "effect/services/rpc-batch"
                 ]

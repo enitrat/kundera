@@ -1,20 +1,20 @@
 import { describe, expect, test } from "vitest";
 import {
-	Felt252,
-	ContractAddress,
+	Address,
 	ClassHash,
-	StorageKey,
+	ContractAddress,
 	EthAddress,
 	FIELD_PRIME,
+	Felt,
+	Felt252,
 	MAX_ADDRESS,
 	MAX_CONTRACT_ADDRESS,
 	MAX_ETH_ADDRESS,
-	Felt,
-	Address,
-	encodeShortString,
-	decodeShortString,
-	encodeShortStringHex,
 	MAX_SHORT_STRING_LENGTH,
+	StorageKey,
+	decodeShortString,
+	encodeShortString,
+	encodeShortStringHex,
 } from "./index";
 
 describe("Felt252", () => {
@@ -71,13 +71,13 @@ describe("Felt252", () => {
 	});
 
 	test("rejects hex >= FIELD_PRIME", () => {
-		expect(() => Felt252.fromHex("0x" + FIELD_PRIME.toString(16))).toThrow(
+		expect(() => Felt252.fromHex(`0x${FIELD_PRIME.toString(16)}`)).toThrow(
 			"exceeds",
 		);
 	});
 
 	test("rejects hex string too long", () => {
-		expect(() => Felt252.fromHex("0x" + "f".repeat(65))).toThrow("too long");
+		expect(() => Felt252.fromHex(`0x${"f".repeat(65)}`)).toThrow("too long");
 	});
 
 	test("rejects invalid hex string", () => {

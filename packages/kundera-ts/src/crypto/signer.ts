@@ -6,19 +6,19 @@
  * @module crypto/signer
  */
 
-import {
-	Felt252,
-	type Felt252Type,
-	type Felt252Input,
-} from "../primitives/index.js";
 import { Uint128 } from "../primitives/Uint128/index.js";
 import { Uint256 } from "../primitives/Uint256/index.js";
 import {
-	sign as signPrimitive,
-	poseidonHashMany,
-	type Signature,
-} from "./index.js";
+	Felt252,
+	type Felt252Input,
+	type Felt252Type,
+} from "../primitives/index.js";
 import type { TypedData } from "./account-types.js";
+import {
+	type Signature,
+	poseidonHashMany,
+	sign as signPrimitive,
+} from "./index.js";
 
 // ============ Signing Helpers ============
 

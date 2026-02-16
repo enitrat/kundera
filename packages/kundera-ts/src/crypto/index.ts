@@ -58,8 +58,8 @@ export function snKeccak(data: Uint8Array | string): Felt252Type {
 	const hash = keccak_256(bytes);
 	// Convert to bigint and mask to 250 bits
 	let result = 0n;
-	for (let i = 0; i < hash.length; i++) {
-		result = (result << 8n) | BigInt(hash[i]!);
+	for (const byte of hash) {
+		result = (result << 8n) | BigInt(byte);
 	}
 	return Felt252(result & MASK_250);
 }
@@ -122,13 +122,13 @@ export * from "./account-types.js";
 import { Felt as FeltPrimitives } from "../primitives/index.js";
 import {
 	feltAdd,
-	feltSub,
-	feltMul,
 	feltDiv,
-	feltNeg,
 	feltInverse,
+	feltMul,
+	feltNeg,
 	feltPow,
 	feltSqrt,
+	feltSub,
 } from "./arithmetic.js";
 
 const FeltBase = ((value: Parameters<typeof FeltPrimitives>[0]) =>

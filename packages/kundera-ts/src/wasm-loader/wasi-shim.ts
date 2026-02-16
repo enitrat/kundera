@@ -14,7 +14,7 @@ export function getWasiShim() {
 		// Environment
 		environ_get: () => 0,
 		environ_sizes_get: (countPtr: number, sizePtr: number) => {
-			const view = new DataView(wasmInstance!.memory.buffer);
+			const view = new DataView(wasmInstance?.memory.buffer);
 			view.setUint32(countPtr, 0, true);
 			view.setUint32(sizePtr, 0, true);
 			return 0;
@@ -23,7 +23,7 @@ export function getWasiShim() {
 		// Args
 		args_get: () => 0,
 		args_sizes_get: (countPtr: number, sizePtr: number) => {
-			const view = new DataView(wasmInstance!.memory.buffer);
+			const view = new DataView(wasmInstance?.memory.buffer);
 			view.setUint32(countPtr, 0, true);
 			view.setUint32(sizePtr, 0, true);
 			return 0;
@@ -46,7 +46,7 @@ export function getWasiShim() {
 			_iovsLen: number,
 			nwrittenPtr: number,
 		) => {
-			const view = new DataView(wasmInstance!.memory.buffer);
+			const view = new DataView(wasmInstance?.memory.buffer);
 			view.setUint32(nwrittenPtr, 0, true);
 			return 0;
 		},
@@ -58,7 +58,7 @@ export function getWasiShim() {
 
 		// Random (important for crypto!)
 		random_get: (bufPtr: number, bufLen: number) => {
-			const view = new Uint8Array(wasmInstance!.memory.buffer, bufPtr, bufLen);
+			const view = new Uint8Array(wasmInstance?.memory.buffer, bufPtr, bufLen);
 			if (typeof crypto !== "undefined" && crypto.getRandomValues) {
 				crypto.getRandomValues(view);
 			} else {

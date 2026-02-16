@@ -1,0 +1,135 @@
+---
+title: Block Stream Service
+description: Stream Starknet blocks with historical backfill and reorg detection.
+---
+
+# Block Stream Service
+
+`BlockStreamService` streams Starknet blocks over polling or websocket modes with:
+
+- historical backfill (`backfill`)
+- live block watch (`watch`)
+- reorg detection (`reorg` events with removed/added blocks)
+
+## Imports
+
+```typescript
+import { Services } from "@kundera-sn/kundera-effect";
+// or
+import {
+  BlockStreamService,
+  BlockStreamLive,
+} from "@kundera-sn/kundera-effect/services";
+```
+
+## Service Shape
+
+```typescript
+interface BlockStreamServiceShape {
+  readonly backfill: <TInclude extends "header" | "transactions" | "receipts">(
+    options: BackfillBlocksOptions<TInclude>,
+  ) => Stream.Stream<BlocksEvent<TInclude>, BlockStreamError>;
+
+  readonly watch: <TInclude extends "header" | "transactions" | "receipts">(
+    options?: WatchBlocksOptions<TInclude>,
+  ) => Stream.Stream<BlockStreamEvent<TInclude>, BlockStreamError>;
+}
+```
+
+## Live Layer
+
+`BlockStreamLive` requires `ProviderService`:
+
+```typescript
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const layer = Services.BlockStreamLive.pipe(
+  Layer.provide(Presets.SepoliaProvider())
+);
+```
+
+<Info>
+`BlockStreamService` is included automatically in wallet stacks.
+</Info>
+
+## Watch New Blocks
+
+```typescript
+import { Effect, Stream } from "effect";
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const program = Effect.gen(function* () {
+  const blocks = yield* Services.BlockStreamService;
+
+  const stream = blocks.watch({
+    include: "transactions",
+    pollInterval: "3 seconds",
+    maxTrackedBlocks: 128,
+  });
+
+  yield* Stream.runForEach(stream, (event) => {
+    if (event.type === "reorg") {
+      return Effect.log(`Reorg detected: ${event.removed.length} removed`);
+    }
+
+    return Effect.log(`Block ${event.blocks[0]?.block_number}`);
+  });
+}).pipe(
+  Effect.provide(Presets.SepoliaProvider()),
+  Effect.provide(Services.BlockStreamLive),
+);
+```
+
+## Watch New Blocks Over WebSocket
+
+```typescript
+const websocketStream = blocks.watch({
+  streamMode: "websocket",
+  websocket: {
+    url: "wss://api.cartridge.gg/x/starknet/sepolia",
+  },
+  fromBlock: 500_000,
+  include: "header",
+});
+```
+
+## Backfill Historical Blocks
+
+```typescript
+const backfill = blocks.backfill({
+  fromBlock: 500_000,
+  toBlock: 500_100,
+  include: "header",
+  chunkSize: 25,
+});
+
+yield* Stream.runForEach(backfill, (event) =>
+  Effect.log(`Fetched ${event.blocks.length} blocks`)
+);
+```
+
+## Include Modes
+
+- `header` — block header + transaction hashes
+- `transactions` — block header + full transactions
+- `receipts` — block header + transaction/receipt pairs
+
+## Errors
+
+| Error | When |
+|-------|------|
+| `BlockStreamError` | Invalid options, RPC failures, or unrecoverable reorg depth |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Transaction Stream" icon="arrow-right-arrow-left" href="/effect/services/transaction-stream">
+    Stream pending and confirmed transactions.
+  </Card>
+  <Card title="Event Service" icon="bolt" href="/effect/services/event">
+    Stream decoded contract events.
+  </Card>
+  <Card title="Provider Service" icon="plug" href="/effect/services/provider">
+    Underlying RPC dependency for block streaming.
+  </Card>
+</CardGroup>

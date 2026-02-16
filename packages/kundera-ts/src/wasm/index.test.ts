@@ -5,9 +5,9 @@
  * Skips crypto tests if WASM artifact not present.
  */
 
-import { describe, expect, test, beforeAll } from "vitest";
-import * as wasmEntry from "./index";
+import { beforeAll, describe, expect, test } from "vitest";
 import { Felt252 } from "../primitives/index";
+import * as wasmEntry from "./index";
 
 // Check WASM availability
 const wasmAvailable = wasmEntry.isWasmAvailable();

@@ -5,11 +5,11 @@
  * Matches on JSON-RPC `method` field in request body.
  */
 
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { readFileSync, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_DIR = join(__dirname, "..", "..", "fixtures", "rpc");

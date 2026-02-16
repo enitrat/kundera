@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { serializeU256 } from "./serializeU256";
 import { deserializeU256 } from "./deserializeU256";
+import { serializeU256 } from "./serializeU256";
 
 describe("u256 serialization", () => {
 	test("small value roundtrip", () => {

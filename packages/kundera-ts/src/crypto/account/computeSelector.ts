@@ -32,9 +32,7 @@ export function computeSelector(name: string): Felt252Type {
 		return snKeccak(nameBytes);
 	} catch (e) {
 		throw new Error(
-			`Unknown selector for "${name}". ` +
-				`Either add to KNOWN_SELECTORS or implement snKeccak. ` +
-				`Original error: ${e instanceof Error ? e.message : String(e)}`,
+			`Unknown selector for "${name}". Either add to KNOWN_SELECTORS or implement snKeccak. Original error: ${e instanceof Error ? e.message : String(e)}`,
 		);
 	}
 }
@@ -42,4 +40,8 @@ export function computeSelector(name: string): Felt252Type {
 /**
  * Standard selectors (precomputed)
  */
-export const EXECUTE_SELECTOR = Felt252(KNOWN_SELECTORS["__execute__"]!);
+const executeSelector = KNOWN_SELECTORS.__execute__;
+if (executeSelector === undefined) {
+	throw new Error("Known selector __execute__ is missing");
+}
+export const EXECUTE_SELECTOR = Felt252(executeSelector);

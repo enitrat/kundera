@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { ECDSA, sign, verify, getPublicKey, getPublicKeyFull } from "./index";
 import { Felt252 } from "../../primitives/index";
+import { ECDSA, getPublicKey, getPublicKeyFull, sign, verify } from "./index";
 
 describe("ECDSA (Pure JS)", () => {
 	// Test vectors from @scure/starknet test suite
@@ -184,7 +184,7 @@ describe("ECDSA (Pure JS)", () => {
 			}
 
 			expect(recovered).not.toBeNull();
-			expect(recovered!.equals(pubKey)).toBe(true);
+			expect(recovered?.equals(pubKey)).toBe(true);
 		});
 
 		test("throws on invalid recovery parameter", () => {

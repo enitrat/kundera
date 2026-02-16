@@ -58,8 +58,8 @@ export function parseType(typeStr: string): ParsedType {
 	};
 
 	// Check for type aliases first
-	if (typeStr in typeAliases) {
-		const canonicalType = typeAliases[typeStr]!;
+	const canonicalType = typeAliases[typeStr];
+	if (canonicalType !== undefined) {
 		return {
 			kind: "primitive",
 			name: canonicalType,

@@ -8,7 +8,5 @@ export const method = "wallet_requestAccounts";
  * @returns {{ method: 'wallet_requestAccounts', params: [{ silent_mode?: boolean }] | [] }}
  */
 export function RequestAccountsRequest(options) {
-	return options
-		? { method, params: [options] }
-		: { method, params: [] };
+	return options ? { method, params: [options] } : { method, params: [] };
 }

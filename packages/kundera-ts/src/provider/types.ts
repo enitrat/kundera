@@ -8,15 +8,15 @@
 
 import type {
 	EmittedEvent,
+	EventsSubscriptionParams,
 	NewHead,
+	NewHeadsSubscriptionParams,
 	PendingTransaction,
+	PendingTransactionsSubscriptionParams,
 	ReorgData,
+	TransactionReceiptsSubscriptionParams,
 	TransactionStatusUpdate,
 	WsTransactionReceipt,
-	EventsSubscriptionParams,
-	NewHeadsSubscriptionParams,
-	PendingTransactionsSubscriptionParams,
-	TransactionReceiptsSubscriptionParams,
 } from "../jsonrpc/types.js";
 
 /**
@@ -85,7 +85,7 @@ export interface ProviderConnectInfo {
  * Provider event map (EIP-1193-inspired)
  */
 export interface ProviderEventMap
-	extends Record<string, (...args: any[]) => void> {
+	extends Record<string, (...args: unknown[]) => void> {
 	/** Emitted when accounts change */
 	accountsChanged(accounts: string[]): void;
 	/** Emitted when chain changes */

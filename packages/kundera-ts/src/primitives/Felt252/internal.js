@@ -6,12 +6,9 @@ import { FIELD_PRIME } from "./constants.js";
  * @returns {string}
  */
 export function bytesToHex(bytes) {
-	return (
-		"0x" +
-		Array.from(bytes)
-			.map((b) => b.toString(16).padStart(2, "0"))
-			.join("")
-	);
+	return `0x${Array.from(bytes)
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("")}`;
 }
 
 /**

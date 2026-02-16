@@ -1,9 +1,9 @@
-import type { Felt252Type } from "../Felt252/types.js";
-import type { ContractAddressType } from "../ContractAddress/types.js";
-import type { ClassHashType } from "../ClassHash/types.js";
-import type { StateDiffType } from "../StateUpdate/types.js";
-import type { FeeEstimateType } from "../FeeEstimate/types.js";
 import type { CallType, EntryPointType } from "../../jsonrpc/types.js";
+import type { ClassHashType } from "../ClassHash/types.js";
+import type { ContractAddressType } from "../ContractAddress/types.js";
+import type { FeeEstimateType } from "../FeeEstimate/types.js";
+import type { Felt252Type } from "../Felt252/types.js";
+import type { StateDiffType } from "../StateUpdate/types.js";
 
 export interface ExecutionResourcesType {
 	steps: number;

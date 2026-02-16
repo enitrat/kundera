@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { stateUpdateFromRpc, stateDiffFromRpc } from "./fromRpc.js";
-import { stateUpdateToRpc, stateDiffToRpc } from "./toRpc.js";
+import { describe, expect, it } from "vitest";
+import type { StateDiff, StateUpdate } from "../../jsonrpc/types.js";
 import { fromHex as feltFromHex } from "../Felt252/fromHex.js";
-import type { StateUpdate, StateDiff } from "../../jsonrpc/types.js";
+import { stateDiffFromRpc, stateUpdateFromRpc } from "./fromRpc.js";
+import { stateDiffToRpc, stateUpdateToRpc } from "./toRpc.js";
 
 function canon(hex: string): string {
 	return feltFromHex(hex).toHex();
@@ -24,27 +24,27 @@ const wireStateDiff: StateDiff = {
 describe("stateDiff", () => {
 	it("fromRpc converts all hex fields", () => {
 		const result = stateDiffFromRpc(wireStateDiff);
-		expect(result.storage_diffs[0]!.address.toBigInt()).toBe(1n);
-		expect(result.storage_diffs[0]!.storage_entries[0]!.key.toBigInt()).toBe(
+		expect(result.storage_diffs[0]?.address.toBigInt()).toBe(1n);
+		expect(result.storage_diffs[0]?.storage_entries[0]?.key.toBigInt()).toBe(
 			16n,
 		);
-		expect(result.declared_classes[0]!.class_hash.toBigInt()).toBe(
+		expect(result.declared_classes[0]?.class_hash.toBigInt()).toBe(
 			BigInt("0xc1"),
 		);
-		expect(result.deployed_contracts[0]!.address.toBigInt()).toBe(2n);
-		expect(result.replaced_classes[0]!.contract_address.toBigInt()).toBe(3n);
-		expect(result.nonces[0]!.nonce.toBigInt()).toBe(5n);
+		expect(result.deployed_contracts[0]?.address.toBigInt()).toBe(2n);
+		expect(result.replaced_classes[0]?.contract_address.toBigInt()).toBe(3n);
+		expect(result.nonces[0]?.nonce.toBigInt()).toBe(5n);
 	});
 
 	it("round-trips through toRpc", () => {
 		const rich = stateDiffFromRpc(wireStateDiff);
 		const back = stateDiffToRpc(rich);
-		expect(back.storage_diffs[0]!.address).toBe(canon("0x01"));
-		expect(back.storage_diffs[0]!.storage_entries[0]!.key).toBe(canon("0x10"));
-		expect(back.declared_classes[0]!.class_hash).toBe(canon("0xc1"));
-		expect(back.deployed_contracts[0]!.class_hash).toBe(canon("0xd1"));
-		expect(back.replaced_classes[0]!.class_hash).toBe(canon("0xe1"));
-		expect(back.nonces[0]!.nonce).toBe(canon("0x05"));
+		expect(back.storage_diffs[0]?.address).toBe(canon("0x01"));
+		expect(back.storage_diffs[0]?.storage_entries[0]?.key).toBe(canon("0x10"));
+		expect(back.declared_classes[0]?.class_hash).toBe(canon("0xc1"));
+		expect(back.deployed_contracts[0]?.class_hash).toBe(canon("0xd1"));
+		expect(back.replaced_classes[0]?.class_hash).toBe(canon("0xe1"));
+		expect(back.nonces[0]?.nonce).toBe(canon("0x05"));
 	});
 });
 
