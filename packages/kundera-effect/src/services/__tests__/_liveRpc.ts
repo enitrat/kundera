@@ -38,23 +38,31 @@ const LOG_PREVIEW_MAX_CHARS = Number.isFinite(
 const truncate = (value: string): string =>
 	value.length <= LOG_PREVIEW_MAX_CHARS
 		? value
-		: `${value.slice(0, LOG_PREVIEW_MAX_CHARS)}...`;
+		: `${value.slice(0, LOG_PREVIEW_MAX_CHARS)}\n...truncated...`;
 
-const toPreview = (value: unknown): string => {
+const toPrettyJson = (value: unknown): string => {
 	try {
-		return truncate(JSON.stringify(value));
+		return JSON.stringify(value, null, 2);
 	} catch {
-		return truncate(String(value));
+		return String(value);
 	}
 };
 
 const logHeader = (label: "REQUEST" | "RESPONSE" | "ERROR", method: string) =>
 	`[LiveRPC][${new Date().toISOString()}][${label}] ${method}`;
 
+const printPrettyField = (label: string, value: unknown): void => {
+	console.log(`  ${label}:`);
+	const rendered = truncate(toPrettyJson(value));
+	for (const line of rendered.split("\n")) {
+		console.log(`    ${line}`);
+	}
+};
+
 const logRequest = (context: TransportRequestContext): void => {
 	console.log(logHeader("REQUEST", context.request.method));
 	console.log(`  endpoint: ${LIVE_STREAM_RPC_URL}`);
-	console.log(`  params: ${toPreview(context.request.params ?? [])}`);
+	printPrettyField("params", context.request.params ?? []);
 };
 
 const logResponse = <T>(context: TransportResponseContext<T>): void => {
@@ -63,10 +71,10 @@ const logResponse = <T>(context: TransportResponseContext<T>): void => {
 		`${logHeader("RESPONSE", method)} (${Math.round(context.durationMs)}ms)`,
 	);
 	if ("error" in context.response) {
-		console.log(`  error: ${toPreview(context.response.error)}`);
+		printPrettyField("error", context.response.error);
 		return;
 	}
-	console.log(`  result: ${toPreview(context.response.result)}`);
+	printPrettyField("result", context.response.result);
 };
 
 const logError = (context: TransportErrorContext): void => {
@@ -74,7 +82,26 @@ const logError = (context: TransportErrorContext): void => {
 		`${logHeader("ERROR", context.request.method)} (${Math.round(context.durationMs)}ms)`,
 	);
 	console.log(`  endpoint: ${LIVE_STREAM_RPC_URL}`);
-	console.log(`  message: ${context.error.message}`);
+	printPrettyField("error", {
+		tag:
+			"_tag" in context.error && typeof context.error._tag === "string"
+				? context.error._tag
+				: undefined,
+		message: context.error.message,
+		code:
+			"code" in context.error && typeof context.error.code === "number"
+				? context.error.code
+				: undefined,
+		operation:
+			"operation" in context.error &&
+			typeof context.error.operation === "string"
+				? context.error.operation
+				: undefined,
+		cause:
+			"cause" in context.error
+				? context.error.cause
+				: undefined,
+	});
 };
 
 export const withLiveRpcLogs = <A, E, R>(
