@@ -10,6 +10,8 @@ Wallet-first Effect services for Starknet.
 - Optional typed contract registry builder
 - Transaction submission via wallet providers
 - Receipt polling via Starknet RPC provider
+- Block streaming with backfill + reorg detection
+- Transaction streaming for pending/confirmed/tracked lifecycle
 - Schema-first primitive input decoding (`Primitives`)
 - Typed errors and Layer-based dependency injection
 

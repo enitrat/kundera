@@ -138,9 +138,13 @@ const block2 = yield* JsonRpc.getBlockWithTxs("latest").pipe(
 | `request(method, params?)` | `T` | Raw RPC call (generic) |
 
 <Info>
-**Subscriptions vs Streaming** — JSON-RPC subscription methods (`starknet_subscribeNewHeads`, etc.) are not yet wrapped as free functions. However, **event streaming is available today** via [EventService](/effect/services/event). `watchEvents` and `watchDecodedEvents` return `Stream.Stream` and handle polling, deduplication, and backpressure automatically.
+**Subscriptions vs Streaming** — JSON-RPC subscription methods (`starknet_subscribeNewHeads`, etc.) are not yet wrapped as free functions. Stream APIs are available through services:
 
-See the [Event Service docs](/effect/services/event) for streaming examples.
+- [BlockStreamService](/effect/services/block-stream)
+- [TransactionStreamService](/effect/services/transaction-stream)
+- [EventService](/effect/services/event)
+
+These services return `Stream.Stream` and handle polling, deduplication, and retry behavior.
 </Info>
 
 ## Error Handling
@@ -176,6 +180,12 @@ const program = JsonRpc.blockNumber().pipe(
   </Card>
   <Card title="Event Service" icon="bolt" href="/effect/services/event">
     Event streaming with watchEvents and watchDecodedEvents.
+  </Card>
+  <Card title="Block Stream" icon="layer-group" href="/effect/services/block-stream">
+    Stream blocks with backfill and reorg detection.
+  </Card>
+  <Card title="Transaction Stream" icon="arrow-right-arrow-left" href="/effect/services/transaction-stream">
+    Stream pending and confirmed transactions.
   </Card>
   <Card title="Contract" icon="file-contract" href="/effect/services/contract">
     Higher-level contract reads with ABI encoding/decoding.

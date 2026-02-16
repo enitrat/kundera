@@ -1,0 +1,126 @@
+---
+title: Transaction Stream Service
+description: Stream pending and confirmed Starknet transactions and track single transaction lifecycles.
+---
+
+# Transaction Stream Service
+
+`TransactionStreamService` provides polling-based transaction streams:
+
+- `watchPending` for mempool-like pending block transactions
+- `watchConfirmed` for confirmed transactions with configurable confirmations
+- `track` for lifecycle streaming of one transaction hash
+
+## Imports
+
+```typescript
+import { Services } from "@kundera-sn/kundera-effect";
+// or
+import {
+  TransactionStreamService,
+  TransactionStreamLive,
+} from "@kundera-sn/kundera-effect/services";
+```
+
+## Service Shape
+
+```typescript
+interface TransactionStreamServiceShape {
+  readonly watchPending: (
+    options?: WatchPendingTransactionsOptions,
+  ) => Stream.Stream<PendingTransactionEvent, TransactionStreamError>;
+
+  readonly watchConfirmed: (
+    options?: WatchConfirmedTransactionsOptions,
+  ) => Stream.Stream<ConfirmedTransactionEvent, TransactionStreamError>;
+
+  readonly track: (
+    txHash: Felt252Type | string,
+    options?: TrackTransactionOptions,
+  ) => Stream.Stream<TransactionTrackEvent, TransactionStreamError>;
+}
+```
+
+## Live Layer
+
+`TransactionStreamLive` requires `ProviderService`:
+
+```typescript
+import { Services, Presets } from "@kundera-sn/kundera-effect";
+
+const layer = Services.TransactionStreamLive.pipe(
+  Layer.provide(Presets.SepoliaProvider())
+);
+```
+
+<Info>
+`TransactionStreamService` is included automatically in wallet stacks.
+</Info>
+
+## Watch Pending Transactions
+
+```typescript
+const pending = txStream.watchPending({
+  pollInterval: "2 seconds",
+  filter: {
+    senderAddress: "0x0123...",
+    types: ["INVOKE"],
+  },
+});
+```
+
+## Watch Confirmed Transactions
+
+```typescript
+const confirmed = txStream.watchConfirmed({
+  pollInterval: "2 seconds",
+  confirmations: 3,
+  fromBlock: 500_000,
+});
+
+yield* Stream.runForEach(confirmed, (event) =>
+  Effect.log(`Confirmed ${event.transaction.transaction_hash} at ${event.blockNumber}`)
+);
+```
+
+## Track a Transaction Lifecycle
+
+```typescript
+const tracked = txStream.track("0xdeadbeef...", {
+  pollInterval: "2 seconds",
+  confirmations: 2,
+  maxPendingPolls: 120,
+});
+
+yield* Stream.runForEach(tracked, (event) => {
+  if (event.type === "pending") {
+    return Effect.log(`Pending poll #${event.pollCount}`);
+  }
+
+  if (event.type === "confirmed") {
+    return Effect.log(`Confirmed in block ${event.receipt.block_number}`);
+  }
+
+  return Effect.log(`Dropped: ${event.reason}`);
+});
+```
+
+## Errors
+
+| Error | When |
+|-------|------|
+| `TransactionStreamError` | Invalid options or RPC/transport failures during streaming |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Block Stream" icon="layer-group" href="/effect/services/block-stream">
+    Stream blocks and detect reorgs.
+  </Card>
+  <Card title="Transaction Service" icon="arrow-right-arrow-left" href="/effect/services/transaction">
+    Submit invokes and wait for receipts.
+  </Card>
+  <Card title="Provider Service" icon="plug" href="/effect/services/provider">
+    Underlying RPC dependency for transaction streams.
+  </Card>
+</CardGroup>
